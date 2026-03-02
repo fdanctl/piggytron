@@ -1,0 +1,33 @@
+package components
+
+import "fmt"
+
+type btnVariant string
+
+const (
+	BtnPrimary     btnVariant = "primary"
+	BtnSecondary   btnVariant = "secondary"
+	BtnOutline     btnVariant = "outline"
+	BtnGhost       btnVariant = "ghost"
+	BtnDestructive btnVariant = "destructive"
+)
+
+type btnSize string
+
+const (
+	BtnSmall  btnSize = "sm"
+	BtnMedium btnSize = "md"
+	BtnLarge  btnSize = "lg"
+)
+
+templ Button(text, class string, variant btnVariant, size btnSize, attrs templ.Attributes) {
+	<button class={ "btn", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+		{ text }
+	</button>
+}
+
+templ IconButton(icon templ.Component, class string, size btnSize, attrs templ.Attributes) {
+	<button class={ "btn", fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+		@icon
+	</button>
+}

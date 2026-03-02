@@ -1,0 +1,55 @@
+package components
+
+templ Input(class string, hasError bool, attrs templ.Attributes) {
+	<div class="relative">
+		<input
+			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			{ attrs... }
+		/>
+		<div>
+			<i class="feedbackIcon">
+				@CircleXSvg(16, "")
+			</i>
+			if t, ok := attrs["type"]; ok && t == "password" {
+				<div class="pwdToggle">
+					<i>
+						@EyeSvg(20, "")
+					</i>
+					<i class="hidden">
+						@EyeOffSvg(20, "")
+					</i>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ InputGroup(class, label, errMsg string, hasError bool, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
+	>
+		if id, ok := attrs["id"]; ok && label != "" {
+			<label for={ id.(string) }>{ label }</label>
+		}
+		@Input("", hasError, attrs)
+		<span>{ errMsg }</span>
+	</div>
+}
+
+templ SearchBar(class string, attrs templ.Attributes) {
+	{{
+		placeholder := "Search..."
+		if v, ok := attrs["placeholder"]; ok {
+			placeholder = v.(string)
+		}
+	}}
+	<div class="search-bar">
+		<input
+			class={ "input", templ.KV(class, class != "") }
+			placeholder={ placeholder }
+		/>
+		<i>
+			@SearchSvg(16, "")
+		</i>
+	</div>
+}

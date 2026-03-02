@@ -1,0 +1,40 @@
+.loader {
+  margin: auto;
+  width: 70px;
+  text-align: center;
+  line-height: 48px;
+  height: 48px;
+}
+
+.loader>div {
+  width: 1rem;
+  height: 1rem;
+  margin: 2px;
+  position: relative;
+  top: 3px;
+  border: 1px solid white;
+
+  display: inline-block;
+  animation: scale-y 1s infinite ease-in-out both;
+}
+
+.loader > div:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.loader > div:nth-child(3) {
+  animation-delay: 0.30s;
+}
+
+@keyframes scale-y {
+
+  0%,
+  60%,
+  100% {
+    transform: scaleY(100%);
+  }
+
+  30% {
+    transform: scaleY(150%);
+  }
+}
