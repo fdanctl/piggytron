@@ -31,7 +31,7 @@ func LoadConfig() (*config, error) {
 	return &config{
 		ServerPort: serverPort,
 		DBURL: fmt.Sprintf(
-			"postgres://%s:%s@localhost:%s/%s",
+			"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
 			dbUser,
 			dbPassword,
 			dbPort,

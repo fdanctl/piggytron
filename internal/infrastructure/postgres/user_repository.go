@@ -49,11 +49,11 @@ func (r *UserRepository) FindById(ctx context.Context, id user.ID) (*user.User, 
 	)
 
 	err := row.Scan(
-		id,
-		name,
-		passwordHash,
-		createdAt,
-		updatedAt,
+		&id,
+		&name,
+		&passwordHash,
+		&createdAt,
+		&updatedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (r *UserRepository) FindByName(ctx context.Context, name string) (*user.Use
 		ctx,
 		`SELECT id, name, password_hash, created_at, updated_at
 		 FROM users
-		 WHERE id = $1`,
+		 WHERE name = $1`,
 		name,
 	)
 
@@ -80,11 +80,11 @@ func (r *UserRepository) FindByName(ctx context.Context, name string) (*user.Use
 	)
 
 	err := row.Scan(
-		id,
-		name,
-		passwordHash,
-		createdAt,
-		updatedAt,
+		&id,
+		&name,
+		&passwordHash,
+		&createdAt,
+		&updatedAt,
 	)
 	if err != nil {
 		return nil, err

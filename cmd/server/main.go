@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/config"
+	"github.com/fdanctl/piggytron/internal/application/user"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 
-	// "github.com/fdanctl/piggytron/internal/infrastructure/postgres"
+	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	templates "github.com/fdanctl/piggytron/web/templates/layout"
 	_ "github.com/lib/pq"
 )
@@ -21,9 +22,9 @@ func main() {
 	db, err := sql.Open("postgres", cfg.DBURL)
 	defer db.Close()
 
-	// userRepo := postgres.NewUserRepository(db)
-	// userService := user.NewService(userRepo)
-	// userHandler := http.NewUserHandler(userService)
+	userRepo := postgres.NewUserRepository(db)
+	userService := user.NewService(userRepo)
+	userHandler := handlers.NewUserHandler(userService)
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
@@ -43,14 +44,7 @@ func main() {
 	})
 
 	partialsMux := http.NewServeMux() // returns HTMX fragment
-	partialsMux.HandleFunc(
-		"/partials/example",
-		middleware.RequireHTMX(handlers.ExampleHandler),
-	)
-	partialsMux.HandleFunc(
-		"/partials/example2",
-		middleware.RequireHTMX(handlers.ExampleHandler2),
-	)
+	partialsMux.Handle("/partials/auth/{action}", userHandler)
 
 	fmt.Println(time.Now())
 	fmt.Println("Server running at http://localhost:" + cfg.ServerPort)
@@ -73,7 +67,10 @@ func main() {
 
 	rootMux := http.NewServeMux()
 	rootMux.Handle("/", webMux)
-	rootMux.Handle("/partials/", partialsMux)
+	rootMux.Handle(
+		"/partials/",
+		middleware.RequireHTMX(partialsMux),
+	)
 
-	http.ListenAndServe(":"+cfg.ServerPort, rootMux)
+	http.ListenAndServe(":"+cfg.ServerPort, middleware.LoggingMiddleware(rootMux))
 }

@@ -1,7 +1,7 @@
 document.addEventListener(
   "blur",
   (e) => {
-    if (e.target.matches(".input")) {
+    if (e.target?.matches(".input")) {
       e.target.classList.toggle("error", !e.target.validity.valid);
       const parent = e.target.parentElement.parentElement;
       if (parent.classList.contains("input-group")) {

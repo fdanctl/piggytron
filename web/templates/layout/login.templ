@@ -1,0 +1,56 @@
+package templates
+
+import "github.com/fdanctl/piggytron/web/views"
+import "github.com/fdanctl/piggytron/web/templates/partials"
+
+templ LoginLayout() {
+	<style>
+		main {
+			padding: var(--spacing-md);
+			height: 100vh;
+		}
+
+		#content {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+		}
+
+		#content > form {
+			display: flex;
+			flex-direction: column;
+		}
+
+		#content > form > h1 {
+			text-align: center;
+		}
+
+		#content > form > .btn {
+			align-self: flex-end;
+		}
+
+		#image {
+			display: none;
+			background-color: var(--color-bg-secondary);
+			height: 100%;
+			border-radius: var(--radius-md);
+		}
+
+		@media (min-width: 768px) {
+			main {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+			}
+			#image {
+				display: block;
+			}
+		}
+	</style>
+	<main>
+		<section id="content">
+			@partials.LoginForm(*views.NewLoginView())
+		</section>
+		<section id="image"></section>
+	</main>
+}

@@ -1,54 +1,36 @@
 package templates
 
-import "github.com/fdanctl/piggytron/web/templates/components"
-
 templ Base(title string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta
+				name="htmx-config"
+				content='{
+                "responseHandling":[
+                    {"code":"204", "swap": false},
+                    {"code":"[23]..", "swap": true},
+                    {"code":"422", "swap": true},
+                    {"code":"[45]..", "swap": false, "error":true},
+                    {"code":"...", "swap": true}
+                ]
+            }'
+			/>
 			<title>{ title }</title>
 			<!-- CSS order matters -->
 			<link href="/static/css/base.css" rel="stylesheet"/>
 			<link href="/static/css/components/buttons.css" rel="stylesheet"/>
 			<link href="/static/css/components/inputs.css" rel="stylesheet"/>
+			<link href="/static/css/components/loader.css" rel="stylesheet"/>
 			<link href="/static/css/utilities.css" rel="stylesheet"/>
 			<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
 			<script src="/static/js/input.js" defer></script>
+			<script src="/static/js/theme.js"></script>
 		</head>
 		<body>
-			<main>
-				<h1 id="target">Hello world</h1>
-				@components.Button("htmx example", "", components.BtnPrimary, components.BtnSmall, templ.Attributes{
-					"hx-get":  "/partials/example",
-					"hx-swap": "outerHTML",
-				})
-				@components.Button("ex2", "", components.BtnOutline, components.BtnMedium, templ.Attributes{
-					"hx-get":    "/partials/example2",
-					"hx-target": "#target",
-				})
-				@components.Button("hello", "", components.BtnSecondary, components.BtnLarge, nil)
-				@components.Button("hello", "", components.BtnGhost, components.BtnMedium, nil)
-				@components.Button("hello", "", components.BtnDestructive, components.BtnMedium, nil)
-				@components.SearchBar("", nil)
-				<form>
-					@components.InputGroup("", "name", "", false, templ.Attributes{
-						"id":          "name",
-						"type":        "text",
-						"name":        "name",
-						"placeholder": "name",
-						"required":    true,
-					})
-					@components.InputGroup("", "password", "this is a message", true, templ.Attributes{
-						"id":          "password",
-						"type":        "password",
-						"name":        "password",
-						"placeholder": "password",
-						"required":    true,
-					})
-				</form>
-			</main>
+			@LoginLayout()
 		</body>
 	</html>
 }
