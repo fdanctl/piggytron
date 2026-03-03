@@ -11,7 +11,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 				@CircleXSvg(16, "")
 			</i>
 			if t, ok := attrs["type"]; ok && t == "password" {
-				<div class="pwdToggle">
+				<div tabindex="0" onclick="" class="pwdToggle">
 					<i>
 						@EyeSvg(20, "")
 					</i>

@@ -5,7 +5,7 @@ type LoginView struct {
 
 	Name     string
 	Password string
-	Error    string
+	ErrorMsg string
 }
 
 func NewLoginView() *LoginView {
@@ -25,21 +25,21 @@ func (v *LoginView) ValidateName() (msgs []string) {
 }
 
 func (v *LoginView) NameHasError() bool {
-	return len(v.ValidateName()) > 0 || v.Error != ""
+	return len(v.ValidateName()) > 0 || v.ErrorMsg != ""
 }
 
 func (v *LoginView) ValidatePassword() (msgs []string) {
 	if v.Initial {
 		return
 	}
-	if v.Name == "" {
+	if v.Password == "" {
 		msgs = append(msgs, "Password is required")
 	}
 	return msgs
 }
 
 func (v *LoginView) PasswordHasError() bool {
-	return len(v.ValidatePassword()) > 0 || v.Error != ""
+	return len(v.ValidatePassword()) > 0 || v.ErrorMsg != ""
 }
 
 func (v *LoginView) Validate() (msgs []string) {

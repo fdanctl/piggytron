@@ -126,6 +126,10 @@
   text-overflow: clip;
 }
 
+.text-center {
+  text-align: center;
+}
+
 /* Text colors */
 .text-primary {
   color: var(--color-primary);
@@ -308,6 +312,10 @@
 
 .w-fit {
   width: fit-content;
+}
+
+.w-full {
+  width: 100%;
 }
 
 .rounded {

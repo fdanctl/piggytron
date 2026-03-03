@@ -6,9 +6,26 @@ import (
 	"os"
 )
 
+const (
+	time    uint32 = 1
+	memory  uint32 = 64 * 1024
+	threads uint8  = 4
+	keyLen  uint32 = 32
+	saltLen uint32 = 16
+)
+
+type hashConfig struct {
+	Time    uint32
+	Memory  uint32
+	Threads uint8
+	KeyLen  uint32
+	SaltLen uint32
+}
+
 type config struct {
 	ServerPort string
 	DBURL      string
+	HashConfig hashConfig
 }
 
 func LoadConfig() (*config, error) {
@@ -37,5 +54,12 @@ func LoadConfig() (*config, error) {
 			dbPort,
 			dbName,
 		),
+		HashConfig: hashConfig{
+			Time:    time,
+			Memory:  memory,
+			Threads: threads,
+			KeyLen:  keyLen,
+			SaltLen: saltLen,
+		},
 	}, nil
 }

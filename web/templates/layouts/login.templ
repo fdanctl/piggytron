@@ -1,9 +1,6 @@
-package templates
+package layouts
 
-import "github.com/fdanctl/piggytron/web/views"
-import "github.com/fdanctl/piggytron/web/templates/partials"
-
-templ LoginLayout() {
+templ LoginLayout(childs ...templ.Component) {
 	<style>
 		main {
 			padding: var(--spacing-md);
@@ -15,6 +12,7 @@ templ LoginLayout() {
 			justify-content: center;
 			align-items: center;
 			height: 100%;
+			flex-direction: column;
 		}
 
 		#content > form {
@@ -37,6 +35,16 @@ templ LoginLayout() {
 			border-radius: var(--radius-md);
 		}
 
+		a {
+			color: var(--color-link);
+			cursor: pointer;
+		}
+
+		a:hover {
+			color: var(--color-link-hover);
+			text-decoration: underline;
+		}
+
 		@media (min-width: 768px) {
 			main {
 				display: grid;
@@ -49,7 +57,7 @@ templ LoginLayout() {
 	</style>
 	<main>
 		<section id="content">
-			@partials.LoginForm(*views.NewLoginView())
+			@templ.Join(childs...)
 		</section>
 		<section id="image"></section>
 	</main>

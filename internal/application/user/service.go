@@ -8,19 +8,31 @@ import (
 	"github.com/google/uuid"
 )
 
-var ErrWrongPassword = errors.New("password not match")
+var (
+	ErrWrongPassword = errors.New("password not match")
+	ErrUserExists    = errors.New("user already taken")
+)
 
 type Service struct {
-	repo user.Repository
+	repo   user.Repository
+	hasher *PasswordHasher
 }
 
-func NewService(repo user.Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo user.Repository, hasher *PasswordHasher) *Service {
+	return &Service{repo: repo, hasher: hasher}
 }
 
 func (s *Service) CreateUser(ctx context.Context, name, password string) error {
-	// TODO hash password
-	u, err := user.New(user.ID(uuid.New().String()), name, password)
+	hash, err := s.hasher.Hash(password)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.repo.FindByName(ctx, name)
+	if err == nil {
+		return ErrUserExists
+	}
+	u, err := user.New(user.ID(uuid.New().String()), name, hash)
 	if err != nil {
 		return err
 	}
@@ -34,7 +46,11 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) error {
 		return err
 	}
 
-	if u.PasswordHash() != password {
+	match, err := s.hasher.Verify(u.PasswordHash(), password)
+	if err != nil {
+		return err
+	}
+	if !match {
 		return ErrWrongPassword
 	}
 

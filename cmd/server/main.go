@@ -9,11 +9,13 @@ import (
 
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
-
-	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
-	templates "github.com/fdanctl/piggytron/web/templates/layout"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views"
 	_ "github.com/lib/pq"
 )
 
@@ -22,8 +24,15 @@ func main() {
 	db, err := sql.Open("postgres", cfg.DBURL)
 	defer db.Close()
 
+	hasher := user.NewPasswordHasher(
+		cfg.HashConfig.Time,
+		cfg.HashConfig.Memory,
+		cfg.HashConfig.Threads,
+		cfg.HashConfig.KeyLen,
+		cfg.HashConfig.SaltLen,
+	)
 	userRepo := postgres.NewUserRepository(db)
-	userService := user.NewService(userRepo)
+	userService := user.NewService(userRepo, hasher)
 	userHandler := handlers.NewUserHandler(userService)
 
 	webMux := http.NewServeMux() // returns full HTML page
@@ -40,7 +49,32 @@ func main() {
 			return
 		}
 
-		templates.Base("title").Render(r.Context(), w)
+		layouts.Base(
+			"title",
+			components.EyeSvg(80, ""),
+			components.CircleXSvg(80, ""),
+		).Render(r.Context(), w)
+	})
+
+	webMux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		form := partials.LoginForm(*views.NewLoginView())
+		if r.Header.Get("Hx-Request") == "true" {
+			form.Render(r.Context(), w)
+			return
+		}
+		layout := layouts.LoginLayout(form)
+		layouts.LoginLayout()
+		layouts.Base("login", layout).Render(r.Context(), w)
+	})
+	webMux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		form := partials.SignupForm(*views.NewSignupView())
+		if r.Header.Get("Hx-Request") == "true" {
+			form.Render(r.Context(), w)
+			return
+		}
+		layout := layouts.LoginLayout(form)
+		layouts.LoginLayout()
+		layouts.Base("login", layout).Render(r.Context(), w)
 	})
 
 	partialsMux := http.NewServeMux() // returns HTMX fragment

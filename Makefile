@@ -43,4 +43,4 @@ clean-dev:
 ## clean: clean up the build binaries
 clean: confirm clean-dev
 	@echo "Cleaning up..."
-	@rm web/templates/**/*_templ.go
+	@rm -f web/templates/**/*_templ.go

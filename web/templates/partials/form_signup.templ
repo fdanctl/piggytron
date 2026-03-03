@@ -1,0 +1,84 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ SignupForm(lv views.SignupView) {
+	<form
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/auth/signup"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<h1 class="mb-lg">Signup</h1>
+		if lv.ErrorMsg != "" {
+			<p>{ lv.ErrorMsg }</p>
+		}
+		<div class="space-y-md mb-lg">
+			@components.InputGroup(
+				"",
+				"Name",
+				views.StringArrToStr(lv.ValidateName()),
+				lv.NameHasError(),
+				templ.Attributes{
+					"id":          "name",
+					"type":        "text",
+					"name":        "name",
+					"placeholder": "Name",
+					"value":       lv.Name,
+					"required":    true,
+				},
+			)
+			@components.InputGroup(
+				"",
+				"Password",
+				"",
+				lv.PasswordHasError(),
+				templ.Attributes{
+					"id":          "password",
+					"type":        "password",
+					"name":        "password",
+					"placeholder": "Password",
+					"value":       lv.Password,
+					"required":    true,
+				},
+			)
+			@components.InputGroup(
+				"",
+				"Confirm Password",
+				views.StringArrToStr(lv.ValidatePassword()),
+				lv.PasswordHasError(),
+				templ.Attributes{
+					"id":          "password-confirm",
+					"type":        "password",
+					"name":        "password-confirm",
+					"placeholder": "Confirm password",
+					"value":       lv.PasswordConfirm,
+					"required":    true,
+				},
+			)
+		</div>
+		@components.Button(
+			"Enter",
+			"w-full mb-xs",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"type": "submit",
+			},
+		)
+		<p class="text-sm text-center">
+			Already have an account?
+			<a
+				hx-get="/login"
+				hx-push-url="true"
+				hx-swap="outerHTML"
+				hx-target="closest form"
+			>
+				Login
+			</a>
+		</p>
+	</form>
+}

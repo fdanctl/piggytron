@@ -1,0 +1,70 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ LoginForm(lv views.LoginView) {
+	<form
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/auth/login"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<h1 class="mb-lg">Login</h1>
+		if lv.ErrorMsg != "" {
+			<p>{ lv.ErrorMsg }</p>
+		}
+		<div class="space-y-md mb-lg">
+			@components.InputGroup(
+				"",
+				"Name",
+				views.StringArrToStr(lv.ValidateName()),
+				lv.NameHasError(),
+				templ.Attributes{
+					"id":          "name",
+					"type":        "text",
+					"name":        "name",
+					"placeholder": "Name",
+					"value":       lv.Name,
+					"required":    true,
+				},
+			)
+			@components.InputGroup(
+				"",
+				"Password",
+				views.StringArrToStr(lv.ValidatePassword()),
+				lv.PasswordHasError(),
+				templ.Attributes{
+					"id":          "password",
+					"type":        "password",
+					"name":        "password",
+					"placeholder": "Password",
+					"value":       lv.Password,
+					"required":    true,
+				},
+			)
+		</div>
+		@components.Button(
+			"Enter",
+			"w-full mb-xs",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"type": "submit",
+			},
+		)
+		<p class="text-sm text-center">
+			Don't have an account?
+			<a
+				hx-get="/signup"
+				hx-push-url="true"
+				hx-swap="outerHTML"
+				hx-target="closest form"
+			>
+				Signup
+			</a>
+		</p>
+	</form>
+}

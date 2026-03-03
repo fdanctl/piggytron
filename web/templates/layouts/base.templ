@@ -1,6 +1,6 @@
-package templates
+package layouts
 
-templ Base(title string) {
+templ Base(title string, childs ...templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -30,7 +30,7 @@ templ Base(title string) {
 			<script src="/static/js/theme.js"></script>
 		</head>
 		<body>
-			@LoginLayout()
+			@templ.Join(childs...)
 		</body>
 	</html>
 }
