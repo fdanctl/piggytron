@@ -12,7 +12,7 @@ templ LoginForm(lv views.LoginView) {
 		hx-swap="outerHTML"
 		novalidate
 	>
-		<h1 class="mb-lg">Login</h1>
+		<h2 class="mb-lg text-center">Login</h2>
 		if lv.ErrorMsg != "" {
 			<p>{ lv.ErrorMsg }</p>
 		}

@@ -3,24 +3,45 @@ package layouts
 templ LoginLayout(childs ...templ.Component) {
 	<style>
 		main {
-			padding: var(--spacing-md);
+			padding: var(--spacing-sm);
+			padding-left: 0;
 			height: 100vh;
+			overflow: hidden;
+		}
+
+		header {
+			display: flex;
+			padding-left: var(--spacing-xs);
+			align-items: center;
+			gap: 0.2rem;
+		}
+
+		h1 {
+			font-size: 1.25rem;
 		}
 
 		#content {
-			display: flex;
-			justify-content: center;
-			align-items: center;
 			height: 100%;
-			flex-direction: column;
+			display: grid;
+			grid-template-rows: auto 1fr;
 		}
 
-		#content > form {
+		#content > div {
+			display: flex;
+			align-items: center;
+			padding: 0 var(--spacing-lg);
+			justify-content: center;
+		}
+
+		#content form {
+			margin-top: -30px;
 			display: flex;
 			flex-direction: column;
+			width: 100%;
+			max-width: 25rem;
 		}
 
-		#content > form > h1 {
+		#content > form > h2 {
 			text-align: center;
 		}
 
@@ -29,10 +50,12 @@ templ LoginLayout(childs ...templ.Component) {
 		}
 
 		#image {
-			display: none;
+			visibility: hidden;
 			background-color: var(--color-bg-secondary);
 			height: 100%;
 			border-radius: var(--radius-md);
+			position: relative;
+			overflow: hidden;
 		}
 
 		a {
@@ -45,20 +68,101 @@ templ LoginLayout(childs ...templ.Component) {
 			text-decoration: underline;
 		}
 
+		.img-container {
+			object-fit: contain;
+			position: absolute;
+		}
+
 		@media (min-width: 768px) {
 			main {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
 			}
+
 			#image {
 				display: block;
+				visibility: visible;
 			}
 		}
 	</style>
 	<main>
 		<section id="content">
-			@templ.Join(childs...)
+			<header>
+				<img src="/static/assets/logos/logoAsset2.svg" width="30px"/>
+				<h1>Piggytron</h1>
+			</header>
+			<div>
+				@templ.Join(childs...)
+			</div>
 		</section>
-		<section id="image"></section>
+		<section id="image">
+			<div class="img-container">
+				<img src="/static/assets/logos/logoAsset1.svg"/>
+			</div>
+		</section>
+		<script>
+			const div = document.getElementById("image");
+			const rect = div.getBoundingClientRect();
+
+			const width = rect.width;
+			const height = rect.height;
+
+			const img = div.querySelector(".img-container");
+			const fresh = img.cloneNode(true);
+
+			const furu = (ele) => {
+				// time ms
+				const minTime = 5000;
+				const maxTime = 10000;
+				let elapsed = 0;
+				let intervalId;
+				const duration =
+					Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+
+				intervalId = setInterval(() => {
+					elapsed += 10;
+					ele.style.bottom = `${((duration - elapsed) / duration) * 100}%`;
+
+					if (elapsed >= duration + 5000) {
+						clearInterval(intervalId);
+						ele.remove();
+					}
+				}, 10);
+			};
+
+			const newCoin = (ms, recursive) => {
+				setTimeout(() => {
+					const nc = fresh.cloneNode(true);
+
+					// size
+					const minW = 5;
+					const maxW = 15;
+					const factorW =
+						(Math.floor(Math.random() * (maxW - minW + 1)) + minW) / 100;
+					const size = ((width * factorW) / width) * 100;
+					nc.style.width = `${size}%`;
+
+					// x
+					const minX = 0;
+					const maxX = 100 - size;
+					const factorX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+					const x = (width * factorX) / width;
+
+					nc.style.left = `${x}%`;
+					nc.style.transform = "translateY(-100%)";
+					furu(nc);
+					div.appendChild(nc);
+					if (recursive) {
+						newCoin(700, true);
+					}
+				}, ms);
+			};
+			newCoin(0);
+			newCoin(100);
+			newCoin(200);
+			newCoin(300);
+			newCoin(400);
+			newCoin(0, true);
+		</script>
 	</main>
 }
