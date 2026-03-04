@@ -1,5 +1,7 @@
 package layouts
 
+import "github.com/fdanctl/piggytron/web/templates/components"
+
 templ LoginLayout(childs ...templ.Component) {
 	<style>
 		main {
@@ -73,6 +75,10 @@ templ LoginLayout(childs ...templ.Component) {
 			position: absolute;
 		}
 
+		.img-container svg {
+			filter: drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.7));
+		}
+
 		@media (min-width: 768px) {
 			main {
 				display: grid;
@@ -97,7 +103,7 @@ templ LoginLayout(childs ...templ.Component) {
 		</section>
 		<section id="image">
 			<div class="img-container">
-				<img src="/static/assets/logos/logoAsset1.svg"/>
+				@components.Asset1()
 			</div>
 		</section>
 		<script>
