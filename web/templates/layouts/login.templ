@@ -2,7 +2,7 @@ package layouts
 
 import "github.com/fdanctl/piggytron/web/templates/components"
 
-templ LoginLayout(childs ...templ.Component) {
+templ LogLayout(childs ...templ.Component) {
 	<style>
 		main {
 			padding: var(--spacing-sm);
@@ -58,6 +58,7 @@ templ LoginLayout(childs ...templ.Component) {
 			border-radius: var(--radius-md);
 			position: relative;
 			overflow: hidden;
+			cursor: crosshair;
 		}
 
 		a {
@@ -133,6 +134,12 @@ templ LoginLayout(childs ...templ.Component) {
 						clearInterval(intervalId);
 						ele.remove();
 					}
+
+					ele.onclick = () => {
+						clearInterval(intervalId);
+						ele.remove();
+						newCoin(0);
+					};
 				}, 10);
 			};
 

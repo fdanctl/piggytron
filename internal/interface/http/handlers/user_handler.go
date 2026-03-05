@@ -4,14 +4,17 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"time"
 
 	userapp "github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 type UserHandler struct {
-	service *userapp.Service
+	service      *userapp.Service
+	sessionStore *redis.SessionStore
 }
 
 func NewUserHandler(s *userapp.Service) *UserHandler {
@@ -50,6 +53,14 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 
 	case "logout":
+		switch r.Method {
+
+		case http.MethodGet:
+			h.LogoutGet(w, r)
+
+		default:
+			http.NotFound(w, r)
+		}
 
 	default:
 		http.NotFound(w, r)
@@ -60,8 +71,10 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	pwd := r.FormValue("password")
+	redirect := r.FormValue("redirect")
 	view := views.LoginView{
 		Initial:  false,
+		Redirect: redirect,
 		Name:     name,
 		Password: pwd,
 	}
@@ -74,7 +87,7 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.LoginUser(r.Context(), name, pwd)
+	sid, err := h.service.LoginUser(r.Context(), name, pwd)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, userapp.ErrWrongPassword) {
 			view.ErrorMsg = "Name or password are invalid"
@@ -86,9 +99,21 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO set cookies
-	w.Header().Set("HX-Redirect", "/app")
-	w.WriteHeader(http.StatusNoContent)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sid,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(time.Hour * 24),
+	})
+
+	if redirect == "" || redirect[0] != '/' {
+		redirect = "/"
+	}
+	w.Header().Set("HX-Redirect", redirect)
+	w.WriteHeader(http.StatusSeeOther)
 }
 
 func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
@@ -110,7 +135,7 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.CreateUser(r.Context(), name, pwd)
+	sid, err := h.service.CreateUser(r.Context(), name, pwd)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, userapp.ErrUserExists) {
@@ -121,7 +146,32 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO set cookies
-	w.Header().Set("HX-Redirect", "/app")
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sid,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(time.Hour * 24),
+	})
+	w.Header().Set("HX-Redirect", "/")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
+	err := h.service.LogoutUser(r.Context())
+	if err != nil {
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:    "session_id",
+		Value:   "",
+		Path:    "/",
+		Expires: time.Now(),
+	})
+	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusNoContent)
 }

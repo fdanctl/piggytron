@@ -25,6 +25,7 @@ type hashConfig struct {
 type config struct {
 	ServerPort string
 	DBURL      string
+	RedisAddr  string
 	HashConfig hashConfig
 }
 
@@ -45,6 +46,11 @@ func LoadConfig() (*config, error) {
 		return nil, errors.New("failed to get env")
 	}
 
+	redisPort := os.Getenv("REDIS_PORT")
+	if redisPort == "" {
+		return nil, errors.New("failed to get REDIS_PORT env")
+	}
+
 	return &config{
 		ServerPort: serverPort,
 		DBURL: fmt.Sprintf(
@@ -54,6 +60,7 @@ func LoadConfig() (*config, error) {
 			dbPort,
 			dbName,
 		),
+		RedisAddr: fmt.Sprint("localhost:", redisPort),
 		HashConfig: hashConfig{
 			Time:    time,
 			Memory:  memory,

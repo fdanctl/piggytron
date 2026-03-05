@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"time"
@@ -10,19 +12,39 @@ import (
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/user"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
+	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/layouts"
-	"github.com/fdanctl/piggytron/web/templates/partials"
-	"github.com/fdanctl/piggytron/web/views"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
 	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatalln("load config failed: ", err.Error())
+		return
+	}
+
 	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		log.Fatalln("failed to open db", err.Error())
+		return
+	}
 	defer db.Close()
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     cfg.RedisAddr,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	_, err = client.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalln("failed to connect to redis", err.Error())
+		return
+	}
+	defer client.Close()
 
 	hasher := user.NewPasswordHasher(
 		cfg.HashConfig.Time,
@@ -31,8 +53,9 @@ func main() {
 		cfg.HashConfig.KeyLen,
 		cfg.HashConfig.SaltLen,
 	)
+	sessionStore := rdb.NewSessionStore(client)
 	userRepo := postgres.NewUserRepository(db)
-	userService := user.NewService(userRepo, hasher)
+	userService := user.NewService(userRepo, hasher, sessionStore)
 	userHandler := handlers.NewUserHandler(userService)
 
 	webMux := http.NewServeMux() // returns full HTML page
@@ -43,39 +66,15 @@ func main() {
 			http.FileServer(http.Dir("web/static")),
 		),
 	)
-	webMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
-			http.NotFound(w, r)
-			return
-		}
 
-		layouts.Base(
-			"title",
-			components.EyeSvg(80, ""),
-			components.CircleXSvg(80, ""),
-		).Render(r.Context(), w)
-	})
+	hh := handlers.HomeHandler{}
+	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
 
-	webMux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		form := partials.LoginForm(*views.NewLoginView())
-		if r.Header.Get("Hx-Request") == "true" {
-			form.Render(r.Context(), w)
-			return
-		}
-		layout := layouts.LoginLayout(form)
-		layouts.LoginLayout()
-		layouts.Base("login", layout).Render(r.Context(), w)
-	})
-	webMux.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		form := partials.SignupForm(*views.NewSignupView())
-		if r.Header.Get("Hx-Request") == "true" {
-			form.Render(r.Context(), w)
-			return
-		}
-		layout := layouts.LoginLayout(form)
-		layouts.LoginLayout()
-		layouts.Base("login", layout).Render(r.Context(), w)
-	})
+	lh := handlers.LoginHandler{}
+	webMux.Handle("/login", middleware.AuthenticatedRedirect(&lh))
+
+	sh := handlers.SignupHandler{}
+	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
 
 	partialsMux := http.NewServeMux() // returns HTMX fragment
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
@@ -100,10 +99,14 @@ func main() {
 	}
 
 	rootMux := http.NewServeMux()
-	rootMux.Handle("/", webMux)
+	rootMux.Handle("/", middleware.AuthMiddleware(sessionStore)(webMux))
 	rootMux.Handle(
 		"/partials/",
-		middleware.RequireHTMX(partialsMux),
+		middleware.Chain(
+			partialsMux,
+			middleware.RequireHTMX,
+			middleware.AuthMiddleware(sessionStore),
+		),
 	)
 
 	http.ListenAndServe(":"+cfg.ServerPort, middleware.LoggingMiddleware(rootMux))

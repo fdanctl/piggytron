@@ -24,6 +24,7 @@ dev: clean-dev
 	 -e POSTGRES_DB=$(DB_NAME) \
 	 -v ./scripts:/docker-entrypoint-initdb.d \
 	 postgres:16-alpine && \
+	docker run -d --name redis -p ${REDIS_PORT}:6379 redis:latest && \
 	make templ-watch
 
 ## templ-watch: watch for templ files
@@ -39,6 +40,9 @@ clean-dev:
 	@echo "Stop and removing dev postgres container..."
 	@docker stop postgres 2>/dev/null || true
 	@docker rm postgres 2>/dev/null || true
+	@echo "Stop and removing dev redis container..."
+	@docker stop redis 2>/dev/null || true
+	@docker rm redis 2>/dev/null || true
 
 ## clean: clean up the build binaries
 clean: confirm clean-dev

@@ -1,16 +1,18 @@
 package views
 
 type LoginView struct {
-	Initial bool
+	Initial  bool
+	Redirect string
 
 	Name     string
 	Password string
 	ErrorMsg string
 }
 
-func NewLoginView() *LoginView {
+func NewLoginView(redirect string) *LoginView {
 	return &LoginView{
-		Initial: true,
+		Initial:  true,
+		Redirect: redirect,
 	}
 }
 

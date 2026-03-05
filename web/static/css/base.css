@@ -181,6 +181,17 @@ input[type="number"] {
     0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
+::-moz-selection {
+  /* Code for Firefox */
+  color: var(--color-text);
+  background: #94c6c6;
+}
+
+::selection {
+  color: var(--color-text);
+  background: #94c6c6;
+}
+
 [data-theme="dark"] {
   /* COLOR (layer 2) */
   --color-bg: #333333; /* Main app/page background */
@@ -231,6 +242,17 @@ input[type="number"] {
   --color-info-bg: #d6e3f6;
   --color-info-border: #3f70db;
   --color-on-info: #3f70db;
+
+  ::-moz-selection {
+    /* Code for Firefox */
+    color: var(--cian-100);
+    background: RGBA(94, 239, 239, 0.1);
+  }
+
+  ::selection {
+    color: var(--cian-100);
+    background: RGBA(94, 239, 239, 0.1);
+  }
 }
 
 html {

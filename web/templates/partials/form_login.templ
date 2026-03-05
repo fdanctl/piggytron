@@ -12,6 +12,9 @@ templ LoginForm(lv views.LoginView) {
 		hx-swap="outerHTML"
 		novalidate
 	>
+		if lv.Redirect != "" {
+			<input type="hidden" name="redirect" value={ lv.Redirect }/>
+		}
 		<h2 class="mb-lg text-center">Login</h2>
 		if lv.ErrorMsg != "" {
 			<p>{ lv.ErrorMsg }</p>
