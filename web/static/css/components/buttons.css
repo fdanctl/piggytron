@@ -35,6 +35,15 @@ button:disabled,
   cursor: not-allowed;
 }
 
+.indicator {
+  display: none;
+}
+
+.htmx-request .indicator,
+.htmx-request.indicator {
+  display: inline;
+}
+
 .btn-icon {
   padding: 0.5rem 0.5rem;
 }

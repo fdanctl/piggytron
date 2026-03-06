@@ -14,7 +14,7 @@ templ SignupForm(lv views.SignupView) {
 	>
 		<h2 class="mb-lg text-center">Signup</h2>
 		if lv.ErrorMsg != "" {
-			<p>{ lv.ErrorMsg }</p>
+			<p class="text-center" style="color: var(--color-error)">{ lv.ErrorMsg }</p>
 		}
 		<div class="space-y-md mb-lg">
 			@components.InputGroup(

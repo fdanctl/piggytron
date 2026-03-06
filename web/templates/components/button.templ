@@ -31,3 +31,22 @@ templ IconButton(icon templ.Component, class string, size btnSize, attrs templ.A
 		@icon
 	</button>
 }
+
+type btnIconPlacement uint8
+
+const (
+	IconLeft btnIconPlacement = iota
+	IconRigth
+)
+
+templ ButtonWithIcon(text, class string, variant btnVariant, size btnSize, attrs templ.Attributes, placement btnIconPlacement, icon templ.Component) {
+	<button class={ "btn", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+		if placement == IconLeft {
+			@icon
+			{ text }
+		} else {
+			{ text }
+			@icon
+		}
+	</button>
+}

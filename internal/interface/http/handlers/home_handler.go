@@ -33,8 +33,8 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	layouts.Base(
 		"title",
-		components.EyeSvg(80, ""),
-		components.CircleXSvg(80, ""),
+		components.EyeSvg(80, "", ""),
+		components.CircleXSvg(80, "", ""),
 		components.Button(
 			"logout",
 			"",

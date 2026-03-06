@@ -27,7 +27,26 @@ templ Base(title string, childs ...templ.Component) {
 			<link href="/static/css/utilities.css" rel="stylesheet"/>
 			<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
 			<script src="/static/js/input.js" defer></script>
+			<script defer>
+				// disable child buttons
+				function disableBtns(e) {
+					const btns = e.querySelectorAll(".btn");
+					for (let i = 0; i < btns.length; i++) {
+						btns[i].disabled = true;
+					}
+				}
+			</script>
 			<script src="/static/js/theme.js"></script>
+			<style>
+				.indicator {
+					display: none;
+				}
+
+				.htmx-request .indicator,
+				.htmx-request.indicator {
+					display: inline;
+				}
+			</style>
 		</head>
 		<body>
 			@templ.Join(childs...)

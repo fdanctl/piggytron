@@ -66,6 +66,9 @@ func main() {
 			http.FileServer(http.Dir("web/static")),
 		),
 	)
+	webMux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/static/assets/favicon.ico")
+	})
 
 	hh := handlers.HomeHandler{}
 	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))

@@ -10,6 +10,7 @@ templ LoginForm(lv views.LoginView) {
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/auth/login"
 		hx-swap="outerHTML"
+		hx-on::before-request="disableBtns(this)"
 		novalidate
 	>
 		if lv.Redirect != "" {
@@ -17,7 +18,7 @@ templ LoginForm(lv views.LoginView) {
 		}
 		<h2 class="mb-lg text-center">Login</h2>
 		if lv.ErrorMsg != "" {
-			<p>{ lv.ErrorMsg }</p>
+			<p class="text-center" style="color: var(--color-error)">{ lv.ErrorMsg }</p>
 		}
 		<div class="space-y-md mb-lg">
 			@components.InputGroup(
