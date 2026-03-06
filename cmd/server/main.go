@@ -82,6 +82,12 @@ func main() {
 	partialsMux := http.NewServeMux() // returns HTMX fragment
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
 
+	// TODO remove
+	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Second)
+		fmt.Fprint(w, time.Now().Format(time.TimeOnly))
+	})
+
 	fmt.Println(time.Now())
 	fmt.Println("Server running at http://localhost:" + cfg.ServerPort)
 	// Try to find local IP

@@ -2,7 +2,7 @@ package layouts
 
 import "github.com/fdanctl/piggytron/web/templates/components"
 
-templ LogLayout(childs ...templ.Component) {
+templ LogLayout() {
 	<style>
 		main {
 			padding: var(--spacing-sm);
@@ -99,7 +99,7 @@ templ LogLayout(childs ...templ.Component) {
 				<h1>Piggytron</h1>
 			</header>
 			<div>
-				@templ.Join(childs...)
+				{ children... }
 			</div>
 		</section>
 		<section id="image">
