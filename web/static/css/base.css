@@ -208,7 +208,7 @@ input[type="number"] {
   --color-link: var(--cian-100); /* Links */
   --color-link-hover: var(--cian-200);
 
-  --color-border: #3a3a3a; /* Default borders */
+  --color-border: var(--grey-400); /* Default borders */
 
   --color-primary: var(--cian-100);
   --color-primary-hover: var(--cian-200);

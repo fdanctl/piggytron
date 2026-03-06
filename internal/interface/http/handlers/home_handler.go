@@ -34,17 +34,116 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	contents := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		if err := components.EyeSvg(80, "", "").Render(ctx, w); err != nil {
+		if _, err := io.WriteString(w, "<div class=\"flex flex-wrap\">"); err != nil {
 			return err
 		}
 
-		if err := components.CircleXSvg(80, "", "").Render(ctx, w); err != nil {
+		if err := components.CircleXSvg(30, "", "").Render(ctx, w); err != nil {
 			return err
 		}
 
+		if err := components.EyeSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.EyeOffSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.SearchSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.HouseSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ChartPieSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.PiggyBankSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.LandmarkSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.NotebookSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.TagSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.FileChartColumnSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.Settings2Svg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.SunSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.MoonSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ChevronLeftSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ChevronRightSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ChevronDownSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ChevronUpSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.CalendarDaysSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.MenuSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.XSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ArrowUpRight(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.PenSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.TrashSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if _, err := io.WriteString(w, "</div>"); err != nil {
+			return err
+		}
+
+		if _, err := io.WriteString(w, "<div class=\"flex flex-col\">"); err != nil {
+			return err
+		}
 		btn := components.Button(
 			"logout",
-			"",
+			"w-fit",
 			components.BtnDestructive,
 			components.BtnMedium,
 			templ.Attributes{
@@ -56,8 +155,8 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		btn2 := components.ButtonWithIcon(
-			"corrent time",
-			"",
+			"current time",
+			"w-fit",
 			components.BtnOutline,
 			components.BtnMedium,
 			templ.Attributes{
@@ -69,10 +168,18 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if err := btn2.Render(ctx, w); err != nil {
 			return err
 		}
-		return nil
+		_, err := io.WriteString(w, "</div>")
+
+		return err
 	})
 
-	ctx := templ.WithChildren(r.Context(), contents)
+	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		ctx = templ.WithChildren(ctx, contents)
+		err := layouts.Main().Render(ctx, w)
+		return err
+	})
+
+	ctx := templ.WithChildren(r.Context(), main)
 	layouts.Base("title").Render(ctx, w)
 }
 
@@ -96,7 +203,7 @@ func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	layout := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(r.Context(), form)
+		ctx = templ.WithChildren(ctx, form)
 		err := layouts.LogLayout().Render(ctx, w)
 		return err
 	})
@@ -124,9 +231,8 @@ func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	layout := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(r.Context(), form)
+		ctx = templ.WithChildren(ctx, form)
 		err := layouts.LogLayout().Render(ctx, w)
-		ctx = templ.ClearChildren(ctx)
 		return err
 	})
 

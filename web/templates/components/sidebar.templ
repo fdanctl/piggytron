@@ -1,0 +1,397 @@
+package components
+
+templ Sidebar() {
+	<style>
+		#sidebar {
+			display: flex;
+			flex-direction: column;
+			background-color: var(--color-bg-secondary);
+			height: 100%;
+			max-height: 100vh;
+			width: fit-content;
+			position: sticky;
+			top: 0;
+			left: 0;
+			padding: var(--spacing-sm);
+			padding-right: 0;
+		}
+
+		#sidebar > div:first-child {
+			display: flex;
+			padding-left: var(--spacing-xs);
+			align-items: center;
+			gap: 0.2rem;
+			padding-right: var(--spacing-lg);
+			margin-top: var(--spacing-xs);
+			cursor: pointer;
+		}
+
+		#sidebar > div:nth-child(2) {
+			padding-right: var(--spacing-sm);
+			position: relative;
+		}
+
+		#sidebar > div:nth-child(2) > div {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			position: absolute;
+			padding: 0.125rem;
+			border-radius: 100%;
+
+			background-color: var(--color-bg);
+			border: 3px solid var(--color-bg-secondary);
+			cursor: pointer;
+
+			top: 50%;
+			right: 0;
+			transform: translate(40%, -50%);
+			z-index: 10;
+		}
+
+		#sidebar h1 {
+			font-size: 1.25rem;
+		}
+
+		#sidebar nav {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			overflow-y: scroll;
+			scrollbar-width: thin;
+
+			scrollbar-color: var(--grey-400) var(--color-bg-secondary);
+			scrollbar-color: var(--color-border) transparent;
+		}
+
+		/* change to a component */
+		#avatar {
+			width: 2rem;
+			aspect-ratio: 1/1;
+			border-radius: 100%;
+			background-color: lime;
+		}
+	</style>
+	<aside id="sidebar">
+		<div>
+			<img src="/static/assets/logos/logoAsset2.svg" width="30px"/>
+			<h1>Piggytron</h1>
+		</div>
+		<div onclick="console.log('hello')">
+			<hr/>
+			<div>
+				@ChevronLeftSvg(16, "", "")
+			</div>
+		</div>
+		<!-- ...links []links{name, href, icon} -->
+		<nav>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+			<a href="/signup">
+				teste
+			</a>
+		</nav>
+		<div>
+			<p>theme</p>
+			<div id="avatar"></div>
+		</div>
+	</aside>
+}
