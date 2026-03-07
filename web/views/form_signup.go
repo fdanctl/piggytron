@@ -67,10 +67,3 @@ func (v *SignupView) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidatePassword()...)
 	return msgs
 }
-
-func StringArrToStr(arr []string) string {
-	if len(arr) > 0 {
-		return arr[0]
-	}
-	return ""
-}

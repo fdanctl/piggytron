@@ -73,6 +73,9 @@ func main() {
 	hh := handlers.HomeHandler{}
 	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
 
+	bh := handlers.BudgetHandler{}
+	webMux.Handle("/budget", middleware.AuthProtectedRoute(&bh))
+
 	lh := handlers.LoginHandler{}
 	webMux.Handle("/login", middleware.AuthenticatedRedirect(&lh))
 

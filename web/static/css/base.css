@@ -100,7 +100,7 @@ input[type="number"] {
   /* COLOR (layer 2) */
   --color-bg: #ffffff; /* Main app/page background */
   --color-bg-secondary: #eff6f6; /* Sub-sections */
-  --color-bg-muted: #eff6f6; /* Subtle backgrounds */
+  --color-bg-muted: #c3d5d5; /* Subtle backgrounds */
   --color-surface: #eff6f6; /* Cards, panels, modals */
   --color-surface-hover: #eff6f6; /* Hovered card */
   --color-overlay: rgba(0, 0, 0, 0.5); /* Modal overlay */
@@ -196,7 +196,7 @@ input[type="number"] {
   /* COLOR (layer 2) */
   --color-bg: #333333; /* Main app/page background */
   --color-bg-secondary: #353838; /* Sub-sections */
-  --color-bg-muted: #353838; /* Subtle backgrounds */
+  --color-bg-muted: #495757; /* Subtle backgrounds */
   --color-surface: #353838; /* Cards, panels, modals */
   --color-surface-hover: #353838; /* Hovered card */
   --color-overlay: rgba(255, 255, 255, 0.5); /* Modal overlay */

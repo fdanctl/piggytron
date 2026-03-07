@@ -1,6 +1,29 @@
 package components
 
+type navLinks struct {
+	name string
+	href string
+	icon templ.Component
+}
+
 templ Sidebar() {
+	{{
+		var nl = [][]navLinks{
+			{
+				{"Dashboard", "/", HouseSvg(0, "", "")},
+				{"Budget", "/budget", ChartPieSvg(0, "", "")},
+			},
+			{
+				{"Goals", "/goals", PiggyBankSvg(0, "", "")},
+				{"Banks", "/banks", LandmarkSvg(0, "", "")},
+				{"Transactions", "/transactions", NotebookSvg(0, "", "")},
+			},
+			{
+				{"Categories", "/categories", TagSvg(0, "", "")},
+				{"Reports", "/reports", FileChartColumnSvg(0, "", "")},
+			},
+		}
+	}}
 	<style>
 		#sidebar {
 			display: flex;
@@ -8,22 +31,35 @@ templ Sidebar() {
 			background-color: var(--color-bg-secondary);
 			height: 100%;
 			max-height: 100vh;
-			width: fit-content;
+			width: 10rem;
 			position: sticky;
 			top: 0;
 			left: 0;
 			padding: var(--spacing-sm);
-			padding-right: 0;
+            transition: width 200ms linear;
+		}
+
+		#sidebar.colapsed {
+			width: calc(32px + var(--spacing-sm) * 2);
+		}
+
+		#sidebar.colapsed h1,
+		#sidebar.colapsed p {
+			display: none;
 		}
 
 		#sidebar > div:first-child {
-			display: flex;
-			padding-left: var(--spacing-xs);
+			display: grid;
+			grid-template-columns: 32px 1fr;
+			padding-top: 0 var(--spacing-sm);
 			align-items: center;
 			gap: 0.2rem;
-			padding-right: var(--spacing-lg);
 			margin-top: var(--spacing-xs);
-			cursor: pointer;
+			cursor: default;
+		}
+
+		#sidebar.colapsed > div:first-child {
+			gap: 0;
 		}
 
 		#sidebar > div:nth-child(2) {
@@ -45,8 +81,12 @@ templ Sidebar() {
 
 			top: 50%;
 			right: 0;
-			transform: translate(40%, -50%);
+			transform: translate(calc(50% + var(--spacing-sm)), -50%);
 			z-index: 10;
+		}
+
+		#sidebar.colapsed > div:nth-child(2) > div {
+			transform: translate(calc(50% + var(--spacing-sm)), -50%) rotate(180deg);
 		}
 
 		#sidebar h1 {
@@ -58,340 +98,154 @@ templ Sidebar() {
 			flex-direction: column;
 			height: 100%;
 			overflow-y: scroll;
-			scrollbar-width: thin;
-
-			scrollbar-color: var(--grey-400) var(--color-bg-secondary);
-			scrollbar-color: var(--color-border) transparent;
+			scrollbar-width: none;
+			gap: var(--spacing-xs);
 		}
 
-		/* change to a component */
+		#sidebar nav a {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			align-items: center;
+			padding: var(--spacing-xs);
+			border-radius: var(--radius-sm);
+			gap: 0.3rem;
+			cursor: pointer;
+			color: var(--color-text-secondary);
+		}
+
+		#sidebar nav a p {
+			line-height: 0;
+		}
+
+		#sidebar.colapsed nav a {
+			gap: 0;
+		}
+
+		#sidebar nav a.active {
+			background-color: var(--color-bg-muted);
+			color: var(--color-text);
+		}
+
+		#sidebar nav a:hover {
+			background-color: var(--color-bg-muted);
+		}
+
 		#avatar {
-			width: 2rem;
+			display: grid;
+			grid-template-columns: auto 1fr;
+			align-items: center;
+			padding: var(--spacing-xs);
+			border-radius: var(--radius-sm);
+			gap: 0.3rem;
+			cursor: pointer;
+			position: relative;
+		}
+
+		#avatar p {
+			font-weight: 500;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		#sidebar.colapsed #avatar {
+			padding: 0;
+			padding-top: var(--spacing-xs);
+			gap: 0;
+			margin-bottom: var(--spacing-xs);
+		}
+
+		#sidebar:not(.colapsed) #avatar:hover {
+			background-color: var(--color-bg-muted);
+		}
+
+		#avatar div:first-child {
+			width: 32px;
 			aspect-ratio: 1/1;
 			border-radius: 100%;
-			background-color: lime;
+			background-color: grey;
+		}
+
+		#avatar .notification {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.125rem;
+			background-color: var(--color-primary);
+			position: absolute;
+			top: 0;
+			right: 0;
+			border-radius: 100%;
+			width: 1.25rem;
+			aspect-ratio: 1 / 1;
+			line-height: 0;
+			color: var(--color-on-primary);
+			font-size: 0.75rem;
+            transform: translate(30%, -30%);
+		}
+
+		#avatar .notification p {
 		}
 	</style>
 	<aside id="sidebar">
 		<div>
-			<img src="/static/assets/logos/logoAsset2.svg" width="30px"/>
+			<img src="/static/assets/logos/logoAsset2.svg" width="32px"/>
 			<h1>Piggytron</h1>
 		</div>
-		<div onclick="console.log('hello')">
+		<div>
 			<hr/>
-			<div>
+			<div onclick="handleColapseSidebar()">
 				@ChevronLeftSvg(16, "", "")
 			</div>
 		</div>
-		<!-- ...links []links{name, href, icon} -->
-		<nav>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
-			<a href="/signup">
-				teste
-			</a>
+		<nav
+			hx-target="main"
+			hx-boost="true"
+		>
+			for i, groups := range nl {
+				for _, v := range groups {
+					<a
+						href={ v.href }
+						onclick="handleActiveLink(this)"
+					>
+						<i class="flex justify-center">
+							@v.icon
+						</i>
+						<p>{ v.name }</p>
+					</a>
+				}
+				if i < len(nl) - 1 {
+					<hr/>
+				}
+			}
 		</nav>
 		<div>
-			<p>theme</p>
-			<div id="avatar"></div>
+			<div id="avatar">
+				<div></div>
+				<p>fhewoifhwoahoi fewa username</p>
+				<div class="notification">1</div>
+			</div>
 		</div>
 	</aside>
+	<script>
+		let colapsed = localStorage.getItem("colapsed") === "true";
+		document.querySelector("#sidebar").classList.toggle("colapsed", colapsed);
+
+		const handleColapseSidebar = () => {
+			document.querySelector("#sidebar").classList.toggle("colapsed");
+			colapsed = !colapsed;
+			localStorage.setItem("colapsed", colapsed);
+		};
+
+		const path = "/" + window.location.pathname.split("/")[1];
+		const a = document.querySelectorAll("#sidebar nav a");
+		for (let i = 0; i < a.length; i++) {
+			a[i].classList.toggle("active", a[i].pathname === path);
+		}
+
+		const handleActiveLink = (ele) => {
+			a.forEach((e) => e.classList.remove("active"));
+			ele.classList.add("active");
+		};
+	</script>
 }

@@ -134,6 +134,10 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		if err := components.Spinner(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
 		if _, err := io.WriteString(w, "</div>"); err != nil {
 			return err
 		}
@@ -168,13 +172,53 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if err := btn2.Render(ctx, w); err != nil {
 			return err
 		}
+
+		if err := components.Loader().Render(ctx, w); err != nil {
+			return err
+		}
 		_, err := io.WriteString(w, "</div>")
 
 		return err
 	})
 
+	if r.Header.Get("Hx-Request") == "true" {
+		contents.Render(r.Context(), w)
+		return
+	}
+
 	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		ctx = templ.WithChildren(ctx, contents)
+		err := layouts.Main().Render(ctx, w)
+		return err
+	})
+
+	ctx := templ.WithChildren(r.Context(), main)
+	layouts.Base("title").Render(ctx, w)
+}
+
+type BudgetHandler struct{}
+
+func (h *BudgetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.Get(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
+	form := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		_, err := io.WriteString(w, "<p>in construction</p>")
+		return err
+	})
+	if r.Header.Get("Hx-Request") == "true" {
+		form.Render(r.Context(), w)
+		return
+	}
+
+	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		ctx = templ.WithChildren(ctx, form)
 		err := layouts.Main().Render(ctx, w)
 		return err
 	})
