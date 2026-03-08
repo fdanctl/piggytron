@@ -199,7 +199,7 @@ input[type="number"] {
   --color-bg-muted: #495757; /* Subtle backgrounds */
   --color-surface: #353838; /* Cards, panels, modals */
   --color-surface-hover: #353838; /* Hovered card */
-  --color-overlay: rgba(255, 255, 255, 0.5); /* Modal overlay */
+  --color-overlay: rgba(0, 0, 0, 0.5); /* Modal overlay */
 
   --color-text: #ffffff; /* Primary text */
   --color-text-secondary: var(--grey-300); /* Muted text */

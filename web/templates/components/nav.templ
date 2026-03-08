@@ -1,0 +1,103 @@
+package components
+
+type navLinks struct {
+	name string
+	href string
+	icon templ.Component
+}
+
+templ StyleNav() {
+	<style>
+		nav {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			overflow-y: scroll;
+			scrollbar-width: none;
+			gap: var(--spacing-xs);
+		}
+
+		nav a {
+			display: grid;
+			grid-template-columns: auto 1fr auto;
+			align-items: center;
+			padding: var(--spacing-xs);
+			border-radius: var(--radius-sm);
+			gap: 0.3rem;
+			cursor: pointer;
+			color: var(--color-text-secondary);
+		}
+
+		nav a p {
+			line-height: 0;
+		}
+
+		nav a.active {
+			background-color: var(--color-bg-muted);
+			color: var(--color-text);
+		}
+
+		nav a:hover {
+			background-color: var(--color-bg-muted);
+		}
+	</style>
+}
+
+templ ScriptNav() {
+	<script>
+		const path = "/" + window.location.pathname.split("/")[1];
+		const a = document.querySelectorAll("nav a");
+		a.forEach((e) => e.classList.toggle("active", e.pathname === path));
+
+		const handleActiveLink = (ele) => {
+			a.forEach((e) => e.classList.remove("active"));
+			// ele.classList.add("active");
+			a.forEach((e) =>
+				e.classList.toggle("active", e.pathname === ele.pathname),
+			);
+		};
+	</script>
+}
+
+templ Nav() {
+	{{
+		var nl = [][]navLinks{
+			{
+				{"Dashboard", "/", HouseSvg(0, "", "")},
+				{"Budget", "/budget", ChartPieSvg(0, "", "")},
+			},
+			{
+				{"Goals", "/goals", PiggyBankSvg(0, "", "")},
+				{"Banks", "/banks", LandmarkSvg(0, "", "")},
+				{"Transactions", "/transactions", NotebookSvg(0, "", "")},
+			},
+			{
+				{"Categories", "/categories", TagSvg(0, "", "")},
+				{"Reports", "/reports", FileChartColumnSvg(0, "", "")},
+			},
+		}
+	}}
+	<nav
+		hx-target="main"
+		hx-boost="true"
+	>
+		for i, groups := range nl {
+			for _, v := range groups {
+				<a
+					href={ v.href }
+					onclick="handleActiveLink(this)"
+				>
+					<i class="flex justify-center">
+						@v.icon
+					</i>
+					<p>{ v.name }</p>
+					<!-- TODO only chevron if it has sublinks -->
+					@ChevronLeftSvg(16, "", "")
+				</a>
+			}
+			if i < len(nl) - 1 {
+				<hr/>
+			}
+		}
+	</nav>
+}

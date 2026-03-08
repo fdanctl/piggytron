@@ -1,5 +1,7 @@
 package layouts
 
+import "github.com/fdanctl/piggytron/web/templates/components"
+
 templ Base(title string) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -38,6 +40,25 @@ templ Base(title string) {
 			</script>
 			<script src="/static/js/theme.js"></script>
 			<style>
+				.overlay {
+					position: fixed;
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+					background-color: var(--color-overlay);
+					z-index: 40;
+
+					display: flex;
+					align-items: end;
+
+					overflow-x: hidden;
+					overflow-y: hidden;
+					width: 100%;
+					height: 100%;
+					position: absolute;
+				}
+
 				.indicator {
 					display: none;
 				}
@@ -47,6 +68,7 @@ templ Base(title string) {
 					display: inline;
 				}
 			</style>
+			@components.StyleLogo()
 		</head>
 		<body>
 			{ children... }
