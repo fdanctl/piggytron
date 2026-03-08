@@ -32,6 +32,9 @@ func (v *SignupView) ValidateName() (msgs []string) {
 	if errors.Is(v.CustomError, user.ErrUserExists) {
 		msgs = append(msgs, v.CustomError.Error())
 	}
+	if len(v.Name) > 50 {
+		msgs = append(msgs, "Max length is 50 character")
+	}
 	return msgs
 }
 

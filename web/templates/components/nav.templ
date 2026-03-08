@@ -51,7 +51,6 @@ templ ScriptNav() {
 
 		const handleActiveLink = (ele) => {
 			a.forEach((e) => e.classList.remove("active"));
-			// ele.classList.add("active");
 			a.forEach((e) =>
 				e.classList.toggle("active", e.pathname === ele.pathname),
 			);
@@ -61,7 +60,7 @@ templ ScriptNav() {
 
 templ Nav() {
 	{{
-		var nl = [][]navLinks{
+		var nl = [3][]navLinks{
 			{
 				{"Dashboard", "/", HouseSvg(0, "", "")},
 				{"Budget", "/budget", ChartPieSvg(0, "", "")},

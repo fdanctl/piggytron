@@ -1,29 +1,18 @@
-document.addEventListener(
-  "blur",
-  (e) => {
-    if (e.target?.matches(".input")) {
-      e.target.classList.toggle("error", !e.target.validity.valid);
-      const parent = e.target.parentElement.parentElement;
-      if (parent.classList.contains("input-group")) {
-        parent.classList.toggle("error", !e.target.validity.valid);
-      }
-    }
-  },
-  true,
-);
+function handleInputOnBlur(ele) {
+  ele.classList.toggle("error", !ele.validity.valid);
+  const parent = ele.parentElement.parentElement;
+  if (parent.classList.contains("input-group")) {
+    parent.classList.toggle("error", !ele.validity.valid);
+  }
+}
 
-// password
-document.addEventListener("click", (e) => {
-  const iconDiv = e.target.closest(".pwdToggle");
-  if (!iconDiv) return;
-
-  const pwdInput = iconDiv.parentElement.parentElement.children[0];
-
+function handlePasswordToggle(ele) {
+  const pwdInput = ele.parentElement.parentElement.children[0];
   if (pwdInput.type === "password") {
     pwdInput.type = "text";
   } else if (pwdInput.type === "text") {
     pwdInput.type = "password";
   }
-  iconDiv.children[0].classList.toggle("hidden");
-  iconDiv.children[1].classList.toggle("hidden");
-});
+  ele.children[0].classList.toggle("hidden");
+  ele.children[1].classList.toggle("hidden");
+}

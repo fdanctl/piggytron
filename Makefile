@@ -29,7 +29,7 @@ dev: clean-dev
 
 ## templ-watch: watch for templ files
 templ-watch:
-	go tool templ generate -watch -cmd="go run $(MAIN_PACKAGE_PATH)"
+	DEV="true" go tool templ generate -watch -cmd="go run $(MAIN_PACKAGE_PATH)"
 
 ## status: show running containers
 status:

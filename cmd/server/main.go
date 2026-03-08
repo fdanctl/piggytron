@@ -15,6 +15,7 @@ import (
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/internal/interface/http/shared"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
@@ -54,9 +55,18 @@ func main() {
 		cfg.HashConfig.SaltLen,
 	)
 	sessionStore := rdb.NewSessionStore(client)
+	sessionCM := shared.NewCookieMaker(http.Cookie{
+		Name:     "session_id",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   !cfg.IsDev,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(time.Hour * 24),
+	})
 	userRepo := postgres.NewUserRepository(db)
 	userService := user.NewService(userRepo, hasher, sessionStore)
-	userHandler := handlers.NewUserHandler(userService)
+	userHandler := handlers.NewUserHandler(userService, sessionCM)
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(

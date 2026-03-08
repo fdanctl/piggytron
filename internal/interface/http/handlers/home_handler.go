@@ -149,6 +149,11 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if _, err := io.WriteString(w, "<div class=\"flex flex-col\">"); err != nil {
 			return err
 		}
+		search := components.SearchBar("", nil)
+		if err := search.Render(ctx, w); err != nil {
+			return err
+		}
+
 		btn := components.Button(
 			"logout",
 			"w-fit",
@@ -214,6 +219,18 @@ func (h *BudgetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		_, err := io.WriteString(w, "<p>in construction</p>")
+		if err != nil {
+			return err
+		}
+		err = components.Button(
+			"logout",
+			"w-fit",
+			components.BtnDestructive,
+			components.BtnMedium,
+			templ.Attributes{
+				"hx-get": "/partials/auth/logout",
+			},
+		).Render(ctx, w)
 		return err
 	})
 	if r.Header.Get("Hx-Request") == "true" {

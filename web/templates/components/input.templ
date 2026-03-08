@@ -4,6 +4,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 	<div class="relative">
 		<input
 			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			onblur="handleInputOnBlur(this)"
 			{ attrs... }
 		/>
 		<div>
@@ -11,7 +12,12 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 				@CircleXSvg(16, "", "")
 			</i>
 			if t, ok := attrs["type"]; ok && t == "password" {
-				<div tabindex="0" onclick="" class="pwdToggle">
+				<div
+					tabindex="0"
+					onclick="handlePasswordToggle(this)"
+					onkeydown="event.key === 'Enter' && event.target.click()"
+					class="pwdToggle"
+				>
 					<i>
 						@EyeSvg(20, "", "")
 					</i>
@@ -46,6 +52,7 @@ templ SearchBar(class string, attrs templ.Attributes) {
 	<div class="search-bar">
 		<input
 			class={ "input", templ.KV(class, class != "") }
+			type="search"
 			placeholder={ placeholder }
 		/>
 		<i>

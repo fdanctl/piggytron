@@ -41,12 +41,6 @@ func (ss *SessionStore) Set(ctx context.Context, value *SessionInfo) (string, er
 	err = ss.client.HSet(ctx, key, *value).Err()
 	ss.client.Expire(ctx, key, time.Hour*24)
 
-	// Retrieve and print the time-to-live (TTL) for the key
-	ttl, err := ss.client.TTL(ctx, fmt.Sprint(sessionPrefix, sessionId)).Result()
-	if err != nil {
-		panic(err) // Handle any errors in getting the TTL
-	}
-	fmt.Printf("Time-to-live for session key: %v\n", ttl)
 	return sessionId, err
 }
 

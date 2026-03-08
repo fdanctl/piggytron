@@ -4,22 +4,22 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
-	"time"
 
 	userapp "github.com/fdanctl/piggytron/internal/application/user"
-	"github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/shared"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 type UserHandler struct {
-	service      *userapp.Service
-	sessionStore *redis.SessionStore
+	service     *userapp.Service
+	cookieMaker *shared.CookieMaker
 }
 
-func NewUserHandler(s *userapp.Service) *UserHandler {
+func NewUserHandler(s *userapp.Service, cm *shared.CookieMaker) *UserHandler {
 	return &UserHandler{
-		service: s,
+		service:     s,
+		cookieMaker: cm,
 	}
 }
 
@@ -99,19 +99,10 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Value:    sid,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(time.Hour * 24),
-	})
-
 	if redirect == "" || redirect[0] != '/' {
 		redirect = "/"
 	}
+	http.SetCookie(w, h.cookieMaker.NewCookie(sid))
 	w.Header().Set("HX-Redirect", redirect)
 	w.WriteHeader(http.StatusSeeOther)
 }
@@ -140,21 +131,12 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, userapp.ErrUserExists) {
 			view.CustomError = err
-			partials.SignupForm(view).Render(r.Context(), w)
-			return
 		}
+		partials.SignupForm(view).Render(r.Context(), w)
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Value:    sid,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(time.Hour * 24),
-	})
+	http.SetCookie(w, h.cookieMaker.NewCookie(sid))
 	w.Header().Set("HX-Redirect", "/")
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -166,12 +148,7 @@ func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:    "session_id",
-		Value:   "",
-		Path:    "/",
-		Expires: time.Now(),
-	})
-	w.Header().Set("HX-Redirect", "/")
+	http.SetCookie(w, h.cookieMaker.RevokeCookie())
+	w.Header().Set("HX-Redirect", "")
 	w.WriteHeader(http.StatusNoContent)
 }

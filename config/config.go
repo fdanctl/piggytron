@@ -27,6 +27,7 @@ type config struct {
 	DBURL      string
 	RedisAddr  string
 	HashConfig hashConfig
+	IsDev      bool
 }
 
 func LoadConfig() (*config, error) {
@@ -51,6 +52,8 @@ func LoadConfig() (*config, error) {
 		return nil, errors.New("failed to get REDIS_PORT env")
 	}
 
+	dev := os.Getenv("DEV")
+
 	return &config{
 		ServerPort: serverPort,
 		DBURL: fmt.Sprintf(
@@ -68,5 +71,6 @@ func LoadConfig() (*config, error) {
 			KeyLen:  keyLen,
 			SaltLen: saltLen,
 		},
+		IsDev: dev == "true",
 	}, nil
 }
