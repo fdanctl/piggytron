@@ -117,6 +117,9 @@ templ Sidebar() {
 			document.querySelector("#sidebar").classList.toggle("colapsed");
 			colapsed = !colapsed;
 			localStorage.setItem("colapsed", colapsed);
+			document
+				.querySelectorAll("#sidebar .sublinks")
+				.forEach((e) => e.classList.remove("open"));
 		};
 	</script>
 }

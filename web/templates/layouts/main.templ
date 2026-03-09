@@ -28,7 +28,6 @@ templ Main() {
 			padding-top: 0;
 			border-top-left-radius: var(--radius-lg);
 			border-top-right-radius: var(--radius-lg);
-			transform: translateY(100%);
 			transition: transform 200ms ease-in;
 			animation: slide-up 200ms ease-in;
 		}
@@ -46,8 +45,10 @@ templ Main() {
 			}
 		}
 
-		#nav-sheet-overlay.open #nav-sheet {
-			transform: translateY(0);
+		@scope (scope #nav-sheet-overlay) {
+			#nav-sheet-overlay.open #nav-sheet {
+				transform: translateY(0);
+			}
 		}
 
 		#nav-sheet > div {
@@ -164,7 +165,7 @@ templ Main() {
 
 		const handleTouchEndNO = (ev) => {
 			const deltaY = event.changedTouches[0].clientY - noStartYPosition;
-			if (deltaY / ev.view.outerHeight > 0.20) {
+			if (deltaY / ev.view.outerHeight > 0.2) {
 				toggleNavSheet();
 			} else {
 				navOverlay.firstChild.style.transform = "translateY(0)";

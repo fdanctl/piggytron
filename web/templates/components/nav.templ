@@ -4,56 +4,115 @@ type navLinks struct {
 	name string
 	href string
 	icon templ.Component
+	sub  []navLinks
 }
 
 templ StyleNav() {
 	<style>
 		nav {
-			display: flex;
-			flex-direction: column;
 			height: 100%;
 			overflow-y: scroll;
 			scrollbar-width: none;
-			gap: var(--spacing-xs);
 		}
 
-		nav a {
-			display: grid;
-			grid-template-columns: auto 1fr auto;
-			align-items: center;
-			padding: var(--spacing-xs);
-			border-radius: var(--radius-sm);
-			gap: 0.3rem;
+		@scope (nav) to (.sublinks) {
+			ul {
+				display: flex;
+				flex-direction: column;
+				gap: var(--spacing-xs);
+			}
+
+			a {
+				display: grid;
+				grid-template-columns: auto 1fr auto;
+				align-items: center;
+				padding: var(--spacing-xs);
+				border-radius: var(--radius-sm);
+				gap: 0.3rem;
+				cursor: pointer;
+				color: var(--color-text-secondary);
+			}
+
+			ul > a p {
+				line-height: 0;
+			}
+
+			a.active {
+				background-color: var(--color-bg-muted);
+				color: var(--color-text);
+			}
+
+			a:hover {
+				background-color: var(--color-bg-muted);
+			}
+		}
+
+		.sublinks {
+			margin-top: 5px;
+			padding-left: 10px;
+			display: none;
+		}
+
+		.sublinks li {
+			transform: translateY(-20px);
+			animation: fadeUp 300ms ease forwards;
+		}
+
+		@keyframes fadeUp {
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		.sublinks.open {
+			display: block;
+		}
+
+		.sublinks li {
 			cursor: pointer;
-			color: var(--color-text-secondary);
+			margin-top: -6px;
 		}
 
-		nav a p {
+		.sublinks a {
+			color: var(--color-text-secondary);
 			line-height: 0;
 		}
 
-		nav a.active {
-			background-color: var(--color-bg-muted);
+		.sublinks a.active span,
+		.sublinks span:hover {
 			color: var(--color-text);
-		}
-
-		nav a:hover {
-			background-color: var(--color-bg-muted);
 		}
 	</style>
 }
 
 templ ScriptNav() {
 	<script>
-		const path = "/" + window.location.pathname.split("/")[1];
+		const path = window.location.pathname;
+		console.log(path);
 		const a = document.querySelectorAll("nav a");
-		a.forEach((e) => e.classList.toggle("active", e.pathname === path));
+		for (let i = 0; i < a.length; i++) {
+			const text = a[i].text.trim().toLowerCase();
+			a[i].classList.toggle("active", path.includes(text));
+		}
 
 		const handleActiveLink = (ele) => {
 			a.forEach((e) => e.classList.remove("active"));
-			a.forEach((e) =>
-				e.classList.toggle("active", e.pathname === ele.pathname),
-			);
+            const pathname = ele.pathname
+			for (let i = 0; i < a.length; i++) {
+				const text = a[i].text.trim().toLowerCase();
+				a[i].classList.toggle("active", pathname.includes(text));
+			}
+			ele.classList.add("active");
+		};
+
+		const handleExpand = (ev) => {
+			console.log(ev);
+			ev.stopPropagation();
+			ev.target
+				.closest("li")
+				.querySelector(".sublinks")
+				.classList.toggle("open");
 		};
 	</script>
 }
@@ -62,41 +121,93 @@ templ Nav() {
 	{{
 		var nl = [3][]navLinks{
 			{
-				{"Dashboard", "/", HouseSvg(0, "", "")},
-				{"Budget", "/budget", ChartPieSvg(0, "", "")},
+				{"Dashboard", "/", HouseSvg(0, "", ""), nil},
+				{"Budget", "/budget", ChartPieSvg(0, "", ""), nil},
 			},
 			{
-				{"Goals", "/goals", PiggyBankSvg(0, "", "")},
-				{"Banks", "/banks", LandmarkSvg(0, "", "")},
-				{"Transactions", "/transactions", NotebookSvg(0, "", "")},
+				{"Goals", "/goals", PiggyBankSvg(0, "", ""), nil},
+				{"Banks", "/banks", LandmarkSvg(0, "", ""), nil},
+				{"Transactions", "", NotebookSvg(0, "", ""), []navLinks{
+					{"Expenses", "transactions/expenses", nil, nil},
+					{"Income", "transactions/income", nil, nil},
+					{"Transfers", "transactions/transfers", nil, nil},
+					{"All", "transactions/all", nil, nil},
+				}},
 			},
 			{
-				{"Categories", "/categories", TagSvg(0, "", "")},
-				{"Reports", "/reports", FileChartColumnSvg(0, "", "")},
+				{"Categories", "/categories", TagSvg(0, "", ""), nil},
+				{"Reports", "/reports", FileChartColumnSvg(0, "", ""), nil},
 			},
 		}
 	}}
 	<nav
 		hx-target="main"
 		hx-boost="true"
+		hx-on::after-request="newTitle(event); navOverlay.classList.remove('open')"
 	>
-		for i, groups := range nl {
-			for _, v := range groups {
-				<a
-					href={ v.href }
-					onclick="handleActiveLink(this)"
-				>
-					<i class="flex justify-center">
-						@v.icon
-					</i>
-					<p>{ v.name }</p>
-					<!-- TODO only chevron if it has sublinks -->
-					@ChevronLeftSvg(16, "", "")
-				</a>
+		<ul>
+			for i, groups := range nl {
+				for _, v := range groups {
+					<li>
+						<a
+							if v.href != "" {
+								href={ v.href }
+							}
+							if len(v.sub) > 0 {
+								onclick="handleExpand(event)"
+							} else {
+								onclick="event.stopPropagation(); handleActiveLink(this)"
+							}
+						>
+							<i class="flex justify-center">
+								@v.icon
+							</i>
+							<p>{ v.name }</p>
+							if len(v.sub) > 0 {
+							}
+						</a>
+						if len(v.sub) > 0 {
+							<div class="sublinks">
+								<ul>
+									for i, sub := range v.sub {
+										<li>
+											<a
+												href={ sub.href }
+												onclick="event.stopPropagation(); handleActiveLink(this)"
+											>
+												<p>
+													if i < len(v.sub) - 1 {
+														├─
+													} else {
+														└─
+													}
+													<span>
+														{ sub.name }
+													</span>
+												</p>
+											</a>
+										</li>
+									}
+								</ul>
+							</div>
+						}
+					</li>
+				}
+				if i < len(nl) - 1 {
+					<hr/>
+				}
 			}
-			if i < len(nl) - 1 {
-				<hr/>
-			}
-		}
+		</ul>
 	</nav>
+	<script>
+		function newTitle(ev) {
+			const splitPath = ev.detail.pathInfo.responsePath.split("/");
+			let title = splitPath[splitPath.length - 1];
+			if (title === "") {
+				title = "Dashboard";
+			}
+			title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
+			document.title = title;
+		}
+	</script>
 }

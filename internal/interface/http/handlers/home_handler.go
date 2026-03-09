@@ -202,7 +202,7 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("title").Render(ctx, w)
+	layouts.Base("Dashboard").Render(ctx, w)
 }
 
 type BudgetHandler struct{}
@@ -245,7 +245,7 @@ func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("title").Render(ctx, w)
+	layouts.Base("Budget").Render(ctx, w)
 }
 
 type LoginHandler struct{}
@@ -274,7 +274,7 @@ func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), layout)
-	layouts.Base("title").Render(ctx, w)
+	layouts.Base("Login").Render(ctx, w)
 }
 
 type SignupHandler struct{}
@@ -302,5 +302,48 @@ func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), layout)
-	layouts.Base("title").Render(ctx, w)
+	layouts.Base("Signup").Render(ctx, w)
+}
+
+type ExpensesHandler struct{}
+
+func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.Get(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
+	form := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		_, err := io.WriteString(w, "<p>in construction</p>")
+		if err != nil {
+			return err
+		}
+		err = components.Button(
+			"logout",
+			"w-fit",
+			components.BtnDestructive,
+			components.BtnMedium,
+			templ.Attributes{
+				"hx-get": "/partials/auth/logout",
+			},
+		).Render(ctx, w)
+		return err
+	})
+	if r.Header.Get("Hx-Request") == "true" {
+		form.Render(r.Context(), w)
+		return
+	}
+
+	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		ctx = templ.WithChildren(ctx, form)
+		err := layouts.Main().Render(ctx, w)
+		return err
+	})
+
+	ctx := templ.WithChildren(r.Context(), main)
+	layouts.Base("Budget").Render(ctx, w)
 }

@@ -13,7 +13,6 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 			</i>
 			if t, ok := attrs["type"]; ok && t == "password" {
 				<div
-					tabindex="0"
 					onclick="handlePasswordToggle(this)"
 					onkeydown="event.key === 'Enter' && event.target.click()"
 					class="pwdToggle"
