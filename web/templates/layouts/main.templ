@@ -32,6 +32,10 @@ templ Main() {
 			border: none;
 		}
 
+		#nav-sheet:open {
+			touch-action: none;
+		}
+
 		#nav-sheet::backdrop {
 			background-color: var(--color-overlay);
 			backdrop-filter: blur(1px);
@@ -111,7 +115,6 @@ templ Main() {
 	</main>
 	<dialog
 		id="nav-sheet"
-		popover="manual"
 	>
 		<div>
 			<div></div>
@@ -125,45 +128,32 @@ templ Main() {
 			navSheet.classList.add("closing");
 
 			setTimeout(() => {
-				navSheet.hidePopover();
+				navSheet.close();
 				navSheet.classList.remove("closing");
 			}, 200);
 		};
 
-		navSheet.addEventListener("toggle", () => {
-			if (navSheet.matches(":popover-open")) {
+		navSheet.addEventListener("toggle", (e) => {
+			if (e.target === navSheet) {
 				navSheet.focus();
 			}
 		});
 
-		document.addEventListener("keydown", (e) => {
-			if (e.key === "Escape" && navSheet.matches(":popover-open")) {
-				closeNavSheet();
-			}
-		});
-
 		document.addEventListener("click", (e) => {
-			if (!navSheet.matches(":popover-open")) return;
-
-			if (!navSheet.contains(e.target)) {
+			if (e.target === navSheet) {
 				closeNavSheet();
 			}
 		});
 
 		let noStartYPosition = 0;
 		document.addEventListener("touchstart", (e) => {
-			console.log(e);
-			if (!navSheet.matches(":popover-open")) return;
-
-			if (!navSheet.contains(e.target)) {
+			if (e.target === navSheet) {
 				noStartYPosition = e.touches[0].clientY;
 			}
 		});
 
 		document.addEventListener("touchmove", (e) => {
-			if (!navSheet.matches(":popover-open")) return;
-
-			if (!navSheet.contains(e.target)) {
+			if (e.target === navSheet) {
 				e.preventDefault();
 				const deltaY = e.touches[0].clientY - noStartYPosition;
 				if (deltaY > 0) {
@@ -173,9 +163,7 @@ templ Main() {
 		});
 
 		document.addEventListener("touchend", (e) => {
-			if (!navSheet.matches(":popover-open")) return;
-
-			if (!navSheet.contains(e.target)) {
+			if (e.target === navSheet) {
 				const deltaY = e.changedTouches[0].clientY - noStartYPosition;
 				if (deltaY / e.view.outerHeight > 0.2) {
 					closeNavSheet();

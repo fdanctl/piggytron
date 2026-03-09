@@ -51,33 +51,38 @@ templ StyleNav() {
 			a:focus {
 				outline: none;
 			}
+
+			li .li-chevron {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				transition: transform 200ms ease-in;
+			}
+
+			li:has(.sublinks.open) .li-chevron {
+				transform: rotate(-90deg);
+			}
 		}
 
 		.sublinks {
 			margin-top: 5px;
 			padding-left: 10px;
-			display: none;
+			overflow: hidden;
+			display: grid;
+			grid-template-rows: 0fr;
+			transition: all 200ms ease-in-out;
 		}
 
-		.sublinks li {
-			transform: translateY(-20px);
-			animation: fadeUp 300ms ease forwards;
-		}
-
-		@keyframes fadeUp {
-			to {
-				opacity: 1;
-				transform: translateY(0);
-			}
+		.sublinks > ul {
+			overflow: hidden;
 		}
 
 		.sublinks.open {
-			display: block;
+			grid-template-rows: 1fr;
 		}
 
 		.sublinks li {
 			cursor: pointer;
-			margin-top: -6px;
 		}
 
 		.sublinks a {
@@ -87,7 +92,7 @@ templ StyleNav() {
 			line-height: 0;
 		}
 
-		.sublinks a.active p,
+		.sublinks a.active,
 		.sublinks a:focus,
 		.sublinks p:hover {
 			color: var(--color-text);
@@ -196,7 +201,7 @@ templ navLi(v navLink) {
 				href={ v.href }
 			}
 			if len(v.sub) > 0 {
-				onclick="handleExpand(event); console.log(this.nextElementSibling.showPopover())"
+				onclick="handleExpand(event);"
 			} else {
 				onclick="event.stopPropagation(); handleActiveLink(this)"
 			}
@@ -206,12 +211,12 @@ templ navLi(v navLink) {
 			</i>
 			<p>{ v.name }</p>
 			if len(v.sub) > 0 {
+				<i class="li-chevron">
+					@ChevronLeftSvg(16, "", "")
+				</i>
 			}
 		</a>
 		if len(v.sub) > 0 {
-			<div class="popover" popover="auto" anchor={ random }>
-				<h1>hello</h1>
-			</div>
 			<div class="sublinks">
 				<ul>
 					for _, sub := range v.sub {

@@ -1,0 +1,44 @@
+package partials
+
+templ Test() {
+	<style>
+		#my-btn {
+			anchor-name: --profile-button;
+			width: fit-content;
+		}
+		#mypop {
+			display: none;
+			/* anchoring to the button */
+			position: absolute;
+			position-anchor: --profile-button;
+			margin: 0;
+			inset: auto;
+			bottom: anchor(bottom);
+			left: anchor(right);
+			opacity: 0;
+			transition:
+				opacity 1s,
+				display 1s,
+				overlay 1s;
+			transition-behavior: allow-discrete;
+
+			position-try-fallbacks: --left;
+
+			margin-left: 0.25rem;
+		}
+		#mypop:popover-open {
+			display: grid;
+			opacity: 1;
+		}
+	</style>
+	<div
+		id="my-btn"
+		onmouseenter="document.getElementById('mypop').showPopover();"
+		onmouseleave="document.getElementById('mypop').hidePopover();"
+	>
+		open
+	</div>
+	<div id="mypop" popover>
+		<p>this is a text</p>
+	</div>
+}
