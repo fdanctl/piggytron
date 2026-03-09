@@ -4,6 +4,10 @@ import "github.com/fdanctl/piggytron/web/templates/components"
 
 templ Main() {
 	<style>
+		html {
+			min-height: 100vh;
+		}
+
 		main {
 			padding: var(--spacing-md);
 			background-color: var(--color-bg);
@@ -13,16 +17,7 @@ templ Main() {
 			display: none !important;
 		}
 
-		#nav-sheet-overlay {
-			display: none;
-		}
-
-		#nav-sheet-overlay.open {
-			display: flex;
-		}
-
 		#nav-sheet {
-			width: 100%;
 			background-color: var(--color-bg-secondary);
 			padding: var(--spacing-md) var(--spacing-sm);
 			padding-top: 0;
@@ -30,10 +25,24 @@ templ Main() {
 			border-top-right-radius: var(--radius-lg);
 			transition: transform 200ms ease-in;
 			animation: slide-up 200ms ease-in;
+
+			max-width: 100vw;
+			width: 100%;
+			margin: auto 0 0 0;
+			border: none;
 		}
 
-		#nav-sheet-overlay.open.closing #nav-sheet {
+		#nav-sheet::backdrop {
+			background-color: var(--color-overlay);
+			backdrop-filter: blur(1px);
+		}
+
+		#nav-sheet.closing {
 			transform: translateY(100%) !important;
+		}
+
+		#nav-sheet:focus {
+			outline: none;
 		}
 
 		@keyframes slide-up {
@@ -41,12 +50,6 @@ templ Main() {
 				transform: translateY(100%);
 			}
 			to {
-				transform: translateY(0);
-			}
-		}
-
-		@scope (scope #nav-sheet-overlay) {
-			#nav-sheet-overlay.open #nav-sheet {
 				transform: translateY(0);
 			}
 		}
@@ -80,7 +83,7 @@ templ Main() {
 				display: flex !important;
 			}
 
-			#nav-sheet-overlay {
+			#nav-sheet {
 				display: none !important;
 			}
 
@@ -106,70 +109,83 @@ templ Main() {
 	<main>
 		{ children... }
 	</main>
-	<div
-		class="overlay"
-		id="nav-sheet-overlay"
-		onclick="event.stopPropagation(); toggleNavSheet()"
-		ontouchstart="handleTouchStartNO(event)"
-		ontouchmove="handleTouchMoveNO(event)"
-		ontouchend="handleTouchEndNO(event)"
+	<dialog
+		id="nav-sheet"
+		popover="manual"
 	>
-		<div id="nav-sheet">
-			<div>
-				<div></div>
-			</div>
-			@components.Nav()
+		<div>
+			<div></div>
 		</div>
-	</div>
+		@components.Nav()
+	</dialog>
 	@components.ScriptNav()
 	<script>
-		const navOverlay = document.querySelector("#nav-sheet-overlay");
-		function toggleNavSheet() {
-			if (navOverlay.matches(".open")) {
-				navOverlay.classList.toggle("closing");
-				setTimeout(() => {
-					navOverlay.classList.toggle("closing");
-					navOverlay.classList.toggle("open");
-				}, 200);
-				setTimeout(() => {
-					navOverlay.firstChild.style.transform = "translateY(0)";
-				}, 10);
-			} else {
-				navOverlay.classList.toggle("open");
+		const navSheet = document.querySelector("#nav-sheet");
+		const closeNavSheet = () => {
+			navSheet.classList.add("closing");
+
+			setTimeout(() => {
+				navSheet.hidePopover();
+				navSheet.classList.remove("closing");
+			}, 200);
+		};
+
+		navSheet.addEventListener("toggle", () => {
+			if (navSheet.matches(":popover-open")) {
+				navSheet.focus();
 			}
-		}
+		});
 
 		document.addEventListener("keydown", (e) => {
-			if (e.key === "Escape") {
-				if (navOverlay.matches(".open")) {
-					toggleNavSheet();
-				} else {
-					// closeModal();
-				}
+			if (e.key === "Escape" && navSheet.matches(":popover-open")) {
+				closeNavSheet();
+			}
+		});
+
+		document.addEventListener("click", (e) => {
+			if (!navSheet.matches(":popover-open")) return;
+
+			if (!navSheet.contains(e.target)) {
+				closeNavSheet();
 			}
 		});
 
 		let noStartYPosition = 0;
+		document.addEventListener("touchstart", (e) => {
+			console.log(e);
+			if (!navSheet.matches(":popover-open")) return;
 
-		const handleTouchStartNO = (ev) => {
-			noStartYPosition = ev.touches[0].clientY;
-		};
-
-		const handleTouchMoveNO = (ev) => {
-			ev.preventDefault();
-			const deltaY = event.touches[0].clientY - noStartYPosition;
-			if (deltaY > 0) {
-				navOverlay.firstChild.style.transform = `translateY(${deltaY}px)`;
+			if (!navSheet.contains(e.target)) {
+				noStartYPosition = e.touches[0].clientY;
 			}
-		};
+		});
 
-		const handleTouchEndNO = (ev) => {
-			const deltaY = event.changedTouches[0].clientY - noStartYPosition;
-			if (deltaY / ev.view.outerHeight > 0.2) {
-				toggleNavSheet();
-			} else {
-				navOverlay.firstChild.style.transform = "translateY(0)";
+		document.addEventListener("touchmove", (e) => {
+			if (!navSheet.matches(":popover-open")) return;
+
+			if (!navSheet.contains(e.target)) {
+				e.preventDefault();
+				const deltaY = e.touches[0].clientY - noStartYPosition;
+				if (deltaY > 0) {
+					navSheet.style.transform = `translateY(${deltaY}px)`;
+				}
 			}
-		};
+		});
+
+		document.addEventListener("touchend", (e) => {
+			if (!navSheet.matches(":popover-open")) return;
+
+			if (!navSheet.contains(e.target)) {
+				const deltaY = e.changedTouches[0].clientY - noStartYPosition;
+				if (deltaY / e.view.outerHeight > 0.2) {
+					closeNavSheet();
+					setTimeout(() => {
+						navSheet.style.transform = "translateY(0)";
+					}, 10);
+				} else {
+					navSheet.style.transform = "translateY(0)";
+				}
+			}
+		});
 	</script>
 }

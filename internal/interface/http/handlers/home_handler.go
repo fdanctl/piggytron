@@ -317,29 +317,14 @@ func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
-	form := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		_, err := io.WriteString(w, "<p>in construction</p>")
-		if err != nil {
-			return err
-		}
-		err = components.Button(
-			"logout",
-			"w-fit",
-			components.BtnDestructive,
-			components.BtnMedium,
-			templ.Attributes{
-				"hx-get": "/partials/auth/logout",
-			},
-		).Render(ctx, w)
-		return err
-	})
+	content := partials.Test()
 	if r.Header.Get("Hx-Request") == "true" {
-		form.Render(r.Context(), w)
+		content.Render(r.Context(), w)
 		return
 	}
 
 	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, form)
+		ctx = templ.WithChildren(ctx, content)
 		err := layouts.Main().Render(ctx, w)
 		return err
 	})

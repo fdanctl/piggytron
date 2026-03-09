@@ -1,10 +1,12 @@
 package components
 
-type navLinks struct {
+import "math/rand/v2"
+
+type navLink struct {
 	name string
 	href string
 	icon templ.Component
-	sub  []navLinks
+	sub  []navLink
 }
 
 templ StyleNav() {
@@ -33,7 +35,7 @@ templ StyleNav() {
 				color: var(--color-text-secondary);
 			}
 
-			ul > a p {
+			ul a p {
 				line-height: 0;
 			}
 
@@ -42,8 +44,12 @@ templ StyleNav() {
 				color: var(--color-text);
 			}
 
-			a:hover {
+			a:hover,
+			a:focus {
 				background-color: var(--color-bg-muted);
+			}
+			a:focus {
+				outline: none;
 			}
 		}
 
@@ -75,13 +81,20 @@ templ StyleNav() {
 		}
 
 		.sublinks a {
+			display: flex;
+			align-items: center;
 			color: var(--color-text-secondary);
 			line-height: 0;
 		}
 
-		.sublinks a.active span,
-		.sublinks span:hover {
+		.sublinks a.active p,
+		.sublinks a:focus,
+		.sublinks p:hover {
 			color: var(--color-text);
+		}
+
+		.sublinks a:focus {
+			outline: none;
 		}
 	</style>
 }
@@ -93,12 +106,15 @@ templ ScriptNav() {
 		const a = document.querySelectorAll("nav a");
 		for (let i = 0; i < a.length; i++) {
 			const text = a[i].text.trim().toLowerCase();
-			a[i].classList.toggle("active", path.includes(text));
+			a[i].classList.toggle(
+				"active",
+				path.includes(text) || path === a[i].pathname,
+			);
 		}
 
 		const handleActiveLink = (ele) => {
 			a.forEach((e) => e.classList.remove("active"));
-            const pathname = ele.pathname
+			const pathname = ele.pathname;
 			for (let i = 0; i < a.length; i++) {
 				const text = a[i].text.trim().toLowerCase();
 				a[i].classList.toggle("active", pathname.includes(text));
@@ -119,7 +135,7 @@ templ ScriptNav() {
 
 templ Nav() {
 	{{
-		var nl = [3][]navLinks{
+		var nl = [3][]navLink{
 			{
 				{"Dashboard", "/", HouseSvg(0, "", ""), nil},
 				{"Budget", "/budget", ChartPieSvg(0, "", ""), nil},
@@ -127,7 +143,7 @@ templ Nav() {
 			{
 				{"Goals", "/goals", PiggyBankSvg(0, "", ""), nil},
 				{"Banks", "/banks", LandmarkSvg(0, "", ""), nil},
-				{"Transactions", "", NotebookSvg(0, "", ""), []navLinks{
+				{"Transactions", "", NotebookSvg(0, "", ""), []navLink{
 					{"Expenses", "transactions/expenses", nil, nil},
 					{"Income", "transactions/income", nil, nil},
 					{"Transfers", "transactions/transfers", nil, nil},
@@ -143,55 +159,12 @@ templ Nav() {
 	<nav
 		hx-target="main"
 		hx-boost="true"
-		hx-on::after-request="newTitle(event); navOverlay.classList.remove('open')"
+		hx-on::after-request="newTitle(event); closeNavSheet();"
 	>
 		<ul>
 			for i, groups := range nl {
 				for _, v := range groups {
-					<li>
-						<a
-							if v.href != "" {
-								href={ v.href }
-							}
-							if len(v.sub) > 0 {
-								onclick="handleExpand(event)"
-							} else {
-								onclick="event.stopPropagation(); handleActiveLink(this)"
-							}
-						>
-							<i class="flex justify-center">
-								@v.icon
-							</i>
-							<p>{ v.name }</p>
-							if len(v.sub) > 0 {
-							}
-						</a>
-						if len(v.sub) > 0 {
-							<div class="sublinks">
-								<ul>
-									for i, sub := range v.sub {
-										<li>
-											<a
-												href={ sub.href }
-												onclick="event.stopPropagation(); handleActiveLink(this)"
-											>
-												<p>
-													if i < len(v.sub) - 1 {
-														├─
-													} else {
-														└─
-													}
-													<span>
-														{ sub.name }
-													</span>
-												</p>
-											</a>
-										</li>
-									}
-								</ul>
-							</div>
-						}
-					</li>
+					@navLi(v)
 				}
 				if i < len(nl) - 1 {
 					<hr/>
@@ -210,4 +183,52 @@ templ Nav() {
 			document.title = title;
 		}
 	</script>
+}
+
+templ navLi(v navLink) {
+	{{ random := rand.IntN(10-0) + 0 }}
+	<li>
+		<a
+			tabindex="0"
+			onkeydown="event.key === 'Enter' && event.target.click()"
+			id={ random }
+			if v.href != "" {
+				href={ v.href }
+			}
+			if len(v.sub) > 0 {
+				onclick="handleExpand(event); console.log(this.nextElementSibling.showPopover())"
+			} else {
+				onclick="event.stopPropagation(); handleActiveLink(this)"
+			}
+		>
+			<i class="flex justify-center">
+				@v.icon
+			</i>
+			<p>{ v.name }</p>
+			if len(v.sub) > 0 {
+			}
+		</a>
+		if len(v.sub) > 0 {
+			<div class="popover" popover="auto" anchor={ random }>
+				<h1>hello</h1>
+			</div>
+			<div class="sublinks">
+				<ul>
+					for _, sub := range v.sub {
+						<li>
+							<a
+								href={ sub.href }
+								onclick="event.stopPropagation(); handleActiveLink(this)"
+							>
+								@ChevronRightSvg(16, "", "")
+								<p>
+									{ sub.name }
+								</p>
+							</a>
+						</li>
+					}
+				</ul>
+			</div>
+		}
+	</li>
 }

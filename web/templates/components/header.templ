@@ -105,12 +105,12 @@ templ Header() {
 				@Notification()
 			</div>
 			@ProfilePic(false)
-			<div
-				class="flex justify-center items-center cursor-pointer"
-				onclick="toggleNavSheet()"
+			<button
+				class="reset-btn flex justify-center items-center cursor-pointer"
+				popovertarget="nav-sheet"
 			>
 				@MenuSvg(0, "", "")
-			</div>
+			</button>
 		</div>
 	</header>
 }
