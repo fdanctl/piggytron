@@ -126,7 +126,6 @@ templ StyleNav() {
 templ ScriptNav() {
 	<script>
 		const path = window.location.pathname;
-		console.log(path);
 		const a = document.querySelectorAll("nav a");
 		for (let i = 0; i < a.length; i++) {
 			const text = a[i].text.trim().toLowerCase();
@@ -146,13 +145,30 @@ templ ScriptNav() {
 			ele.classList.add("active");
 		};
 
-		const handleExpand = (ev) => {
-			console.log(ev);
+		const handleExpandToggle = (ev) => {
 			ev.stopPropagation();
 			ev.target
 				.closest("li")
 				.querySelector(".sublinks")
 				.classList.toggle("open");
+		};
+
+		const handleExpandOpen = (ele) => {
+			ele.classList.add("open");
+		};
+
+		const handleExpandRemove = (ele) => {
+			ele.classList.remove("open");
+		};
+
+		const handleSublinkFocus = (ele) => {
+			const a = document.querySelectorAll(`#${ele.dataset.name}-popover a`);
+			for (let i = 0; i < a.length; i++) {
+				a[i].classList.remove("focus");
+				if (a[i].href === ele.href) {
+					a[i].classList.add("focus");
+				}
+			}
 		};
 	</script>
 }
@@ -163,7 +179,7 @@ templ Nav() {
 		hx-boost="true"
 		hx-on::after-request="newTitle(event); closeNavSheet();"
 	>
-		<ul>
+		<ul class="unselectable">
 			for i, groups := range NavLinks {
 				for _, v := range groups {
 					@navLi(v)
@@ -189,21 +205,24 @@ templ Nav() {
 
 templ navLi(v navLink) {
 	<li
-		tabindex="0"
-		onkeydown="event.key === 'Enter' && event.target.firstChild.click()"
 		data-name={ v.name }
 		onmouseenter="sidebarShowPopover(this)"
 		onmouseleave="sidebarHidePopover(this)"
-		onfocus="sidebarShowPopover(this)"
 		style={ setAnchorName(v.name) }
 	>
 		<a
+			tabindex="0"
+			onkeydown="event.key === 'Enter' && event.target.click()"
 			if v.href != "" {
 				href={ v.href }
 			}
 			if len(v.sub) > 0 {
-				onclick="handleExpand(event);"
+				onfocus="sidebarShowPopover(this.parentElement); handleExpandOpen(this.parentElement.querySelector('.sublinks'))"
+				onmousedown="event.preventDefault(); handleExpandToggle(event);"
+				onclick="sidebarTogglePopover(this.parentElement)"
+				onblur="handleExpandRemove(this.parentElement)"
 			} else {
+				onfocus="sidebarShowPopover(this.parentElement)"
 				onclick="event.stopPropagation(); handleActiveLink(this)"
 			}
 		>
@@ -220,11 +239,16 @@ templ navLi(v navLink) {
 		if len(v.sub) > 0 {
 			<div class="sublinks">
 				<ul>
-					for _, sub := range v.sub {
+					for i, sub := range v.sub {
 						<li>
 							<a
+								data-name={ v.name }
 								href={ sub.href }
-								onclick="event.stopPropagation(); handleActiveLink(this)"
+								onclick="event.stopPropagation(); handleExpandRemove(this.closest('.sublinks')); handleActiveLink(this); "
+								onfocus="sidebarShowPopover(this); handleExpandOpen(this.closest('.sublinks')); handleSublinkFocus(this)"
+								if i == len(v.sub) - 1 {
+									onblur="handleExpandRemove(this.closest('.sublinks'));"
+								}
 							>
 								@ChevronRightSvg(16, "", "")
 								<p>

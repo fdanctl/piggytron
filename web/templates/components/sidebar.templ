@@ -62,6 +62,8 @@ templ Sidebar() {
 		#sidebar .popover > div > ul li {
 			cursor: pointer;
 		}
+
+		#sidebar .popover > div > ul a.focus,
 		#sidebar .popover > div > ul li:hover {
 			color: var(--color-text);
 		}
@@ -165,14 +167,14 @@ templ Sidebar() {
 					<div>
 						<p>{ link.name }</p>
 						if len(link.sub) > 0 {
-							<ul>
+							<ul
+								hx-target="main"
+								hx-boost="true"
+								hx-on::after-request="newTitle(event); sidebarHidePopover(this.closest('div').parentElement);"
+							>
 								for _, sublink := range link.sub {
 									<li>
-										<a
-											hx-get={ sublink.href }
-											hx-push-url="true"
-											hx-target="main"
-										>
+										<a href={ sublink.href } onclick="handleActiveLink(this)">
 											{ sublink.name }
 										</a>
 									</li>
@@ -200,6 +202,14 @@ templ Sidebar() {
 			sidebar
 				.querySelectorAll(".sublinks")
 				.forEach((e) => e.classList.remove("open"));
+		};
+
+		const sidebarTogglePopover = (ele) => {
+			if (colapsed) {
+				document.getElementById(ele.dataset.name + "-popover").togglePopover();
+			} else {
+				document.getElementById(ele.dataset.name + "-popover").hidePopover();
+			}
 		};
 
 		const sidebarShowPopover = (ele) => {
