@@ -1,5 +1,7 @@
 package components
 
+import "fmt"
+
 templ Sidebar() {
 	<style>
 		#sidebar {
@@ -18,6 +20,50 @@ templ Sidebar() {
 
 		#sidebar.colapsed {
 			width: calc(32px + var(--spacing-sm) * 2);
+		}
+
+		#sidebar .popover {
+			display: none;
+			position: absolute;
+			margin: 0;
+			min-height: 32px;
+			top: anchor(top);
+			left: anchor(right);
+			padding-left: 12px;
+
+			background-color: transparent;
+			border: none;
+		}
+
+		#sidebar .popover:popover-open {
+			display: block;
+		}
+
+		#sidebar .popover > div {
+			padding-left: var(--spacing-sm);
+			padding-right: var(--spacing-sm);
+			border-radius: var(--radius-sm);
+			background-color: var(--color-bg-secondary);
+		}
+
+		#sidebar .popover > div > p {
+			color: var(--color-text);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			min-height: 32px;
+		}
+
+		#sidebar .popover > div > ul {
+			color: var(--color-text-secondary);
+			padding-bottom: 0.3rem;
+		}
+
+		#sidebar .popover > div > ul li {
+			cursor: pointer;
+		}
+		#sidebar .popover > div > ul li:hover {
+			color: var(--color-text);
 		}
 
 		#sidebar.colapsed h1,
@@ -105,22 +151,79 @@ templ Sidebar() {
 			</div>
 		</div>
 		@Nav()
+		for _, liGroup:= range NavLinks {
+			for _, link := range liGroup {
+				<div
+					data-name={ link.name }
+					class="popover"
+					id={ link.name + "-popover" }
+					popover="auto"
+					style={ getAnchorName(link.name) }
+					onmouseenter="sidebarShowPopover(this)"
+					onmouseleave="sidebarHidePopover(this)"
+				>
+					<div>
+						<p>{ link.name }</p>
+						if len(link.sub) > 0 {
+							<ul>
+								for _, sublink := range link.sub {
+									<li>
+										<a
+											hx-get={ sublink.href }
+											hx-push-url="true"
+											hx-target="main"
+										>
+											{ sublink.name }
+										</a>
+									</li>
+								}
+							</ul>
+						}
+					</div>
+				</div>
+			}
+		}
 		<div class="avatar">
 			@ProfilePic(true)
 			<p>Fhewoifhwoahoi fewa username</p>
 		</div>
 	</aside>
-	<script>
+	<script defer>
 		let colapsed = localStorage.getItem("colapsed") === "true";
-		document.querySelector("#sidebar").classList.toggle("colapsed", colapsed);
+		const sidebar = document.getElementById("sidebar");
+		sidebar.classList.toggle("colapsed", colapsed);
 
 		const handleColapseSidebar = () => {
-			document.querySelector("#sidebar").classList.toggle("colapsed");
+			sidebar.classList.toggle("colapsed");
 			colapsed = !colapsed;
 			localStorage.setItem("colapsed", colapsed);
-			document
-				.querySelectorAll("#sidebar .sublinks")
+			sidebar
+				.querySelectorAll(".sublinks")
 				.forEach((e) => e.classList.remove("open"));
 		};
+
+		const sidebarShowPopover = (ele) => {
+			if (colapsed) {
+				document.getElementById(ele.dataset.name + "-popover").showPopover();
+			}
+		};
+		const sidebarHidePopover = (ele) => {
+			const sub = document.getElementById(ele.dataset.name + "-popover");
+			if (colapsed || sub.matches(":popover-open")) {
+				sub.hidePopover();
+			}
+		};
 	</script>
+}
+
+func setAnchorName(name string) map[string]string {
+	return map[string]string{
+		"anchor-name": fmt.Sprintf("--%s", name),
+	}
+}
+
+func getAnchorName(name string) map[string]string {
+	return map[string]string{
+		"position-anchor": fmt.Sprintf("--%s", name),
+	}
 }

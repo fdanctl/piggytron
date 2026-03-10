@@ -1,12 +1,31 @@
 package components
 
-import "math/rand/v2"
-
 type navLink struct {
 	name string
 	href string
 	icon templ.Component
 	sub  []navLink
+}
+
+var NavLinks = [3][]navLink{
+	{
+		{"Dashboard", "/", HouseSvg(0, "", ""), nil},
+		{"Budget", "/budget", ChartPieSvg(0, "", ""), nil},
+	},
+	{
+		{"Goals", "/goals", PiggyBankSvg(0, "", ""), nil},
+		{"Banks", "/banks", LandmarkSvg(0, "", ""), nil},
+		{"Transactions", "", NotebookSvg(0, "", ""), []navLink{
+			{"Expenses", "/transactions/expenses", nil, nil},
+			{"Income", "/transactions/income", nil, nil},
+			{"Transfers", "/transactions/transfers", nil, nil},
+			{"All", "/transactions/all", nil, nil},
+		}},
+	},
+	{
+		{"Categories", "/categories", TagSvg(0, "", ""), nil},
+		{"Reports", "/reports", FileChartColumnSvg(0, "", ""), nil},
+	},
 }
 
 templ StyleNav() {
@@ -139,39 +158,17 @@ templ ScriptNav() {
 }
 
 templ Nav() {
-	{{
-		var nl = [3][]navLink{
-			{
-				{"Dashboard", "/", HouseSvg(0, "", ""), nil},
-				{"Budget", "/budget", ChartPieSvg(0, "", ""), nil},
-			},
-			{
-				{"Goals", "/goals", PiggyBankSvg(0, "", ""), nil},
-				{"Banks", "/banks", LandmarkSvg(0, "", ""), nil},
-				{"Transactions", "", NotebookSvg(0, "", ""), []navLink{
-					{"Expenses", "transactions/expenses", nil, nil},
-					{"Income", "transactions/income", nil, nil},
-					{"Transfers", "transactions/transfers", nil, nil},
-					{"All", "transactions/all", nil, nil},
-				}},
-			},
-			{
-				{"Categories", "/categories", TagSvg(0, "", ""), nil},
-				{"Reports", "/reports", FileChartColumnSvg(0, "", ""), nil},
-			},
-		}
-	}}
 	<nav
 		hx-target="main"
 		hx-boost="true"
 		hx-on::after-request="newTitle(event); closeNavSheet();"
 	>
 		<ul>
-			for i, groups := range nl {
+			for i, groups := range NavLinks {
 				for _, v := range groups {
 					@navLi(v)
 				}
-				if i < len(nl) - 1 {
+				if i < len(NavLinks) - 1 {
 					<hr/>
 				}
 			}
@@ -191,12 +188,16 @@ templ Nav() {
 }
 
 templ navLi(v navLink) {
-	{{ random := rand.IntN(10-0) + 0 }}
-	<li>
+	<li
+		tabindex="0"
+		onkeydown="event.key === 'Enter' && event.target.firstChild.click()"
+		data-name={ v.name }
+		onmouseenter="sidebarShowPopover(this)"
+		onmouseleave="sidebarHidePopover(this)"
+		onfocus="sidebarShowPopover(this)"
+		style={ setAnchorName(v.name) }
+	>
 		<a
-			tabindex="0"
-			onkeydown="event.key === 'Enter' && event.target.click()"
-			id={ random }
 			if v.href != "" {
 				href={ v.href }
 			}
