@@ -355,6 +355,15 @@ hr,
   margin: var(--spacing-md) 0;
 }
 
+.indicator {
+  display: none;
+}
+
+.htmx-request .indicator,
+.htmx-request.indicator {
+  display: inline;
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes pop {
   from {

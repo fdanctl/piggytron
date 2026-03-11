@@ -2,6 +2,7 @@
 export
 
 MAIN_PACKAGE_PATH = ./cmd/server/main.go
+GENERATE_STATIC_PATH = ./cmd/generate/main.go
 
 .PHONY: help confirm dev go-dev build status clean-dev clean
 help:
@@ -25,7 +26,11 @@ dev: clean-dev
 	 -v ./scripts:/docker-entrypoint-initdb.d \
 	 postgres:16-alpine && \
 	docker run -d --name redis -p ${REDIS_PORT}:6379 redis:latest && \
-	make templ-watch
+	make -j2 generate-static templ-watch
+
+## generate-static: concatenate all js and css files into app.js and styles.css respectively
+generate-static:
+	go run $(GENERATE_STATIC_PATH)
 
 ## templ-watch: watch for templ files
 templ-watch:

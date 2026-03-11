@@ -3,146 +3,6 @@ package components
 import "fmt"
 
 templ Sidebar() {
-	<style>
-		#sidebar {
-			display: flex;
-			flex-direction: column;
-			background-color: var(--color-bg-secondary);
-			height: 100%;
-			max-height: 100vh;
-			width: 11rem;
-			position: sticky;
-			top: 0;
-			left: 0;
-			padding: var(--spacing-sm);
-			transition: width 200ms linear;
-		}
-
-		#sidebar.colapsed {
-			width: calc(32px + var(--spacing-sm) * 2);
-		}
-
-		#sidebar .popover {
-			display: none;
-			position: absolute;
-			margin: 0;
-			min-height: 32px;
-			top: anchor(top);
-			left: anchor(right);
-			padding-left: 12px;
-
-			background-color: transparent;
-			border: none;
-		}
-
-		#sidebar .popover:popover-open {
-			display: block;
-		}
-
-		#sidebar .popover > div {
-			padding-left: var(--spacing-sm);
-			padding-right: var(--spacing-sm);
-			border-radius: var(--radius-sm);
-			background-color: var(--color-bg-secondary);
-		}
-
-		#sidebar .popover > div > p {
-			color: var(--color-text);
-			display: flex;
-			align-items: center;
-			min-height: 32px;
-		}
-
-		#sidebar .popover > div > ul {
-			color: var(--color-text-secondary);
-			padding-bottom: 0.3rem;
-		}
-
-		#sidebar .popover > div > ul li {
-			cursor: pointer;
-		}
-
-		#sidebar .popover > div > ul a.focus,
-		#sidebar .popover > div > ul li:hover {
-			color: var(--color-text);
-		}
-
-		#sidebar.colapsed h1,
-		#sidebar.colapsed nav p,
-		#sidebar.colapsed nav a > svg,
-		#sidebar.colapsed .li-chevron,
-		#sidebar.colapsed .avatar > p {
-			display: none;
-		}
-
-		#sidebar > div:first-child {
-			padding-top: 0 var(--spacing-sm);
-			margin-top: var(--spacing-xs);
-		}
-
-		#sidebar.colapsed > div:first-child {
-			gap: 0;
-		}
-
-		#sidebar > div:nth-child(2) {
-			padding-right: var(--spacing-sm);
-			position: relative;
-		}
-
-		#sidebar > div:nth-child(2) > div {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			position: absolute;
-			padding: 0.125rem;
-			border-radius: 100%;
-
-			background-color: var(--color-bg);
-			border: 3px solid var(--color-bg-secondary);
-			cursor: pointer;
-
-			top: 50%;
-			right: 0;
-			transform: translate(calc(50% + var(--spacing-sm)), -50%);
-			z-index: 10;
-		}
-
-		#sidebar.colapsed > div:nth-child(2) > div {
-			transform: translate(calc(50% + var(--spacing-sm)), -50%) rotate(180deg);
-		}
-
-		#sidebar.colapsed nav a {
-			gap: 0;
-		}
-
-		.avatar {
-			display: grid;
-			grid-template-columns: auto 1fr;
-			align-items: center;
-			padding: var(--spacing-xs);
-			border-radius: var(--radius-sm);
-			gap: 0.3rem;
-			cursor: pointer;
-		}
-
-		.avatar p {
-			font-weight: 500;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-		}
-
-		#sidebar.colapsed .avatar {
-			padding: 0;
-			padding-top: var(--spacing-xs);
-			gap: 0;
-			margin-bottom: var(--spacing-xs);
-		}
-
-		#sidebar:not(.colapsed) .avatar:hover {
-			background-color: var(--color-bg-muted);
-		}
-	</style>
 	<aside id="sidebar">
 		@Logo()
 		<div>
@@ -164,16 +24,16 @@ templ Sidebar() {
 					onmouseleave="sidebarHidePopover(this)"
 				>
 					<div>
-						<p>{ link.name }</p>
+						<span>{ link.name }</span>
 						if len(link.sub) > 0 {
 							<ul
 								hx-target="main"
 								hx-boost="true"
-								hx-on::after-request="newTitle(event); sidebarHidePopover(this.closest('div').parentElement);"
+								hx-on::after-request="newTitle(event);"
 							>
 								for _, sublink := range link.sub {
 									<li>
-										<a href={ sublink.href } onclick="handleActiveLink(this)">
+										<a href={ sublink.href } onclick="handleActiveLink(this); sidebarHidePopover(this.closest('.popover')); document.getElementsByTagName('main')[0].focus()">
 											{ sublink.name }
 										</a>
 									</li>
@@ -186,43 +46,11 @@ templ Sidebar() {
 		}
 		<div class="avatar">
 			@ProfilePic(true)
-			<p>Fhewoifhwoahoi fewa username</p>
+			<span>Fhewoifhwoahoi fewa username</span>
 		</div>
 	</aside>
-	<script defer>
-		let colapsed = localStorage.getItem("colapsed") === "true";
-		const sidebar = document.getElementById("sidebar");
-		sidebar.classList.toggle("colapsed", colapsed);
-
-		const handleColapseSidebar = () => {
-			sidebar.classList.toggle("colapsed");
-			colapsed = !colapsed;
-			localStorage.setItem("colapsed", colapsed);
-			sidebar
-				.querySelectorAll(".sublinks")
-				.forEach((e) => e.classList.remove("open"));
-		};
-
-		const sidebarTogglePopover = (ele) => {
-			if (colapsed) {
-				document.getElementById(ele.dataset.name + "-popover").togglePopover();
-			} else {
-				document.getElementById(ele.dataset.name + "-popover").hidePopover();
-			}
-		};
-
-		const sidebarShowPopover = (ele) => {
-			if (colapsed) {
-				document.getElementById(ele.dataset.name + "-popover").showPopover();
-			}
-		};
-		const sidebarHidePopover = (ele) => {
-			const sub = document.getElementById(ele.dataset.name + "-popover");
-			if (colapsed || sub.matches(":popover-open")) {
-				sub.hidePopover();
-			}
-		};
-	</script>
+	<!-- to avoid flickring -->
+	<script src="/static/sidebar-initial.js"></script>
 }
 
 func setAnchorName(name string) map[string]string {

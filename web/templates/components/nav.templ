@@ -28,170 +28,9 @@ var NavLinks = [3][]navLink{
 	},
 }
 
-templ StyleNav() {
-	<style>
-		nav {
-			height: 100%;
-			overflow-y: scroll;
-			scrollbar-width: none;
-		}
-
-		@scope (nav) to (.sublinks) {
-			ul {
-				display: flex;
-				flex-direction: column;
-				gap: var(--spacing-xs);
-			}
-
-			a {
-				display: grid;
-				grid-template-columns: auto 1fr auto;
-				align-items: center;
-				padding: var(--spacing-xs);
-				border-radius: var(--radius-sm);
-				gap: 0.3rem;
-				cursor: pointer;
-				color: var(--color-text-secondary);
-			}
-
-			ul a p {
-				line-height: 0;
-			}
-
-			a.active {
-				background-color: var(--color-bg-muted);
-				color: var(--color-text);
-			}
-
-			a:hover,
-			a:focus {
-				background-color: var(--color-bg-muted);
-			}
-			a:focus {
-				outline: none;
-			}
-
-			li .li-chevron {
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				transition: transform 200ms ease-in;
-			}
-
-			li:has(.sublinks.open) .li-chevron {
-				transform: rotate(-90deg);
-			}
-		}
-
-		.sublinks {
-			margin-top: 5px;
-			padding-left: 10px;
-			overflow: hidden;
-			display: grid;
-			grid-template-rows: 0fr;
-			transition: all 200ms ease-in-out;
-		}
-
-		.sublinks > ul {
-			overflow: hidden;
-		}
-
-		.sublinks.open {
-			grid-template-rows: 1fr;
-		}
-
-		.sublinks li {
-			cursor: pointer;
-		}
-
-		.sublinks a {
-			display: flex;
-			align-items: center;
-			color: var(--color-text-secondary);
-			line-height: 0;
-		}
-
-		.sublinks a.active,
-		.sublinks a:focus,
-		.sublinks p:hover {
-			color: var(--color-text);
-		}
-
-		.sublinks a:focus {
-			outline: none;
-		}
-	</style>
-}
-
-templ ScriptNav() {
-	<script>
-		const path = window.location.pathname;
-		const a = document.querySelectorAll("nav a");
-		for (let i = 0; i < a.length; i++) {
-			const text = a[i].text.trim().toLowerCase();
-			a[i].classList.toggle(
-				"active",
-				path.includes(text) || path === a[i].pathname,
-			);
-		}
-
-		const handleActiveLink = (ele) => {
-			a.forEach((e) => e.classList.remove("active"));
-			const pathname = ele.pathname;
-			for (let i = 0; i < a.length; i++) {
-				const text = a[i].text.trim().toLowerCase();
-				a[i].classList.toggle("active", pathname.includes(text));
-			}
-			ele.classList.add("active");
-		};
-
-		const handleCloseAllSublinks = (ev) => {
-			const allSublinks = ev.target
-				.closest("nav")
-				.querySelectorAll(".sublinks");
-
-			for (let i = 0; i < allSublinks.length; i++) {
-				allSublinks[i].classList.remove("open");
-			}
-		};
-		const handleExpandToggle = (ev) => {
-			ev.stopPropagation();
-
-			const closestSublinks = ev.target
-				.closest("li")
-				.querySelector(".sublinks");
-
-			const isOpen = closestSublinks.matches(".open");
-
-			handleCloseAllSublinks(event);
-
-			if (!isOpen) {
-				closestSublinks.classList.add("open");
-			}
-		};
-
-		const handleExpandOpen = (ele) => {
-			ele.classList.add("open");
-		};
-
-		const handleExpandRemove = (ele) => {
-			ele.classList.remove("open");
-		};
-
-		const handleSublinkFocus = (ele) => {
-			const a = document.querySelectorAll(`#${ele.dataset.name}-popover a`);
-			for (let i = 0; i < a.length; i++) {
-				a[i].classList.remove("focus");
-				if (a[i].href === ele.href) {
-					a[i].classList.add("focus");
-				}
-			}
-		};
-	</script>
-}
-
 templ Nav() {
 	<nav
+		class="nav"
 		hx-target="main"
 		hx-boost="true"
 		hx-on::after-request="newTitle(event); closeNavSheet();"
@@ -207,17 +46,6 @@ templ Nav() {
 			}
 		</ul>
 	</nav>
-	<script>
-		function newTitle(ev) {
-			const splitPath = ev.detail.pathInfo.responsePath.split("/");
-			let title = splitPath[splitPath.length - 1];
-			if (title === "") {
-				title = "Dashboard";
-			}
-			title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
-			document.title = title;
-		}
-	</script>
 }
 
 templ navLi(v navLink) {
@@ -237,16 +65,16 @@ templ navLi(v navLink) {
 				onfocus="sidebarShowPopover(this.parentElement); handleExpandOpen(this.parentElement.querySelector('.sublinks'))"
 				onmousedown="event.preventDefault(); handleExpandToggle(event);"
 				onclick="sidebarTogglePopover(this.parentElement)"
-				onblur="handleExpandRemove(this.parentElement.querySelector('.sublinks'))"
 			} else {
 				onfocus="sidebarShowPopover(this.parentElement)"
 				onclick="event.stopPropagation(); handleCloseAllSublinks(event); handleActiveLink(this)"
 			}
+			onblur="sidebarHidePopover(this.parentElement);"
 		>
 			<i class="flex justify-center">
 				@v.icon
 			</i>
-			<p>{ v.name }</p>
+			<span>{ v.name }</span>
 			if len(v.sub) > 0 {
 				<i class="li-chevron">
 					@ChevronLeftSvg(16, "", "")
@@ -268,9 +96,9 @@ templ navLi(v navLink) {
 								}
 							>
 								@ChevronRightSvg(16, "", "")
-								<p>
+								<span>
 									{ sub.name }
-								</p>
+								</span>
 							</a>
 						</li>
 					}

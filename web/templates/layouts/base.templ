@@ -1,7 +1,5 @@
 package layouts
 
-import "github.com/fdanctl/piggytron/web/templates/components"
-
 templ Base(title string) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -21,54 +19,10 @@ templ Base(title string) {
             }'
 			/>
 			<title>{ title }</title>
-			<!-- CSS order matters -->
-			<link href="/static/css/base.css" rel="stylesheet"/>
-			<link href="/static/css/components/buttons.css" rel="stylesheet"/>
-			<link href="/static/css/components/inputs.css" rel="stylesheet"/>
-			<link href="/static/css/components/loader.css" rel="stylesheet"/>
-			<link href="/static/css/utilities.css" rel="stylesheet"/>
+			<link href="/static/styles.css" rel="stylesheet"/>
 			<script defer src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
-			<script defer src="/static/js/input.js"></script>
-			<script defer>
-				// disable child buttons
-				function disableBtns(e) {
-					const btns = e.querySelectorAll(".btn");
-					for (let i = 0; i < btns.length; i++) {
-						btns[i].disabled = true;
-					}
-				}
-			</script>
-			<script src="/static/js/theme.js"></script>
-			<style>
-				.overlay {
-					position: fixed;
-					top: 0;
-					left: 0;
-					right: 0;
-					bottom: 0;
-					background-color: var(--color-overlay);
-					z-index: 40;
-
-					display: flex;
-					align-items: end;
-
-					overflow-x: hidden;
-					overflow-y: hidden;
-					width: 100%;
-					height: 100%;
-					position: absolute;
-				}
-
-				.indicator {
-					display: none;
-				}
-
-				.htmx-request .indicator,
-				.htmx-request.indicator {
-					display: inline;
-				}
-			</style>
-			@components.StyleLogo()
+			<script defer src="/static/app.js"></script>
+			<script src="/static/theme.js"></script>
 		</head>
 		<body>
 			{ children... }
