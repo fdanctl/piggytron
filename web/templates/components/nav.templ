@@ -145,12 +145,29 @@ templ ScriptNav() {
 			ele.classList.add("active");
 		};
 
+		const handleCloseAllSublinks = (ev) => {
+			const allSublinks = ev.target
+				.closest("nav")
+				.querySelectorAll(".sublinks");
+
+			for (let i = 0; i < allSublinks.length; i++) {
+				allSublinks[i].classList.remove("open");
+			}
+		};
 		const handleExpandToggle = (ev) => {
 			ev.stopPropagation();
-			ev.target
+
+			const closestSublinks = ev.target
 				.closest("li")
-				.querySelector(".sublinks")
-				.classList.toggle("open");
+				.querySelector(".sublinks");
+
+			const isOpen = closestSublinks.matches(".open");
+
+			handleCloseAllSublinks(event);
+
+			if (!isOpen) {
+				closestSublinks.classList.add("open");
+			}
 		};
 
 		const handleExpandOpen = (ele) => {
@@ -220,10 +237,10 @@ templ navLi(v navLink) {
 				onfocus="sidebarShowPopover(this.parentElement); handleExpandOpen(this.parentElement.querySelector('.sublinks'))"
 				onmousedown="event.preventDefault(); handleExpandToggle(event);"
 				onclick="sidebarTogglePopover(this.parentElement)"
-				onblur="handleExpandRemove(this.parentElement)"
+				onblur="handleExpandRemove(this.parentElement.querySelector('.sublinks'))"
 			} else {
 				onfocus="sidebarShowPopover(this.parentElement)"
-				onclick="event.stopPropagation(); handleActiveLink(this)"
+				onclick="event.stopPropagation(); handleCloseAllSublinks(event); handleActiveLink(this)"
 			}
 		>
 			<i class="flex justify-center">
