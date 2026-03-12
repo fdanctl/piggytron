@@ -66,9 +66,6 @@ func main() {
 		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(time.Hour * 24),
 	})
-	userRepo := postgres.NewUserRepository(db)
-	userService := user.NewService(userRepo, hasher, sessionStore)
-	userHandler := handlers.NewUserHandler(userService, sessionCM)
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
@@ -93,9 +90,12 @@ func main() {
 
 	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
+
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
+
 	categoriesHandler := handlers.NewCategoriesHandler(expenseCatService, incomeCatService)
+
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
 
 	lh := handlers.LoginHandler{}
@@ -105,7 +105,14 @@ func main() {
 	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
 
 	partialsMux := http.NewServeMux() // returns HTMX fragment
+
+	userRepo := postgres.NewUserRepository(db)
+	userService := user.NewService(userRepo, hasher, sessionStore)
+	userHandler := handlers.NewUserHandler(userService, sessionCM)
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
+
+	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
+	partialsMux.Handle("/partials/income-category", incomeCatHandler)
 
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {

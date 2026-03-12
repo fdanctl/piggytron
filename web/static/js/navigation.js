@@ -33,56 +33,60 @@ const sidebarHidePopover = (ele) => {
   }
 };
 
-// === nav sheet === //
-const navSheet = document.querySelector("#nav-sheet");
-const closeNavSheet = () => {
-  navSheet.classList.add("closing");
+// === dialog x nav sheet === //
+const dialogRoot = document.querySelector("#dialog-root");
+const closeLastDialog = () => {
+  dialogRoot.lastChild.classList.add("closing");
 
   setTimeout(() => {
-    navSheet.close();
-    navSheet.classList.remove("closing");
+    dialogRoot.lastChild.close();
+    dialogRoot.lastChild.classList.remove("closing");
+    // if not nav sheet remove from dom
+    if (!dialogRoot.lastChild.matches("#nav-sheet")) {
+      dialogRoot.lastChild.remove();
+    }
   }, 200);
 };
 
-navSheet?.addEventListener("toggle", (e) => {
-  if (e.target === navSheet) {
-    navSheet.focus();
+dialogRoot?.lastChild.addEventListener("toggle", (e) => {
+  if (e.target === dialogRoot.lastChild) {
+    dialogRoot.lastChild.focus();
   }
 });
 
 document.addEventListener("click", (e) => {
-  if (e.target === navSheet) {
-    closeNavSheet();
+  if (e.target === dialogRoot.lastChild) {
+    closeLastDialog();
   }
 });
 
 let noStartYPosition = 0;
 document.addEventListener("touchstart", (e) => {
-  if (e.target === navSheet) {
+  if (e.target === dialogRoot) {
     noStartYPosition = e.touches[0].clientY;
   }
 });
 
 document.addEventListener("touchmove", (e) => {
-  if (e.target === navSheet) {
+  if (e.target === dialogRoot.lastChild) {
     e.preventDefault();
     const deltaY = e.touches[0].clientY - noStartYPosition;
     if (deltaY > 0) {
-      navSheet.style.transform = `translateY(${deltaY}px)`;
+      dialogRoot.lastChild.style.transform = `translateY(${deltaY}px)`;
     }
   }
 });
 
 document.addEventListener("touchend", (e) => {
-  if (e.target === navSheet) {
+  if (e.target === dialogRoot.lastChild) {
     const deltaY = e.changedTouches[0].clientY - noStartYPosition;
     if (deltaY / e.view.outerHeight > 0.2) {
-      closeNavSheet();
+      closeLastDialog();
       setTimeout(() => {
-        navSheet.style.transform = "translateY(0)";
+        dialogRoot.lastChild.style.transform = "translateY(0)";
       }, 10);
     } else {
-      navSheet.style.transform = "translateY(0)";
+      dialogRoot.lastChild.style.transform = "translateY(0)";
     }
   }
 });
@@ -122,7 +126,7 @@ const handleExpandToggle = (ev) => {
 
   const isOpen = closestSublinks.matches(".open");
 
-  handleCloseAllSublinks(event);
+  handleCloseAllSublinks(ev);
 
   if (!isOpen) {
     if (closestSublinks.closest("#sidebar")?.matches(".colapsed")) {

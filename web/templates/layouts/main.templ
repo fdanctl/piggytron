@@ -8,12 +8,15 @@ templ Main() {
 	<main class="main" tabindex="-1">
 		{ children... }
 	</main>
-	<dialog
-		id="nav-sheet"
-	>
-		<div>
-			<div></div>
-		</div>
-		@components.Nav()
-	</dialog>
+	<div id="dialog-root">
+		<dialog
+			id="nav-sheet"
+			class="dialog"
+		>
+			<div>
+				<div></div>
+			</div>
+			@components.Nav()
+		</dialog>
+	</div>
 }

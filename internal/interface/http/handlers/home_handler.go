@@ -138,6 +138,10 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		if err := components.PlusSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
 		if err := components.Spinner(30, "", "").Render(ctx, w); err != nil {
 			return err
 		}

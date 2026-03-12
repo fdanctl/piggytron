@@ -4,24 +4,112 @@ import "github.com/fdanctl/piggytron/web/templates/components"
 import "github.com/fdanctl/piggytron/web/views"
 
 templ Categories(cv views.CategoriesView) {
+	<style>
+		#income-cat,
+		#expense-cat {
+			margin-top: var(--spacing-lg);
+		}
+
+		#income-cat li,
+		#expense-cat li {
+			border: 1px solid var(--color-border);
+			padding: var(--spacing-sm) var(--spacing-md);
+			border-radius: var(--radius-sm);
+		}
+
+		#income-cat li,
+		#expense-cat li {
+			margin-top: var(--spacing-xs);
+		}
+
+		#income-cat a,
+		#expense-cat a {
+			display: block;
+			width: 100%;
+			height: 100%;
+		}
+
+		#income-cat > div,
+		#expense-cat > div {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: var(--spacing-sm);
+		}
+	</style>
 	@components.Breadcrumbs([]components.BreadcrumbsLinks{
 		{Href: "link", Name: "name"},
 		{Href: "", Name: "name1"},
 	})
 	<section id="income-cat">
-		<h3>Income</h3>
-		<ul>
+		<div>
+			<h4>Income ({ len(cv.IncomeCategories) })</h4>
+			@components.ButtonWithIcon(
+				"Add",
+				"",
+				components.BtnOutline,
+				components.BtnSmall,
+				templ.Attributes{
+					"hx-get":               "/partials/income-category",
+					"hx-target":            "#dialog-root",
+					"hx-swap":              "beforeend",
+					"hx-on::after-request": "dialogRoot.lastChild.showModal()",
+				},
+				components.IconLeft,
+				components.PlusSvg(0, "", ""),
+			)
+		</div>
+		<ul
+			hx-target="main"
+			hx-boost="true"
+		>
 			for _, cat := range cv.IncomeCategories {
-				<li>{ cat.Name }</li>
+				@incomeCategoryItem(cat)
 			}
 		</ul>
 	</section>
-	<section id="expenses-cat">
-		<h3>Expenses</h3>
-		<ul>
+	<section id="expense-cat">
+		<div>
+			<h4>Expenses ({ len(cv.ExpenseCategories) })</h4>
+			@components.ButtonWithIcon(
+				"Add",
+				"",
+				components.BtnOutline,
+				components.BtnSmall,
+				nil,
+				components.IconLeft,
+				components.PlusSvg(0, "", ""),
+			)
+		</div>
+		<ul
+			hx-target="main"
+			hx-boost="true"
+		>
 			for _, cat := range cv.ExpenseCategories {
-				<li>{ cat.Name }</li>
+				@expenseCategoryItem(cat)
 			}
 		</ul>
 	</section>
+}
+
+templ incomeCategoryItem(ic views.IncomeCategories) {
+	<li>
+		<a href={ "categories/" + ic.Id }>
+			{ ic.Name }
+		</a>
+	</li>
+}
+
+templ expenseCategoryItem(ic views.ExpenseCategories) {
+	<li
+		style={
+			templ.KV("border-color: var(--green-200)", ic.ExpenseType == 1),
+			templ.KV("border-color: var(--orange-300)", ic.ExpenseType == 2),
+			templ.KV("border-color: var(--purple-300)", ic.ExpenseType == 3),
+		}
+	>
+		<a href={ "categories/" + ic.Id }>
+			{ ic.Name }
+		</a>
+	</li>
 }

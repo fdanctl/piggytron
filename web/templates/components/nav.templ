@@ -33,7 +33,7 @@ templ Nav() {
 		class="nav"
 		hx-target="main"
 		hx-boost="true"
-		hx-on::after-request="newTitle(event); closeNavSheet();"
+		hx-on::after-request="newTitle(event); closeLastDialog();"
 	>
 		<ul class="unselectable">
 			for i, groups := range NavLinks {

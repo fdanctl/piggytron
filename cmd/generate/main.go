@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 )
 
@@ -26,6 +27,7 @@ func main() {
 	pipefiles(folderPath+"js/", jsFile)
 	fmt.Println("Generating styles.css...")
 	pipefiles(folderPath+"css/", cssFile)
+	log.Println("done")
 }
 
 func pipefiles(dirPath string, dst *os.File) {

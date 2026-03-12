@@ -35,7 +35,8 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 		ctx,
 		`SELECT id, user_id, name, expense_type, created_at, updated_at
 		 FROM expense_categories
-		 WHERE user_id = $1`,
+		 WHERE user_id = $1
+		 ORDER BY expense_type`,
 		userId,
 	)
 	if err != nil {

@@ -17,7 +17,7 @@ html {
   display: none !important;
 }
 
-#nav-sheet {
+.dialog {
   background-color: var(--color-bg-secondary);
   padding: var(--spacing-md) var(--spacing-sm);
   padding-top: 0;
@@ -25,6 +25,7 @@ html {
   border-top-right-radius: var(--radius-lg);
   transition: transform 200ms ease-in;
   animation: slide-up 200ms ease-in;
+  color: var(--color-text);
 
   max-width: 100vw;
   width: 100%;
@@ -32,21 +33,77 @@ html {
   border: none;
 }
 
-#nav-sheet:open {
+.dialog:open {
   touch-action: none;
 }
 
-#nav-sheet::backdrop {
+.dialog::backdrop {
   background-color: var(--color-overlay);
   backdrop-filter: blur(1px);
 }
 
-#nav-sheet.closing {
+.dialog.closing {
   transform: translateY(100%) !important;
 }
 
-#nav-sheet:focus {
+.dialog:focus {
   outline: none;
+}
+
+.dialog > div:first-child {
+  width: 100%;
+  height: var(--spacing-md);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog > div > div {
+  width: 3rem;
+  height: 3px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-border);
+}
+
+@media (min-width: 600px) {
+  .dialog {
+    padding: var(--spacing-md) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    transition: opacity 150ms ease-in;
+    opacity: 1;
+
+    max-width: 80vw;
+    max-height: 80vh;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    animation: show-dialog 150ms ease-in;
+
+    border: none;
+  }
+
+  .dialog.closing {
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+
+  .dialog:focus {
+    outline: none;
+  }
+
+  .dialog > div:first-child {
+    display: none;
+  }
+}
+
+@keyframes show-dialog {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
@@ -56,21 +113,6 @@ html {
   to {
     transform: translateY(0);
   }
-}
-
-#nav-sheet > div {
-  width: 100%;
-  height: var(--spacing-md);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#nav-sheet > div > div {
-  width: 3rem;
-  height: 3px;
-  border-radius: var(--radius-md);
-  background-color: var(--color-border);
 }
 
 @media (min-width: 600px) {

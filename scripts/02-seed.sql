@@ -392,7 +392,7 @@ SELECT
   gen_random_uuid(),
   u.id,
   'Miscellaneous',
-  3,
+  1,
   '2026-03-11',
   '2026-03-11'
 FROM
