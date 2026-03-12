@@ -1,0 +1,27 @@
+package partials
+
+import "github.com/fdanctl/piggytron/web/templates/components"
+import "github.com/fdanctl/piggytron/web/views"
+
+templ Categories(cv views.CategoriesView) {
+	@components.Breadcrumbs([]components.BreadcrumbsLinks{
+		{Href: "link", Name: "name"},
+		{Href: "", Name: "name1"},
+	})
+	<section id="income-cat">
+		<h3>Income</h3>
+		<ul>
+			for _, cat := range cv.IncomeCategories {
+				<li>{ cat.Name }</li>
+			}
+		</ul>
+	</section>
+	<section id="expenses-cat">
+		<h3>Expenses</h3>
+		<ul>
+			for _, cat := range cv.ExpenseCategories {
+				<li>{ cat.Name }</li>
+			}
+		</ul>
+	</section>
+}

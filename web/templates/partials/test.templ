@@ -3,14 +3,14 @@ package partials
 templ Test() {
 	<style>
 		#my-btn {
-			anchor-name: --profile-button;
+			anchor-name: --Profile-button;
 			width: fit-content;
 		}
 		#mypop {
 			display: none;
 			/* anchoring to the button */
 			position: absolute;
-			position-anchor: --profile-button;
+			position-anchor: --Profile-button;
 			margin: 0;
 			inset: auto;
 			bottom: anchor(bottom);
@@ -31,14 +31,18 @@ templ Test() {
 			opacity: 1;
 		}
 	</style>
-	<div
-		id="my-btn"
-		onmouseenter="document.getElementById('mypop').showPopover();"
-		onmouseleave="document.getElementById('mypop').hidePopover();"
-	>
-		open
+	<div>
+		<div
+			id="my-btn"
+			onmouseenter="document.getElementById('mypop').showPopover();"
+			onmouseleave="document.getElementById('mypop').hidePopover();"
+		>
+			open
+		</div>
 	</div>
-	<div id="mypop" popover>
-		<p>this is a text</p>
+	<div>
+		<div id="mypop" popover>
+			<p>this is a text</p>
+		</div>
 	</div>
 }

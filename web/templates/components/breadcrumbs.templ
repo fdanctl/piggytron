@@ -1,0 +1,60 @@
+package components
+
+type BreadcrumbsLinks struct {
+	Href string
+	Name string
+}
+
+templ Breadcrumbs(items []BreadcrumbsLinks) {
+	<style>
+		.breadcrumbs {
+			display: flex;
+			gap: var(--spacing-xs);
+			align-items: center;
+		}
+
+		.breadcrumbs a {
+			font-size: 1.125rem;
+			line-height: 0;
+		}
+
+		.breadcrumbs a:hover {
+			font-size: 1.125rem;
+			line-height: 0;
+			text-decoration: underline;
+		}
+
+		.breadcrumbs a:last-child {
+			font-weight: 500;
+			text-decoration: none;
+		}
+
+		.breadcrumbs i {
+			height: 16px;
+		}
+
+		.breadcrumbs i > svg {
+			margin-bottom: 1px;
+		}
+	</style>
+	<div
+		class="breadcrumbs"
+		hx-target="main"
+		hx-boost="true"
+	>
+		for i, v := range items {
+			<a
+				if v.Href != "" {
+					href={ v.Href }
+				}
+			>
+				{ v.Name }
+			</a>
+			if i < len(items) - 1 {
+				<i>
+					@ChevronRightSvg(16, "", "")
+				</i>
+			}
+		}
+	</div>
+}

@@ -62,6 +62,9 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 	return sid, nil
 }
 
+// TODO change name
+// TODO change password
+
 func (s *Service) LoginUser(ctx context.Context, name, password string) (string, error) {
 	u, err := s.repo.FindByName(ctx, name)
 	if err != nil {
@@ -90,11 +93,11 @@ func (s *Service) LogoutUser(ctx context.Context) error {
 		return nil
 	}
 
-	uinfo, ok := v.(*rdb.SessionInfo)
+	sessionInfo, ok := v.(*rdb.SessionInfo)
 	if !ok {
 		fmt.Println("not sessionInfo")
 		return nil
 	}
 
-	return s.sessionStore.Remove(ctx, uinfo.UserId)
+	return s.sessionStore.Remove(ctx, sessionInfo.UserId)
 }

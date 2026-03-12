@@ -76,3 +76,5 @@ func (u *User) ChangeName(name string) error {
 	u.updatedAt = time.Now()
 	return nil
 }
+
+// TODO change password
