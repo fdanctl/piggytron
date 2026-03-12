@@ -20,7 +20,7 @@ type User struct {
 }
 
 func New(id ID, name, paswordHash string) (*User, error) {
-	if name == "" {
+	if name == "" || len(name) > 50 {
 		return nil, ErrInvalidName
 	}
 	if paswordHash == "" {

@@ -1,0 +1,38 @@
+package partials
+
+import "github.com/fdanctl/piggytron/web/views"
+import "github.com/fdanctl/piggytron/web/templates/components"
+
+templ IncomeCategoryForm(v views.IncomeCategoryForm) {
+	<form
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/income-category"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<h4>New income category</h4>
+		@components.InputGroup(
+			"",
+			"Name",
+			views.StringArrToStr(v.ValidateName()),
+			v.NameHasError(),
+			templ.Attributes{
+				"id":          "name",
+				"type":        "text",
+				"name":        "name",
+				"placeholder": "Salary",
+				"value":       v.Name,
+				"required":    true,
+			},
+		)
+		@components.Button(
+			"Enter",
+			"mt-md",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"type": "submit",
+			},
+		)
+	</form>
+}

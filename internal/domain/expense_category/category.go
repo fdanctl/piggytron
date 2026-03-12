@@ -36,7 +36,7 @@ type ExpenseCategory struct {
 }
 
 func New(id ID, userId ID, name string, expenseType ExpenseType) (*ExpenseCategory, error) {
-	if name == "" {
+	if name == "" || len(name) > 30 {
 		return nil, ErrInvalidName
 	}
 

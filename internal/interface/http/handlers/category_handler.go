@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -60,7 +59,6 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	var icView []views.IncomeCategories
 	for _, v := range ic {
-		fmt.Println(v.Name())
 		icView = append(icView, views.IncomeCategories{
 			Id:   v.ID(),
 			Name: v.Name(),

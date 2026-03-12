@@ -19,4 +19,19 @@ templ Main() {
 			@components.Nav()
 		</dialog>
 	</div>
+	<script>
+		document.body.addEventListener("incomeCategoryAdded", function (ev) {
+			closeLastDialog();
+			const li = document.querySelectorAll("#income-cat li");
+			document.querySelector("#income-cat h4").innerText =
+				`Income (${li.length + 1})`;
+		});
+
+		document.body.addEventListener("expenseCategoryAdded", function (ev) {
+			closeLastDialog();
+			const li = document.querySelectorAll("#expense-cat li");
+			document.querySelector("#expense-cat h4").innerText =
+				`Expenses (${li.length + 1})`;
+		});
+	</script>
 }

@@ -20,7 +20,7 @@ type IncomeCategory struct {
 }
 
 func New(id ID, userId ID, name string) (*IncomeCategory, error) {
-	if name == "" {
+	if name == "" || len(name) > 30 {
 		return nil, ErrInvalidName
 	}
 

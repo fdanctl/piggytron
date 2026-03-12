@@ -59,14 +59,7 @@ templ Categories(cv views.CategoriesView) {
 				components.PlusSvg(0, "", ""),
 			)
 		</div>
-		<ul
-			hx-target="main"
-			hx-boost="true"
-		>
-			for _, cat := range cv.IncomeCategories {
-				@incomeCategoryItem(cat)
-			}
-		</ul>
+		@IncomeCategories(cv.IncomeCategories, nil)
 	</section>
 	<section id="expense-cat">
 		<div>
@@ -76,40 +69,54 @@ templ Categories(cv views.CategoriesView) {
 				"",
 				components.BtnOutline,
 				components.BtnSmall,
-				nil,
+				templ.Attributes{
+					"hx-get":               "/partials/expense-category",
+					"hx-target":            "#dialog-root",
+					"hx-swap":              "beforeend",
+					"hx-on::after-request": "dialogRoot.lastChild.showModal()",
+				},
 				components.IconLeft,
 				components.PlusSvg(0, "", ""),
 			)
 		</div>
-		<ul
-			hx-target="main"
-			hx-boost="true"
-		>
-			for _, cat := range cv.ExpenseCategories {
-				@expenseCategoryItem(cat)
-			}
-		</ul>
+		@ExpenseCategories(cv.ExpenseCategories, nil)
 	</section>
 }
 
-templ incomeCategoryItem(ic views.IncomeCategories) {
-	<li>
-		<a href={ "categories/" + ic.Id }>
-			{ ic.Name }
-		</a>
-	</li>
+templ IncomeCategories(iCats []views.IncomeCategories, attrs templ.Attributes) {
+	<ul
+		hx-target="main"
+		hx-boost="true"
+		{ attrs... }
+	>
+		for _, cat := range iCats {
+			<li>
+				<a href={ "/categories/" + cat.Id }>
+					{ cat.Name }
+				</a>
+			</li>
+		}
+	</ul>
 }
 
-templ expenseCategoryItem(ic views.ExpenseCategories) {
-	<li
-		style={
-			templ.KV("border-color: var(--green-200)", ic.ExpenseType == 1),
-			templ.KV("border-color: var(--orange-300)", ic.ExpenseType == 2),
-			templ.KV("border-color: var(--purple-300)", ic.ExpenseType == 3),
-		}
+templ ExpenseCategories(eCats []views.ExpenseCategories, attrs templ.Attributes) {
+	<ul
+		hx-target="main"
+		hx-boost="true"
+		{ attrs... }
 	>
-		<a href={ "categories/" + ic.Id }>
-			{ ic.Name }
-		</a>
-	</li>
+		for _, cat:= range eCats {
+			<li
+				style={
+					templ.KV("border-color: var(--green-200)", cat.ExpenseType == 1),
+					templ.KV("border-color: var(--orange-300)", cat.ExpenseType == 2),
+					templ.KV("border-color: var(--purple-300)", cat.ExpenseType == 3),
+				}
+			>
+				<a href={ "/categories/" + cat.Id }>
+					{ cat.Name }
+				</a>
+			</li>
+		}
+	</ul>
 }
