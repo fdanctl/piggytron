@@ -23,37 +23,38 @@ func NewService(repo incomecategory.Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) CreateCategory(ctx context.Context, name string) error {
+func (s *Service) CreateCategory(
+	ctx context.Context,
+	name string,
+) (*incomecategory.IncomeCategory, error) {
 	v := ctx.Value("user")
 	if v == nil {
-		fmt.Println("nil context")
-		return nil
+		return nil, errors.New("nil context")
 	}
 
 	sessionInfo, ok := v.(*rdb.SessionInfo)
 	if !ok {
-		fmt.Println("not sessionInfo")
-		return nil
+		return nil, errors.New("not sessionInfo")
 	}
 
 	_, err := s.repo.FindByNameAndUser(ctx, incomecategory.ID(sessionInfo.UserId), name)
 	if err == nil {
-		return ErrDuplicate
+		return nil, ErrDuplicate
 	}
-	u, err := incomecategory.New(
+	category, err := incomecategory.New(
 		incomecategory.ID(uuid.New().String()),
 		incomecategory.ID(sessionInfo.UserId),
 		name,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = s.repo.Save(ctx, u)
+	err = s.repo.Save(ctx, category)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return category, nil
 }
 
 func (s *Service) ReadAllUserCategories(

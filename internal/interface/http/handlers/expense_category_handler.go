@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -64,7 +66,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = h.service.CreateCategory(r.Context(), name, catType)
+	category, err := h.service.CreateCategory(r.Context(), name, catType)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, expensecategory.ErrDuplicate) {
@@ -74,24 +76,31 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	ic, err := h.service.ReadAllUserCategories(r.Context())
-	if err != nil {
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
-		return
+	ecView := views.ExpenseCategory{
+		Id:          category.ID(),
+		Name:        category.Name(),
+		ExpenseType: category.ExpenseType(),
 	}
-	var icView []views.ExpenseCategories
-	for _, v := range ic {
-		icView = append(icView, views.ExpenseCategories{
-			Id:          v.ID(),
-			Name:        v.Name(),
-			ExpenseType: v.ExpenseType(),
-		})
-	}
+
+	oob := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		if _, err := io.WriteString(
+			w,
+			"<ul hx-swap-oob=\"beforeend:#expense-cat ul\">",
+		); err != nil {
+			return err
+		}
+
+		if err := partials.CategoryItem(ecView, templ.Attributes{
+			"style": "animation-delay: 0s;",
+		}).Render(ctx, w); err != nil {
+			return err
+		}
+
+		_, err := io.WriteString(w, "</ul>")
+		return err
+	})
 
 	w.Header().Set("HX-Trigger", "expenseCategoryAdded")
-
 	partials.ExpenseCategoryForm(view).Render(r.Context(), w)
-	partials.ExpenseCategories(icView, templ.Attributes{
-		"hx-swap-oob": "outerHTML:#expense-cat ul",
-	}).Render(r.Context(), w)
+	oob.Render(r.Context(), w)
 }

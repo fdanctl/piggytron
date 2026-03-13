@@ -43,9 +43,9 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
-	var ecView []views.ExpenseCategories
+	var ecView []views.ExpenseCategory
 	for _, v := range ec {
-		ecView = append(ecView, views.ExpenseCategories{
+		ecView = append(ecView, views.ExpenseCategory{
 			Id:          v.ID(),
 			Name:        v.Name(),
 			ExpenseType: v.ExpenseType(),
@@ -57,9 +57,9 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
-	var icView []views.IncomeCategories
+	var icView []views.IncomeCategory
 	for _, v := range ic {
-		icView = append(icView, views.IncomeCategories{
+		icView = append(icView, views.IncomeCategory{
 			Id:   v.ID(),
 			Name: v.Name(),
 		})

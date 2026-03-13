@@ -84,7 +84,7 @@ html {
   }
 
   .dialog.closing {
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) !important;
     opacity: 0;
   }
 
@@ -120,6 +120,7 @@ html {
     background-color: var(--color-bg-secondary);
     display: grid;
     grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr;
     overflow-y: hidden;
     height: 100vh;
     width: 100vw;

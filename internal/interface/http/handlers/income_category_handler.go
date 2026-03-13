@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -55,7 +57,7 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.CreateCategory(r.Context(), name)
+	category, err := h.service.CreateCategory(r.Context(), name)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, incomecategory.ErrDuplicate) {
@@ -65,23 +67,30 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ic, err := h.service.ReadAllUserCategories(r.Context())
-	if err != nil {
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
-		return
+	icView := views.IncomeCategory{
+		Id:   category.ID(),
+		Name: category.Name(),
 	}
-	var icView []views.IncomeCategories
-	for _, v := range ic {
-		icView = append(icView, views.IncomeCategories{
-			Id:   v.ID(),
-			Name: v.Name(),
-		})
-	}
+
+	oob := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		if _, err := io.WriteString(
+			w,
+			"<ul hx-swap-oob=\"beforeend:#income-cat ul\">",
+		); err != nil {
+			return err
+		}
+
+		if err := partials.CategoryItem(icView, templ.Attributes{
+			"style": "animation-delay: 0s;",
+		}).Render(ctx, w); err != nil {
+			return err
+		}
+
+		_, err := io.WriteString(w, "</ul>")
+		return err
+	})
 
 	w.Header().Set("HX-Trigger", "incomeCategoryAdded")
-
 	partials.IncomeCategoryForm(view).Render(r.Context(), w)
-	partials.IncomeCategories(icView, templ.Attributes{
-		"hx-swap-oob": "outerHTML:#income-cat ul",
-	}).Render(r.Context(), w)
+	oob.Render(r.Context(), w)
 }

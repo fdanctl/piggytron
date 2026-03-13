@@ -2,6 +2,7 @@ package partials
 
 import "github.com/fdanctl/piggytron/web/templates/components"
 import "github.com/fdanctl/piggytron/web/views"
+import "fmt"
 
 templ Categories(cv views.CategoriesView) {
 	<style>
@@ -15,11 +16,18 @@ templ Categories(cv views.CategoriesView) {
 			border: 1px solid var(--color-border);
 			padding: var(--spacing-sm) var(--spacing-md);
 			border-radius: var(--radius-sm);
+
+			margin-top: var(--spacing-xs);
+			animation-name: slide-down;
+			animation-duration: 200ms;
+			animation-iteration-count: 1;
+			animation-timing-function: linear;
+			animation-fill-mode: backwards;
 		}
 
-		#income-cat li,
-		#expense-cat li {
-			margin-top: var(--spacing-xs);
+		#income-cat ul,
+		#expense-cat ul {
+			overflow-y: hidden;
 		}
 
 		#income-cat a,
@@ -35,6 +43,27 @@ templ Categories(cv views.CategoriesView) {
 			justify-content: space-between;
 			align-items: center;
 			margin-bottom: var(--spacing-sm);
+		}
+
+		.badge {
+			display: inline-flex;
+			font-size: 0.75rem;
+			border-radius: var(--radius-xl);
+			padding: 0 var(--spacing-sm);
+			height: fit-content;
+			width: fit-content;
+		}
+		.badge.needs {
+			background-color: var(--color-needs);
+			color: var(--color-on-needs);
+		}
+		.badge.wants {
+			background-color: var(--color-wants);
+			color: var(--color-on-wants);
+		}
+		.badge.savings {
+			background-color: var(--color-savings);
+			color: var(--color-on-savings);
 		}
 	</style>
 	@components.Breadcrumbs([]components.BreadcrumbsLinks{
@@ -59,7 +88,16 @@ templ Categories(cv views.CategoriesView) {
 				components.PlusSvg(0, "", ""),
 			)
 		</div>
-		@IncomeCategories(cv.IncomeCategories, nil)
+		<ul
+			hx-target="main"
+			hx-boost="true"
+		>
+			for i, cat := range cv.IncomeCategories {
+				@CategoryItem(cat, templ.Attributes{
+					"style": fmt.Sprintf("animation-delay: %dms", i*50),
+				})
+			}
+		</ul>
 	</section>
 	<section id="expense-cat">
 		<div>
@@ -79,44 +117,31 @@ templ Categories(cv views.CategoriesView) {
 				components.PlusSvg(0, "", ""),
 			)
 		</div>
-		@ExpenseCategories(cv.ExpenseCategories, nil)
+		<ul
+			hx-target="main"
+			hx-boost="true"
+		>
+			for i, cat:= range cv.ExpenseCategories {
+				@CategoryItem(cat, templ.Attributes{
+					"style": fmt.Sprintf("animation-delay: %dms", i*50),
+				})
+			}
+		</ul>
 	</section>
 }
 
-templ IncomeCategories(iCats []views.IncomeCategories, attrs templ.Attributes) {
-	<ul
-		hx-target="main"
-		hx-boost="true"
-		{ attrs... }
-	>
-		for _, cat := range iCats {
-			<li>
-				<a href={ "/categories/" + cat.Id }>
-					{ cat.Name }
-				</a>
-			</li>
-		}
-	</ul>
-}
-
-templ ExpenseCategories(eCats []views.ExpenseCategories, attrs templ.Attributes) {
-	<ul
-		hx-target="main"
-		hx-boost="true"
-		{ attrs... }
-	>
-		for _, cat:= range eCats {
-			<li
-				style={
-					templ.KV("border-color: var(--green-200)", cat.ExpenseType == 1),
-					templ.KV("border-color: var(--orange-300)", cat.ExpenseType == 2),
-					templ.KV("border-color: var(--purple-300)", cat.ExpenseType == 3),
-				}
-			>
-				<a href={ "/categories/" + cat.Id }>
-					{ cat.Name }
-				</a>
-			</li>
-		}
-	</ul>
+templ CategoryItem(cat views.Category, attrs templ.Attributes) {
+	<li { attrs... }>
+		<a href={ "/categories/" + cat.GetId() }>
+			{ cat.GetName() }
+			switch cat.GetExpenseType() {
+				case 1:
+					@components.Badge("Needs", "", components.BadgeNeeds)
+				case 2:
+					@components.Badge("Wants", "", components.BadgeWants)
+				case 3:
+					@components.Badge("Savings", "", components.BadgeSavings)
+			}
+		</a>
+	</li>
 }

@@ -1,0 +1,16 @@
+package components
+
+type badgeVariant string
+
+const (
+	BadgeNeeds   badgeVariant = "needs"
+	BadgeWants   badgeVariant = "wants"
+	BadgeSavings badgeVariant = "savings"
+	BadgeDefault badgeVariant = ""
+)
+
+templ Badge(text, class string, variant badgeVariant) {
+	<div class={ "badge", templ.KV(string(variant), variant != ""), templ.KV(class, class != "") }>
+		{ text }
+	</div>
+}

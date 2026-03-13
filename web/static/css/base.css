@@ -147,6 +147,15 @@ input[type="number"] {
   --color-info-border: #3f70db;
   --color-on-info: #3f70db;
 
+  --color-needs: var(--green-200);
+  --color-on-needs: var(--green-500);
+
+  --color-wants: var(--orange-300);
+  --color-on-wants: var(--orange-600);
+
+  --color-savings: var(--purple-200);
+  --color-on-savings: var(--purple-600);
+
   /* Typography */
   --font-heading:
     "Helvetica Neue", "Helvetica", "Arial", "ヒラギノ角ゴ ProN W3",
@@ -373,6 +382,17 @@ hr,
 
   to {
     transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-50%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
     opacity: 1;
   }
 }
