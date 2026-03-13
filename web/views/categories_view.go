@@ -12,9 +12,8 @@ type Category interface {
 }
 
 type IncomeCategory struct {
-	Id          incomecategory.ID
-	Name        string
-	ExpenseType expensecategory.ExpenseType
+	Id   incomecategory.ID
+	Name string
 }
 
 func (c IncomeCategory) GetId() string {
