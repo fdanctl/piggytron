@@ -157,12 +157,15 @@ const handleSublinkFocus = (ele) => {
   }
 };
 
-function newTitle(ev) {
+function newPage(ev) {
   const splitPath = ev.detail.pathInfo.responsePath.split("/");
-  let title = splitPath[splitPath.length - 1];
+  console.log(splitPath);
+  let title = splitPath[1];
   if (title === "") {
     title = "Dashboard";
   }
+  console.log("title:", title);
   title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
   document.title = title;
+  document.getElementsByTagName("main")[0].scrollTo(0, 0);
 }

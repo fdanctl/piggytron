@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
@@ -31,7 +33,12 @@ func NewCategoriesHandler(
 func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		h.Get(w, r)
+		id := r.PathValue("id")
+		if id == "" {
+			h.Get(w, r)
+			return
+		}
+		h.GetId(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -76,6 +83,34 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		ctx = templ.WithChildren(ctx, content)
+		err := layouts.Main().Render(ctx, w)
+		return err
+	})
+
+	ctx := templ.WithChildren(r.Context(), main)
+	layouts.Base("Categories").Render(ctx, w)
+}
+
+func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	fmt.Println("id", id)
+	content := components.Breadcrumbs([]components.BreadcrumbsLinks{
+		{
+			Href: "/categories",
+			Name: "Categories",
+		},
+		{
+			Href: "/categories/" + id,
+			Name: id,
+		},
+	})
+
+	if r.Header.Get("Hx-Request") == "true" {
+		content.Render(r.Context(), w)
+		return
+	}
 	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		ctx = templ.WithChildren(ctx, content)
 		err := layouts.Main().Render(ctx, w)

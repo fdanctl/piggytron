@@ -97,6 +97,7 @@ func main() {
 	categoriesHandler := handlers.NewCategoriesHandler(expenseCatService, incomeCatService)
 
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
+	webMux.Handle("/categories/{id}", middleware.AuthProtectedRoute(categoriesHandler))
 
 	lh := handlers.LoginHandler{}
 	webMux.Handle("/login", middleware.AuthenticatedRedirect(&lh))

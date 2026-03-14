@@ -4,6 +4,7 @@ html {
 }
 
 .main {
+  scroll-padding-top: var(--spacing-md);
   padding: var(--spacing-md);
   background-color: var(--color-bg);
 }
@@ -11,6 +12,10 @@ html {
 .main:focus() {
   outline: none;
   box-shadow: none;
+}
+
+#content {
+  min-height: 100%;
 }
 
 #sidebar {

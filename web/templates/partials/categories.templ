@@ -89,8 +89,10 @@ templ Categories(cv views.CategoriesView) {
 			)
 		</div>
 		<ul
-			hx-target="main"
+			hx-target="#content"
 			hx-boost="true"
+			hx-swap="innerHTML transition:true show:window:top"
+			hx-on::after-request="newPage(event);"
 		>
 			for i, cat := range cv.IncomeCategories {
 				@CategoryItem(cat, templ.Attributes{
@@ -118,8 +120,10 @@ templ Categories(cv views.CategoriesView) {
 			)
 		</div>
 		<ul
-			hx-target="main"
+			hx-target="#content"
 			hx-boost="true"
+			hx-swap="innerHTML transition:true show:window:top"
+			hx-on::after-request="newPage(event);"
 		>
 			for i, cat:= range cv.ExpenseCategories {
 				@CategoryItem(cat, templ.Attributes{

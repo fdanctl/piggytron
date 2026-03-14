@@ -27,9 +27,10 @@ templ Sidebar() {
 						<span>{ link.name }</span>
 						if len(link.sub) > 0 {
 							<ul
-								hx-target="main"
+								hx-target="#content"
 								hx-boost="true"
-								hx-on::after-request="newTitle(event);"
+								hx-on::after-request="newPage(event);"
+								hx-swap="innerHTML show:window:top"
 							>
 								for _, sublink := range link.sub {
 									<li>

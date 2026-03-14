@@ -31,9 +31,10 @@ var NavLinks = [3][]navLink{
 templ Nav() {
 	<nav
 		class="nav"
-		hx-target="main"
+		hx-target="#content"
 		hx-boost="true"
-		hx-on::after-request="newTitle(event); closeLastDialog();"
+		hx-on::after-request="newPage(event); closeLastDialog();"
+		hx-swap="innerHTML show:window:top"
 	>
 		<ul class="unselectable">
 			for i, groups := range NavLinks {
