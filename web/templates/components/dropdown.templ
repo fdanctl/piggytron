@@ -1,0 +1,74 @@
+package components
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+)
+
+type DropdownOptions struct {
+	value string
+	name  string
+}
+
+templ Dropdown(class, name string) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := hex.EncodeToString(b)
+	}}
+	<style>
+		.dropdown > button > svg {
+			margin-left: var(--spacing-xs);
+		}
+
+		.popover {
+			display: none;
+			margin: 0;
+			inset: auto;
+			top: anchor(bottom);
+			right: anchor(right);
+			position-try-fallbacks: flip-inline;
+			position-try: flip-inline;
+			background-color: lime;
+			border: none;
+			padding-top: 4px;
+			background-color: transparent;
+		}
+
+		.popover:popover-open {
+			display: block;
+		}
+
+		.popover > div {
+			color: var(--color-text);
+			background-color: var(--color-bg);
+			border: 1px solid var(--color-border);
+			padding: var(--spacing-xs);
+			border-radius: var(--radius-sm);
+		}
+	</style>
+	<div class="dropdown">
+		<button
+			class={ "reset-btn flex items-center", templ.KV(class, class != "") }
+			popovertarget={ id }
+			style={ fmt.Sprintf("anchor-name: %s;", id) }
+		>
+			{ name }
+			@ChevronDownSvg(16, "", "")
+		</button>
+		<span
+			id={ id }
+			class="popover"
+			style={ fmt.Sprintf("position-anchor: %s;", id) }
+			popover
+		>
+			<div>
+				{ children... }
+			</div>
+		</span>
+	</div>
+}

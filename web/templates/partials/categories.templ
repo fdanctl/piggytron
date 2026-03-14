@@ -69,7 +69,12 @@ templ Categories(cv views.CategoriesView) {
 	@components.Breadcrumbs([]components.BreadcrumbsLinks{
 		{Href: "link", Name: "name"},
 		{Href: "", Name: "name1"},
-	})
+	},
+		[]components.BreadcrumbsLinks{
+			{Href: "", Name: "name1"},
+			{Href: "", Name: "name2"},
+		},
+	)
 	<section id="income-cat">
 		<div>
 			<h4>Income ({ len(cv.IncomeCategories) })</h4>

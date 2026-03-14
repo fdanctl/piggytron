@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 
@@ -95,7 +94,6 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	fmt.Println("id", id)
 	content := components.Breadcrumbs([]components.BreadcrumbsLinks{
 		{
 			Href: "/categories",
@@ -104,6 +102,15 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		{
 			Href: "/categories/" + id,
 			Name: id,
+		},
+	}, []components.BreadcrumbsLinks{
+		{
+			Href: "/categories",
+			Name: "hello",
+		},
+		{
+			Href: "/categories",
+			Name: "hello",
 		},
 	})
 
