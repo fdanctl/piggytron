@@ -118,6 +118,9 @@ func main() {
 	expenseCatHandler := handlers.NewExpenseCategoriesHandler(expenseCatService)
 	partialsMux.Handle("/partials/expense-category", expenseCatHandler)
 
+	graphHandler := handlers.NewGraphHandler()
+	partialsMux.Handle("/partials/graph", graphHandler)
+
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(2 * time.Second)

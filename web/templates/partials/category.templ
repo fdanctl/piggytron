@@ -3,7 +3,6 @@ package partials
 import (
 	"context"
 	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/go-echarts/go-echarts/v2/charts"
 	"io"
 	"time"
 )
@@ -18,7 +17,7 @@ func ConvertChartToTemplComponent(chart Renderable) templ.Component {
 	})
 }
 
-templ Chart(chart *charts.Bar) {
+templ CategoryStats() {
 	<style>
 		.chart-container {
 			width: 100%;
@@ -55,7 +54,7 @@ templ Chart(chart *charts.Bar) {
 		}
 
 		.transaction p {
-			line-height: 1rem;
+			line-height: 1.25rem;
 		}
 
 		.transaction > div:first-child > div:first-child {
@@ -68,10 +67,11 @@ templ Chart(chart *charts.Bar) {
 			color: var(--color-on-primary);
 			height: fit-content;
 			width: fit-content;
+			aspect-ratio: 1/1;
 		}
 	</style>
-	<div class="chart-container" id="chart">
-		@ConvertChartToTemplComponent(chart)
+	<div class="chart-container" hx-get="/partials/graph" hx-trigger="load">
+		@components.Loader("htmx-indicator")
 	</div>
 	<section id="transactions">
 		<h4>Transactions</h4>
@@ -100,7 +100,7 @@ templ Chart(chart *charts.Bar) {
 			const chart = echarts.getInstanceByDom(chartEl);
 			if (!chart) return;
 
-			// block resize when char is animating
+			// block resize when chart is animating
 			let initialized = false;
 			const observer = new ResizeObserver(() => {
 				if (!initialized) {
