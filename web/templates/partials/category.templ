@@ -1,0 +1,117 @@
+package partials
+
+import (
+	"context"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/go-echarts/go-echarts/v2/charts"
+	"io"
+	"time"
+)
+
+type Renderable interface {
+	Render(w io.Writer) error
+}
+
+func ConvertChartToTemplComponent(chart Renderable) templ.Component {
+	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		return chart.Render(w)
+	})
+}
+
+templ Chart(chart *charts.Bar) {
+	<style>
+		.chart-container {
+			width: 100%;
+			height: 50vh;
+			min-height: 300px;
+		}
+		.chart-container > .container {
+			width: 100%;
+			margin-top: 0;
+			height: 100%;
+		}
+		@media (max-width: 768px) {
+			.chart-container {
+				height: 300px;
+				border-radius: 12px;
+			}
+		}
+
+		.transaction {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			background-color: var(--color-bg);
+			border: 1px solid var(--color-border);
+			padding: var(--spacing-sm);
+			border-radius: var(--radius-md);
+			cursor: pointer;
+		}
+
+		.transaction > div:first-child {
+			display: flex;
+			align-items: center;
+			gap: var(--spacing-sm);
+		}
+
+		.transaction p {
+			line-height: 1rem;
+		}
+
+		.transaction > div:first-child > div:first-child {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: var(--spacing-xs);
+			border-radius: var(--radius-sm);
+			background-color: var(--color-primary);
+			color: var(--color-on-primary);
+			height: fit-content;
+			width: fit-content;
+		}
+	</style>
+	<div class="chart-container" id="chart">
+		@ConvertChartToTemplComponent(chart)
+	</div>
+	<section id="transactions">
+		<h4>Transactions</h4>
+		<ul>
+			<li class="transaction">
+				<div>
+					<div>
+						@components.ArrowLeftSvg(0, "", "")
+					</div>
+					<div>
+						<p class="h5 font-medium">money well spent</p>
+						<p class="text-subtitle text-sm">{ time.Now().Format(time.DateOnly) }</p>
+					</div>
+				</div>
+				<div class="h5 font-medium">
+					-10$
+				</div>
+			</li>
+		</ul>
+	</section>
+	<script>
+		document.querySelectorAll(".chart-container").forEach((container) => {
+			const chartEl = container.querySelector(".container > div");
+			if (!chartEl) return;
+
+			const chart = echarts.getInstanceByDom(chartEl);
+			if (!chart) return;
+
+			// block resize when char is animating
+			let initialized = false;
+			const observer = new ResizeObserver(() => {
+				if (!initialized) {
+					initialized = true;
+					return;
+				}
+
+				chart.resize();
+			});
+
+			observer.observe(container);
+		});
+	</script>
+}

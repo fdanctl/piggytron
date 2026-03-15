@@ -1,10 +1,9 @@
 // === sidebar === //
-let colapsed = localStorage.getItem("colapsed") === "true";
+// let colapsed set in sidebar-initial
 const sidebar = document.getElementById("sidebar");
-sidebar.classList.toggle("colapsed", colapsed);
 
 const handleColapseSidebar = () => {
-  sidebar.classList.toggle("colapsed");
+  document.documentElement.classList.toggle("sidebar-colapsed");
   colapsed = !colapsed;
   localStorage.setItem("colapsed", colapsed);
   sidebar
@@ -129,7 +128,7 @@ const handleExpandToggle = (ev) => {
   handleCloseAllSublinks(ev);
 
   if (!isOpen) {
-    if (closestSublinks.closest("#sidebar")?.matches(".colapsed")) {
+    if (document.documentElement.classList.contains("sidebar-colapsed")) {
       return;
     }
     closestSublinks.classList.add("open");
@@ -137,7 +136,7 @@ const handleExpandToggle = (ev) => {
 };
 
 const handleExpandOpen = (ele) => {
-  if (ele.closest("#sidebar")?.matches(".colapsed")) {
+  if (document.documentElement.classList.contains("sidebar-colapsed")) {
     return;
   }
   ele.classList.add("open");

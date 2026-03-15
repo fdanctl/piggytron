@@ -142,6 +142,18 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		if err := components.ArrowLeftSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ArrowRightSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ArrowRightLeftSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
 		if err := components.Spinner(30, "", "").Render(ctx, w); err != nil {
 			return err
 		}

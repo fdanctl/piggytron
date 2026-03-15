@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
@@ -14,6 +16,8 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
+	"github.com/go-echarts/go-echarts/v2/charts"
+	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
 type CategoriesHandler struct {
@@ -161,16 +165,28 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	content := components.Breadcrumbs([]components.BreadcrumbsLink{
-		{
-			Href: "/categories",
-			Name: "Categories",
-		},
-		{
-			Href: "/categories/" + category.GetId(),
-			Name: category.GetName(),
-		},
-	}, optionsLinks)
+	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
+			{
+				Href: "/categories",
+				Name: "Categories",
+			},
+			{
+				Href: "/categories/" + category.GetId(),
+				Name: category.GetName(),
+			},
+		}, optionsLinks)
+		if err := breadcrumbs.Render(ctx, w); err != nil {
+			return err
+		}
+
+		chart := createBarChart()
+		c := partials.Chart(chart)
+		if err := c.Render(ctx, w); err != nil {
+			return err
+		}
+		return nil
+	})
 
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
@@ -184,4 +200,36 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 
 	ctx := templ.WithChildren(r.Context(), main)
 	layouts.Base("Categories").Render(ctx, w)
+}
+
+func generateBarItems() []opts.BarData {
+	items := make([]opts.BarData, 0)
+	for range 12 {
+		items = append(items, opts.BarData{Value: rand.Intn(300)})
+	}
+	return items
+}
+
+func createBarChart() *charts.Bar {
+	bar := charts.NewBar()
+	bar.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
+	)
+
+	abbv := []string{
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+	}
+
+	currMonth := time.Now().Month() - 1
+	xAxis := make([]string, 12, 12)
+	for i := 11; i >= 0; i-- {
+		m := (((int(currMonth) - i) + 12) % 12)
+		xAxis[11-i] = abbv[m]
+	}
+
+	bar.Assets.ClearPresetJSAssets()
+	bar.SetXAxis(xAxis).
+		AddSeries("Category B", generateBarItems())
+	return bar
 }
