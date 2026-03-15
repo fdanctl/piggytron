@@ -128,7 +128,10 @@ const handleExpandToggle = (ev) => {
   handleCloseAllSublinks(ev);
 
   if (!isOpen) {
-    if (document.documentElement.classList.contains("sidebar-colapsed")) {
+    if (
+      document.documentElement.classList.contains("sidebar-colapsed") &&
+      closestSublinks.closest("#sidebar")
+    ) {
       return;
     }
     closestSublinks.classList.add("open");
@@ -136,7 +139,10 @@ const handleExpandToggle = (ev) => {
 };
 
 const handleExpandOpen = (ele) => {
-  if (document.documentElement.classList.contains("sidebar-colapsed")) {
+  if (
+    document.documentElement.classList.contains("sidebar-colapsed") &&
+    ele.closest("#sidebar")
+  ) {
     return;
   }
   ele.classList.add("open");
