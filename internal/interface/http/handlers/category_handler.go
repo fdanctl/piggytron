@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
+	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -71,12 +73,22 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	content := partials.Categories(
-		views.CategoriesView{
-			IncomeCategories:  icView,
-			ExpenseCategories: ecView,
-		},
-	)
+	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		err := components.Breadcrumbs([]components.BreadcrumbsLink{
+			{Href: "", Name: "Categories"},
+		}, nil).Render(ctx, w)
+		if err != nil {
+			return err
+		}
+
+		err = partials.Categories(
+			views.CategoriesView{
+				IncomeCategories:  icView,
+				ExpenseCategories: ecView,
+			},
+		).Render(ctx, w)
+		return err
+	})
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
 		return
@@ -94,25 +106,71 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
-	content := components.Breadcrumbs([]components.BreadcrumbsLinks{
+	ecat, err := h.expenseCatService.ReadCategory(r.Context(), id)
+	var icat *incomecategory.IncomeCategory
+	if err != nil {
+		icat, err = h.incomeCatService.ReadCategory(r.Context(), id)
+		if err != nil {
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
+		}
+	}
+
+	if ecat == nil && icat == nil {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	icats, err := h.incomeCatService.ReadAllUserCategories(r.Context())
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	ecats, err := h.expenseCatService.ReadAllUserCategories(r.Context())
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	var category views.Category
+	if ecat != nil {
+		category = views.ExpenseCategory{
+			Id:          ecat.ID(),
+			Name:        ecat.Name(),
+			ExpenseType: ecat.ExpenseType(),
+		}
+	} else {
+		category = views.IncomeCategory{
+			Id:   icat.ID(),
+			Name: icat.Name(),
+		}
+	}
+
+	var optionsLinks []components.BreadcrumbsLink
+
+	for _, v := range icats {
+		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+			Href: fmt.Sprintf("/categories/%s", v.ID()),
+			Name: v.Name(),
+		})
+	}
+	for _, v := range ecats {
+		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+			Href: fmt.Sprintf("/categories/%s", v.ID()),
+			Name: v.Name(),
+		})
+	}
+
+	content := components.Breadcrumbs([]components.BreadcrumbsLink{
 		{
 			Href: "/categories",
 			Name: "Categories",
 		},
 		{
-			Href: "/categories/" + id,
-			Name: id,
+			Href: "/categories/" + category.GetId(),
+			Name: category.GetName(),
 		},
-	}, []components.BreadcrumbsLinks{
-		{
-			Href: "/categories",
-			Name: "hello",
-		},
-		{
-			Href: "/categories",
-			Name: "hello",
-		},
-	})
+	}, optionsLinks)
 
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)

@@ -1,11 +1,11 @@
 package components
 
-type BreadcrumbsLinks struct {
+type BreadcrumbsLink struct {
 	Href string
 	Name string
 }
 
-templ Breadcrumbs(items []BreadcrumbsLinks, options []BreadcrumbsLinks) {
+templ Breadcrumbs(items []BreadcrumbsLink, options []BreadcrumbsLink) {
 	<style>
 		.breadcrumbs {
 			display: flex;
@@ -15,10 +15,6 @@ templ Breadcrumbs(items []BreadcrumbsLinks, options []BreadcrumbsLinks) {
 
 		.breadcrumbs {
 			font-size: 1.125rem;
-		}
-
-		.breadcrumbs a {
-			line-height: 0;
 		}
 
 		.breadcrumbs > a:hover {
@@ -49,6 +45,11 @@ templ Breadcrumbs(items []BreadcrumbsLinks, options []BreadcrumbsLinks) {
 		}
 		.breadcrumbs-selection > li:hover {
 			background-color: var(--color-bg-muted);
+		}
+		.breadcrumbs-selection a {
+			display: block;
+			width: 100%;
+			font-weight: 400 !important;
 		}
 	</style>
 	<div

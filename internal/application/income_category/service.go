@@ -57,6 +57,13 @@ func (s *Service) CreateCategory(
 	return category, nil
 }
 
+func (s *Service) ReadCategory(
+	ctx context.Context,
+	id string,
+) (*incomecategory.IncomeCategory, error) {
+	return s.repo.FindById(ctx, incomecategory.ID(id))
+}
+
 func (s *Service) ReadAllUserCategories(
 	ctx context.Context,
 ) ([]*incomecategory.IncomeCategory, error) {

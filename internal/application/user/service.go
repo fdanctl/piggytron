@@ -59,7 +59,7 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 		UserId: string(u.ID()), SessionVersion: 1,
 	})
 
-	return sid, nil
+	return sid, err
 }
 
 // TODO change name
@@ -84,7 +84,7 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 		UserId: string(u.ID()), SessionVersion: 1,
 	})
 
-	return sid, nil
+	return sid, err
 }
 
 func (s *Service) LogoutUser(ctx context.Context) error {

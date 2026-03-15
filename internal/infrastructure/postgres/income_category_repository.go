@@ -43,6 +43,39 @@ func (r *IncomeCategoryRepository) Save(
 	return err
 }
 
+func (r *IncomeCategoryRepository) FindById(
+	ctx context.Context,
+	id incomecategory.ID,
+) (*incomecategory.IncomeCategory, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT id, user_id, name, created_at, updated_at
+		 FROM income_categories
+		 WHERE id = $1`,
+		id,
+	)
+
+	var c IncomeCategoryDto
+	err := row.Scan(
+		&c.ID,
+		&c.UserId,
+		&c.Name,
+		&c.CreatedAt,
+		&c.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	category := incomecategory.Rehydrate(
+		c.ID,
+		c.UserId,
+		c.Name,
+		c.CreatedAt,
+		c.CreatedAt,
+	)
+	return category, err
+}
+
 func (r *IncomeCategoryRepository) FindByNameAndUser(
 	ctx context.Context,
 	userId incomecategory.ID,

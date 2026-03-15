@@ -45,6 +45,41 @@ func (r *ExpenseCategoryRepository) Save(
 	return err
 }
 
+func (r *ExpenseCategoryRepository) FindById(
+	ctx context.Context,
+	id expensecategory.ID,
+) (*expensecategory.ExpenseCategory, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT id, user_id, name, expense_type, created_at, updated_at
+		 FROM expense_categories
+		 WHERE id = $1`,
+		id,
+	)
+
+	var c ExpenseCategoryDto
+	err := row.Scan(
+		&c.ID,
+		&c.UserId,
+		&c.Name,
+		&c.ExpenseType,
+		&c.CreatedAt,
+		&c.UpdatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	category := expensecategory.Rehydrate(
+		c.ID,
+		c.UserId,
+		c.Name,
+		c.ExpenseType,
+		c.CreatedAt,
+		c.CreatedAt,
+	)
+	return category, err
+}
+
 func (r *ExpenseCategoryRepository) FindByNameAndUser(
 	ctx context.Context,
 	userId expensecategory.ID,

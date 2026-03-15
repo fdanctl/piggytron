@@ -63,6 +63,13 @@ func (s *Service) CreateCategory(
 	return category, nil
 }
 
+func (s *Service) ReadCategory(
+	ctx context.Context,
+	id string,
+) (*expensecategory.ExpenseCategory, error) {
+	return s.repo.FindById(ctx, expensecategory.ID(id))
+}
+
 func (s *Service) ReadAllUserCategories(
 	ctx context.Context,
 ) ([]*expensecategory.ExpenseCategory, error) {

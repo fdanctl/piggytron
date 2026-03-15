@@ -25,30 +25,34 @@ templ Dropdown(class, name string) {
 			margin-left: var(--spacing-xs);
 		}
 
-		.popover {
-			display: none;
-			margin: 0;
-			inset: auto;
-			top: anchor(bottom);
-			right: anchor(right);
-			position-try-fallbacks: flip-inline;
-			position-try: flip-inline;
-			background-color: lime;
-			border: none;
-			padding-top: 4px;
-			background-color: transparent;
-		}
+		@scope (.dropdown) {
+			.popover {
+				display: none;
+				margin: 0;
+				inset: auto;
+				top: anchor(bottom);
+				right: anchor(right);
+				position-try-fallbacks: flip-inline;
+				position-try: flip-inline;
+				background-color: lime;
+				border: none;
+				padding-top: 4px;
+				background-color: transparent;
+			}
 
-		.popover:popover-open {
-			display: block;
-		}
+			.popover:popover-open {
+				display: block;
+			}
 
-		.popover > div {
-			color: var(--color-text);
-			background-color: var(--color-bg);
-			border: 1px solid var(--color-border);
-			padding: var(--spacing-xs);
-			border-radius: var(--radius-sm);
+			.popover > div {
+				color: var(--color-text);
+				background-color: var(--color-bg);
+				border: 1px solid var(--color-border);
+				padding: var(--spacing-xs);
+				border-radius: var(--radius-sm);
+				max-height: 13rem;
+				overflow-y: scroll;
+			}
 		}
 	</style>
 	<div class="dropdown">
