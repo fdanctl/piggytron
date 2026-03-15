@@ -21,19 +21,14 @@ templ CategoryStats() {
 	<style>
 		.chart-container {
 			width: 100%;
-			height: 50vh;
+			height: 10vh;
 			min-height: 300px;
+			margin-top: calc(-1 * var(--spacing-lg));
 		}
 		.chart-container > .container {
 			width: 100%;
 			margin-top: 0;
 			height: 100%;
-		}
-		@media (max-width: 768px) {
-			.chart-container {
-				height: 300px;
-				border-radius: 12px;
-			}
 		}
 
 		.transaction {
@@ -94,21 +89,13 @@ templ CategoryStats() {
 	</section>
 	<script>
 		document.querySelectorAll(".chart-container").forEach((container) => {
-			const chartEl = container.querySelector(".container > div");
-			if (!chartEl) return;
-
-			const chart = echarts.getInstanceByDom(chartEl);
-			if (!chart) return;
-
-			// block resize when chart is animating
-			let initialized = false;
 			const observer = new ResizeObserver(() => {
-				if (!initialized) {
-					initialized = true;
-					return;
+				const chartEl = container.querySelector(".container > div");
+				if (!chartEl) return;
+				const chart = echarts.getInstanceByDom(chartEl);
+				if (chart) {
+					chart.resize();
 				}
-
-				chart.resize();
 			});
 
 			observer.observe(container);
