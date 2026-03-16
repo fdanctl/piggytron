@@ -10,7 +10,7 @@ templ Breadcrumbs(items []BreadcrumbsLink, options []BreadcrumbsLink) {
 		class="breadcrumbs"
 		hx-target="#content"
 		hx-boost="true"
-		hx-swap="innerHTML transition:true show:window:top"
+		hx-swap="innerHTML show:window:top"
 	>
 		for i, v := range items {
 			if i < len(items) - 1 {
