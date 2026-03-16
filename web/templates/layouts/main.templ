@@ -3,44 +3,6 @@ package layouts
 import "github.com/fdanctl/piggytron/web/templates/components"
 
 templ Main() {
-	<style>
-		@keyframes fade-in {
-			from {
-				opacity: 0;
-			}
-		}
-
-		@keyframes fade-out {
-			to {
-				opacity: 0;
-			}
-		}
-
-		@keyframes slide-from-right {
-			from {
-				transform: translateX(90px);
-			}
-		}
-
-		@keyframes slide-to-left {
-			to {
-				transform: translateX(-90px);
-			}
-		}
-
-		#content {
-			view-transition-name: slide-lr;
-		}
-
-		::view-transition-old(slide-lr) {
-			animation: 100ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
-		}
-		::view-transition-new(slide-lr) {
-			animation:
-				100ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
-				300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
-		}
-	</style>
 	@components.Sidebar()
 	@components.Header()
 	<main class="main" tabindex="-1" hx-history-elt>
@@ -59,37 +21,4 @@ templ Main() {
 			@components.Nav()
 		</dialog>
 	</div>
-	<script>
-		document.body.addEventListener("htmx:historyRestore", (ev) => {
-			// tab title
-			const splitPath = ev.detail.path.split("/");
-			let title = splitPath[1];
-			if (title === "") {
-				title = "Dashboard";
-			}
-			title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
-			document.title = title;
-
-			// nav active link
-			a.forEach((e) => e.classList.remove("active"));
-			for (let i = 0; i < a.length; i++) {
-				const text = a[i].text.trim().toLowerCase();
-				a[i].classList.toggle("active", text === title.toLowerCase());
-			}
-		});
-
-		document.body.addEventListener("incomeCategoryAdded", function (ev) {
-			closeLastDialog();
-			const li = document.querySelectorAll("#income-cat li");
-			document.querySelector("#income-cat h4").innerText =
-				`Income (${li.length + 1})`;
-		});
-
-		document.body.addEventListener("expenseCategoryAdded", function (ev) {
-			closeLastDialog();
-			const li = document.querySelectorAll("#expense-cat li");
-			document.querySelector("#expense-cat h4").innerText =
-				`Expenses (${li.length + 1})`;
-		});
-	</script>
 }

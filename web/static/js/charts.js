@@ -1,3 +1,16 @@
+document.querySelectorAll(".chart-container").forEach((container) => {
+  const observer = new ResizeObserver(() => {
+    const chartEl = container.querySelector(".container > div");
+    if (!chartEl) return;
+    const chart = echarts.getInstanceByDom(chartEl);
+    if (chart) {
+      chart.resize();
+    }
+  });
+
+  observer.observe(container);
+});
+
 const monthMap = new Map([
   ["Jan", "January"],
   ["Feb", "February"],
@@ -13,6 +26,7 @@ const monthMap = new Map([
   ["Dec", "December"],
 ]);
 
+// TODO rename
 function myTooltipFormatter(p) {
   const color = p.color || "#666";
   const name = monthMap.get(p.name) || p.name;

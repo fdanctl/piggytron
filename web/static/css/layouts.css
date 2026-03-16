@@ -153,6 +153,84 @@ html {
   }
 }
 
+/* === css transition slide === */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-from-right {
+  from {
+    transform: translateX(90px);
+  }
+}
+
+@keyframes slide-to-left {
+  to {
+    transform: translateX(-90px);
+  }
+}
+
+#content {
+  view-transition-name: slide-lr;
+}
+
+::view-transition-old(slide-lr) {
+  animation: 100ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
+}
+::view-transition-new(slide-lr) {
+  animation:
+    100ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+    300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
+}
+
+/* === categories === */
+#income-cat,
+#expense-cat {
+  margin-top: var(--spacing-lg);
+}
+
+#income-cat li,
+#expense-cat li {
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+
+  margin-top: var(--spacing-xs);
+  animation-name: slide-down;
+  animation-duration: 200ms;
+  animation-iteration-count: 1;
+  animation-timing-function: linear;
+  animation-fill-mode: backwards;
+}
+
+#income-cat ul,
+#expense-cat ul {
+  overflow-y: hidden;
+}
+
+#income-cat a,
+#expense-cat a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#income-cat > div,
+#expense-cat > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
 /* === login === */
 #login-main {
   padding: var(--spacing-sm);

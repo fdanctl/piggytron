@@ -1,0 +1,20 @@
+.badge {
+  display: inline-flex;
+  font-size: 0.75rem;
+  border-radius: var(--radius-xl);
+  padding: 0 var(--spacing-sm);
+  height: fit-content;
+  width: fit-content;
+}
+.badge.needs {
+  background-color: var(--color-needs);
+  color: var(--color-on-needs);
+}
+.badge.wants {
+  background-color: var(--color-wants);
+  color: var(--color-on-wants);
+}
+.badge.savings {
+  background-color: var(--color-savings);
+  color: var(--color-on-savings);
+}

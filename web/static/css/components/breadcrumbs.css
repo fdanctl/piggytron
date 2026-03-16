@@ -1,0 +1,45 @@
+.breadcrumbs {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.breadcrumbs {
+  font-size: 1.125rem;
+}
+
+.breadcrumbs > a:hover {
+  font-size: 1.125rem;
+  text-decoration: underline;
+}
+
+.breadcrumbs a:last-child {
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.breadcrumbs i {
+  height: 20px;
+}
+
+.breadcrumbs-selection {
+  font-size: 1rem;
+}
+.breadcrumbs-selection > li {
+  padding: 0 var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+}
+.breadcrumbs-selection > li:first-child {
+  margin-top: 0;
+}
+.breadcrumbs-selection > li:hover {
+  background-color: var(--color-bg-muted);
+}
+.breadcrumbs-selection a {
+  display: block;
+  width: 100%;
+  font-weight: 400 !important;
+}
