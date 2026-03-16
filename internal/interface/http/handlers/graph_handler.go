@@ -37,7 +37,20 @@ func (h *GraphHandler) Get(w http.ResponseWriter, r *http.Request) {
 	bodyStart := strings.Index(html, "<body>")
 	bodyEnd := strings.Index(html, "</body>")
 	fragment := html[bodyStart+len("<body>") : bodyEnd]
+	fmt.Println(fragment)
+
+	idStart := strings.Index(fragment, "id=\"")
+	id := fragment[idStart+len("id=\"") : idStart+len("id=\"")+12]
+
 	fmt.Fprint(w, fragment)
+	// ResizeObserver script
+	fmt.Fprint(w, fmt.Sprintf(`<script>
+		const observer_%s = new ResizeObserver(() => {
+			goecharts_%s.resize()
+		})
+		observer_%s.observe(document.getElementById("%s").closest(".chart-container"));
+		</script>`, id, id, id, id),
+	)
 }
 
 func generateBarItems() []opts.BarData {
