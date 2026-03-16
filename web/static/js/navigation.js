@@ -164,12 +164,10 @@ const handleSublinkFocus = (ele) => {
 
 function newPage(ev) {
   const splitPath = ev.detail.pathInfo.responsePath.split("/");
-  console.log(splitPath);
   let title = splitPath[1];
   if (title === "") {
     title = "Dashboard";
   }
-  console.log("title:", title);
   title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
   document.title = title;
   document.getElementsByTagName("main")[0].scrollTo(0, 0);

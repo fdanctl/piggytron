@@ -1,22 +1,12 @@
 package components
 
 templ DialogWrapper(class string, attrs templ.Attributes) {
-	<dialog class="dialog" { attrs... } id="test">
+	<dialog class="dialog" hx-on::load="this.showModal()" { attrs... }>
 		<div>
 			<div></div>
 		</div>
 		<div>
 			{ children... }
 		</div>
-		/*
-		<script>
-			window.addEventListener("load", () => {
-				const dialog = document.getElementById("test");
-				if (dialog && typeof dialog.showModal === "function") {
-					dialog.showModal();
-				}
-			});
-		</script>
-        */
 	</dialog>
 }

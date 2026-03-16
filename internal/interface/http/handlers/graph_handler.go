@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"bytes"
+	"fmt"
 	"math/rand"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-echarts/go-echarts/v2/charts"
@@ -27,7 +30,14 @@ func (h *GraphHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *GraphHandler) Get(w http.ResponseWriter, r *http.Request) {
 	chart := createBarChart()
-	chart.Render(w)
+	// cut unnecessary html code from echarts
+	buf := bytes.NewBuffer(nil)
+	chart.Render(buf)
+	html := buf.String()
+	bodyStart := strings.Index(html, "<body>")
+	bodyEnd := strings.Index(html, "</body>")
+	fragment := html[bodyStart+len("<body>") : bodyEnd]
+	fmt.Fprint(w, fragment)
 }
 
 func generateBarItems() []opts.BarData {
