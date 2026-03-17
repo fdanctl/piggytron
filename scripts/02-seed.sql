@@ -65,19 +65,12 @@ WHERE
 
 -- EXPENSES CATEGORIES
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'House',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -86,19 +79,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Utilities',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -107,19 +93,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Transportation',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -128,19 +107,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Groceries',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -149,19 +121,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Entertainment',
-  2,
+  'wants',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -170,19 +135,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Clothing',
-  2,
+  'wants',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -191,19 +149,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Shopping',
-  2,
+  'wants',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -212,19 +163,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Eating Out',
-  2,
+  'wants',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -233,19 +177,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Health',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -254,19 +191,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Household Items',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -275,19 +205,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Personal',
-  2,
+  'wants',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -296,19 +219,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Savings',
-  3,
+  'savings',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -317,19 +233,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Investing',
-  3,
+  'savings',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -338,19 +247,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Emergency Fund',
-  3,
+  'savings',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -359,19 +261,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Gifts/Donations',
-  2,
+  'wants',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -380,19 +275,12 @@ WHERE
   u.name = 'gopher';
 
 INSERT INTO
-  expense_categories (
-    id,
-    user_id,
-    name,
-    expense_type,
-    created_at,
-    updated_at
-  )
+  expense_categories (id, user_id, name, type, created_at, updated_at)
 SELECT
   gen_random_uuid(),
   u.id,
   'Miscellaneous',
-  1,
+  'needs',
   '2026-03-11',
   '2026-03-11'
 FROM

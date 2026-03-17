@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"strconv"
 
 	"github.com/a-h/templ"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
@@ -46,17 +45,12 @@ func (h *ExpenseCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
-	catType, err := strconv.Atoi(r.FormValue("type"))
-	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.ExpenseCategoryForm(*views.NewExpenseCategoryForm()).Render(r.Context(), w)
-		return
-	}
+	catType := r.FormValue("type")
 
 	view := views.ExpenseCategoryForm{
 		Initial: false,
 		Name:    name,
-		Type:    int8(catType),
+		Type:    catType,
 	}
 
 	msgs := view.Validate()

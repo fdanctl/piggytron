@@ -8,7 +8,7 @@ import (
 type Category interface {
 	GetId() string
 	GetName() string
-	GetExpenseType() uint8
+	GetExpenseType() string
 }
 
 type IncomeCategory struct {
@@ -24,8 +24,8 @@ func (c IncomeCategory) GetName() string {
 	return c.Name
 }
 
-func (c IncomeCategory) GetExpenseType() uint8 {
-	return 0
+func (c IncomeCategory) GetExpenseType() string {
+	return ""
 }
 
 type ExpenseCategory struct {
@@ -42,8 +42,8 @@ func (c ExpenseCategory) GetName() string {
 	return c.Name
 }
 
-func (c ExpenseCategory) GetExpenseType() uint8 {
-	return uint8(c.ExpenseType)
+func (c ExpenseCategory) GetExpenseType() string {
+	return string(c.ExpenseType)
 }
 
 type CategoriesView struct {

@@ -3,14 +3,15 @@ package views
 import (
 	"errors"
 
-	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
+	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
+	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
 )
 
 type ExpenseCategoryForm struct {
 	Initial bool
 
 	Name        string
-	Type        int8
+	Type        string
 	ErrorMsg    string
 	CustomError error
 }
@@ -28,7 +29,7 @@ func (v *ExpenseCategoryForm) ValidateName() (msgs []string) {
 	if v.Name == "" {
 		msgs = append(msgs, "Name is required")
 	}
-	if errors.Is(v.CustomError, expensecategory.ErrDuplicate) {
+	if errors.Is(v.CustomError, expensecategoryapp.ErrDuplicate) {
 		msgs = append(msgs, v.CustomError.Error())
 	}
 	if len(v.Name) > 30 {
@@ -45,7 +46,7 @@ func (v *ExpenseCategoryForm) ValidateType() (msgs []string) {
 	if v.Initial {
 		return
 	}
-	if v.Type < 1 || v.Type > 3 {
+	if _, err := expensecategory.NewExpenseType(v.Type); err != nil {
 		msgs = append(msgs, "Invalid type")
 	}
 	return msgs

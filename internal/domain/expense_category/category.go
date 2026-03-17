@@ -11,19 +11,28 @@ func NewId(str string) (ID, error) {
 	return ID(str), nil
 }
 
-type ExpenseType uint8
+type ExpenseType string
 
 const (
-	needs ExpenseType = iota + 1
-	wants
-	savings
+	needs   ExpenseType = "needs"
+	wants   ExpenseType = "wants"
+	savings ExpenseType = "savings"
 )
 
-func NewExpenseType(num uint8) (ExpenseType, error) {
-	if num <= 0 || num > 3 {
-		return 0, ErrInvalidType
+func NewExpenseType(str string) (ExpenseType, error) {
+	switch str {
+	case "needs":
+		return needs, nil
+
+	case "wants":
+		return wants, nil
+
+	case "savings":
+		return savings, nil
+
+	default:
+		return "", ErrInvalidType
 	}
-	return ExpenseType(num), nil
 }
 
 type ExpenseCategory struct {

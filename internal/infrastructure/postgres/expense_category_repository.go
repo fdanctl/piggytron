@@ -33,7 +33,7 @@ func (r *ExpenseCategoryRepository) Save(
 ) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO expense_categories (id, user_id, name, expense_type, created_at, updated_at)
+		`INSERT INTO expense_categories (id, user_id, name, type, created_at, updated_at)
 		 VALUES($1,$2,$3,$4,$5,$6)`,
 		category.ID(),
 		category.UserId(),
@@ -51,7 +51,7 @@ func (r *ExpenseCategoryRepository) FindById(
 ) (*expensecategory.ExpenseCategory, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, name, expense_type, created_at, updated_at
+		`SELECT id, user_id, name, type, created_at, updated_at
 		 FROM expense_categories
 		 WHERE id = $1`,
 		id,
@@ -87,7 +87,7 @@ func (r *ExpenseCategoryRepository) FindByNameAndUser(
 ) (*expensecategory.ExpenseCategory, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, name, expense_type, created_at, updated_at
+		`SELECT id, user_id, name, type, created_at, updated_at
 		 FROM expense_categories
 		 WHERE user_id = $1 AND name = $2`,
 		userId,
@@ -123,7 +123,7 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 ) ([]*expensecategory.ExpenseCategory, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, name, expense_type, created_at, updated_at
+		`SELECT id, user_id, name, type, created_at, updated_at
 		 FROM expense_categories
 		 WHERE user_id = $1`,
 		userId,

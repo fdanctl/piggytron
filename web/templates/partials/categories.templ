@@ -72,11 +72,11 @@ templ CategoryItem(cat views.Category, attrs templ.Attributes) {
 		<a href={ "/categories/" + cat.GetId() }>
 			{ cat.GetName() }
 			switch cat.GetExpenseType() {
-				case 1:
+				case "needs":
 					@components.Badge("Needs", "", components.BadgeNeeds)
-				case 2:
+				case "wants":
 					@components.Badge("Wants", "", components.BadgeWants)
-				case 3:
+				case "savings":
 					@components.Badge("Savings", "", components.BadgeSavings)
 			}
 		</a>

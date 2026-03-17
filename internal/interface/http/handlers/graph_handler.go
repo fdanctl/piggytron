@@ -31,13 +31,13 @@ func (h *GraphHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *GraphHandler) Get(w http.ResponseWriter, r *http.Request) {
 	chart := createBarChart()
 	// cut unnecessary html code from echarts
+	// only get what's inside <body></body>
 	buf := bytes.NewBuffer(nil)
 	chart.Render(buf)
 	html := buf.String()
 	bodyStart := strings.Index(html, "<body>")
 	bodyEnd := strings.Index(html, "</body>")
 	fragment := html[bodyStart+len("<body>") : bodyEnd]
-	fmt.Println(fragment)
 
 	idStart := strings.Index(fragment, "id=\"")
 	id := fragment[idStart+len("id=\"") : idStart+len("id=\"")+12]
@@ -45,11 +45,17 @@ func (h *GraphHandler) Get(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, fragment)
 	// ResizeObserver script
 	fmt.Fprint(w, fmt.Sprintf(`<script>
+		// block resize when chart is animating
+		let initialized_%s = false;
 		const observer_%s = new ResizeObserver(() => {
+			if (!initialized_%s) {
+				initialized_%s = true;
+				return;
+			}
 			goecharts_%s.resize()
 		})
-		observer_%s.observe(document.getElementById("%s").closest(".chart-container"));
-		</script>`, id, id, id, id),
+		observer_%s.observe(document.getElementById("%s"))
+		</script>`, id, id, id, id, id, id, id),
 	)
 }
 

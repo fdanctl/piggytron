@@ -32,9 +32,9 @@ templ ExpenseCategoryForm(v views.ExpenseCategoryForm) {
 			v.TypeHasError(),
 			templ.Attributes{
 				"id":          "type",
-				"type":        "number",
+				"type":        "text",
 				"name":        "type",
-				"placeholder": "0",
+				"placeholder": "hello I will be a select",
 				"value":       v.Type,
 				"required":    true,
 			},

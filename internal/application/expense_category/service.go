@@ -26,7 +26,7 @@ func NewService(repo expensecategory.Repository) *Service {
 func (s *Service) CreateCategory(
 	ctx context.Context,
 	name string,
-	expenseType int,
+	expenseType string,
 ) (*expensecategory.ExpenseCategory, error) {
 	v := ctx.Value("user")
 	if v == nil {
@@ -38,7 +38,7 @@ func (s *Service) CreateCategory(
 		return nil, errors.New("not sessionInfo")
 	}
 
-	et, err := expensecategory.NewExpenseType(uint8(expenseType))
+	et, err := expensecategory.NewExpenseType(expenseType)
 	if err != nil {
 		return nil, err
 	}

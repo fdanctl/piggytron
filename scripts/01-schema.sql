@@ -9,78 +9,124 @@ CREATE TABLE users (
 CREATE TABLE income_categories (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  --
   name VARCHAR(30) NOT NULL,
+  --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP
 );
 
--- expense_type needs = 1
--- expense_type wants = 2
--- expense_type savings = 3
 CREATE TABLE expense_categories (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  --
   name VARCHAR(30) NOT NULL,
-  expense_type INT2,
+  type VARCHAR(10) NOT NULL CHECK (type IN ('needs', 'wants', 'savings')),
+  --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP
 );
 
-CREATE TABLE banks (
+CREATE TABLE accounts (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-  title VARCHAR(30) NOT NULL,
+  --
+  name VARCHAR(50) NOT NULL,
+  type VARCHAR(10) NOT NULL CHECK (type IN ('bank', 'goal')),
+  --
   currency VARCHAR(10) NOT NULL,
-  initial_balance BIGINT NOT NULL, -- in cents
-  is_savings BOOLEAN NOT NULL,
-  created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP NOT NULL,
-  deleted_at TIMESTAMP
-);
-
-CREATE TABLE goals (
-  id UUID PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users (id) on DELETE CASCADE,
-  category_id UUID NOT NULL REFERENCES expense_categories (id),
-  title VARCHAR(40) NOT NULL,
-  currency VARCHAR(10) NOT NULL,
-  target_amount BIGINT NOT NULL, -- in cents
+  -- Goal-specific fields (NULL if type = 'bank')
+  target_amount BIGINT,
   target_date TIMESTAMP,
+  category_id UUID REFERENCES expense_categories (id),
+  --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   deleted_at TIMESTAMP
+  -- rules
+  CHECK (
+    (
+      type = 'bank'
+      AND target_amount IS NULL
+      AND target_date IS NULL
+      AND category_id IS NULL
+    )
+    OR (
+      type = 'goal'
+      AND target_amount IS NOT NULL
+      AND target_date IS NOT NULL
+      AND category_id IS NOT NULL
+    )
+  )
 );
 
-CREATE TABLE income (
+CREATE TABLE transactions (
   id UUID PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users (id) on DELETE CASCADE,
-  category_id UUID NOT NULL REFERENCES income_categories (id),
+  user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  --
+  type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense', 'transfer')),
+  --
+  from_account_id UUID REFERENCES accounts (id),
+  to_account_id UUID REFERENCES accounts (id),
+  --
+  income_category_id UUID REFERENCES income_categories (id),
+  expense_category_id UUID REFERENCES expense_categories (id),
+  --
+  amount BIGINT NOT NULL CHECK (amount > 0),
   description TEXT NOT NULL,
-  amount BIGINT NOT NULL,
-  distination_id UUID NOT NULL REFERENCES banks (id),
-  date TIMESTAMP NOT NULL
+  date TIMESTAMP NOT NULL,
+  --
+  created_at TIMESTAMP NOT NULL,
+  -- rules
+  CHECK (
+    from_account_id IS NOT NULL
+    OR to_account_id IS NOT NULL
+  ),
+  --
+  CHECK (
+    from_account_id IS NULL
+    OR to_account_id IS NULL
+    OR from_account_id <> to_account_id
+  ),
+  --
+  CHECK (
+    (
+      type = 'income'
+      AND to_account_id IS NOT NULL
+      AND from_account_id IS NULL
+      AND income_category_id IS NOT NULL
+      AND expense_category_id IS NULL
+    )
+    OR (
+      type = 'expense'
+      AND from_account_id IS NOT NULL
+      AND to_account_id IS NULL
+      AND expense_category_id IS NOT NULL
+      AND income_category_id IS NULL
+    )
+    OR (
+      type = 'transfer'
+      AND from_account_id IS NOT NULL
+      AND to_account_id IS NOT NULL
+      AND income_category_id IS NULL
+      -- expense_category_id optional
+    )
+  )
 );
 
-CREATE TABLE expenses (
+-- one per category and month
+CREATE TABLE monthly_budgets (
   id UUID PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users (id) on DELETE CASCADE,
-  category_id UUID REFERENCES expense_categories (id),
-  description TEXT NOT NULL,
-  amount BIGINT NOT NULL,
-  source_id UUID REFERENCES banks (id),
-  date TIMESTAMP NOT NULL
+  user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+  category_id UUID NOT NULL REFERENCES expense_categories (id),
+  --
+  month DATE NOT NULL, -- e.g. '2026-03-01'
+  amount BIGINT NOT NULL CHECK (amount > 0), -- in cents
+  --
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
+  --
+  UNIQUE (category_id, month)
 );
-
-CREATE TABLE transfers (
-  id UUID PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES users (id) on DELETE CASCADE,
-  description TEXT NOT NULL,
-  amount BIGINT NOT NULL,
-  source_id UUID REFERENCES banks (id),
-  distination_id UUID NOT NULL REFERENCES banks (id),
-  date TIMESTAMP NOT NULL
-);
-
--- TODO CREATE TABLE monthly_budget
