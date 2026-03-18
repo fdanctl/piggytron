@@ -102,6 +102,7 @@ func (ec *ExpenseCategory) UpdatedAt() time.Time {
 	return ec.updatedAt
 }
 
+// TODO
 func (ec *ExpenseCategory) ChangeName(name string) error {
 	if name == "" {
 		return ErrInvalidName

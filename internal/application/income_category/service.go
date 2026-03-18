@@ -10,10 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	ErrCategoryExists = errors.New("category already exists")
-	ErrDuplicate      = errors.New("duplicate category")
-)
+var ErrDuplicate = errors.New("duplicate category")
 
 type Service struct {
 	repo incomecategory.Repository

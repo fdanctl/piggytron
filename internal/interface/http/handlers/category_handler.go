@@ -176,7 +176,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		c := partials.CategoryStats()
+		c := partials.CategoryStats(category)
 		if err := c.Render(ctx, w); err != nil {
 			return err
 		}

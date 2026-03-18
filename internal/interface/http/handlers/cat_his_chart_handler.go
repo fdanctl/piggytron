@@ -12,15 +12,16 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-type GraphHandler struct{}
+type CatHistChartHandler struct{}
 
-func NewGraphHandler() *GraphHandler {
-	return &GraphHandler{}
+func NewCatHistChartHandler() *CatHistChartHandler {
+	return &CatHistChartHandler{}
 }
 
-func (h *GraphHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *CatHistChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
+		fmt.Println(r.PathValue("id"))
 		h.Get(w, r)
 
 	default:
@@ -28,7 +29,7 @@ func (h *GraphHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *GraphHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *CatHistChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	chart := createBarChart()
 	// cut unnecessary html code from echarts
 	// only get what's inside <body></body>

@@ -2,7 +2,9 @@ package partials
 
 import (
 	"context"
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
 	"io"
 	"time"
 )
@@ -17,11 +19,11 @@ func ConvertChartToTemplComponent(chart Renderable) templ.Component {
 	})
 }
 
-templ CategoryStats() {
+templ CategoryStats(cat views.Category) {
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
-		hx-get="/partials/graph"
+		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetId()) }
 		hx-trigger="load"
 	>
 		@components.Loader("htmx-indicator")

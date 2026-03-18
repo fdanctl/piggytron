@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/config"
+	"github.com/fdanctl/piggytron/internal/application/bank"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/user"
@@ -85,6 +86,12 @@ func main() {
 	bh := handlers.BudgetHandler{}
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(&bh))
 
+	bankRepo := postgres.NewBankRepository(db)
+	bankService := bank.NewService(bankRepo)
+	banksHandler := handlers.NewBanksHandler(bankService)
+	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
+	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
+
 	eh := handlers.ExpensesHandler{}
 	webMux.Handle("/transactions/expenses", middleware.AuthProtectedRoute(&eh))
 
@@ -118,8 +125,8 @@ func main() {
 	expenseCatHandler := handlers.NewExpenseCategoriesHandler(expenseCatService)
 	partialsMux.Handle("/partials/expense-category", expenseCatHandler)
 
-	graphHandler := handlers.NewGraphHandler()
-	partialsMux.Handle("/partials/graph", graphHandler)
+	catHistChartHandler := handlers.NewCatHistChartHandler()
+	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {
