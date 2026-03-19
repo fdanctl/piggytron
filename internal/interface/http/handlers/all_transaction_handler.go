@@ -29,13 +29,19 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 
 func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	// TODO infinite scroll (maybe 50 each time)
-	transactions, err := h.service.RealAllByUser(r.Context())
+	transactions, err := h.service.ReadAllByUser(r.Context())
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
 	for _, b := range transactions {
-		fmt.Fprintf(w, "<a href=\"/transactions/%s\">%s</p>", b.ID(), b.Description())
+		fmt.Fprintf(
+			w,
+			"<a href=\"/transactions/%s\">%s</a><p>%s</p>",
+			b.ID(),
+			b.Description(),
+			b.FromAccountId(),
+		)
 	}
 }

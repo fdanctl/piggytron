@@ -6,7 +6,6 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 	"io"
-	"time"
 )
 
 type Renderable interface {
@@ -19,7 +18,7 @@ func ConvertChartToTemplComponent(chart Renderable) templ.Component {
 	})
 }
 
-templ CategoryStats(cat views.Category) {
+templ CategoryStats(cat views.Category, transactions []views.Transaction) {
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
@@ -30,21 +29,33 @@ templ CategoryStats(cat views.Category) {
 	</div>
 	<section id="transactions">
 		<h4 class="mb-md">Transactions</h4>
-		<ul>
-			<li class="transaction">
-				<div>
+		<ul class="space-y-sm">
+			if len(transactions) == 0 {
+				<p>no transactions</p>
+			}
+			for _, t := range transactions {
+				<li class="transaction">
 					<div>
-						@components.ArrowLeftSvg(0, "", "")
+						<div>
+							switch t.Type {
+								case "expense":
+									@components.ArrowLeftSvg(0, "", "")
+								case "income":
+									@components.ArrowRightSvg(0, "", "")
+								case "transfer":
+									@components.ArrowRightLeftSvg(0, "", "")
+							}
+						</div>
+						<div>
+							<p class="h5 font-medium">{ t.Description }</p>
+							<p class="text-subtitle text-sm">{ t.Date }</p>
+						</div>
 					</div>
-					<div>
-						<p class="h5 font-medium">money well spent</p>
-						<p class="text-subtitle text-sm">{ time.Now().Format(time.DateOnly) }</p>
+					<div class="h5" style={ templ.KV("color: #EF5350;", t.Type == "expense") }>
+						{ t.Amount }
 					</div>
-				</div>
-				<div class="h5 font-medium">
-					-10$
-				</div>
-			</li>
+				</li>
+			}
 		</ul>
 	</section>
 }

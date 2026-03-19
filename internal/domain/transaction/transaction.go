@@ -178,18 +178,30 @@ func (t *Transaction) Ttype() Ttype {
 }
 
 func (t *Transaction) FromAccountId() ID {
+	if t.fromAccountId == nil {
+		return ID("")
+	}
 	return *t.fromAccountId
 }
 
 func (t *Transaction) ToAccountId() ID {
+	if t.toAccountId == nil {
+		return ID("")
+	}
 	return *t.toAccountId
 }
 
 func (t *Transaction) IncomeCategoryId() ID {
+	if t.incomeCategoryId == nil {
+		return ID("")
+	}
 	return *t.incomeCategoryId
 }
 
 func (t *Transaction) ExpenseCategoryId() ID {
+	if t.expenseCategoryId == nil {
+		return ID("")
+	}
 	return *t.expenseCategoryId
 }
 

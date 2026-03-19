@@ -21,7 +21,6 @@ func NewCatHistChartHandler() *CatHistChartHandler {
 func (h *CatHistChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		fmt.Println(r.PathValue("id"))
 		h.Get(w, r)
 
 	default:

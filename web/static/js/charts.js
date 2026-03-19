@@ -36,8 +36,9 @@ function myTooltipFormatter(p) {
     ': <span style="color:' +
     color +
     ';font-weight:bold">' +
+    "€" +
     p.value +
-    "€</span>" +
+    "</span>" +
     "</span>"
   );
 }

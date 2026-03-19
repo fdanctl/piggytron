@@ -9,6 +9,10 @@
   cursor: pointer;
 }
 
+.transaction:hover {
+  background-color: var(--color-bg-secondary);
+}
+
 .transaction > div:first-child {
   display: flex;
   align-items: center;

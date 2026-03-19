@@ -107,7 +107,11 @@ func main() {
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
 
-	categoriesHandler := handlers.NewCategoriesHandler(expenseCatService, incomeCatService)
+	categoriesHandler := handlers.NewCategoriesHandler(
+		expenseCatService,
+		incomeCatService,
+		transactionService,
+	)
 
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
 	webMux.Handle("/categories/{id}", middleware.AuthProtectedRoute(categoriesHandler))

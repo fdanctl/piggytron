@@ -411,7 +411,7 @@ SELECT
   a.id,
   ic.id,
   NULL,
-  ROUND(random() * 3000 + 500)::BIGINT,
+  ROUND(random() * 300000 + 50000)::BIGINT,
   'Salary / Income',
   '2026-03-11',
   '2026-03-11'
@@ -444,7 +444,7 @@ SELECT
   a.id,
   NULL,
   ec.id,
-  ROUND(random() * 200 + 10)::BIGINT,
+  ROUND(random() * 20000 + 1000)::BIGINT,
   'Monthly expense',
   '2026-03-11',
   '2026-03-11'
@@ -479,7 +479,7 @@ SELECT
   a_to.id,
   NULL,
   NULL,
-  ROUND(random() * 1000 + 100)::BIGINT,
+  ROUND(random() * 100000 + 10000)::BIGINT,
   'Transfer between accounts',
   '2026-03-11',
   '2026-03-11'

@@ -9,6 +9,7 @@ import (
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
+	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -17,17 +18,20 @@ import (
 )
 
 type CategoriesHandler struct {
-	incomeCatService  *incomecategoryapp.Service
-	expenseCatService *expensecategoryapp.Service
+	incomeCatService   *incomecategoryapp.Service
+	expenseCatService  *expensecategoryapp.Service
+	transactionService *transactionapp.Service
 }
 
 func NewCategoriesHandler(
 	es *expensecategoryapp.Service,
 	is *incomecategoryapp.Service,
+	ts *transactionapp.Service,
 ) *CategoriesHandler {
 	return &CategoriesHandler{
-		incomeCatService:  is,
-		expenseCatService: es,
+		incomeCatService:   is,
+		expenseCatService:  es,
+		transactionService: ts,
 	}
 }
 
@@ -161,6 +165,21 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
+	transactions, err := h.transactionService.ReadAllByCategory(r.Context(), id)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	var transactionsView []views.Transaction
+	for _, t := range transactions {
+		fmt.Println("t", t.Description())
+		transactionsView = append(
+			transactionsView,
+			views.NewTransaction(t.ID(), t.Description(), t.Ttype(), t.Amount(), t.Date()),
+		)
+	}
+
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
 			{
@@ -176,7 +195,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		c := partials.CategoryStats(category)
+		c := partials.CategoryStats(category, transactionsView)
 		if err := c.Render(ctx, w); err != nil {
 			return err
 		}

@@ -2,6 +2,7 @@ package transaction
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
@@ -27,7 +28,7 @@ func (s *Service) ReadOneById(ctx context.Context, id string) (*transaction.Tran
 	return s.repo.FindById(ctx, newId)
 }
 
-func (s *Service) RealAllByUser(
+func (s *Service) ReadAllByUser(
 	ctx context.Context,
 ) ([]*transaction.Transaction, error) {
 	v := ctx.Value("user")
@@ -50,4 +51,16 @@ func (s *Service) RealAllByUser(
 		return nil, err
 	}
 	return transactions, nil
+}
+
+func (s *Service) ReadAllByCategory(
+	ctx context.Context,
+	cid string,
+) ([]*transaction.Transaction, error) {
+	newId, err := transaction.NewId(cid)
+	if err != nil {
+		fmt.Print("ops")
+		return nil, err
+	}
+	return s.repo.FindAllByCategory(ctx, newId)
 }
