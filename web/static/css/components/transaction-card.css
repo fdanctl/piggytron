@@ -7,6 +7,12 @@
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   cursor: pointer;
+
+  animation-name: slide-down;
+  animation-duration: 200ms;
+  animation-iteration-count: 1;
+  animation-timing-function: linear;
+  animation-fill-mode: backwards;
 }
 
 .transaction:hover {

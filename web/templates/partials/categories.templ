@@ -30,7 +30,7 @@ templ Categories(cv views.CategoriesView) {
 		>
 			for i, cat := range cv.IncomeCategories {
 				@CategoryItem(cat, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*50),
+					"style": fmt.Sprintf("animation-delay: %dms", i*30),
 				})
 			}
 		</ul>
@@ -60,7 +60,7 @@ templ Categories(cv views.CategoriesView) {
 		>
 			for i, cat := range cv.ExpenseCategories {
 				@CategoryItem(cat, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*50),
+					"style": fmt.Sprintf("animation-delay: %dms", i*30),
 				})
 			}
 		</ul>

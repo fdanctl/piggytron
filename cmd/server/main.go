@@ -135,6 +135,9 @@ func main() {
 	expenseCatHandler := handlers.NewExpenseCategoriesHandler(expenseCatService)
 	partialsMux.Handle("/partials/expense-category", expenseCatHandler)
 
+	filteredTransaction := handlers.NewFilteredTransactionsHandler(transactionService)
+	partialsMux.Handle("/partials/transactions", filteredTransaction)
+
 	catHistChartHandler := handlers.NewCatHistChartHandler()
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 

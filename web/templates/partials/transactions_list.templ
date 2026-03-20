@@ -1,0 +1,57 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ TransactionsList(transactions []views.Transaction, queryStr string) {
+	<ul class="space-y-sm">
+		if len(transactions) == 0 {
+			<p>no transactions</p>
+		}
+		for i, t := range transactions {
+			if i == len(transactions) - 1 {
+				@TransactionItem(t, templ.Attributes{
+					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
+					"hx-get":       fmt.Sprintf("/partials/transactions?%s", queryStr),
+					"hx-trigger":   "intersect once",
+					"hx-swap":      "afterend",
+					"hx-indicator": "#infinite-indicator",
+				})
+			} else {
+				@TransactionItem(t, templ.Attributes{
+					"style": fmt.Sprintf("animation-delay: %dms", i*30),
+				})
+			}
+		}
+		<div id="infinite-indicator" class="indicator">
+			@components.Loader("", nil)
+		</div>
+	</ul>
+}
+
+templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
+	<li class="transaction" { attrs... }>
+		<div>
+			<div>
+				switch t.Type {
+					case "expense":
+						@components.ArrowLeftSvg(0, "", "")
+					case "income":
+						@components.ArrowRightSvg(0, "", "")
+					case "transfer":
+						@components.ArrowRightLeftSvg(0, "", "")
+				}
+			</div>
+			<div>
+				<p class="h5 font-medium">{ t.Description }</p>
+				<p class="text-subtitle text-sm">{ t.Date }</p>
+			</div>
+		</div>
+		<div class="h5" style={ templ.KV("color: #EF5350;", t.Type == "expense") }>
+			{ t.Amount }
+		</div>
+	</li>
+}

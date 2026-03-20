@@ -19,6 +19,22 @@ const (
 	transfer Ttype = "transfer"
 )
 
+func NewType(str string) (Ttype, error) {
+	switch str {
+	case "income":
+		return income, nil
+
+	case "expense":
+		return expense, nil
+
+	case "transfer":
+		return transfer, nil
+
+	default:
+		return "", ErrInvalidType
+	}
+}
+
 type Transaction struct {
 	id     ID
 	userId ID

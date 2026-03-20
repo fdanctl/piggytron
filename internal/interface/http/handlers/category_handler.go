@@ -165,7 +165,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	transactions, err := h.transactionService.ReadAllByCategory(r.Context(), id)
+	transactions, err := h.transactionService.ReadAllByCategory(r.Context(), id, 1)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -173,7 +173,6 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 
 	var transactionsView []views.Transaction
 	for _, t := range transactions {
-		fmt.Println("t", t.Description())
 		transactionsView = append(
 			transactionsView,
 			views.NewTransaction(t.ID(), t.Description(), t.Ttype(), t.Amount(), t.Date()),

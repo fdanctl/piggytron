@@ -1,22 +1,10 @@
 package partials
 
 import (
-	"context"
 	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
-	"io"
 )
-
-type Renderable interface {
-	Render(w io.Writer) error
-}
-
-func ConvertChartToTemplComponent(chart Renderable) templ.Component {
-	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		return chart.Render(w)
-	})
-}
 
 templ CategoryStats(cat views.Category, transactions []views.Transaction) {
 	<div
@@ -25,37 +13,10 @@ templ CategoryStats(cat views.Category, transactions []views.Transaction) {
 		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetId()) }
 		hx-trigger="load"
 	>
-		@components.Loader("htmx-indicator")
+		@components.Loader("htmx-indicator", nil)
 	</div>
 	<section id="transactions">
 		<h4 class="mb-md">Transactions</h4>
-		<ul class="space-y-sm">
-			if len(transactions) == 0 {
-				<p>no transactions</p>
-			}
-			for _, t := range transactions {
-				<li class="transaction">
-					<div>
-						<div>
-							switch t.Type {
-								case "expense":
-									@components.ArrowLeftSvg(0, "", "")
-								case "income":
-									@components.ArrowRightSvg(0, "", "")
-								case "transfer":
-									@components.ArrowRightLeftSvg(0, "", "")
-							}
-						</div>
-						<div>
-							<p class="h5 font-medium">{ t.Description }</p>
-							<p class="text-subtitle text-sm">{ t.Date }</p>
-						</div>
-					</div>
-					<div class="h5" style={ templ.KV("color: #EF5350;", t.Type == "expense") }>
-						{ t.Amount }
-					</div>
-				</li>
-			}
-		</ul>
+		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetId()))
 	</section>
 }

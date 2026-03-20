@@ -212,6 +212,11 @@ html {
   animation-fill-mode: backwards;
 }
 
+#income-cat li:hover,
+#expense-cat li:hover {
+  background-color: var(--color-bg-secondary);
+}
+
 #income-cat ul,
 #expense-cat ul {
   overflow-y: hidden;

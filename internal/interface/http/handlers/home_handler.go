@@ -198,7 +198,7 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		if err := components.Loader("").Render(ctx, w); err != nil {
+		if err := components.Loader("", nil).Render(ctx, w); err != nil {
 			return err
 		}
 		_, err := io.WriteString(w, "</div>")
