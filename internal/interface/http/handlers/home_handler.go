@@ -142,6 +142,10 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		if err := components.MinusSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
 		if err := components.ArrowLeftSvg(30, "", "").Render(ctx, w); err != nil {
 			return err
 		}
@@ -151,6 +155,18 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err := components.ArrowRightLeftSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.ListFilterSvg(30, "", "").Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.FilterBtn(2, 30, "", "", nil).Render(ctx, w); err != nil {
+			return err
+		}
+
+		if err := components.CheckSvg(30, "", "").Render(ctx, w); err != nil {
 			return err
 		}
 

@@ -122,3 +122,41 @@
   width: 1rem;
   height: 1rem;
 }
+
+/* check pill */
+.check-pill {
+  border-radius: var(--radius-xl);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  padding-right: var(--spacing-sm);
+  height: 1.7rem;
+  border: 1px solid var(--color-text);
+  width: fit-content;
+  cursor: pointer;
+  text-wrap: nowrap;
+}
+
+.check-pill > div:first-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 100%;
+  border: 1px solid var(--color-text);
+  color: var(--color-bg);
+}
+
+.check-pill > div:first-child > svg {
+  display: none;
+}
+
+.check-pill:has(input[type="checkbox"]:checked) > div:first-child {
+  background-color: var(--color-text);
+}
+.check-pill:has(input[type="checkbox"]:checked) > div:first-child > svg {
+  display: block;
+}

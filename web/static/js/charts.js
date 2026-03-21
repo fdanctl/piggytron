@@ -1,16 +1,3 @@
-document.querySelectorAll(".chart-container").forEach((container) => {
-  const observer = new ResizeObserver(() => {
-    const chartEl = container.querySelector(".container > div");
-    if (!chartEl) return;
-    const chart = echarts.getInstanceByDom(chartEl);
-    if (chart) {
-      chart.resize();
-    }
-  });
-
-  observer.observe(container);
-});
-
 const monthMap = new Map([
   ["Jan", "January"],
   ["Feb", "February"],

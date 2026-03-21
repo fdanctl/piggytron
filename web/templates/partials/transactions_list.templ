@@ -7,7 +7,7 @@ import (
 )
 
 templ TransactionsList(transactions []views.Transaction, queryStr string) {
-	<ul class="space-y-sm">
+	<ul id="itransactions" class="space-y-sm">
 		if len(transactions) == 0 {
 			<p>no transactions</p>
 		}
@@ -26,10 +26,10 @@ templ TransactionsList(transactions []views.Transaction, queryStr string) {
 				})
 			}
 		}
-		<div id="infinite-indicator" class="indicator">
-			@components.Loader("", nil)
-		</div>
 	</ul>
+	<div id="infinite-indicator" class="indicator">
+		@components.Loader("", nil)
+	</div>
 }
 
 templ TransactionItem(t views.Transaction, attrs templ.Attributes) {

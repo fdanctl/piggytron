@@ -139,3 +139,9 @@
   height: 1.35rem;
   width: 1.35rem;
 }
+
+.filter-btn {
+  position: relative;
+  height: fit-content;
+  width: fit-content;
+}

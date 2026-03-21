@@ -141,6 +141,14 @@ func main() {
 	catHistChartHandler := handlers.NewCatHistChartHandler()
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
+	dialogHandler := handlers.NewDialogHandler(
+		expenseCatService,
+		incomeCatService,
+		transactionService,
+		bankService,
+	)
+	partialsMux.Handle("/partials/dialog/{dialog}", dialogHandler)
+
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(2 * time.Second)

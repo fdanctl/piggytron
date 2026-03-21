@@ -59,3 +59,17 @@ templ SearchBar(class string, attrs templ.Attributes) {
 		</i>
 	</div>
 }
+
+templ CheckBoxPill(label string, attrs templ.Attributes) {
+	<div class="check-pill" onclick="handleCheckPillToggle(this)">
+		<div>
+			@CheckSvg(12, "", "")
+		</div>
+		<div>
+			<p>
+				{ label }
+			</p>
+		</div>
+		<input class="hidden" type="checkbox" { attrs... }/>
+	</div>
+}

@@ -64,11 +64,15 @@ html {
   align-items: center;
 }
 
-.dialog > div > div {
+.dialog > div:first-child > div {
   width: 3rem;
   height: 3px;
   border-radius: var(--radius-md);
   background-color: var(--color-border);
+}
+
+.dialog.sheet {
+  overflow-x: hidden;
 }
 
 @media (min-width: 600px) {
@@ -100,6 +104,28 @@ html {
 
   .dialog > div:first-child {
     display: none;
+  }
+
+  .dialog.sheet {
+    height: 100dvh;
+    width: 30%;
+    max-width: 400px;
+    min-width: 300px;
+    max-height: none;
+    max-width: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    transform: none;
+    margin: 0 0 0 auto;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    animation: slide-from-right 200ms ease;
+    transition: transform 200ms ease-in;
+  }
+  .dialog.sheet.closing {
+    transform: translateX(100%) !important;
+    opacity: 1;
   }
 }
 
@@ -169,13 +195,13 @@ html {
 
 @keyframes slide-from-right {
   from {
-    transform: translateX(90px);
+    transform: translateX(100%);
   }
 }
 
 @keyframes slide-to-left {
   to {
-    transform: translateX(-90px);
+    transform: translateX(-100%);
   }
 }
 
@@ -184,12 +210,12 @@ html {
 }
 
 ::view-transition-old(slide-lr) {
-  animation: 100ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
+  animation: 300ms cubic-bezier(0.4, 0, 1, 1) both fade-out;
 }
 ::view-transition-new(slide-lr) {
   animation:
-    100ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
-    300ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
+    300ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
+    600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
 }
 
 /* === categories === */

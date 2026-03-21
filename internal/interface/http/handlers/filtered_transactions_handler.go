@@ -11,6 +11,7 @@ import (
 	"github.com/a-h/templ"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -63,25 +64,26 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fmt.Printf("filters.CategoryIds: %v\n", filters.CategoryIds)
-
-	queryStr := fmt.Sprintf("page=%d", page+1)
+	filterCount := len(types) + len(accounts) + len(cats)
+	queries := []string{fmt.Sprintf("page=%d", page+1)}
 	if len(types) > 0 {
-		queryStr += "&types=" + strings.Join(types, ",")
+		queries = append(queries, "types="+strings.Join(types, "&types="))
 	}
 	if len(accounts) > 0 {
-		queryStr += "&accounts=" + strings.Join(accounts, ",")
+		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
 	}
 	if len(cats) > 0 {
-		queryStr += "&categories=" + strings.Join(cats, ",")
+		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
 	}
 	if minAmount != "" {
-		queryStr += "&minamount=" + minAmount
+		queries = append(queries, "minamount="+minAmount)
+		filterCount++
 	}
 	if maxAmount != "" {
-		queryStr += "&maxamount=" + maxAmount
+		queries = append(queries, "maxmount="+minAmount)
+		filterCount++
 	}
-	fmt.Printf("queryStr: %v\n", queryStr)
+	fmt.Printf("queryStr: %v\n", strings.Join(queries, "&"))
 
 	transactions, err := h.service.ReadWithFilters(r.Context(), filters, uint(page))
 	if err != nil {
@@ -95,8 +97,11 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 			var c templ.Component
 			if i == len(transactions)-1 {
 				c = partials.TransactionItem(t, templ.Attributes{
-					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
-					"hx-get":       fmt.Sprintf("/partials/transactions?%s", queryStr),
+					"style": fmt.Sprintf("animation-delay: %dms", i*30),
+					"hx-get": fmt.Sprintf(
+						"/partials/transactions?%s",
+						strings.Join(queries, "&"),
+					),
 					"hx-trigger":   "intersect once",
 					"hx-swap":      "afterend",
 					"hx-indicator": "#infinite-indicator",
@@ -114,5 +119,12 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		return nil
 	})
 
+	w.Header().Set("HX-Push-Url", "?"+strings.Join(queries[1:], "&"))
 	content.Render(r.Context(), w)
+	components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
+		"hx-swap-oob": "outerHTML",
+		"id":          "filter-btn",
+		"hx-get":      "/partials/dialog/transaction-filters?" + r.URL.RawQuery,
+		"hx-target":   "#dialog-root",
+	}).Render(r.Context(), w)
 }

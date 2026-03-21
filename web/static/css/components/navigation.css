@@ -249,6 +249,7 @@
   align-items: center;
   justify-content: center;
   background-color: var(--color-primary);
+  color: var(--color-on-primary);
   position: absolute;
   top: 0;
   right: 0;

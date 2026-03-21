@@ -16,3 +16,9 @@ function handlePasswordToggle(ele) {
   ele.children[0].classList.toggle("hidden");
   ele.children[1].classList.toggle("hidden");
 }
+
+function handleCheckPillToggle(ele) {
+  let cb = ele.querySelector("input");
+  cb.checked = !cb.checked;
+  cb.dispatchEvent(new Event("change")); // triggers change event
+}

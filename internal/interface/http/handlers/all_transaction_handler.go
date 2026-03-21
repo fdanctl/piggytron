@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/a-h/templ"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
+	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -35,11 +37,43 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	// TODO infinite scroll (maybe 50 each time)
-	transactions, err := h.service.ReadAllByUser(r.Context(), 1)
+	q := r.URL.Query()
+	types := q["types"]
+	accounts := q["accounts"]
+	cats := q["categories"]
+	minAmount := q.Get("minamount")
+	maxAmount := q.Get("maxamount")
+
+	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	filterCount := len(types) + len(accounts) + len(cats)
+	queries := []string{fmt.Sprintf("page=%d", 2)}
+	if len(types) > 0 {
+		queries = append(queries, "types="+strings.Join(types, "&types="))
+	}
+	if len(accounts) > 0 {
+		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
+	}
+	if len(cats) > 0 {
+		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
+	}
+	if minAmount != "" {
+		queries = append(queries, "minamount="+minAmount)
+		filterCount++
+	}
+	if maxAmount != "" {
+		queries = append(queries, "maxmount="+minAmount)
+		filterCount++
+	}
+
+	transactions, err := h.service.ReadWithFilters(r.Context(), filters, 1)
 	if err != nil {
 		fmt.Println(err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
@@ -52,6 +86,9 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		if _, err := io.WriteString(w, "<div class=\"flex justify-between\">"); err != nil {
+			return err
+		}
 		err := components.Breadcrumbs([]components.BreadcrumbsLink{
 			{Href: "", Name: "Transactions"},
 			{Href: "", Name: "All"},
@@ -59,8 +96,19 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return err
 		}
+		if err := components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
+			"id":        "filter-btn",
+			"hx-get":    "/partials/dialog/transaction-filters?" + r.URL.RawQuery,
+			"hx-target": "#dialog-root",
+		}).Render(ctx, w); err != nil {
+			return err
+		}
+		if _, err := io.WriteString(w, "</div>"); err != nil {
+			return err
+		}
 
-		return partials.TransactionsList(transactionsView, "page=2").Render(ctx, w)
+		return partials.TransactionsList(transactionsView, strings.Join(queries, "&")).
+			Render(ctx, w)
 	})
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
