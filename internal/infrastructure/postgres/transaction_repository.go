@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
@@ -286,4 +287,35 @@ func (r *TransactionRepository) FindWithFilters(
 	}
 
 	return transactions, nil
+}
+
+func (r *TransactionRepository) CountFilteredResults(
+	ctx context.Context,
+	uid transaction.ID,
+	filters *transaction.Filters,
+) (uint, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT COUNT(*)
+		 FROM transactions
+		 WHERE user_id = $1
+	     AND ($2::TEXT[] IS NULL OR type = ANY($2))
+	     AND ($3::UUID[] IS NULL OR from_account_id = ANY($3) OR to_account_id = ANY($3))
+	     AND ($4::UUID[] IS NULL OR income_category_id = ANY($4) OR expense_category_id = ANY($4))
+	     AND ($5::BIGINT IS NULL OR amount >= $5)
+	     AND ($6::BIGINT IS NULL OR amount <= $6)`,
+		uid,
+		filters.Ttypes,
+		filters.AccountIds,
+		filters.CategoryIds,
+		filters.MinAmount,
+		filters.MaxAmount,
+	)
+	var count uint
+	err := row.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	fmt.Println(count)
+	return count, nil
 }

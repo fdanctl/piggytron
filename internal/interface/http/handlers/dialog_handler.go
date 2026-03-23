@@ -1,13 +1,16 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/a-h/templ"
 	bankapp "github.com/fdanctl/piggytron/internal/application/bank"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
+	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 )
@@ -34,13 +37,23 @@ func NewDialogHandler(
 }
 
 func (h *DialogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	dialog := r.PathValue("dialog")
 	switch r.Method {
 	case http.MethodGet:
-		dialog := r.PathValue("dialog")
 
 		switch dialog {
 		case "transaction-filters":
 			h.GetDialogFilters(w, r)
+
+		default:
+			http.NotFound(w, r)
+
+		}
+
+	case http.MethodPost:
+		switch dialog {
+		case "transaction-filters":
+			h.PostDialogFilters(w, r)
 
 		default:
 			http.NotFound(w, r)
@@ -92,7 +105,85 @@ func (h *DialogHandler) GetDialogFilters(w http.ResponseWriter, r *http.Request)
 		)
 	}
 
-	content := partials.TransactionsFilters(accountOptions, categoryOptions, r.URL.Query())
+	q := r.URL.Query()
+	types := q["types"]
+	accounts := q["accounts"]
+	cats := q["categories"]
+	minAmount := q.Get("minamount")
+	maxAmount := q.Get("maxamount")
+
+	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	resCount, err := h.transactionService.CountFilteredResults(r.Context(), filters)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	content := partials.TransactionsFilters(
+		accountOptions,
+		categoryOptions,
+		r.URL.Query(),
+		resCount,
+	)
 	ctx := templ.WithChildren(r.Context(), content)
 	components.DialogWrapper("sheet", nil).Render(ctx, w)
+}
+
+func (h *DialogHandler) PostDialogFilters(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	q := r.Form
+	types := q["types"]
+	accounts := q["accounts"]
+	cats := q["categories"]
+	minAmount := q.Get("minamount")
+	maxAmount := q.Get("maxamount")
+
+	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	filterCount := len(types) + len(accounts) + len(cats)
+	queries := []string{fmt.Sprintf("page=%d", 2)}
+	if len(types) > 0 {
+		queries = append(queries, "types="+strings.Join(types, "&types="))
+	}
+	if len(accounts) > 0 {
+		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
+	}
+	if len(cats) > 0 {
+		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
+	}
+	if minAmount != "" {
+		queries = append(queries, "minamount="+minAmount)
+		filterCount++
+	}
+	if maxAmount != "" {
+		queries = append(queries, "maxmount="+minAmount)
+		filterCount++
+	}
+
+	resCount, err := h.transactionService.CountFilteredResults(r.Context(), filters)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("HX-Push-Url", "?"+strings.Join(queries[1:], "&"))
+	w.Header().Set("HX-Trigger", "refetch-transactions")
+
+	fmt.Fprintln(w, fmt.Sprintf("Show %d results", resCount))
+	components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
+		"hx-swap-oob": "outerHTML",
+		"id":          "filter-btn",
+		"hx-get":      "/partials/dialog/transaction-filters?" + strings.Join(queries[1:], "&"),
+		"hx-target":   "#dialog-root",
+	}).Render(r.Context(), w)
 }

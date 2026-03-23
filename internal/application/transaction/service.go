@@ -88,3 +88,24 @@ func (s *Service) ReadWithFilters(
 	}
 	return s.repo.FindWithFilters(ctx, id, filters, LIMIT, LIMIT*page-LIMIT)
 }
+
+func (s *Service) CountFilteredResults(
+	ctx context.Context,
+	filters *transaction.Filters,
+) (uint, error) {
+	v := ctx.Value("user")
+	if v == nil {
+		return 0, nil
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		return 0, nil
+	}
+
+	id, err := transaction.NewId(sessionInfo.UserId)
+	if err != nil {
+		return 0, err
+	}
+	return s.repo.CountFilteredResults(ctx, id, filters)
+}

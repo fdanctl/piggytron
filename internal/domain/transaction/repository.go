@@ -13,4 +13,5 @@ type Repository interface {
 		filters *Filters,
 		limit, offset uint,
 	) ([]*Transaction, error)
+	CountFilteredResults(ctx context.Context, uid ID, filters *Filters) (uint, error)
 }

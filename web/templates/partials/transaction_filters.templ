@@ -1,6 +1,7 @@
 package partials
 
 import (
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"net/url"
 	"slices"
@@ -11,8 +12,8 @@ type FilterOption struct {
 	Value string
 }
 
-templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values) {
-	<div style="height: 100%; display: grid; grid-template-rows: auto 1fr auto;">
+templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values, count uint) {
+	<div style="height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap:var(--spacing-lg)" id="transactions-filters">
 		<div class="flex justify-between items-center">
 			<h4>Filters</h4>
 			<div
@@ -23,7 +24,7 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values) {
 			</div>
 		</div>
 		<div hx-include="input" style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;">
-			<div class="mt-lg">
+			<div>
 				<div class="flex justify-between items-center mb-sm">
 					<h6>Accounts</h6>
 					<div
@@ -46,8 +47,8 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values) {
 								"name":      "accounts",
 								"value":     o.Value,
 								"checked":   slices.Contains(q["accounts"], o.Value),
-								"hx-get":    "/partials/transactions",
-								"hx-target": "#itransactions",
+								"hx-post":   "/partials/dialog/transaction-filters",
+								"hx-target": "#filters-result-btn",
 							},
 						)
 					}
@@ -76,14 +77,19 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values) {
 								"name":      "categories",
 								"value":     o.Value,
 								"checked":   slices.Contains(q["categories"], o.Value),
-								"hx-get":    "/partials/transactions",
-								"hx-target": "#itransactions",
+								"hx-post":   "/partials/dialog/transaction-filters",
+								"hx-target": "#filters-result-btn",
 							},
 						)
 					}
 				</div>
 			</div>
 		</div>
-		@components.Button("Show xxx results", "mt-lg w-full", components.BtnPrimary, components.BtnMedium, nil)
+		@components.Button(
+			fmt.Sprintf("Show %d results", count),
+			"mt-lg w-full",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{"id": "filters-result-btn", "onclick": "closeLastDialog()"})
 	</div>
 }

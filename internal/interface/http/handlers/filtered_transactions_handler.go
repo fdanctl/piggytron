@@ -11,7 +11,6 @@ import (
 	"github.com/a-h/templ"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
-	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -119,12 +118,5 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		return nil
 	})
 
-	w.Header().Set("HX-Push-Url", "?"+strings.Join(queries[1:], "&"))
 	content.Render(r.Context(), w)
-	components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
-		"hx-swap-oob": "outerHTML",
-		"id":          "filter-btn",
-		"hx-get":      "/partials/dialog/transaction-filters?" + r.URL.RawQuery,
-		"hx-target":   "#dialog-root",
-	}).Render(r.Context(), w)
 }
