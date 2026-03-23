@@ -66,7 +66,7 @@ func main() {
 		HttpOnly: true,
 		Secure:   !cfg.IsDev,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(time.Hour * 24),
+		MaxAge:   int((time.Hour * 24).Seconds()),
 	})
 
 	webMux := http.NewServeMux() // returns full HTML page
