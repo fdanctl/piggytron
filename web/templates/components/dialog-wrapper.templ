@@ -1,12 +1,10 @@
 package components
 
 templ DialogWrapper(class string, attrs templ.Attributes) {
-	<dialog class={ "dialog", templ.KV(class, class != "") } hx-on::load="this.showModal()" { attrs... }>
+	<dialog class={ "dialog", templ.KV(class, class != "") } tabindex="-1" hx-on::load="this.showModal(); this.focus()" { attrs... }>
 		<div>
 			<div></div>
 		</div>
-		<div>
-			{ children... }
-		</div>
+		{ children... }
 	</dialog>
 }

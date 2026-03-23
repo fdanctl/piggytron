@@ -71,10 +71,6 @@ html {
   background-color: var(--color-border);
 }
 
-.dialog.sheet {
-  overflow-x: hidden;
-}
-
 @media (min-width: 600px) {
   .dialog {
     padding: var(--spacing-md) var(--spacing-sm);

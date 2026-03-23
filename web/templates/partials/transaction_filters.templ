@@ -1,0 +1,89 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"net/url"
+	"slices"
+)
+
+type FilterOption struct {
+	Label string
+	Value string
+}
+
+templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values) {
+	<div style="height: 100%; display: grid; grid-template-rows: auto 1fr auto;">
+		<div class="flex justify-between items-center">
+			<h4>Filters</h4>
+			<div
+				class="flex justify-center items-center cursor-pointer"
+				onclick="closeLastDialog()"
+			>
+				@components.XSvg(16, "", "")
+			</div>
+		</div>
+		<div hx-include="input" style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;">
+			<div class="mt-lg">
+				<div class="flex justify-between items-center mb-sm">
+					<h6>Accounts</h6>
+					<div
+						class="cursor-pointer flex justify-center items-center"
+						onclick="accordionToggle(this)"
+					>
+						<i>
+							@components.PlusSvg(16, "", "")
+						</i>
+						<i class="hidden">
+							@components.MinusSvg(16, "", "")
+						</i>
+					</div>
+				</div>
+				<div class="flex gap-xs" style="overflow-x: hidden;">
+					for _, o := range accOptions {
+						@components.CheckBoxPill(
+							o.Label,
+							templ.Attributes{
+								"name":      "accounts",
+								"value":     o.Value,
+								"checked":   slices.Contains(q["accounts"], o.Value),
+								"hx-get":    "/partials/transactions",
+								"hx-target": "#itransactions",
+							},
+						)
+					}
+				</div>
+			</div>
+			<div class="mt-md">
+				<div class="flex justify-between items-center mb-sm">
+					<h6>Categories</h6>
+					<div
+						class="cursor-pointer flex justify-center items-center"
+						onclick="accordionToggle(this)"
+					>
+						<i>
+							@components.PlusSvg(16, "", "")
+						</i>
+						<i class="hidden">
+							@components.MinusSvg(16, "", "")
+						</i>
+					</div>
+				</div>
+				<div class="flex gap-xs" style="overflow-x: hidden;">
+					for _,o := range catOptions {
+						@components.CheckBoxPill(
+							o.Label,
+							templ.Attributes{
+								"name":      "categories",
+								"value":     o.Value,
+								"checked":   slices.Contains(q["categories"], o.Value),
+								"hx-get":    "/partials/transactions",
+								"hx-target": "#itransactions",
+							},
+						)
+					}
+				</div>
+			</div>
+		</div>
+		@components.Button("Show xxx results", "mt-lg w-full", components.BtnPrimary, components.BtnMedium, nil)
+	</div>
+}

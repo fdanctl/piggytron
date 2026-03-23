@@ -92,7 +92,7 @@ func (h *DialogHandler) GetDialogFilters(w http.ResponseWriter, r *http.Request)
 		)
 	}
 
-	content := partials.TransactionsFilters(categoryOptions, accountOptions, r.URL.Query())
+	content := partials.TransactionsFilters(accountOptions, categoryOptions, r.URL.Query())
 	ctx := templ.WithChildren(r.Context(), content)
 	components.DialogWrapper("sheet", nil).Render(ctx, w)
 }
