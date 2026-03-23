@@ -11,6 +11,7 @@ import (
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -165,7 +166,8 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	transactions, err := h.transactionService.ReadAllByCategory(r.Context(), id, 1)
+	filters, err := transaction.NewFilters(nil, nil, []string{id}, "", "")
+	transactions, hasMore, err := h.transactionService.ReadWithFilters(r.Context(), filters, 1)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -194,7 +196,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		c := partials.CategoryStats(category, transactionsView)
+		c := partials.CategoryStats(category, transactionsView, hasMore)
 		if err := c.Render(ctx, w); err != nil {
 			return err
 		}

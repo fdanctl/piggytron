@@ -70,7 +70,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		filterCount++
 	}
 
-	transactions, err := h.service.ReadWithFilters(r.Context(), filters, 1)
+	transactions, hasMore, err := h.service.ReadWithFilters(r.Context(), filters, 1)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -107,7 +107,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		return partials.TransactionsList(transactionsView, strings.Join(queries, "&")).
+		return partials.TransactionsList(transactionsView, strings.Join(queries, "&"), hasMore).
 			Render(ctx, w)
 	})
 	if r.Header.Get("Hx-Request") == "true" {

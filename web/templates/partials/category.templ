@@ -6,7 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ CategoryStats(cat views.Category, transactions []views.Transaction) {
+templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMore bool) {
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
@@ -17,6 +17,6 @@ templ CategoryStats(cat views.Category, transactions []views.Transaction) {
 	</div>
 	<section id="transactions">
 		<h4 class="mb-md">Transactions</h4>
-		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetId()))
+		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetId()), hasMore)
 	</section>
 }

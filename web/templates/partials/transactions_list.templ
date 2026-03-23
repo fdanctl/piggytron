@@ -6,7 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ TransactionsList(transactions []views.Transaction, queryStr string) {
+templ TransactionsList(transactions []views.Transaction, queryStr string, hasMore bool) {
 	<ul
 		id="itransactions"
 		class="space-y-sm"
@@ -21,7 +21,7 @@ templ TransactionsList(transactions []views.Transaction, queryStr string) {
 			<p>no transactions</p>
 		}
 		for i, t := range transactions {
-			if i == len(transactions) - 1 {
+			if i == len(transactions) - 1 && hasMore {
 				@TransactionItem(t, templ.Attributes{
 					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
 					"hx-get":       fmt.Sprintf("/partials/transactions?%s", queryStr),

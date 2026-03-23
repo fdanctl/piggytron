@@ -82,9 +82,8 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		queries = append(queries, "maxmount="+minAmount)
 		filterCount++
 	}
-	fmt.Printf("queryStr: %v\n", strings.Join(queries, "&"))
 
-	transactions, err := h.service.ReadWithFilters(r.Context(), filters, uint(page))
+	transactions, hasMore, err := h.service.ReadWithFilters(r.Context(), filters, uint(page))
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -94,7 +93,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		for i, v := range transactions {
 			t := views.NewTransaction(v.ID(), v.Description(), v.Ttype(), v.Amount(), v.Date())
 			var c templ.Component
-			if i == len(transactions)-1 {
+			if i == len(transactions)-1 && hasMore {
 				c = partials.TransactionItem(t, templ.Attributes{
 					"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					"hx-get": fmt.Sprintf(

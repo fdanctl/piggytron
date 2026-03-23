@@ -88,20 +88,14 @@ func (r *TransactionRepository) FindById(
 func (r *TransactionRepository) FindAllByUser(
 	ctx context.Context,
 	uid transaction.ID,
-	limit, offset uint,
 ) ([]*transaction.Transaction, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
 		 FROM transactions
 		 WHERE user_id = $1
-		 ORDER BY date DESC
-		 LIMIT $2
-		 OFFSET $3
-		`,
+		 ORDER BY date DESC`,
 		uid,
-		limit,
-		offset,
 	)
 	if err != nil {
 		return nil, err
@@ -153,19 +147,14 @@ func (r *TransactionRepository) FindAllByUser(
 func (r *TransactionRepository) FindAllByCategory(
 	ctx context.Context,
 	cid transaction.ID,
-	limit, offset uint,
 ) ([]*transaction.Transaction, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
 		 FROM transactions
 		 WHERE income_category_id = $1 OR expense_category_id = $1
-		 ORDER BY date DESC
-		 LIMIT $2
-		 OFFSET $3`,
+		 ORDER BY date DESC`,
 		cid,
-		limit,
-		offset,
 	)
 	if err != nil {
 		return nil, err
