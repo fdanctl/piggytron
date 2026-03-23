@@ -1,16 +1,9 @@
 /* Input */
-.input-group {
-  position: relative;
-}
-
 .input-group > span {
   display: none;
-  position: absolute;
-  bottom: -0.75rem;
-  left: 1rem;
+  padding-left: var(--radius-md);
   color: var(--color-error);
   font-size: 0.75rem;
-  line-height: 0;
 }
 
 .input-group.error > span {
@@ -21,9 +14,11 @@
   font-weight: 500;
 }
 
+.input:not([type="checkbox"], [type="radio"]) {
+  width: 100%;
+}
 .input {
   display: block;
-  width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
   font-family: var(--font-body);
   font-size: 0.875rem;

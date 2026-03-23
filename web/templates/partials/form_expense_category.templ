@@ -22,7 +22,6 @@ templ ExpenseCategoryForm(v views.ExpenseCategoryForm) {
 				"name":        "name",
 				"placeholder": "Salary",
 				"value":       v.Name,
-				"required":    true,
 			},
 		)
 		@components.InputGroup(
@@ -36,7 +35,6 @@ templ ExpenseCategoryForm(v views.ExpenseCategoryForm) {
 				"name":        "type",
 				"placeholder": "hello I will be a select",
 				"value":       v.Type,
-				"required":    true,
 			},
 		)
 		@components.Button(
