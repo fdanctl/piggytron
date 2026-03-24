@@ -26,13 +26,13 @@ func NewDialogHandler(
 	es *expensecategoryapp.Service,
 	is *incomecategoryapp.Service,
 	ts *transactionapp.Service,
-	bs *accountapp.Service,
+	as *accountapp.Service,
 ) *DialogHandler {
 	return &DialogHandler{
 		incomeCatService:   is,
 		expenseCatService:  es,
 		transactionService: ts,
-		bankService:        bs,
+		bankService:        as,
 	}
 }
 

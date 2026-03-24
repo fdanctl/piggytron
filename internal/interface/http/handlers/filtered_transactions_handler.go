@@ -91,7 +91,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 	}
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		for i, v := range transactions {
-			t := views.NewTransaction(v.ID(), v.Description(), v.Ttype(), v.Amount(), v.Date())
+			t := views.NewTransaction(v)
 			var c templ.Component
 			if i == len(transactions)-1 && hasMore {
 				c = partials.TransactionItem(t, templ.Attributes{

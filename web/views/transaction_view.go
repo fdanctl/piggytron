@@ -19,23 +19,19 @@ type Transaction struct {
 }
 
 func NewTransaction(
-	id transaction.ID,
-	description string,
-	ttype transaction.Ttype,
-	amount int,
-	date time.Time,
+	t *transaction.Transaction,
 ) Transaction {
-	f := float64(amount) / 100
-	if ttype == "expense" {
+	f := float64(t.Amount()) / 100
+	if t.Ttype() == "expense" {
 		f *= -1
 	}
 	return Transaction{
-		Id:          id,
-		Description: description,
-		Type:        ttype,
+		Id:          t.ID(),
+		Description: t.Description(),
+		Type:        t.Ttype(),
 		Amount:      formatMoney(f, currency.EUR, language.AmericanEnglish),
 		// TODO convert date to relative date (ex. today, yesterday, ...)
-		Date: date.Format(time.DateOnly),
+		Date: t.Date().Format(time.DateOnly),
 	}
 }
 

@@ -81,7 +81,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	for _, t := range transactions {
 		transactionsView = append(
 			transactionsView,
-			views.NewTransaction(t.ID(), t.Description(), t.Ttype(), t.Amount(), t.Date()),
+			views.NewTransaction(t),
 		)
 	}
 
