@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/config"
-	"github.com/fdanctl/piggytron/internal/application/bank"
+	"github.com/fdanctl/piggytron/internal/application/account"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/transaction"
@@ -87,8 +87,8 @@ func main() {
 	bh := handlers.BudgetHandler{}
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(&bh))
 
-	bankRepo := postgres.NewBankRepository(db)
-	bankService := bank.NewService(bankRepo)
+	accountRepository := postgres.NewAccountRepository(db)
+	bankService := account.NewService(accountRepository)
 	banksHandler := handlers.NewBanksHandler(bankService)
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))

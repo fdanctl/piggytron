@@ -134,6 +134,10 @@
   text-wrap: nowrap;
 }
 
+.check-pill span {
+  text-box-trim: trim-both;
+}
+
 .check-pill > div:first-child {
   display: flex;
   justify-content: center;

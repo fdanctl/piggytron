@@ -47,7 +47,7 @@ type Transaction struct {
 	incomeCategoryId  *ID
 	expenseCategoryId *ID
 
-	amount      uint
+	amount      int
 	description string
 	date        time.Time
 	createdAt   time.Time
@@ -58,7 +58,7 @@ func NewIncome(
 	userId ID,
 	toAccountId ID,
 	incomeCategoryId ID,
-	amount uint,
+	amount int,
 	description string,
 	date time.Time,
 ) (*Transaction, error) {
@@ -91,7 +91,7 @@ func NewExpense(
 	userId ID,
 	fromAccountId ID,
 	expenseCategoryId ID,
-	amount uint,
+	amount int,
 	description string,
 	date time.Time,
 ) (*Transaction, error) {
@@ -125,7 +125,7 @@ func NewTransfer(
 	fromAccountId ID,
 	toAccountId ID,
 	expenseCategoryId *ID,
-	amount uint,
+	amount int,
 	description string,
 	date time.Time,
 ) (*Transaction, error) {
@@ -161,7 +161,7 @@ func Rehydrate(
 	toAccountId *ID,
 	incomeCategoryId *ID,
 	expenseCategoryId *ID,
-	amount uint,
+	amount int,
 	description string,
 	date time.Time,
 	createdAt time.Time,
@@ -221,7 +221,7 @@ func (t *Transaction) ExpenseCategoryId() ID {
 	return *t.expenseCategoryId
 }
 
-func (t *Transaction) Amount() uint {
+func (t *Transaction) Amount() int {
 	return t.amount
 }
 

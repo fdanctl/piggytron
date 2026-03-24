@@ -56,7 +56,7 @@ CREATE TABLE accounts (
     OR (
       type = 'goal'
       AND target_amount IS NOT NULL
-      AND target_date IS NOT NULL
+      -- AND target_date IS NOT NULL
       AND category_id IS NOT NULL
     )
   )

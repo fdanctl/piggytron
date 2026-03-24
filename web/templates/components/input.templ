@@ -65,11 +65,9 @@ templ CheckBoxPill(label string, attrs templ.Attributes) {
 		<div>
 			@CheckSvg(12, "", "")
 		</div>
-		<div>
-			<p>
-				{ label }
-			</p>
-		</div>
+		<span>
+			{ label }
+		</span>
 		<input class="hidden" type="checkbox" { attrs... }/>
 	</div>
 }

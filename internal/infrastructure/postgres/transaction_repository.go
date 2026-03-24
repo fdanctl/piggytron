@@ -31,7 +31,7 @@ type TransactionDto struct {
 	incomeCategoryId  *transaction.ID
 	expenseCategoryId *transaction.ID
 
-	amount      uint
+	amount      int
 	description string
 	date        time.Time
 	createdAt   time.Time

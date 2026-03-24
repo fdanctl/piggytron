@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	bankapp "github.com/fdanctl/piggytron/internal/application/bank"
+	accountapp "github.com/fdanctl/piggytron/internal/application/account"
 )
 
 type BanksHandler struct {
-	service *bankapp.Service
+	service *accountapp.Service
 }
 
-func NewBanksHandler(s *bankapp.Service) *BanksHandler {
+func NewBanksHandler(s *accountapp.Service) *BanksHandler {
 	return &BanksHandler{service: s}
 }
 

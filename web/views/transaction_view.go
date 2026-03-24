@@ -22,7 +22,7 @@ func NewTransaction(
 	id transaction.ID,
 	description string,
 	ttype transaction.Ttype,
-	amount uint,
+	amount int,
 	date time.Time,
 ) Transaction {
 	f := float64(amount) / 100

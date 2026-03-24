@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
-	bankapp "github.com/fdanctl/piggytron/internal/application/bank"
+	accountapp "github.com/fdanctl/piggytron/internal/application/account"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
@@ -19,14 +19,14 @@ type DialogHandler struct {
 	incomeCatService   *incomecategoryapp.Service
 	expenseCatService  *expensecategoryapp.Service
 	transactionService *transactionapp.Service
-	bankService        *bankapp.Service
+	bankService        *accountapp.Service
 }
 
 func NewDialogHandler(
 	es *expensecategoryapp.Service,
 	is *incomecategoryapp.Service,
 	ts *transactionapp.Service,
-	bs *bankapp.Service,
+	bs *accountapp.Service,
 ) *DialogHandler {
 	return &DialogHandler{
 		incomeCatService:   is,
