@@ -64,6 +64,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
+		io.WriteString(w, "<title>Goals</title>")
 		return
 	}
 
@@ -74,5 +75,5 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Categories").Render(ctx, w)
+	layouts.Base("Goals").Render(ctx, w)
 }

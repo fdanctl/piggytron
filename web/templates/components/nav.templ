@@ -33,7 +33,7 @@ templ Nav() {
 		class="nav"
 		hx-target="#content"
 		hx-boost="true"
-		hx-on::after-request="newPage(event); closeLastDialog();"
+		hx-on::after-request="closeLastDialog();"
 		hx-swap="innerHTML show:window:top"
 	>
 		<ul class="unselectable">

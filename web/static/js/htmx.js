@@ -1,14 +1,6 @@
 document.body.addEventListener("htmx:historyRestore", (ev) => {
-  // tab title
-  const splitPath = ev.detail.path.split("/");
-  let title = splitPath[1];
-  if (title === "") {
-    title = "Dashboard";
-  }
-  title = title.charAt(0).toUpperCase() + title.slice(1).toLowerCase();
-  document.title = title;
-
   // nav active link
+  title = document.title;
   a.forEach((e) => e.classList.remove("active"));
   for (let i = 0; i < a.length; i++) {
     const text = a[i].text.trim().toLowerCase();

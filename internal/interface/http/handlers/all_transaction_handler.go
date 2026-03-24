@@ -113,6 +113,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
+		io.WriteString(w, "<title>Transactions</title>")
 		return
 	}
 

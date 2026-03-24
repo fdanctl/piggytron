@@ -96,6 +96,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
+		io.WriteString(w, "<title>Categories</title>")
 		return
 	}
 
@@ -205,6 +206,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
+		fmt.Fprintf(w, "<title>%s</title>", category.GetName())
 		return
 	}
 	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
@@ -214,5 +216,5 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Categories").Render(ctx, w)
+	layouts.Base(category.GetName()).Render(ctx, w)
 }

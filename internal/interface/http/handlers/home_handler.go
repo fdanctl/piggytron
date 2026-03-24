@@ -224,6 +224,7 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	if r.Header.Get("Hx-Request") == "true" {
 		contents.Render(r.Context(), w)
+		io.WriteString(w, "<title>Dashboard</title>")
 		return
 	}
 
@@ -267,6 +268,7 @@ func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 	if r.Header.Get("Hx-Request") == "true" {
 		form.Render(r.Context(), w)
+		io.WriteString(w, "<title>Budget</title>")
 		return
 	}
 
@@ -296,6 +298,7 @@ func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.LoginForm(*views.NewLoginView(redirect))
 	if r.Header.Get("Hx-Request") == "true" {
 		form.Render(r.Context(), w)
+		io.WriteString(w, "<title>Login</title>")
 		return
 	}
 
@@ -324,6 +327,7 @@ func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.SignupForm(*views.NewSignupView())
 	if r.Header.Get("Hx-Request") == "true" {
 		form.Render(r.Context(), w)
+		io.WriteString(w, "<title>Signup</title>")
 		return
 	}
 
@@ -352,6 +356,7 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	content := partials.Test()
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
+		io.WriteString(w, "<title>Expenses</title>")
 		return
 	}
 
@@ -362,5 +367,5 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Budget").Render(ctx, w)
+	layouts.Base("Expenses").Render(ctx, w)
 }

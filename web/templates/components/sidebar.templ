@@ -29,7 +29,6 @@ templ Sidebar() {
 							<ul
 								hx-target="#content"
 								hx-boost="true"
-								hx-on::after-request="newPage(event);"
 								hx-swap="innerHTML show:window:top"
 							>
 								for _, sublink := range link.sub {
