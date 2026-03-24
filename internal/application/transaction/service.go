@@ -55,6 +55,17 @@ func (s *Service) ReadAllByUser(
 	return transactions, nil
 }
 
+func (s *Service) ReadAllByAccount(
+	ctx context.Context,
+	aid string,
+) ([]*transaction.Transaction, error) {
+	newId, err := transaction.NewId(aid)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.FindAllByAccount(ctx, newId)
+}
+
 func (s *Service) ReadAllByCategory(
 	ctx context.Context,
 	cid string,

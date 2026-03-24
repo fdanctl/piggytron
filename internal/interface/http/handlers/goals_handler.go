@@ -46,8 +46,15 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var gView []views.Goal
+	// TODO: think of a better way, to reduce the times it queries the db
 	for _, g := range goals {
-		gView = append(gView, views.NewGoal(g, 0))
+		transactions, err := h.transactionService.ReadAllByAccount(r.Context(), string(g.ID()))
+		if err != nil {
+			fmt.Println(err)
+			http.Error(w, "Internal error", http.StatusInternalServerError)
+			return
+		}
+		gView = append(gView, views.NewGoal(g, transactions))
 	}
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
