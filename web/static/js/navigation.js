@@ -35,14 +35,15 @@ const sidebarHidePopover = (ele) => {
 // === dialog x nav sheet === //
 const dialogRoot = document.querySelector("#dialog-root");
 const closeLastDialog = () => {
-  dialogRoot.lastChild.classList.add("closing");
+  const lc = dialogRoot.lastChild;
+  lc.classList.add("closing");
 
   setTimeout(() => {
-    dialogRoot.lastChild.close();
-    dialogRoot.lastChild.classList.remove("closing");
+    lc.close();
+    lc.classList.remove("closing");
     // if not nav sheet remove from dom
-    if (!dialogRoot.lastChild.matches("#nav-sheet")) {
-      dialogRoot.lastChild.remove();
+    if (!lc.matches("#nav-sheet")) {
+      lc.remove();
     }
   }, 200);
 };

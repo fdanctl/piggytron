@@ -26,8 +26,8 @@ templ Button(text, class string, variant btnVariant, size btnSize, attrs templ.A
 	</button>
 }
 
-templ IconButton(icon templ.Component, class string, size btnSize, attrs templ.Attributes) {
-	<button class={ "btn", "btn-icon", fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+templ IconButton(icon templ.Component, class string, variant btnVariant, size btnSize, attrs templ.Attributes) {
+	<button class={ "btn", "btn-icon", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
 		@icon
 	</button>
 }

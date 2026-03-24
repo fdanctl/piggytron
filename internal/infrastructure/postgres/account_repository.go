@@ -246,7 +246,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 		ctx,
 		`SELECT id, user_id, name, currency, created_at, updated_at
 		 FROM accounts
-		 WHERE user_id = $1`,
+		 WHERE user_id = $1 AND type = 'bank'`,
 		uid,
 	)
 	if err != nil {
@@ -295,11 +295,10 @@ func (r *AccountRepository) FindAllGoalsByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, name, currency, created_at, updated_at
+		`SELECT id, user_id, type, name, currency, target_amount, target_date, category_id, created_at, updated_at
 		 FROM accounts
-		 WHERE user_id = $1 and type = $2`,
+		 WHERE user_id = $1 and type = 'goal'`,
 		uid,
-		"goal",
 	)
 	if err != nil {
 		return nil, err

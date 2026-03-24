@@ -212,7 +212,7 @@ input[type="number"] {
   --color-overlay: rgba(0, 0, 0, 0.5); /* Modal overlay */
 
   --color-text: #ffffff; /* Primary text */
-  --color-text-secondary: var(--grey-300); /* Muted text */
+  --color-text-secondary: var(--grey-200); /* Muted text */
   --color-text-inverse: var(--cian-600); /* Text on dark/primary */
   --color-text-disabled: var(--grey-300); /* Disabled text */
   --color-link: var(--cian-100); /* Links */

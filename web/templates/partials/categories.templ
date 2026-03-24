@@ -1,8 +1,11 @@
 package partials
 
-import "github.com/fdanctl/piggytron/web/templates/components"
-import "github.com/fdanctl/piggytron/web/views"
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
 
 templ Categories(cv views.CategoriesView) {
 	<section id="income-cat">
@@ -14,10 +17,9 @@ templ Categories(cv views.CategoriesView) {
 				components.BtnOutline,
 				components.BtnSmall,
 				templ.Attributes{
-					"hx-get":               "/partials/income-category",
-					"hx-target":            "#dialog-root",
-					"hx-swap":              "beforeend",
-					"hx-on::after-request": "dialogRoot.lastChild.showModal()",
+					"hx-get":    "/partials/income-category",
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
 				},
 				components.IconLeft,
 				components.PlusSvg(0, "", ""),
@@ -44,10 +46,9 @@ templ Categories(cv views.CategoriesView) {
 				components.BtnOutline,
 				components.BtnSmall,
 				templ.Attributes{
-					"hx-get":               "/partials/expense-category",
-					"hx-target":            "#dialog-root",
-					"hx-swap":              "beforeend",
-					"hx-on::after-request": "dialogRoot.lastChild.showModal()",
+					"hx-get":    "/partials/expense-category",
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
 				},
 				components.IconLeft,
 				components.PlusSvg(0, "", ""),

@@ -69,6 +69,20 @@ func main() {
 		MaxAge:   int((time.Hour * 24).Seconds()),
 	})
 
+	// repositories
+	accountRepo := postgres.NewAccountRepository(db)
+	transactionRepo := postgres.NewTransactionRepository(db)
+	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
+	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
+	userRepo := postgres.NewUserRepository(db)
+
+	// services
+	accountService := account.NewService(accountRepo)
+	transactionService := transaction.NewService(transactionRepo)
+	expenseCatService := expensecategory.NewService(expenseCatRepo)
+	incomeCatService := incomecategory.NewService(incomeCatRepo)
+	userService := user.NewService(userRepo, hasher, sessionStore)
+
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
 		"/static/",
@@ -87,25 +101,18 @@ func main() {
 	bh := handlers.BudgetHandler{}
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(&bh))
 
-	accountRepository := postgres.NewAccountRepository(db)
-	bankService := account.NewService(accountRepository)
-	banksHandler := handlers.NewBanksHandler(bankService)
+	goalsHandler := handlers.NewGoalsHandler(accountService, transactionService)
+	webMux.Handle("/goals", middleware.AuthProtectedRoute(goalsHandler))
+
+	banksHandler := handlers.NewBanksHandler(accountService)
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
 
-	transactionRepo := postgres.NewTransactionRepository(db)
-	transactionService := transaction.NewService(transactionRepo)
 	allTransactionsHandler := handlers.NewAllTransactionsHandler(transactionService)
 	webMux.Handle("/transactions/all", middleware.AuthProtectedRoute(allTransactionsHandler))
 
 	eh := handlers.ExpensesHandler{}
 	webMux.Handle("/transactions/expenses", middleware.AuthProtectedRoute(&eh))
-
-	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
-	expenseCatService := expensecategory.NewService(expenseCatRepo)
-
-	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
-	incomeCatService := incomecategory.NewService(incomeCatRepo)
 
 	categoriesHandler := handlers.NewCategoriesHandler(
 		expenseCatService,
@@ -124,8 +131,6 @@ func main() {
 
 	partialsMux := http.NewServeMux() // returns HTMX fragment
 
-	userRepo := postgres.NewUserRepository(db)
-	userService := user.NewService(userRepo, hasher, sessionStore)
 	userHandler := handlers.NewUserHandler(userService, sessionCM)
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
 
@@ -145,8 +150,10 @@ func main() {
 		expenseCatService,
 		incomeCatService,
 		transactionService,
-		bankService,
+		accountService,
 	)
+
+	// TODO change to filters only
 	partialsMux.Handle("/partials/dialog/{dialog}", dialogHandler)
 
 	// TODO remove

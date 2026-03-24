@@ -1,8 +1,29 @@
 package views
 
+import (
+	"fmt"
+
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
+)
+
 func StringArrToStr(arr []string) string {
 	if len(arr) > 0 {
 		return arr[0]
 	}
 	return ""
+}
+
+func formatMoney(amount float64, cur currency.Unit, lang language.Tag) string {
+	p := message.NewPrinter(lang)
+	symbol := currency.Symbol(cur)
+
+	sign := ""
+	if amount < 0 {
+		sign = "-"
+		amount = -amount
+	}
+
+	return fmt.Sprintf(p.Sprintf("%s%s%.2f", sign, symbol, amount))
 }

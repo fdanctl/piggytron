@@ -156,3 +156,55 @@ func (s *Service) ReadAllByUser(
 
 	return accounts, nil
 }
+
+func (s *Service) ReadAllBanksByUser(
+	ctx context.Context,
+) ([]*account.Account, error) {
+	v := ctx.Value("user")
+	if v == nil {
+		return nil, nil
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		return nil, nil
+	}
+
+	id, err := account.NewId(sessionInfo.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts, err := s.repo.FindAllBanksByUser(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}
+
+func (s *Service) ReadAllGoalsByUser(
+	ctx context.Context,
+) ([]*account.Account, error) {
+	v := ctx.Value("user")
+	if v == nil {
+		return nil, nil
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		return nil, nil
+	}
+
+	id, err := account.NewId(sessionInfo.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	accounts, err := s.repo.FindAllGoalsByUser(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return accounts, nil
+}

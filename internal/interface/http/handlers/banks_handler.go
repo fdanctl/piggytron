@@ -31,7 +31,7 @@ func (h *BanksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
-	banks, err := h.service.ReadAllByUser(r.Context())
+	banks, err := h.service.ReadAllBanksByUser(r.Context())
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return

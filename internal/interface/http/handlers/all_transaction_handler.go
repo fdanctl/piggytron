@@ -100,6 +100,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"id":        "filter-btn",
 			"hx-get":    "/partials/dialog/transaction-filters?" + r.URL.RawQuery,
 			"hx-target": "#dialog-root",
+			"hx-swap":   "beforeend",
 		}).Render(ctx, w); err != nil {
 			return err
 		}
