@@ -61,5 +61,6 @@ func (v *ExpenseCategoryForm) Validate() (msgs []string) {
 		return
 	}
 	msgs = append(msgs, v.ValidateName()...)
+	msgs = append(msgs, v.ValidateType()...)
 	return msgs
 }

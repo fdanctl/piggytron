@@ -1,0 +1,89 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ GoalForm(v views.GoalForm) {
+	<form
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/goal"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<h4>New Goal</h4>
+		@components.InputGroup(
+			"",
+			"Name",
+			views.StringArrToStr(v.ValidateName()),
+			v.NameHasError(),
+			templ.Attributes{
+				"id":          "name",
+				"type":        "text",
+				"name":        "name",
+				"placeholder": "Holidays",
+				"value":       v.Name,
+			},
+		)
+		@components.InputGroup(
+			"",
+			"Currency",
+			views.StringArrToStr(v.ValidateCurrency()),
+			v.CurrencyHasError(),
+			templ.Attributes{
+				"id":    "currency",
+				"type":  "text",
+				"name":  "currency",
+				"value": v.Currency,
+			},
+		)
+		@components.InputGroup(
+			"",
+			"Target amount",
+			views.StringArrToStr(v.ValidateTargetAmount()),
+			v.TargetAmountHasError(),
+			templ.Attributes{
+				"id":          "target-amount",
+				"type":        "text",
+				"name":        "target-amount",
+				"placeholder": "420,69",
+				"value":       v.TargetAmount,
+			},
+		)
+		@components.InputGroup(
+			"",
+			"Target date",
+			views.StringArrToStr(v.ValidateTargetDate()),
+			v.TargetAmountHasError(),
+			templ.Attributes{
+				"id":    "target-date",
+				"type":  "date",
+				"name":  "target-date",
+				"value": v.TargetDate,
+			},
+		)
+		@components.InputGroup(
+			"",
+			"Category",
+			views.StringArrToStr(v.ValidateCategory()),
+			v.CategoryHasError(),
+			templ.Attributes{
+				"id":          "category",
+				"type":        "text",
+				"name":        "category",
+				"placeholder": "420,69",
+				"value":       v.Category,
+			},
+		)
+		@components.Button(
+			"Confirm",
+			"mt-md",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"type": "submit",
+			},
+		)
+	</form>
+}

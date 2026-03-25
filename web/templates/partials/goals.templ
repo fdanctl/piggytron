@@ -7,7 +7,7 @@ import (
 )
 
 templ Goals(goals []views.Goal) {
-	<section id="active_goals">
+	<section id="active-goals">
 		<div class="flex justify-between items-center">
 			<h4>Active</h4>
 			@components.ButtonWithIcon(
@@ -15,12 +15,16 @@ templ Goals(goals []views.Goal) {
 				"",
 				components.BtnOutline,
 				components.BtnSmall,
-				nil,
+				templ.Attributes{
+					"hx-get":    "/partials/goal",
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
 				components.IconLeft,
 				components.PlusSvg(0, "", ""),
 			)
 		</div>
-		<ul>
+		<ul class="goal-list">
 			for _, g := range goals {
 				@GoalItem(g, nil)
 			}

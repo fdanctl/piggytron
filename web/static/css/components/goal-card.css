@@ -1,3 +1,21 @@
+.goal-list {
+  margin-top: var(--spacing-sm);
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+@container main (min-width: 675px) {
+  .goal-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container main (min-width: 1200px) {
+  .goal-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .goal-card {
   border: 1px solid var(--color-border);
   padding: var(--spacing-sm);

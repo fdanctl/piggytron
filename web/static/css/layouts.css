@@ -4,6 +4,8 @@ html {
 }
 
 .main {
+  container-type: inline-size;
+  container-name: main;
   scroll-padding-top: var(--spacing-md);
   padding: var(--spacing-md);
   background-color: var(--color-bg);

@@ -159,6 +159,9 @@ func main() {
 	)
 	partialsMux.Handle("/partials/transaction-filters", transactionFiltersHandler)
 
+	goalHandler := handlers.NewGoalHandler(accountService, expenseCatService)
+	partialsMux.Handle("/partials/goal", goalHandler)
+
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {
 		time.Sleep(2 * time.Second)
