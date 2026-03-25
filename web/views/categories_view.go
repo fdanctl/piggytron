@@ -16,6 +16,13 @@ type IncomeCategory struct {
 	Name string
 }
 
+func NewIncomeCategory(c *incomecategory.IncomeCategory) IncomeCategory {
+	return IncomeCategory{
+		Id:   c.ID(),
+		Name: c.Name(),
+	}
+}
+
 func (c IncomeCategory) GetId() string {
 	return string(c.Id)
 }
@@ -32,6 +39,14 @@ type ExpenseCategory struct {
 	Id          expensecategory.ID
 	Name        string
 	ExpenseType expensecategory.ExpenseType
+}
+
+func NewExpenseCategory(c *expensecategory.ExpenseCategory) ExpenseCategory {
+	return ExpenseCategory{
+		Id:          c.ID(),
+		Name:        c.Name(),
+		ExpenseType: c.ExpenseType(),
+	}
 }
 
 func (c ExpenseCategory) GetId() string {

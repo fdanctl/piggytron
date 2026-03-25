@@ -10,7 +10,6 @@ import (
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -45,6 +44,7 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		h.GetId(w, r)
+
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
@@ -58,11 +58,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	var ecView []views.ExpenseCategory
 	for _, v := range ec {
-		ecView = append(ecView, views.ExpenseCategory{
-			Id:          v.ID(),
-			Name:        v.Name(),
-			ExpenseType: v.ExpenseType(),
-		})
+		ecView = append(ecView, views.NewExpenseCategory(v))
 	}
 
 	ic, err := h.incomeCatService.ReadAllUserCategories(r.Context())
@@ -70,12 +66,10 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
+
 	var icView []views.IncomeCategory
 	for _, v := range ic {
-		icView = append(icView, views.IncomeCategory{
-			Id:   v.ID(),
-			Name: v.Name(),
-		})
+		icView = append(icView, views.NewIncomeCategory(v))
 	}
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
@@ -140,16 +134,9 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 
 	var category views.Category
 	if ecat != nil {
-		category = views.ExpenseCategory{
-			Id:          ecat.ID(),
-			Name:        ecat.Name(),
-			ExpenseType: ecat.ExpenseType(),
-		}
+		category = views.NewExpenseCategory(ecat)
 	} else {
-		category = views.IncomeCategory{
-			Id:   icat.ID(),
-			Name: icat.Name(),
-		}
+		category = views.NewIncomeCategory(icat)
 	}
 
 	var optionsLinks []components.BreadcrumbsLink
@@ -167,14 +154,8 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	v := r.Context().Value("user")
-	if v == nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

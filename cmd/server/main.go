@@ -113,7 +113,6 @@ func main() {
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
 
 	allTransactionsHandler := handlers.NewAllTransactionsHandler(
-		transactionService,
 		transactionQueryService,
 	)
 	webMux.Handle("/transactions/all", middleware.AuthProtectedRoute(allTransactionsHandler))

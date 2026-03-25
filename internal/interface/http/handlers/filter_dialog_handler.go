@@ -9,7 +9,6 @@ import (
 
 	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -88,17 +87,12 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	v := r.Context().Value("user")
-	if v == nil {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 	resCount, err := h.tQueryService.CountFilteredResults(
 		r.Context(), sessionInfo.UserId, filters,
 	)
@@ -166,17 +160,12 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		filterCount++
 	}
 
-	v := r.Context().Value("user")
-	if v == nil {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 	resCount, err := h.tQueryService.CountFilteredResults(
 		r.Context(), sessionInfo.UserId, filters,
 	)

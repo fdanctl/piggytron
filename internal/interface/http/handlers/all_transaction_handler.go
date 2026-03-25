@@ -8,8 +8,6 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
-	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -17,20 +15,15 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-const LIMIT = 30
-
 type AllTransactionsHandler struct {
-	service *transactionapp.Service
-	query   query.TransactionQueryService
+	query query.TransactionQueryService
 }
 
 func NewAllTransactionsHandler(
-	s *transactionapp.Service,
 	q query.TransactionQueryService,
 ) *AllTransactionsHandler {
 	return &AllTransactionsHandler{
-		service: s,
-		query:   q,
+		query: q,
 	}
 }
 
@@ -79,14 +72,8 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		filterCount++
 	}
 
-	v := r.Context().Value("user")
-	if v == nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -133,6 +120,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return partials.TransactionsList(transactionsView, strings.Join(queries, "&"), hasMore).
 			Render(ctx, w)
 	})
+
 	if r.Header.Get("Hx-Request") == "true" {
 		content.Render(r.Context(), w)
 		io.WriteString(w, "<title>Transactions</title>")

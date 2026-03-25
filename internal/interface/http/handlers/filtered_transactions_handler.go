@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
@@ -85,17 +84,12 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		filterCount++
 	}
 
-	v := r.Context().Value("user")
-	if v == nil {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
 	transactions, err := h.query.FindFiltered(
 		r.Context(),
 		sessionInfo.UserId,
