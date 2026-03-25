@@ -9,29 +9,27 @@ import (
 
 	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
-	categorynameapp "github.com/fdanctl/piggytron/internal/application/category_name"
-	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 )
 
 type FilterDialogHandler struct {
-	categorynameService *categorynameapp.Service
-	transactionService  *transactionapp.Service
-	accountService      *accountapp.Service
+	categoryQueryService query.CategoryQueryService
+	accountService       *accountapp.Service
+	tQueryService        query.TransactionQueryService
 }
 
 func NewFilterDialogHandler(
-	cs *categorynameapp.Service,
-	ts *transactionapp.Service,
+	cs query.CategoryQueryService,
 	as *accountapp.Service,
+	tq query.TransactionQueryService,
 ) *FilterDialogHandler {
-	fmt.Println(cs)
 	return &FilterDialogHandler{
-		categorynameService: cs,
-		transactionService:  ts,
-		accountService:      as,
+		categoryQueryService: cs,
+		accountService:       as,
+		tQueryService:        tq,
 	}
 }
 
@@ -49,7 +47,7 @@ func (h *FilterDialogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
-	c, err := h.categorynameService.GetAllCategories(r.Context())
+	c, err := h.categoryQueryService.FindAllCategories(r.Context())
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
@@ -84,12 +82,26 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	minAmount := q.Get("minamount")
 	maxAmount := q.Get("maxamount")
 
-	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	filters, err := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	resCount, err := h.transactionService.CountFilteredResults(r.Context(), filters)
+
+	v := r.Context().Value("user")
+	if v == nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	resCount, err := h.tQueryService.CountFilteredResults(
+		r.Context(), sessionInfo.UserId, filters,
+	)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -101,7 +113,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	includedCats, err := h.categorynameService.GetCategoriesIdIncludes(r.Context(), cats)
+	includedCats, err := h.categoryQueryService.FindCategoriesIdIncludes(r.Context(), cats)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -128,7 +140,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	minAmount := q.Get("minamount")
 	maxAmount := q.Get("maxamount")
 
-	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	filters, err := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -154,7 +166,20 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		filterCount++
 	}
 
-	resCount, err := h.transactionService.CountFilteredResults(r.Context(), filters)
+	v := r.Context().Value("user")
+	if v == nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	resCount, err := h.tQueryService.CountFilteredResults(
+		r.Context(), sessionInfo.UserId, filters,
+	)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -197,7 +222,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		"style":       "height: 24px;",
 		"hx-swap-oob": "outerHTML",
 		"id":          "filter-btn",
-		"hx-get":      "/partials/dialog/transaction-filters?" + strings.Join(queries[1:], "&"),
+		"hx-get":      "/partials/transaction-filters?" + strings.Join(queries[1:], "&"),
 		"hx-target":   "#dialog-root",
 	}).Render(r.Context(), w)
 }

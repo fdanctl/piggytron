@@ -5,8 +5,8 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/fdanctl/piggytron/internal/application/category_name"
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 )
 
@@ -27,7 +27,14 @@ templ Pill(p string, attrs templ.Attributes) {
 	</div>
 }
 
-templ TransactionsFilters(accOptions, catOptions []FilterOption, currAcc []*account.AccountIdName, currCats []*categoryname.CategoryWithName, q url.Values, count int) {
+templ TransactionsFilters(
+	accOptions,
+	catOptions []FilterOption,
+	currAcc []*account.AccountIdName,
+	currCats []query.CategoryWithNameDTO,
+	q url.Values,
+	count int,
+) {
 	<form id="transactions-filters" style="height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap:var(--spacing-md)">
 		<div>
 			<div class="flex justify-between items-center mb-xs">
@@ -74,7 +81,7 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, currAcc []*acco
 								"name":      "accounts",
 								"value":     o.Value,
 								"checked":   slices.Contains(q["accounts"], o.Value),
-								"hx-post":   "/partials/dialog/transaction-filters",
+								"hx-post":   "/partials/transaction-filters",
 								"hx-target": "#filters-result-btn",
 								"onchange":  "toggleFilterPill(this)",
 							},
@@ -105,7 +112,7 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, currAcc []*acco
 								"name":      "categories",
 								"value":     o.Value,
 								"checked":   slices.Contains(q["categories"], o.Value),
-								"hx-post":   "/partials/dialog/transaction-filters",
+								"hx-post":   "/partials/transaction-filters",
 								"hx-target": "#filters-result-btn",
 								"onchange":  "toggleFilterPill(this)",
 							},

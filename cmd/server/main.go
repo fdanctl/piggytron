@@ -11,7 +11,6 @@ import (
 
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/account"
-	categoryname "github.com/fdanctl/piggytron/internal/application/category_name"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/transaction"
@@ -21,6 +20,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
+	"github.com/fdanctl/piggytron/internal/query"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
@@ -77,12 +77,14 @@ func main() {
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	userRepo := postgres.NewUserRepository(db)
 
+	// query services
+	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
+	var transactionQueryService query.TransactionQueryService = postgres.NewTransactionQueryService(db)
 	// services
 	accountService := account.NewService(accountRepo)
 	transactionService := transaction.NewService(transactionRepo)
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
-	catNameService := categoryname.NewService(db)
 	userService := user.NewService(userRepo, hasher, sessionStore)
 
 	webMux := http.NewServeMux() // returns full HTML page
@@ -110,7 +112,10 @@ func main() {
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
 
-	allTransactionsHandler := handlers.NewAllTransactionsHandler(transactionService)
+	allTransactionsHandler := handlers.NewAllTransactionsHandler(
+		transactionService,
+		transactionQueryService,
+	)
 	webMux.Handle("/transactions/all", middleware.AuthProtectedRoute(allTransactionsHandler))
 
 	eh := handlers.ExpensesHandler{}
@@ -119,7 +124,7 @@ func main() {
 	categoriesHandler := handlers.NewCategoriesHandler(
 		expenseCatService,
 		incomeCatService,
-		transactionService,
+		transactionQueryService,
 	)
 
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
@@ -142,20 +147,18 @@ func main() {
 	expenseCatHandler := handlers.NewExpenseCategoriesHandler(expenseCatService)
 	partialsMux.Handle("/partials/expense-category", expenseCatHandler)
 
-	filteredTransaction := handlers.NewFilteredTransactionsHandler(transactionService)
+	filteredTransaction := handlers.NewFilteredTransactionsHandler(transactionQueryService)
 	partialsMux.Handle("/partials/transactions", filteredTransaction)
 
 	catHistChartHandler := handlers.NewCatHistChartHandler()
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
-	dialogHandler := handlers.NewFilterDialogHandler(
-		catNameService,
-		transactionService,
+	transactionFiltersHandler := handlers.NewFilterDialogHandler(
+		catQueryService,
 		accountService,
+		transactionQueryService,
 	)
-
-	// TODO change to filters only
-	partialsMux.Handle("/partials/dialog/{dialog}", dialogHandler)
+	partialsMux.Handle("/partials/transaction-filters", transactionFiltersHandler)
 
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {

@@ -16,7 +16,7 @@ templ AllTransactionsHeader(
 			@components.FilterBtn(filterCount, 0, "", "", templ.Attributes{
 				"style":     "height: 24px",
 				"id":        "filter-btn",
-				"hx-get":    "/partials/dialog/transaction-filters?" + filterQuery,
+				"hx-get":    "/partials/transaction-filters?" + filterQuery,
 				"hx-target": "#dialog-root",
 				"hx-swap":   "beforeend",
 			})

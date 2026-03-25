@@ -1,4 +1,4 @@
-package categoryname
+package postgres
 
 import (
 	"context"
@@ -7,25 +7,22 @@ import (
 	"strings"
 
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/query"
 )
 
-type Service struct {
+type CategoryQueryService struct {
 	db *sql.DB
 }
 
-type CategoryWithName struct {
-	Id   string
-	Name string
-}
-
-func NewService(db *sql.DB) *Service {
-	fmt.Println("db", db)
-	return &Service{
+func NewCategoryQueryService(db *sql.DB) *CategoryQueryService {
+	return &CategoryQueryService{
 		db: db,
 	}
 }
 
-func (s *Service) GetAllCategories(ctx context.Context) ([]*CategoryWithName, error) {
+func (s *CategoryQueryService) FindAllCategories(
+	ctx context.Context,
+) ([]query.CategoryWithNameDTO, error) {
 	v := ctx.Value("user")
 	if v == nil {
 		return nil, nil
@@ -53,30 +50,29 @@ func (s *Service) GetAllCategories(ctx context.Context) ([]*CategoryWithName, er
 	}
 	defer rows.Close()
 
-	var results []*CategoryWithName
+	var results []query.CategoryWithNameDTO
 
 	for rows.Next() {
-		var c CategoryWithName
+		var c query.CategoryWithNameDTO
 		if err := rows.Scan(
 			&c.Id,
 			&c.Name,
 		); err != nil {
 			return nil, err
 		}
-		results = append(results, &c)
+		results = append(results, c)
 	}
 	if err := rows.Err(); err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 
 	return results, nil
 }
 
-func (s *Service) GetCategoriesIdIncludes(
+func (s *CategoryQueryService) FindCategoriesIdIncludes(
 	ctx context.Context,
 	ids []string,
-) ([]*CategoryWithName, error) {
+) ([]query.CategoryWithNameDTO, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
@@ -88,7 +84,7 @@ func (s *Service) GetCategoriesIdIncludes(
 		placeholders[i] = fmt.Sprintf("$%d", i+1)
 		args[i] = id
 	}
-	query := fmt.Sprintf(
+	queryStr := fmt.Sprintf(
 		`SELECT id, name
 		 FROM income_categories
 		 WHERE id IN (%s)
@@ -102,26 +98,25 @@ func (s *Service) GetCategoriesIdIncludes(
 
 	rows, err := s.db.QueryContext(
 		ctx,
-		query,
+		queryStr,
 		args...,
 	)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
 
-	var results []*CategoryWithName
+	var results []query.CategoryWithNameDTO
 
 	for rows.Next() {
-		var c CategoryWithName
+		var c query.CategoryWithNameDTO
 		if err := rows.Scan(
 			&c.Id,
 			&c.Name,
 		); err != nil {
 			return nil, err
 		}
-		results = append(results, &c)
+		results = append(results, c)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

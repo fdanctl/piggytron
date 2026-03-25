@@ -9,9 +9,9 @@ import (
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
-	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -19,20 +19,20 @@ import (
 )
 
 type CategoriesHandler struct {
-	incomeCatService   *incomecategoryapp.Service
-	expenseCatService  *expensecategoryapp.Service
-	transactionService *transactionapp.Service
+	incomeCatService  *incomecategoryapp.Service
+	expenseCatService *expensecategoryapp.Service
+	tQueryService     query.TransactionQueryService
 }
 
 func NewCategoriesHandler(
 	es *expensecategoryapp.Service,
 	is *incomecategoryapp.Service,
-	ts *transactionapp.Service,
+	tq query.TransactionQueryService,
 ) *CategoriesHandler {
 	return &CategoriesHandler{
-		incomeCatService:   is,
-		expenseCatService:  es,
-		transactionService: ts,
+		incomeCatService:  is,
+		expenseCatService: es,
+		tQueryService:     tq,
 	}
 }
 
@@ -167,11 +167,34 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters, err := transaction.NewFilters(nil, nil, []string{id}, "", "")
-	transactions, hasMore, err := h.transactionService.ReadFiltered(r.Context(), filters, 1)
+	v := r.Context().Value("user")
+	if v == nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	filters, err := query.NewTransactionFilters(nil, nil, []string{id}, "", "")
+	transactions, err := h.tQueryService.FindFiltered(
+		r.Context(),
+		sessionInfo.UserId,
+		filters,
+		LIMIT+1,
+		LIMIT*1-LIMIT,
+	)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
+	}
+	var hasMore bool
+	if len(transactions) == LIMIT+1 {
+		hasMore = true
+		transactions = transactions[0 : len(transactions)-1]
 	}
 
 	var transactionsView []views.Transaction

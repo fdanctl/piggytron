@@ -9,20 +9,28 @@ import (
 
 	"github.com/a-h/templ"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+const LIMIT = 30
+
 type AllTransactionsHandler struct {
 	service *transactionapp.Service
+	query   query.TransactionQueryService
 }
 
-func NewAllTransactionsHandler(s *transactionapp.Service) *AllTransactionsHandler {
+func NewAllTransactionsHandler(
+	s *transactionapp.Service,
+	q query.TransactionQueryService,
+) *AllTransactionsHandler {
 	return &AllTransactionsHandler{
 		service: s,
+		query:   q,
 	}
 }
 
@@ -44,14 +52,15 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	qminAmount := q.Get("minamount")
 	qmaxAmount := q.Get("maxamount")
 
-	filters, err := transaction.NewFilters(qtypes, qaccounts, qcats, qminAmount, qmaxAmount)
+	filters, err := query.NewTransactionFilters(qtypes, qaccounts, qcats, qminAmount, qmaxAmount)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	filterCount := len(qtypes) + len(qaccounts) + len(qcats)
-	queries := []string{fmt.Sprintf("page=%d", 2)}
+	var page uint = 1
+	queries := []string{fmt.Sprintf("page=%d", page+1)}
 	if len(qtypes) > 0 {
 		queries = append(queries, "types="+strings.Join(qtypes, "&types="))
 	}
@@ -70,14 +79,37 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		filterCount++
 	}
 
-	transactions, resCount, hasMore, err := h.service.ReadFilteredWithCount(r.Context(), filters, 1)
+	v := r.Context().Value("user")
+	if v == nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	tWithCount, err := h.query.FindFilteredWithCount(
+		r.Context(),
+		sessionInfo.UserId,
+		filters,
+		LIMIT+1,
+		LIMIT*page-LIMIT,
+	)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
+	var hasMore bool
+	if len(tWithCount.Data) == LIMIT+1 {
+		hasMore = true
+		tWithCount.Data = tWithCount.Data[0 : len(tWithCount.Data)-1]
+	}
 
 	var transactionsView []views.Transaction
-	for _, t := range transactions {
+	for _, t := range tWithCount.Data {
 		transactionsView = append(
 			transactionsView,
 			views.NewTransaction(t),
@@ -92,13 +124,13 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 			nil,
 			uint8(filterCount),
 			r.URL.RawQuery,
-			resCount,
+			tWithCount.Total,
 		)
 		if header.Render(ctx, w); err != nil {
 			return err
 		}
 
-		return partials.TransactionsList(transactionsView, r.URL.RawQuery, hasMore).
+		return partials.TransactionsList(transactionsView, strings.Join(queries, "&"), hasMore).
 			Render(ctx, w)
 	})
 	if r.Header.Get("Hx-Request") == "true" {

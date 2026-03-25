@@ -9,19 +9,21 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
-	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 type FilteredTransactionsHandler struct {
-	service *transactionapp.Service
+	query query.TransactionQueryService
 }
 
-func NewFilteredTransactionsHandler(s *transactionapp.Service) *FilteredTransactionsHandler {
+func NewFilteredTransactionsHandler(
+	q query.TransactionQueryService,
+) *FilteredTransactionsHandler {
 	return &FilteredTransactionsHandler{
-		service: s,
+		query: q,
 	}
 }
 
@@ -57,7 +59,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 	minAmount := q.Get("minamount")
 	maxAmount := q.Get("maxamount")
 
-	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	filters, err := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -83,12 +85,34 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		filterCount++
 	}
 
-	transactions, hasMore, err := h.service.ReadFiltered(r.Context(), filters, uint(page))
+	v := r.Context().Value("user")
+	if v == nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	transactions, err := h.query.FindFiltered(
+		r.Context(),
+		sessionInfo.UserId,
+		filters,
+		LIMIT+1,
+		LIMIT*uint(page)-LIMIT,
+	)
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
+	var hasMore bool
+	if len(transactions) == LIMIT+1 {
+		hasMore = true
+		transactions = transactions[0 : len(transactions)-1]
+	}
+
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		for i, v := range transactions {
 			t := views.NewTransaction(v)

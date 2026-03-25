@@ -7,14 +7,12 @@ import (
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 )
 
-const LIMIT = 30
-
 type Service struct {
 	repo transaction.Repository
 }
 
-func NewService(repo transaction.Repository) *Service {
-	return &Service{repo: repo}
+func NewService(r transaction.Repository) *Service {
+	return &Service{repo: r}
 }
 
 // create income
@@ -77,97 +75,89 @@ func (s *Service) ReadAllByCategory(
 	return s.repo.FindAllByCategory(ctx, newId)
 }
 
-func (s *Service) ReadFiltered(
-	ctx context.Context,
-	filters *transaction.Filters,
-	page uint,
-) ([]*transaction.Transaction, bool, error) {
-	v := ctx.Value("user")
-	if v == nil {
-		return nil, false, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, false, nil
-	}
-
-	id, err := transaction.NewId(sessionInfo.UserId)
-	if err != nil {
-		return nil, false, err
-	}
-
-	transactions, err := s.repo.FindFiltered(ctx, id, filters, LIMIT+1, LIMIT*page-LIMIT)
-	if err != nil {
-		return nil, false, err
-	}
-
-	var hasMore bool
-	if len(transactions) == LIMIT+1 {
-		hasMore = true
-		transactions = transactions[0 : len(transactions)-1]
-	}
-
-	return transactions, hasMore, nil
-}
-
-func (s *Service) ReadFilteredWithCount(
-	ctx context.Context,
-	filters *transaction.Filters,
-	page uint,
-) ([]*transaction.Transaction, int, bool, error) {
-	v := ctx.Value("user")
-	if v == nil {
-		return nil, -1, false, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, -1, false, nil
-	}
-
-	id, err := transaction.NewId(sessionInfo.UserId)
-	if err != nil {
-		return nil, -1, false, nil
-	}
-
-	transactions, count, err := s.repo.FindFilteredWithCount(
-		ctx,
-		id,
-		filters,
-		LIMIT+1,
-		LIMIT*page-LIMIT,
-	)
-	if err != nil {
-		return nil, -1, false, nil
-	}
-
-	var hasMore bool
-	if len(transactions) == LIMIT+1 {
-		hasMore = true
-		transactions = transactions[0 : len(transactions)-1]
-	}
-
-	return transactions, count, hasMore, nil
-}
-
-func (s *Service) CountFilteredResults(
-	ctx context.Context,
-	filters *transaction.Filters,
-) (int, error) {
-	v := ctx.Value("user")
-	if v == nil {
-		return 0, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return 0, nil
-	}
-
-	id, err := transaction.NewId(sessionInfo.UserId)
-	if err != nil {
-		return 0, err
-	}
-	return s.repo.CountFilteredResults(ctx, id, filters)
-}
+// func (s *Service) ReadFiltered(
+// 	ctx context.Context,
+// 	filters *query.TransactionFilters,
+// 	page uint,
+// ) ([]query.TransactionDTO, bool, error) {
+// 	v := ctx.Value("user")
+// 	if v == nil {
+// 		return nil, false, nil
+// 	}
+//
+// 	sessionInfo, ok := v.(*rdb.SessionInfo)
+// 	if !ok {
+// 		return nil, false, nil
+// 	}
+//
+// 	transactions, err := s.query.FindFiltered(
+// 		ctx,
+// 		sessionInfo.UserId,
+// 		filters,
+// 		LIMIT+1,
+// 		LIMIT*page-LIMIT,
+// 	)
+// 	if err != nil {
+// 		return nil, false, err
+// 	}
+//
+// 	var hasMore bool
+// 	if len(transactions) == LIMIT+1 {
+// 		hasMore = true
+// 		transactions = transactions[0 : len(transactions)-1]
+// 	}
+//
+// 	return transactions, hasMore, nil
+// }
+//
+// func (s *Service) ReadFilteredWithCount(
+// 	ctx context.Context,
+// 	filters *query.TransactionFilters,
+// 	page uint,
+// ) (*query.TransactionsWithTotalCount, bool, error) {
+// 	v := ctx.Value("user")
+// 	if v == nil {
+// 		return nil, false, nil
+// 	}
+//
+// 	sessionInfo, ok := v.(*rdb.SessionInfo)
+// 	if !ok {
+// 		return nil, false, nil
+// 	}
+//
+// 	tWithCount, err := s.query.FindFilteredWithCount(
+// 		ctx,
+// 		sessionInfo.UserId,
+// 		filters,
+// 		LIMIT+1,
+// 		LIMIT*page-LIMIT,
+// 	)
+// 	if err != nil {
+// 		return nil, false, nil
+// 	}
+//
+// 	var hasMore bool
+// 	if len(tWithCount.Data) == LIMIT+1 {
+// 		hasMore = true
+// 		tWithCount.Data = tWithCount.Data[0 : len(tWithCount.Data)-1]
+// 	}
+//
+// 	return tWithCount, hasMore, nil
+// }
+//
+// func (s *Service) CountFilteredResults(
+// 	ctx context.Context,
+// 	filters *query.TransactionFilters,
+// ) (int, error) {
+// 	v := ctx.Value("user")
+// 	if v == nil {
+// 		return 0, nil
+// 	}
+//
+// 	sessionInfo, ok := v.(*rdb.SessionInfo)
+// 	if !ok {
+// 		return 0, nil
+// 	}
+//
+// 	return s.query.CountFilteredResults(ctx, sessionInfo.UserId, filters)
+// }

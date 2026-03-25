@@ -47,6 +47,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	var gView []views.Goal
 	// TODO: think of a better way, to reduce the times it queries the db
+	// SUM() ReadAllGoalsWithSum
 	for _, g := range goals {
 		transactions, err := h.transactionService.ReadAllByAccount(r.Context(), string(g.ID()))
 		if err != nil {

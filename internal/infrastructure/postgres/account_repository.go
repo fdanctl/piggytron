@@ -374,7 +374,6 @@ func (r *AccountRepository) FindIdNamesIncludes(
 		args...,
 	)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()

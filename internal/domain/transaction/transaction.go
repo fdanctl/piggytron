@@ -11,15 +11,15 @@ func NewId(str string) (ID, error) {
 	return ID(str), nil
 }
 
-type Ttype string
+type Type string
 
 const (
-	income   Ttype = "income"
-	expense  Ttype = "expense"
-	transfer Ttype = "transfer"
+	income   Type = "income"
+	expense  Type = "expense"
+	transfer Type = "transfer"
 )
 
-func NewType(str string) (Ttype, error) {
+func NewType(str string) (Type, error) {
 	switch str {
 	case "income":
 		return income, nil
@@ -39,7 +39,7 @@ type Transaction struct {
 	id     ID
 	userId ID
 
-	ttype Ttype
+	ttype Type
 
 	fromAccountId *ID
 	toAccountId   *ID
@@ -156,7 +156,7 @@ func NewTransfer(
 func Rehydrate(
 	id ID,
 	userId ID,
-	ttype Ttype,
+	ttype Type,
 	fromAccountId *ID,
 	toAccountId *ID,
 	incomeCategoryId *ID,
@@ -189,10 +189,13 @@ func (t *Transaction) UserId() ID {
 	return t.userId
 }
 
-func (t *Transaction) Ttype() Ttype {
+func (t *Transaction) Ttype() Type {
 	return t.ttype
 }
 
+// TODO: correct
+// return a pointer, if it's nil postgres will be nil (instead of "" of error)
+// for the view let view package handle if == nil
 func (t *Transaction) FromAccountId() ID {
 	if t.fromAccountId == nil {
 		return ID("")

@@ -3,32 +3,32 @@ package views
 import (
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/query"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
 
 type Transaction struct {
-	Id          transaction.ID
+	Id          string
 	Description string
-	Type        transaction.Ttype
+	Type        string
 	Amount      string
 	Date        string
 }
 
 func NewTransaction(
-	t *transaction.Transaction,
+	t query.TransactionDTO,
 ) Transaction {
-	f := float64(t.Amount()) / 100
-	if t.Ttype() == "expense" {
+	f := float64(t.Amount) / 100
+	if t.Type == "expense" {
 		f *= -1
 	}
 	return Transaction{
-		Id:          t.ID(),
-		Description: t.Description(),
-		Type:        t.Ttype(),
+		Id:          t.Id,
+		Description: t.Description,
+		Type:        t.Type,
 		Amount:      formatMoney(f, currency.EUR, language.AmericanEnglish),
 		// TODO convert date to relative date (ex. today, yesterday, ...)
-		Date: t.Date().Format(time.DateOnly),
+		Date: t.Date.Format(time.DateOnly),
 	}
 }
