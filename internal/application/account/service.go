@@ -208,3 +208,13 @@ func (s *Service) ReadAllGoalsByUser(
 
 	return accounts, nil
 }
+
+func (s *Service) ReadIdNamesIncludes(
+	ctx context.Context,
+	ids []string,
+) ([]*account.AccountIdName, error) {
+	if len(ids) <= 0 {
+		return nil, nil
+	}
+	return s.repo.FindIdNamesIncludes(ctx, ids)
+}

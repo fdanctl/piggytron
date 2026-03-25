@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"slices"
 
+	"github.com/fdanctl/piggytron/internal/application/category_name"
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/web/templates/components"
 )
 
@@ -13,15 +15,39 @@ type FilterOption struct {
 	Value string
 }
 
-templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values, count uint) {
-	<div style="height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap:var(--spacing-lg)" id="transactions-filters">
-		<div class="flex justify-between items-center">
-			<h4>Filters</h4>
-			<div
-				class="flex justify-center items-center cursor-pointer"
-				onclick="closeLastDialog()"
-			>
-				@components.XSvg(16, "", "")
+templ Pill(p string, attrs templ.Attributes) {
+	<div class="pill" { attrs... }>
+		<span>{ p }</span>
+		<button
+			class="reset-btn flex justify-center items-center"
+			type="button"
+		>
+			@components.XSvg(14, "", "")
+		</button>
+	</div>
+}
+
+templ TransactionsFilters(accOptions, catOptions []FilterOption, currAcc []*account.AccountIdName, currCats []*categoryname.CategoryWithName, q url.Values, count uint) {
+	<form id="transactions-filters" style="height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap:var(--spacing-md)">
+		<div>
+			<div class="flex justify-between items-center mb-xs">
+				<h4>Filters</h4>
+				<div
+					class="flex justify-center items-center cursor-pointer"
+					onclick="closeLastDialog()"
+				>
+					@components.XSvg(16, "", "")
+				</div>
+			</div>
+			<div id="curr-filters">
+				<ul class="flex gap-xs flex-wrap mb-sm">
+					for _, v := range currAcc {
+						@Pill(v.Name, templ.Attributes{"data-id": string(v.Id), "onclick": "removeFilterPill(this)"})
+					}
+					for _, v := range currCats {
+						@Pill(v.Name, templ.Attributes{"data-id": string(v.Id), "onclick": "removeFilterPill(this)"})
+					}
+				</ul>
 			</div>
 		</div>
 		<div hx-include="input" style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;">
@@ -50,6 +76,7 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values, c
 								"checked":   slices.Contains(q["accounts"], o.Value),
 								"hx-post":   "/partials/dialog/transaction-filters",
 								"hx-target": "#filters-result-btn",
+								"onchange":  "toggleFilterPill(this)",
 							},
 						)
 					}
@@ -80,17 +107,28 @@ templ TransactionsFilters(accOptions, catOptions []FilterOption, q url.Values, c
 								"checked":   slices.Contains(q["categories"], o.Value),
 								"hx-post":   "/partials/dialog/transaction-filters",
 								"hx-target": "#filters-result-btn",
+								"onchange":  "toggleFilterPill(this)",
 							},
 						)
 					}
 				</div>
 			</div>
 		</div>
-		@components.Button(
-			fmt.Sprintf("Show %d results", count),
-			"mt-lg w-full",
-			components.BtnPrimary,
-			components.BtnMedium,
-			templ.Attributes{"id": "filters-result-btn", "onclick": "closeLastDialog()"})
-	</div>
+		<div id="filters-result-btn" class="mt-lg space-y-xs">
+			if (len(currAcc) + len(currCats) > 0) {
+				@components.Button(
+					"Reset",
+					"w-full",
+					components.BtnOutline,
+					components.BtnMedium,
+					templ.Attributes{"type": "button", "onclick": "resetTransactionFiltersForm()"})
+			}
+			@components.Button(
+				fmt.Sprintf("Show %d results", count),
+				"w-full",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{"type": "button", "onclick": "closeLastDialog()"})
+		</div>
+	</form>
 }

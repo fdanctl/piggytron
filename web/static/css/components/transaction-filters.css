@@ -1,0 +1,25 @@
+#curr-filters a {
+  display: block;
+  width: 100%;
+  text-align: right;
+  margin-bottom: var(--spacing-xs);
+}
+#curr-filters a:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+.pill {
+  font-size: 0.85rem;
+  padding-left: var(--spacing-sm);
+  padding-right: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: #000;
+  color: #fff;
+  border-radius: var(--radius-xl);
+  text-box-trim: trim-both;
+}
+.pill span {
+  cursor: default;
+}

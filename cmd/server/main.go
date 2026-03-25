@@ -11,6 +11,7 @@ import (
 
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/account"
+	categoryname "github.com/fdanctl/piggytron/internal/application/category_name"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/transaction"
@@ -81,6 +82,7 @@ func main() {
 	transactionService := transaction.NewService(transactionRepo)
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
+	catNameService := categoryname.NewService(db)
 	userService := user.NewService(userRepo, hasher, sessionStore)
 
 	webMux := http.NewServeMux() // returns full HTML page
@@ -146,9 +148,8 @@ func main() {
 	catHistChartHandler := handlers.NewCatHistChartHandler()
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
-	dialogHandler := handlers.NewDialogHandler(
-		expenseCatService,
-		incomeCatService,
+	dialogHandler := handlers.NewFilterDialogHandler(
+		catNameService,
 		transactionService,
 		accountService,
 	)

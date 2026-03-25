@@ -160,7 +160,7 @@
 }
 
 .text-muted {
-  color: var(--color-muted-foreground);
+  color: var(--color-text-secondary);
 }
 
 .text-success {

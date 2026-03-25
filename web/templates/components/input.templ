@@ -68,6 +68,6 @@ templ CheckBoxPill(label string, attrs templ.Attributes) {
 		<span>
 			{ label }
 		</span>
-		<input class="hidden" type="checkbox" { attrs... }/>
+		<input data-label={ label } class="hidden" type="checkbox" { attrs... }/>
 	</div>
 }

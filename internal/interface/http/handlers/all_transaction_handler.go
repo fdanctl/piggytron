@@ -38,39 +38,45 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 
 func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
-	types := q["types"]
-	accounts := q["accounts"]
-	cats := q["categories"]
-	minAmount := q.Get("minamount")
-	maxAmount := q.Get("maxamount")
+	qtypes := q["types"]
+	qaccounts := q["accounts"]
+	qcats := q["categories"]
+	qminAmount := q.Get("minamount")
+	qmaxAmount := q.Get("maxamount")
 
-	filters, err := transaction.NewFilters(types, accounts, cats, minAmount, maxAmount)
+	filters, err := transaction.NewFilters(qtypes, qaccounts, qcats, qminAmount, qmaxAmount)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	filterCount := len(types) + len(accounts) + len(cats)
+	filterCount := len(qtypes) + len(qaccounts) + len(qcats)
 	queries := []string{fmt.Sprintf("page=%d", 2)}
-	if len(types) > 0 {
-		queries = append(queries, "types="+strings.Join(types, "&types="))
+	if len(qtypes) > 0 {
+		queries = append(queries, "types="+strings.Join(qtypes, "&types="))
 	}
-	if len(accounts) > 0 {
-		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
+	if len(qaccounts) > 0 {
+		queries = append(queries, "accounts="+strings.Join(qaccounts, "&accounts="))
 	}
-	if len(cats) > 0 {
-		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
+	if len(qcats) > 0 {
+		queries = append(queries, "categories="+strings.Join(qcats, "&categories="))
 	}
-	if minAmount != "" {
-		queries = append(queries, "minamount="+minAmount)
+	if qminAmount != "" {
+		queries = append(queries, "minamount="+qminAmount)
 		filterCount++
 	}
-	if maxAmount != "" {
-		queries = append(queries, "maxmount="+minAmount)
+	if qmaxAmount != "" {
+		queries = append(queries, "maxmount="+qminAmount)
 		filterCount++
 	}
 
 	transactions, hasMore, err := h.service.ReadWithFilters(r.Context(), filters, 1)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	resCount, err := h.service.CountFilteredResults(r.Context(), filters)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
@@ -86,29 +92,20 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		if _, err := io.WriteString(w, "<div class=\"flex justify-between\">"); err != nil {
-			return err
-		}
-		err := components.Breadcrumbs([]components.BreadcrumbsLink{
+		header := partials.AllTransactionsHeader([]components.BreadcrumbsLink{
 			{Href: "", Name: "Transactions"},
 			{Href: "", Name: "All"},
-		}, nil).Render(ctx, w)
-		if err != nil {
-			return err
-		}
-		if err := components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
-			"id":        "filter-btn",
-			"hx-get":    "/partials/dialog/transaction-filters?" + r.URL.RawQuery,
-			"hx-target": "#dialog-root",
-			"hx-swap":   "beforeend",
-		}).Render(ctx, w); err != nil {
-			return err
-		}
-		if _, err := io.WriteString(w, "</div>"); err != nil {
+		},
+			nil,
+			uint8(filterCount),
+			r.URL.RawQuery,
+			resCount,
+		)
+		if header.Render(ctx, w); err != nil {
 			return err
 		}
 
-		return partials.TransactionsList(transactionsView, strings.Join(queries, "&"), hasMore).
+		return partials.TransactionsList(transactionsView, r.URL.RawQuery, hasMore).
 			Render(ctx, w)
 	})
 	if r.Header.Get("Hx-Request") == "true" {

@@ -3,6 +3,8 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
@@ -342,4 +344,54 @@ func (r *AccountRepository) FindAllGoalsByUser(
 	}
 
 	return accounts, nil
+}
+
+func (r *AccountRepository) FindIdNamesIncludes(
+	ctx context.Context,
+	ids []string,
+) ([]*account.AccountIdName, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	placeholders := make([]string, len(ids))
+	args := make([]any, len(ids))
+
+	for i, id := range ids {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+		args[i] = id
+	}
+	query := fmt.Sprintf(
+		`SELECT id, name
+		 FROM accounts
+		 WHERE id IN (%s)`,
+		strings.Join(placeholders, ","),
+	)
+
+	rows, err := r.db.QueryContext(
+		ctx,
+		query,
+		args...,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+	var results []*account.AccountIdName
+	for rows.Next() {
+		var a account.AccountIdName
+		if err := rows.Scan(
+			&a.Id,
+			&a.Name,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, &a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }

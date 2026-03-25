@@ -1,0 +1,25 @@
+package partials
+
+import "github.com/fdanctl/piggytron/web/templates/components"
+
+templ AllTransactionsHeader(
+	bitems []components.BreadcrumbsLink,
+	boptions []components.BreadcrumbsLink,
+	filterCount uint8,
+	filterQuery string,
+	filterResults uint,
+) {
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bitems, boptions)
+		<div class="flex gap-sm" style="height: fit-content; align-items: center;">
+			<p id="filter-result-count" class="text-muted text-xs">{ filterResults } results</p>
+			@components.FilterBtn(filterCount, 0, "", "", templ.Attributes{
+				"style":     "height: 24px",
+				"id":        "filter-btn",
+				"hx-get":    "/partials/dialog/transaction-filters?" + filterQuery,
+				"hx-target": "#dialog-root",
+				"hx-swap":   "beforeend",
+			})
+		</div>
+	</div>
+}
