@@ -77,7 +77,7 @@ func (s *Service) ReadAllByCategory(
 	return s.repo.FindAllByCategory(ctx, newId)
 }
 
-func (s *Service) ReadWithFilters(
+func (s *Service) ReadFiltered(
 	ctx context.Context,
 	filters *transaction.Filters,
 	page uint,
@@ -97,7 +97,7 @@ func (s *Service) ReadWithFilters(
 		return nil, false, err
 	}
 
-	transactions, err := s.repo.FindWithFilters(ctx, id, filters, LIMIT+1, LIMIT*page-LIMIT)
+	transactions, err := s.repo.FindFiltered(ctx, id, filters, LIMIT+1, LIMIT*page-LIMIT)
 	if err != nil {
 		return nil, false, err
 	}
@@ -111,10 +111,50 @@ func (s *Service) ReadWithFilters(
 	return transactions, hasMore, nil
 }
 
+func (s *Service) ReadFilteredWithCount(
+	ctx context.Context,
+	filters *transaction.Filters,
+	page uint,
+) ([]*transaction.Transaction, int, bool, error) {
+	v := ctx.Value("user")
+	if v == nil {
+		return nil, -1, false, nil
+	}
+
+	sessionInfo, ok := v.(*rdb.SessionInfo)
+	if !ok {
+		return nil, -1, false, nil
+	}
+
+	id, err := transaction.NewId(sessionInfo.UserId)
+	if err != nil {
+		return nil, -1, false, nil
+	}
+
+	transactions, count, err := s.repo.FindFilteredWithCount(
+		ctx,
+		id,
+		filters,
+		LIMIT+1,
+		LIMIT*page-LIMIT,
+	)
+	if err != nil {
+		return nil, -1, false, nil
+	}
+
+	var hasMore bool
+	if len(transactions) == LIMIT+1 {
+		hasMore = true
+		transactions = transactions[0 : len(transactions)-1]
+	}
+
+	return transactions, count, hasMore, nil
+}
+
 func (s *Service) CountFilteredResults(
 	ctx context.Context,
 	filters *transaction.Filters,
-) (uint, error) {
+) (int, error) {
 	v := ctx.Value("user")
 	if v == nil {
 		return 0, nil

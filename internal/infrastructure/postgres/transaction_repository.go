@@ -262,7 +262,7 @@ func (r *TransactionRepository) FindAllByCategory(
 	return transactions, nil
 }
 
-func (r *TransactionRepository) FindWithFilters(
+func (r *TransactionRepository) FindFiltered(
 	ctx context.Context,
 	uid transaction.ID,
 	filters *transaction.Filters,
@@ -337,11 +337,93 @@ func (r *TransactionRepository) FindWithFilters(
 	return transactions, nil
 }
 
+func (r *TransactionRepository) FindFilteredWithCount(
+	ctx context.Context,
+	uid transaction.ID,
+	filters *transaction.Filters,
+	limit, offset uint,
+) ([]*transaction.Transaction, int, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at, COUNT(*) OVER() AS total_count
+		 FROM transactions
+		 WHERE user_id = $1
+	     AND ($2::TEXT[] IS NULL OR type = ANY($2))
+	     AND ($3::UUID[] IS NULL OR from_account_id = ANY($3) OR to_account_id = ANY($3))
+	     AND ($4::UUID[] IS NULL OR income_category_id = ANY($4) OR expense_category_id = ANY($4))
+	     AND ($5::BIGINT IS NULL OR amount >= $5)
+	     AND ($6::BIGINT IS NULL OR amount <= $6)
+		 ORDER BY date DESC
+		 LIMIT $7
+		 OFFSET $8`,
+		uid,
+		filters.Ttypes,
+		filters.AccountIds,
+		filters.CategoryIds,
+		filters.MinAmount,
+		filters.MaxAmount,
+		limit,
+		offset,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return nil, -1, err
+	}
+	defer rows.Close()
+
+	var transactions []*transaction.Transaction
+	var totalCount int
+
+	for rows.Next() {
+		var dto TransactionDto
+		var count int
+		err := rows.Scan(
+			&dto.id,
+			&dto.userId,
+			&dto.ttype,
+			&dto.fromAccountId,
+			&dto.toAccountId,
+			&dto.incomeCategoryId,
+			&dto.expenseCategoryId,
+			&dto.amount,
+			&dto.description,
+			&dto.date,
+			&dto.createdAt,
+			&count,
+		)
+		if err != nil {
+			fmt.Println("2", err)
+			return nil, -1, err
+		}
+		transaction := transaction.Rehydrate(
+			dto.id,
+			dto.userId,
+			dto.ttype,
+			dto.fromAccountId,
+			dto.toAccountId,
+			dto.incomeCategoryId,
+			dto.expenseCategoryId,
+			dto.amount,
+			dto.description,
+			dto.date,
+			dto.createdAt,
+		)
+		totalCount = count
+		transactions = append(transactions, transaction)
+	}
+	if err := rows.Err(); err != nil {
+		fmt.Println("3", err)
+		return nil, -1, err
+	}
+
+	return transactions, totalCount, nil
+}
+
 func (r *TransactionRepository) CountFilteredResults(
 	ctx context.Context,
 	uid transaction.ID,
 	filters *transaction.Filters,
-) (uint, error) {
+) (int, error) {
 	row := r.db.QueryRowContext(
 		ctx,
 		`SELECT COUNT(*)
@@ -359,7 +441,7 @@ func (r *TransactionRepository) CountFilteredResults(
 		filters.MinAmount,
 		filters.MaxAmount,
 	)
-	var count uint
+	var count int
 	err := row.Scan(&count)
 	if err != nil {
 		return 0, err

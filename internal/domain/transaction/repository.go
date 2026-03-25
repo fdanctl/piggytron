@@ -8,11 +8,17 @@ type Repository interface {
 	FindAllByUser(ctx context.Context, uid ID) ([]*Transaction, error)
 	FindAllByAccount(ctx context.Context, aid ID) ([]*Transaction, error)
 	FindAllByCategory(ctx context.Context, cid ID) ([]*Transaction, error)
-	FindWithFilters(
+	FindFiltered(
 		ctx context.Context,
 		uid ID,
 		filters *Filters,
 		limit, offset uint,
 	) ([]*Transaction, error)
-	CountFilteredResults(ctx context.Context, uid ID, filters *Filters) (uint, error)
+	FindFilteredWithCount(
+		ctx context.Context,
+		uid ID,
+		filters *Filters,
+		limit, offset uint,
+	) ([]*Transaction, int, error)
+	CountFilteredResults(ctx context.Context, uid ID, filters *Filters) (int, error)
 }

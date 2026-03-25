@@ -168,7 +168,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filters, err := transaction.NewFilters(nil, nil, []string{id}, "", "")
-	transactions, hasMore, err := h.transactionService.ReadWithFilters(r.Context(), filters, 1)
+	transactions, hasMore, err := h.transactionService.ReadFiltered(r.Context(), filters, 1)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return

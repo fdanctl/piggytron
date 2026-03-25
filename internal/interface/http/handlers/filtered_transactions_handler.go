@@ -83,7 +83,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		filterCount++
 	}
 
-	transactions, hasMore, err := h.service.ReadWithFilters(r.Context(), filters, uint(page))
+	transactions, hasMore, err := h.service.ReadFiltered(r.Context(), filters, uint(page))
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
