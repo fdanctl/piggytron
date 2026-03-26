@@ -4,7 +4,7 @@ import "time"
 
 type ID string
 
-func NewId(str string) (ID, error) {
+func NewID(str string) (ID, error) {
 	if str == "" {
 		return "", ErrInvalidID
 	}

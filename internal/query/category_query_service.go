@@ -5,11 +5,11 @@ import (
 )
 
 type CategoryWithNameDTO struct {
-	Id   string
+	ID   string
 	Name string
 }
 
 type CategoryQueryService interface {
 	FindAllCategories(ctx context.Context) ([]CategoryWithNameDTO, error)
-	FindCategoriesIdIncludes(ctx context.Context, ids []string) ([]CategoryWithNameDTO, error)
+	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryWithNameDTO, error)
 }

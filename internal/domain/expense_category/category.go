@@ -4,7 +4,7 @@ import "time"
 
 type ID string
 
-func NewId(str string) (ID, error) {
+func NewID(str string) (ID, error) {
 	if str == "" {
 		return "", ErrInvalidID
 	}
@@ -37,14 +37,14 @@ func NewExpenseType(str string) (ExpenseType, error) {
 
 type ExpenseCategory struct {
 	id          ID
-	userId      ID
+	userID      ID
 	name        string
 	expenseType ExpenseType
 	createdAt   time.Time
 	updatedAt   time.Time
 }
 
-func New(id ID, userId ID, name string, expenseType ExpenseType) (*ExpenseCategory, error) {
+func New(id ID, userID ID, name string, expenseType ExpenseType) (*ExpenseCategory, error) {
 	if name == "" || len(name) > 30 {
 		return nil, ErrInvalidName
 	}
@@ -53,7 +53,7 @@ func New(id ID, userId ID, name string, expenseType ExpenseType) (*ExpenseCatego
 
 	return &ExpenseCategory{
 		id:          id,
-		userId:      userId,
+		userID:      userID,
 		name:        name,
 		expenseType: expenseType,
 		createdAt:   now,
@@ -63,14 +63,14 @@ func New(id ID, userId ID, name string, expenseType ExpenseType) (*ExpenseCatego
 
 func Rehydrate(
 	id ID,
-	userId ID,
+	userID ID,
 	name string,
 	expenseType ExpenseType,
 	createdAt, updatedAt time.Time,
 ) *ExpenseCategory {
 	return &ExpenseCategory{
 		id:          id,
-		userId:      userId,
+		userID:      userID,
 		name:        name,
 		expenseType: expenseType,
 		createdAt:   createdAt,
@@ -82,8 +82,8 @@ func (ec *ExpenseCategory) ID() ID {
 	return ec.id
 }
 
-func (ec *ExpenseCategory) UserId() ID {
-	return ec.userId
+func (ec *ExpenseCategory) UserID() ID {
+	return ec.userID
 }
 
 func (ec *ExpenseCategory) Name() string {
@@ -103,6 +103,7 @@ func (ec *ExpenseCategory) UpdatedAt() time.Time {
 }
 
 // TODO
+
 func (ec *ExpenseCategory) ChangeName(name string) error {
 	if name == "" {
 		return ErrInvalidName

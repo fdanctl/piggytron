@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -60,7 +59,7 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	category, err := h.service.CreateCategory(r.Context(), name)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, incomecategory.ErrDuplicate) {
+		if errors.Is(err, incomecategoryapp.ErrDuplicate) {
 			view.CustomError = err
 		}
 		partials.IncomeCategoryForm(view).Render(r.Context(), w)
@@ -68,7 +67,7 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	icView := views.IncomeCategory{
-		Id:   category.ID(),
+		ID:   category.ID(),
 		Name: category.Name(),
 	}
 

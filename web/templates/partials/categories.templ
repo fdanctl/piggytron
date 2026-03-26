@@ -70,7 +70,7 @@ templ Categories(cv views.CategoriesView) {
 
 templ CategoryItem(cat views.Category, attrs templ.Attributes) {
 	<li { attrs... }>
-		<a href={ "/categories/" + cat.GetId() }>
+		<a href={ "/categories/" + cat.GetID() }>
 			{ cat.GetName() }
 			switch cat.GetExpenseType() {
 				case "needs":

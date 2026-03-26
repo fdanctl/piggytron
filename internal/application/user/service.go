@@ -7,6 +7,7 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/domain/user"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/google/uuid"
 )
 
@@ -56,7 +57,7 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 	// every time a request is made compare the session version with the
 	// version on pg if lower session is not valid
 	sid, err := s.sessionStore.Set(ctx, &rdb.SessionInfo{
-		UserId: string(u.ID()), SessionVersion: 1,
+		UserID: string(u.ID()), SessionVersion: 1,
 	})
 
 	return sid, err
@@ -81,14 +82,14 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 
 	// TODO add session version to pg and pass it instead
 	sid, err := s.sessionStore.Set(ctx, &rdb.SessionInfo{
-		UserId: string(u.ID()), SessionVersion: 1,
+		UserID: string(u.ID()), SessionVersion: 1,
 	})
 
 	return sid, err
 }
 
 func (s *Service) LogoutUser(ctx context.Context) error {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil
 	}
@@ -99,5 +100,5 @@ func (s *Service) LogoutUser(ctx context.Context) error {
 		return nil
 	}
 
-	return s.sessionStore.Remove(ctx, sessionInfo.UserId)
+	return s.sessionStore.Remove(ctx, sessionInfo.UserID)
 }

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
@@ -23,7 +24,7 @@ func NewCategoryQueryService(db *sql.DB) *CategoryQueryService {
 func (s *CategoryQueryService) FindAllCategories(
 	ctx context.Context,
 ) ([]query.CategoryWithNameDTO, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, nil
 	}
@@ -42,7 +43,7 @@ func (s *CategoryQueryService) FindAllCategories(
 		 SELECT id, name
 		 FROM expense_categories
 		 WHERE user_id = $1`,
-		sessionInfo.UserId,
+		sessionInfo.UserID,
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -55,7 +56,7 @@ func (s *CategoryQueryService) FindAllCategories(
 	for rows.Next() {
 		var c query.CategoryWithNameDTO
 		if err := rows.Scan(
-			&c.Id,
+			&c.ID,
 			&c.Name,
 		); err != nil {
 			return nil, err
@@ -69,7 +70,7 @@ func (s *CategoryQueryService) FindAllCategories(
 	return results, nil
 }
 
-func (s *CategoryQueryService) FindCategoriesIdIncludes(
+func (s *CategoryQueryService) FindCategoriesIDIncludes(
 	ctx context.Context,
 	ids []string,
 ) ([]query.CategoryWithNameDTO, error) {
@@ -111,7 +112,7 @@ func (s *CategoryQueryService) FindCategoriesIdIncludes(
 	for rows.Next() {
 		var c query.CategoryWithNameDTO
 		if err := rows.Scan(
-			&c.Id,
+			&c.ID,
 			&c.Name,
 		); err != nil {
 			return nil, err

@@ -20,7 +20,7 @@ func NewExpenseCategoryRepository(db *sql.DB) *ExpenseCategoryRepository {
 
 type ExpenseCategoryDto struct {
 	ID          expensecategory.ID
-	UserId      expensecategory.ID
+	UserID      expensecategory.ID
 	Name        string
 	ExpenseType expensecategory.ExpenseType
 	CreatedAt   time.Time
@@ -36,7 +36,7 @@ func (r *ExpenseCategoryRepository) Save(
 		`INSERT INTO expense_categories (id, user_id, name, type, created_at, updated_at)
 		 VALUES($1,$2,$3,$4,$5,$6)`,
 		category.ID(),
-		category.UserId(),
+		category.UserID(),
 		category.Name(),
 		category.ExpenseType(),
 		category.CreatedAt(),
@@ -45,7 +45,7 @@ func (r *ExpenseCategoryRepository) Save(
 	return err
 }
 
-func (r *ExpenseCategoryRepository) FindById(
+func (r *ExpenseCategoryRepository) FindByID(
 	ctx context.Context,
 	id expensecategory.ID,
 ) (*expensecategory.ExpenseCategory, error) {
@@ -60,7 +60,7 @@ func (r *ExpenseCategoryRepository) FindById(
 	var c ExpenseCategoryDto
 	err := row.Scan(
 		&c.ID,
-		&c.UserId,
+		&c.UserID,
 		&c.Name,
 		&c.ExpenseType,
 		&c.CreatedAt,
@@ -71,7 +71,7 @@ func (r *ExpenseCategoryRepository) FindById(
 	}
 	category := expensecategory.Rehydrate(
 		c.ID,
-		c.UserId,
+		c.UserID,
 		c.Name,
 		c.ExpenseType,
 		c.CreatedAt,
@@ -82,7 +82,7 @@ func (r *ExpenseCategoryRepository) FindById(
 
 func (r *ExpenseCategoryRepository) FindByNameAndUser(
 	ctx context.Context,
-	userId expensecategory.ID,
+	userID expensecategory.ID,
 	name string,
 ) (*expensecategory.ExpenseCategory, error) {
 	row := r.db.QueryRowContext(
@@ -90,14 +90,14 @@ func (r *ExpenseCategoryRepository) FindByNameAndUser(
 		`SELECT id, user_id, name, type, created_at, updated_at
 		 FROM expense_categories
 		 WHERE user_id = $1 AND name = $2`,
-		userId,
+		userID,
 		name,
 	)
 
 	var c ExpenseCategoryDto
 	err := row.Scan(
 		&c.ID,
-		&c.UserId,
+		&c.UserID,
 		&c.Name,
 		&c.ExpenseType,
 		&c.CreatedAt,
@@ -108,7 +108,7 @@ func (r *ExpenseCategoryRepository) FindByNameAndUser(
 	}
 	category := expensecategory.Rehydrate(
 		c.ID,
-		c.UserId,
+		c.UserID,
 		c.Name,
 		c.ExpenseType,
 		c.CreatedAt,
@@ -119,14 +119,14 @@ func (r *ExpenseCategoryRepository) FindByNameAndUser(
 
 func (r *ExpenseCategoryRepository) FindAllByUser(
 	ctx context.Context,
-	userId expensecategory.ID,
+	userID expensecategory.ID,
 ) ([]*expensecategory.ExpenseCategory, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, name, type, created_at, updated_at
 		 FROM expense_categories
 		 WHERE user_id = $1`,
-		userId,
+		userID,
 	)
 	if err != nil {
 		return nil, err
@@ -139,7 +139,7 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 		var c ExpenseCategoryDto
 		if err := rows.Scan(
 			&c.ID,
-			&c.UserId,
+			&c.UserID,
 			&c.Name,
 			&c.ExpenseType,
 			&c.CreatedAt,
@@ -150,7 +150,7 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 
 		ec := expensecategory.Rehydrate(
 			c.ID,
-			c.UserId,
+			c.UserID,
 			c.Name,
 			c.ExpenseType,
 			c.CreatedAt,

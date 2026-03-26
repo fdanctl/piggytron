@@ -19,11 +19,6 @@ type PasswordHasher struct {
 	saltLen uint32
 }
 
-// type PasswordHasher interface {
-// 	Hash(password string) (string, error)
-// 	Verify(hash, password string) bool
-// }
-
 func NewPasswordHasher(
 	time uint32,
 	memory uint32,
@@ -40,8 +35,6 @@ func NewPasswordHasher(
 	}
 }
 
-// hashes string as
-// $argon2id$v=<version>$m=<memory>,t=<time>,p=<threads>$<salt>$<hash>
 func (h *PasswordHasher) Hash(password string) (string, error) {
 	salt := make([]byte, h.saltLen)
 	_, err := rand.Read(salt)
@@ -72,7 +65,6 @@ func (h *PasswordHasher) Hash(password string) (string, error) {
 }
 
 func (h *PasswordHasher) Verify(hash, password string) (bool, error) {
-	// $argon2id$v=<version>$m=<memory>,t=<time>,p=<threads>$<salt>$<hash>
 	arr := strings.Split(hash, "$")
 
 	mtp := make([]int, 3)

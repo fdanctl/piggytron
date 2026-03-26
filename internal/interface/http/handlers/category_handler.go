@@ -43,7 +43,7 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.Get(w, r)
 			return
 		}
-		h.GetId(w, r)
+		h.GetID(w, r)
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -104,7 +104,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	layouts.Base("Categories").Render(ctx, w)
 }
 
-func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
+func (h *CategoriesHandler) GetID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	ecat, err := h.expenseCatService.ReadCategory(r.Context(), id)
 	var icat *incomecategory.IncomeCategory
@@ -161,9 +161,13 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filters, err := query.NewTransactionFilters(nil, nil, []string{id}, "", "")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	transactions, err := h.tQueryService.FindFiltered(
 		r.Context(),
-		sessionInfo.UserId,
+		sessionInfo.UserID,
 		filters,
 		LIMIT+1,
 		LIMIT*1-LIMIT,
@@ -193,7 +197,7 @@ func (h *CategoriesHandler) GetId(w http.ResponseWriter, r *http.Request) {
 				Name: "Categories",
 			},
 			{
-				Href: "/categories/" + category.GetId(),
+				Href: "/categories/" + category.GetID(),
 				Name: category.GetName(),
 			},
 		}, optionsLinks)

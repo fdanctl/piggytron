@@ -6,25 +6,25 @@ import (
 )
 
 type Category interface {
-	GetId() string
+	GetID() string
 	GetName() string
 	GetExpenseType() string
 }
 
 type IncomeCategory struct {
-	Id   incomecategory.ID
+	ID   incomecategory.ID
 	Name string
 }
 
 func NewIncomeCategory(c *incomecategory.IncomeCategory) IncomeCategory {
 	return IncomeCategory{
-		Id:   c.ID(),
+		ID:   c.ID(),
 		Name: c.Name(),
 	}
 }
 
-func (c IncomeCategory) GetId() string {
-	return string(c.Id)
+func (c IncomeCategory) GetID() string {
+	return string(c.ID)
 }
 
 func (c IncomeCategory) GetName() string {
@@ -36,21 +36,21 @@ func (c IncomeCategory) GetExpenseType() string {
 }
 
 type ExpenseCategory struct {
-	Id          expensecategory.ID
+	ID          expensecategory.ID
 	Name        string
 	ExpenseType expensecategory.ExpenseType
 }
 
 func NewExpenseCategory(c *expensecategory.ExpenseCategory) ExpenseCategory {
 	return ExpenseCategory{
-		Id:          c.ID(),
+		ID:          c.ID(),
 		Name:        c.Name(),
 		ExpenseType: c.ExpenseType(),
 	}
 }
 
-func (c ExpenseCategory) GetId() string {
-	return string(c.Id)
+func (c ExpenseCategory) GetID() string {
+	return string(c.ID)
 }
 
 func (c ExpenseCategory) GetName() string {

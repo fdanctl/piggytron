@@ -5,6 +5,7 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 )
 
 type Service struct {
@@ -19,19 +20,19 @@ func NewService(r transaction.Repository) *Service {
 // create expense
 // create transfer
 
-func (s *Service) ReadOneById(ctx context.Context, id string) (*transaction.Transaction, error) {
-	newId, err := transaction.NewId(id)
+func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
+	newID, err := transaction.NewID(id)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindById(ctx, newId)
+	return s.repo.FindByID(ctx, newID)
 }
 
 func (s *Service) ReadAllByUser(
 	ctx context.Context,
 	page uint,
 ) ([]*transaction.Transaction, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, nil
 	}
@@ -41,7 +42,7 @@ func (s *Service) ReadAllByUser(
 		return nil, nil
 	}
 
-	id, err := transaction.NewId(sessionInfo.UserId)
+	id, err := transaction.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -57,22 +58,22 @@ func (s *Service) ReadAllByAccount(
 	ctx context.Context,
 	aid string,
 ) ([]*transaction.Transaction, error) {
-	newId, err := transaction.NewId(aid)
+	newID, err := transaction.NewID(aid)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindAllByAccount(ctx, newId)
+	return s.repo.FindAllByAccount(ctx, newID)
 }
 
 func (s *Service) ReadAllByCategory(
 	ctx context.Context,
 	cid string,
 ) ([]*transaction.Transaction, error) {
-	newId, err := transaction.NewId(cid)
+	newID, err := transaction.NewID(cid)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindAllByCategory(ctx, newId)
+	return s.repo.FindAllByCategory(ctx, newID)
 }
 
 // func (s *Service) ReadFiltered(
@@ -80,7 +81,7 @@ func (s *Service) ReadAllByCategory(
 // 	filters *query.TransactionFilters,
 // 	page uint,
 // ) ([]query.TransactionDTO, bool, error) {
-// 	v := ctx.Value("user")
+// 	v := ctx.Value(middleware.UserKey)
 // 	if v == nil {
 // 		return nil, false, nil
 // 	}
@@ -92,7 +93,7 @@ func (s *Service) ReadAllByCategory(
 //
 // 	transactions, err := s.query.FindFiltered(
 // 		ctx,
-// 		sessionInfo.UserId,
+// 		sessionInfo.UserID,
 // 		filters,
 // 		LIMIT+1,
 // 		LIMIT*page-LIMIT,
@@ -115,7 +116,7 @@ func (s *Service) ReadAllByCategory(
 // 	filters *query.TransactionFilters,
 // 	page uint,
 // ) (*query.TransactionsWithTotalCount, bool, error) {
-// 	v := ctx.Value("user")
+// 	v := ctx.Value(middleware.UserKey)
 // 	if v == nil {
 // 		return nil, false, nil
 // 	}
@@ -127,7 +128,7 @@ func (s *Service) ReadAllByCategory(
 //
 // 	tWithCount, err := s.query.FindFilteredWithCount(
 // 		ctx,
-// 		sessionInfo.UserId,
+// 		sessionInfo.UserID,
 // 		filters,
 // 		LIMIT+1,
 // 		LIMIT*page-LIMIT,
@@ -149,7 +150,7 @@ func (s *Service) ReadAllByCategory(
 // 	ctx context.Context,
 // 	filters *query.TransactionFilters,
 // ) (int, error) {
-// 	v := ctx.Value("user")
+// 	v := ctx.Value(middleware.UserKey)
 // 	if v == nil {
 // 		return 0, nil
 // 	}
@@ -159,5 +160,5 @@ func (s *Service) ReadAllByCategory(
 // 		return 0, nil
 // 	}
 //
-// 	return s.query.CountFilteredResults(ctx, sessionInfo.UserId, filters)
+// 	return s.query.CountFilteredResults(ctx, sessionInfo.UserID, filters)
 // }

@@ -44,7 +44,7 @@ func (h *CatHistChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprint(w, fragment)
 	// ResizeObserver script
-	fmt.Fprint(w, fmt.Sprintf(`<script>
+	fmt.Fprintf(w, `<script>
 		// block resize when chart is animating
 		let initialized_%s = false;
 		const observer_%s = new ResizeObserver(() => {
@@ -54,8 +54,8 @@ func (h *CatHistChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 			goecharts_%s.resize()
 		})
-		observer_%s.observe(document.getElementById("%s"))
-		</script>`, id, id, id, id, id, id, id),
+		observer_%s.observe(document.getElementByID("%s"))
+		</script>`, id, id, id, id, id, id, id,
 	)
 }
 
@@ -90,7 +90,7 @@ func createBarChart() *charts.Bar {
 	}
 
 	currMonth := time.Now().Month() - 1
-	xAxis := make([]string, 12, 12)
+	xAxis := make([]string, 12)
 	for i := 11; i >= 0; i-- {
 		m := (((int(currMonth) - i) + 12) % 12)
 		xAxis[11-i] = abbv[m]

@@ -10,13 +10,13 @@ templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMor
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
-		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetId()) }
+		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetID()) }
 		hx-trigger="load"
 	>
 		@components.Loader("htmx-indicator", nil)
 	</div>
 	<section id="transactions">
 		<h4 class="mb-md">Transactions</h4>
-		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetId()), hasMore)
+		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
 	</section>
 }

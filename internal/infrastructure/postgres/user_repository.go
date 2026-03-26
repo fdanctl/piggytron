@@ -32,7 +32,7 @@ func (r *UserRepository) Save(ctx context.Context, user *user.User) error {
 	return err
 }
 
-func (r *UserRepository) FindById(ctx context.Context, id user.ID) (*user.User, error) {
+func (r *UserRepository) FindByID(ctx context.Context, id user.ID) (*user.User, error) {
 	row := r.db.QueryRowContext(
 		ctx,
 		`SELECT id, name, password_hash, created_at, updated_at

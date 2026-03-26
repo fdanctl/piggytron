@@ -1,8 +1,6 @@
 package views
 
 import (
-	"fmt"
-
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -25,5 +23,5 @@ func formatMoney(amount float64, cur currency.Unit, lang language.Tag) string {
 		amount = -amount
 	}
 
-	return fmt.Sprintf(p.Sprintf("%s%s%.2f", sign, symbol, amount))
+	return p.Sprintf("%s%s%.2f", sign, symbol, amount)
 }

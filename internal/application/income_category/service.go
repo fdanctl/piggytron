@@ -7,6 +7,7 @@ import (
 
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +25,7 @@ func (s *Service) CreateCategory(
 	ctx context.Context,
 	name string,
 ) (*incomecategory.IncomeCategory, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, errors.New("nil context")
 	}
@@ -34,13 +35,13 @@ func (s *Service) CreateCategory(
 		return nil, errors.New("not sessionInfo")
 	}
 
-	_, err := s.repo.FindByNameAndUser(ctx, incomecategory.ID(sessionInfo.UserId), name)
+	_, err := s.repo.FindByNameAndUser(ctx, incomecategory.ID(sessionInfo.UserID), name)
 	if err == nil {
 		return nil, ErrDuplicate
 	}
 	category, err := incomecategory.New(
 		incomecategory.ID(uuid.New().String()),
-		incomecategory.ID(sessionInfo.UserId),
+		incomecategory.ID(sessionInfo.UserID),
 		name,
 	)
 	if err != nil {
@@ -58,13 +59,13 @@ func (s *Service) ReadCategory(
 	ctx context.Context,
 	id string,
 ) (*incomecategory.IncomeCategory, error) {
-	return s.repo.FindById(ctx, incomecategory.ID(id))
+	return s.repo.FindByID(ctx, incomecategory.ID(id))
 }
 
 func (s *Service) ReadAllUserCategories(
 	ctx context.Context,
 ) ([]*incomecategory.IncomeCategory, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		fmt.Println("nil context")
 		return nil, nil
@@ -76,7 +77,7 @@ func (s *Service) ReadAllUserCategories(
 		return nil, nil
 	}
 
-	categories, err := s.repo.FindAllByUser(ctx, incomecategory.ID(sessionInfo.UserId))
+	categories, err := s.repo.FindAllByUser(ctx, incomecategory.ID(sessionInfo.UserID))
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

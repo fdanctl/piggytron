@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -63,7 +62,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 	category, err := h.service.CreateCategory(r.Context(), name, catType)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, expensecategory.ErrDuplicate) {
+		if errors.Is(err, expensecategoryapp.ErrDuplicate) {
 			view.CustomError = err
 		}
 		partials.ExpenseCategoryForm(view).Render(r.Context(), w)
@@ -71,7 +70,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 	}
 
 	ecView := views.ExpenseCategory{
-		Id:          category.ID(),
+		ID:          category.ID(),
 		Name:        category.Name(),
 		ExpenseType: category.ExpenseType(),
 	}

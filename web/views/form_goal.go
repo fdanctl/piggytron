@@ -97,7 +97,7 @@ func (v *GoalForm) ValidateTargetDate() (msgs []string) {
 		return append(msgs, "Invalid date")
 	}
 
-	duration := date.Sub(time.Now())
+	duration := time.Until(date)
 	if duration < 0 {
 		msgs = append(msgs, "It's for yesterday?")
 	}

@@ -92,7 +92,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 
 	transactions, err := h.query.FindFiltered(
 		r.Context(),
-		sessionInfo.UserId,
+		sessionInfo.UserID,
 		filters,
 		LIMIT+1,
 		LIMIT*uint(page)-LIMIT,

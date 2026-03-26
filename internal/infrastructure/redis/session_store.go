@@ -25,7 +25,7 @@ func NewSessionStore(client *redis.Client) *SessionStore {
 }
 
 type SessionInfo struct {
-	UserId         string `redis:"user_id"`
+	UserID         string `redis:"user_id"`
 	SessionVersion uint   `redis:"session_version"`
 }
 
@@ -35,17 +35,17 @@ func (ss *SessionStore) Set(ctx context.Context, value *SessionInfo) (string, er
 	if err != nil {
 		return "", err
 	}
-	sessionId := hex.EncodeToString(b)
+	sessionID := hex.EncodeToString(b)
 
-	key := fmt.Sprint(sessionPrefix, sessionId)
+	key := fmt.Sprint(sessionPrefix, sessionID)
 	err = ss.client.HSet(ctx, key, *value).Err()
 	ss.client.Expire(ctx, key, time.Hour*24)
 
-	return sessionId, err
+	return sessionID, err
 }
 
-func (ss *SessionStore) Get(ctx context.Context, sessionId string) *SessionInfo {
-	cmd := ss.client.HGetAll(ctx, fmt.Sprint(sessionPrefix, sessionId))
+func (ss *SessionStore) Get(ctx context.Context, sessionID string) *SessionInfo {
+	cmd := ss.client.HGetAll(ctx, fmt.Sprint(sessionPrefix, sessionID))
 	m, err := cmd.Result()
 	if err != nil {
 		return nil
@@ -61,7 +61,7 @@ func (ss *SessionStore) Get(ctx context.Context, sessionId string) *SessionInfo 
 	return &res
 }
 
-func (ss *SessionStore) Remove(ctx context.Context, sessionId string) error {
-	_, err := ss.client.Del(ctx, sessionId).Result()
+func (ss *SessionStore) Remove(ctx context.Context, sessionID string) error {
+	_, err := ss.client.Del(ctx, sessionID).Result()
 	return err
 }

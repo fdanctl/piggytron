@@ -3,8 +3,6 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
@@ -22,13 +20,13 @@ func NewAccountRepository(db *sql.DB) *AccountRepository {
 
 type AccountDto struct {
 	ID     account.ID
-	UserId account.ID
+	UserID account.ID
 	Type   account.AccountType
 	Name   string
 
 	TargetAmount *int
 	TargetDate   *time.Time
-	CategoryId   *account.ID
+	CategoryID   *account.ID
 
 	Currency  string
 	CreatedAt time.Time
@@ -41,20 +39,20 @@ func (r *AccountRepository) Save(ctx context.Context, account *account.Account) 
 		`INSERT INTO accounts (id, user_id, type, name, currency, target_amount, target_date, category_id, created_at, updated_at)
 	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
 		account.ID(),
-		account.UserId(),
+		account.UserID(),
 		account.Type(),
 		account.Name(),
 		account.Currency(),
 		account.TargetAmount(),
 		account.TargetDate(),
-		account.CategoryId(),
+		account.CategoryID(),
 		account.CreatedAt(),
 		account.UpdatedAt(),
 	)
 	return err
 }
 
-func (r *AccountRepository) FindById(ctx context.Context, id account.ID) (*account.Account, error) {
+func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*account.Account, error) {
 	row := r.db.QueryRowContext(
 		ctx,
 		`SELECT id, user_id, type, name, currency, target_amount, target_date, category_id, created_at, updated_at
@@ -66,13 +64,13 @@ func (r *AccountRepository) FindById(ctx context.Context, id account.ID) (*accou
 	var b AccountDto
 	err := row.Scan(
 		&b.ID,
-		&b.UserId,
+		&b.UserID,
 		&b.Type,
 		&b.Name,
 		&b.Currency,
 		&b.TargetAmount,
 		&b.TargetDate,
-		&b.CategoryId,
+		&b.CategoryID,
 		&b.CreatedAt,
 		&b.UpdatedAt,
 	)
@@ -82,12 +80,12 @@ func (r *AccountRepository) FindById(ctx context.Context, id account.ID) (*accou
 
 	account := account.Rehydrate(
 		b.ID,
-		b.UserId,
+		b.UserID,
 		b.Type,
 		b.Name,
 		b.TargetAmount,
 		b.TargetDate,
-		b.CategoryId,
+		b.CategoryID,
 		b.Currency,
 		b.CreatedAt,
 		b.UpdatedAt,
@@ -113,7 +111,7 @@ func (r *AccountRepository) FindBankByNameAndUser(
 	var b AccountDto
 	err := row.Scan(
 		&b.ID,
-		&b.UserId,
+		&b.UserID,
 		&b.Name,
 		&b.Currency,
 		&b.CreatedAt,
@@ -125,7 +123,7 @@ func (r *AccountRepository) FindBankByNameAndUser(
 
 	account := account.Rehydrate(
 		b.ID,
-		b.UserId,
+		b.UserID,
 		"bank",
 		b.Name,
 		nil,
@@ -156,13 +154,13 @@ func (r *AccountRepository) FindGoalByNameAndUser(
 	var b AccountDto
 	err := row.Scan(
 		&b.ID,
-		&b.UserId,
+		&b.UserID,
 		&b.Type,
 		&b.Name,
 		&b.Currency,
 		&b.TargetAmount,
 		&b.TargetDate,
-		&b.CategoryId,
+		&b.CategoryID,
 		&b.CreatedAt,
 		&b.UpdatedAt,
 	)
@@ -172,12 +170,12 @@ func (r *AccountRepository) FindGoalByNameAndUser(
 
 	account := account.Rehydrate(
 		b.ID,
-		b.UserId,
+		b.UserID,
 		b.Type,
 		b.Name,
 		b.TargetAmount,
 		b.TargetDate,
-		b.CategoryId,
+		b.CategoryID,
 		b.Currency,
 		b.CreatedAt,
 		b.UpdatedAt,
@@ -207,13 +205,13 @@ func (r *AccountRepository) FindAllByUser(
 		var dto AccountDto
 		if err := rows.Scan(
 			&dto.ID,
-			&dto.UserId,
+			&dto.UserID,
 			&dto.Type,
 			&dto.Name,
 			&dto.Currency,
 			&dto.TargetAmount,
 			&dto.TargetDate,
-			&dto.CategoryId,
+			&dto.CategoryID,
 			&dto.CreatedAt,
 			&dto.UpdatedAt,
 		); err != nil {
@@ -221,12 +219,12 @@ func (r *AccountRepository) FindAllByUser(
 		}
 		b := account.Rehydrate(
 			dto.ID,
-			dto.UserId,
+			dto.UserID,
 			dto.Type,
 			dto.Name,
 			dto.TargetAmount,
 			dto.TargetDate,
-			dto.CategoryId,
+			dto.CategoryID,
 			dto.Currency,
 			dto.CreatedAt,
 			dto.UpdatedAt,
@@ -262,7 +260,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 		var dto AccountDto
 		if err := rows.Scan(
 			&dto.ID,
-			&dto.UserId,
+			&dto.UserID,
 			&dto.Name,
 			&dto.Currency,
 			&dto.CreatedAt,
@@ -272,7 +270,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 		}
 		b := account.Rehydrate(
 			dto.ID,
-			dto.UserId,
+			dto.UserID,
 			"bank",
 			dto.Name,
 			nil,
@@ -313,13 +311,13 @@ func (r *AccountRepository) FindAllGoalsByUser(
 		var dto AccountDto
 		if err := rows.Scan(
 			&dto.ID,
-			&dto.UserId,
+			&dto.UserID,
 			&dto.Type,
 			&dto.Name,
 			&dto.Currency,
 			&dto.TargetAmount,
 			&dto.TargetDate,
-			&dto.CategoryId,
+			&dto.CategoryID,
 			&dto.CreatedAt,
 			&dto.UpdatedAt,
 		); err != nil {
@@ -327,12 +325,12 @@ func (r *AccountRepository) FindAllGoalsByUser(
 		}
 		b := account.Rehydrate(
 			dto.ID,
-			dto.UserId,
+			dto.UserID,
 			dto.Type,
 			dto.Name,
 			dto.TargetAmount,
 			dto.TargetDate,
-			dto.CategoryId,
+			dto.CategoryID,
 			dto.Currency,
 			dto.CreatedAt,
 			dto.UpdatedAt,
@@ -344,53 +342,4 @@ func (r *AccountRepository) FindAllGoalsByUser(
 	}
 
 	return accounts, nil
-}
-
-func (r *AccountRepository) FindIdNamesIncludes(
-	ctx context.Context,
-	ids []string,
-) ([]*account.AccountIdName, error) {
-	if len(ids) == 0 {
-		return nil, nil
-	}
-
-	placeholders := make([]string, len(ids))
-	args := make([]any, len(ids))
-
-	for i, id := range ids {
-		placeholders[i] = fmt.Sprintf("$%d", i+1)
-		args[i] = id
-	}
-	query := fmt.Sprintf(
-		`SELECT id, name
-		 FROM accounts
-		 WHERE id IN (%s)`,
-		strings.Join(placeholders, ","),
-	)
-
-	rows, err := r.db.QueryContext(
-		ctx,
-		query,
-		args...,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var results []*account.AccountIdName
-	for rows.Next() {
-		var a account.AccountIdName
-		if err := rows.Scan(
-			&a.Id,
-			&a.Name,
-		); err != nil {
-			return nil, err
-		}
-		results = append(results, &a)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return results, nil
 }

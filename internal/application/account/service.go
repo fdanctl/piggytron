@@ -8,6 +8,7 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/google/uuid"
 )
 
@@ -29,7 +30,7 @@ func (s *Service) CreateBank(
 	name string,
 	currency string,
 ) (*account.Account, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, errors.New("nil context")
 	}
@@ -39,16 +40,16 @@ func (s *Service) CreateBank(
 		return nil, errors.New("not sessionInfo")
 	}
 
-	_, err := s.repo.FindBankByNameAndUser(ctx, account.ID(sessionInfo.UserId), name)
+	_, err := s.repo.FindBankByNameAndUser(ctx, account.ID(sessionInfo.UserID), name)
 	if err == nil {
 		return nil, ErrDuplicate
 	}
 
-	id, err := account.NewId(uuid.New().String())
+	id, err := account.NewID(uuid.New().String())
 	if err != nil {
 		return nil, err
 	}
-	uid, err := account.NewId(sessionInfo.UserId)
+	uid, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,9 +72,9 @@ func (s *Service) CreateGoal(
 	currency string,
 	targetAmount string,
 	targetDate string,
-	categoryId string,
+	categoryID string,
 ) (*account.Account, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, errors.New("nil context")
 	}
@@ -83,20 +84,20 @@ func (s *Service) CreateGoal(
 		return nil, errors.New("not sessionInfo")
 	}
 
-	_, err := s.repo.FindGoalByNameAndUser(ctx, account.ID(sessionInfo.UserId), name)
+	_, err := s.repo.FindGoalByNameAndUser(ctx, account.ID(sessionInfo.UserID), name)
 	if err == nil {
 		return nil, ErrDuplicate
 	}
 
-	id, err := account.NewId(uuid.New().String())
+	id, err := account.NewID(uuid.New().String())
 	if err != nil {
 		return nil, err
 	}
-	uid, err := account.NewId(sessionInfo.UserId)
+	uid, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
-	cid, err := account.NewId(categoryId)
+	cid, err := account.NewID(categoryID)
 	if err != nil {
 		return nil, err
 	}
@@ -123,18 +124,18 @@ func (s *Service) CreateGoal(
 	return account, nil
 }
 
-func (s *Service) ReadOneById(ctx context.Context, id string) (*account.Account, error) {
-	newId, err := account.NewId(id)
+func (s *Service) ReadOneByID(ctx context.Context, id string) (*account.Account, error) {
+	newID, err := account.NewID(id)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindById(ctx, newId)
+	return s.repo.FindByID(ctx, newID)
 }
 
 func (s *Service) ReadAllByUser(
 	ctx context.Context,
 ) ([]*account.Account, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, nil
 	}
@@ -144,7 +145,7 @@ func (s *Service) ReadAllByUser(
 		return nil, nil
 	}
 
-	id, err := account.NewId(sessionInfo.UserId)
+	id, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +161,7 @@ func (s *Service) ReadAllByUser(
 func (s *Service) ReadAllBanksByUser(
 	ctx context.Context,
 ) ([]*account.Account, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, nil
 	}
@@ -170,7 +171,7 @@ func (s *Service) ReadAllBanksByUser(
 		return nil, nil
 	}
 
-	id, err := account.NewId(sessionInfo.UserId)
+	id, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +187,7 @@ func (s *Service) ReadAllBanksByUser(
 func (s *Service) ReadAllGoalsByUser(
 	ctx context.Context,
 ) ([]*account.Account, error) {
-	v := ctx.Value("user")
+	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, nil
 	}
@@ -196,7 +197,7 @@ func (s *Service) ReadAllGoalsByUser(
 		return nil, nil
 	}
 
-	id, err := account.NewId(sessionInfo.UserId)
+	id, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -207,14 +208,4 @@ func (s *Service) ReadAllGoalsByUser(
 	}
 
 	return accounts, nil
-}
-
-func (s *Service) ReadIdNamesIncludes(
-	ctx context.Context,
-	ids []string,
-) ([]*account.AccountIdName, error) {
-	if len(ids) <= 0 {
-		return nil, nil
-	}
-	return s.repo.FindIdNamesIncludes(ctx, ids)
 }

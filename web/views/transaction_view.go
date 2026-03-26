@@ -9,7 +9,7 @@ import (
 )
 
 type Transaction struct {
-	Id          string
+	ID          string
 	Description string
 	Type        string
 	Amount      string
@@ -24,7 +24,7 @@ func NewTransaction(
 		f *= -1
 	}
 	return Transaction{
-		Id:          t.Id,
+		ID:          t.ID,
 		Description: t.Description,
 		Type:        t.Type,
 		Amount:      formatMoney(f, currency.EUR, language.AmericanEnglish),

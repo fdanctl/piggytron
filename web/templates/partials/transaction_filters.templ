@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 )
@@ -30,7 +29,7 @@ templ Pill(p string, attrs templ.Attributes) {
 templ TransactionsFilters(
 	accOptions,
 	catOptions []FilterOption,
-	currAcc []*account.AccountIdName,
+	currAcc []query.AccountIDName,
 	currCats []query.CategoryWithNameDTO,
 	q url.Values,
 	count int,
@@ -46,16 +45,14 @@ templ TransactionsFilters(
 					@components.XSvg(16, "", "")
 				</div>
 			</div>
-			<div id="curr-filters">
-				<ul class="flex gap-xs flex-wrap mb-sm">
-					for _, v := range currAcc {
-						@Pill(v.Name, templ.Attributes{"data-id": string(v.Id), "onclick": "removeFilterPill(this)"})
-					}
-					for _, v := range currCats {
-						@Pill(v.Name, templ.Attributes{"data-id": string(v.Id), "onclick": "removeFilterPill(this)"})
-					}
-				</ul>
-			</div>
+			<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
+				for _, v := range currAcc {
+					@Pill(v.Name, templ.Attributes{"data-id": string(v.ID), "onclick": "removeFilterPill(this)"})
+				}
+				for _, v := range currCats {
+					@Pill(v.Name, templ.Attributes{"data-id": string(v.ID), "onclick": "removeFilterPill(this)"})
+				}
+			</ul>
 		</div>
 		<div hx-include="input" style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;">
 			<div>

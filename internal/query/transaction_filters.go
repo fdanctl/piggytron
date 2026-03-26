@@ -14,9 +14,9 @@ var (
 type TransactionFilters struct {
 	Types *[]string
 
-	AccountIds *[]string
+	AccountIDs *[]string
 
-	CategoryIds *[]string
+	CategoryIDs *[]string
 
 	MinAmount *int
 	MaxAmount *int
@@ -26,7 +26,7 @@ type TransactionFilters struct {
 }
 
 func NewTransactionFilters(
-	ttype, accountIds, categoryIds []string,
+	ttype, accountIDs, categoryIDs []string,
 	minAmount, maxAmount string,
 	// minDate, maxDate string,
 ) (*TransactionFilters, error) {
@@ -44,28 +44,28 @@ func NewTransactionFilters(
 	// 	pt = &tts
 	// }
 	//
-	// if len(accountIds) > 0 {
-	// 	var accIds []transaction.ID
-	// 	for _, a := range accountIds {
-	// 		acc, err := transaction.NewId(a)
+	// if len(accountIDs) > 0 {
+	// 	var accIDs []transaction.ID
+	// 	for _, a := range accountIDs {
+	// 		acc, err := transaction.NewID(a)
 	// 		if err != nil {
 	// 			return nil, err
 	// 		}
-	// 		accIds = append(accIds, acc)
+	// 		accIDs = append(accIDs, acc)
 	// 	}
-	// 	pa = &accIds
+	// 	pa = &accIDs
 	// }
 	//
-	// if len(categoryIds) > 0 {
-	// 	var catIds []transaction.ID
-	// 	for _, c := range categoryIds {
-	// 		cat, err := transaction.NewId(c)
+	// if len(categoryIDs) > 0 {
+	// 	var catIDs []transaction.ID
+	// 	for _, c := range categoryIDs {
+	// 		cat, err := transaction.NewID(c)
 	// 		if err != nil {
 	// 			return nil, err
 	// 		}
-	// 		catIds = append(catIds, cat)
+	// 		catIDs = append(catIDs, cat)
 	// 	}
-	// 	pc = &catIds
+	// 	pc = &catIDs
 	// }
 
 	if minAmount != "" {
@@ -98,8 +98,8 @@ func NewTransactionFilters(
 
 	return &TransactionFilters{
 		Types:       &ttype,
-		AccountIds:  &accountIds,
-		CategoryIds: &categoryIds,
+		AccountIDs:  &accountIDs,
+		CategoryIDs: &categoryIDs,
 		MinAmount:   pmin,
 		MaxAmount:   pmax,
 	}, nil

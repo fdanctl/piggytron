@@ -80,7 +80,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	tWithCount, err := h.query.FindFilteredWithCount(
 		r.Context(),
-		sessionInfo.UserId,
+		sessionInfo.UserID,
 		filters,
 		LIMIT+1,
 		LIMIT*page-LIMIT,

@@ -20,7 +20,7 @@ func NewIncomeCategoryRepository(db *sql.DB) *IncomeCategoryRepository {
 
 type IncomeCategoryDto struct {
 	ID        incomecategory.ID
-	UserId    incomecategory.ID
+	UserID    incomecategory.ID
 	Name      string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -35,7 +35,7 @@ func (r *IncomeCategoryRepository) Save(
 		`INSERT INTO income_categories (id, user_id, name, created_at, updated_at)
 		 VALUES($1,$2,$3,$4,$5)`,
 		category.ID(),
-		category.UserId(),
+		category.UserID(),
 		category.Name(),
 		category.CreatedAt(),
 		category.UpdatedAt(),
@@ -43,7 +43,7 @@ func (r *IncomeCategoryRepository) Save(
 	return err
 }
 
-func (r *IncomeCategoryRepository) FindById(
+func (r *IncomeCategoryRepository) FindByID(
 	ctx context.Context,
 	id incomecategory.ID,
 ) (*incomecategory.IncomeCategory, error) {
@@ -58,7 +58,7 @@ func (r *IncomeCategoryRepository) FindById(
 	var c IncomeCategoryDto
 	err := row.Scan(
 		&c.ID,
-		&c.UserId,
+		&c.UserID,
 		&c.Name,
 		&c.CreatedAt,
 		&c.UpdatedAt,
@@ -68,7 +68,7 @@ func (r *IncomeCategoryRepository) FindById(
 	}
 	category := incomecategory.Rehydrate(
 		c.ID,
-		c.UserId,
+		c.UserID,
 		c.Name,
 		c.CreatedAt,
 		c.CreatedAt,
@@ -78,7 +78,7 @@ func (r *IncomeCategoryRepository) FindById(
 
 func (r *IncomeCategoryRepository) FindByNameAndUser(
 	ctx context.Context,
-	userId incomecategory.ID,
+	userID incomecategory.ID,
 	name string,
 ) (*incomecategory.IncomeCategory, error) {
 	row := r.db.QueryRowContext(
@@ -86,14 +86,14 @@ func (r *IncomeCategoryRepository) FindByNameAndUser(
 		`SELECT id, user_id, name, created_at, updated_at
 		 FROM income_categories
 		 WHERE user_id = $1 AND name = $2`,
-		userId,
+		userID,
 		name,
 	)
 
 	var c IncomeCategoryDto
 	err := row.Scan(
 		&c.ID,
-		&c.UserId,
+		&c.UserID,
 		&c.Name,
 		&c.CreatedAt,
 		&c.UpdatedAt,
@@ -103,7 +103,7 @@ func (r *IncomeCategoryRepository) FindByNameAndUser(
 	}
 	category := incomecategory.Rehydrate(
 		c.ID,
-		c.UserId,
+		c.UserID,
 		c.Name,
 		c.CreatedAt,
 		c.CreatedAt,
@@ -113,14 +113,14 @@ func (r *IncomeCategoryRepository) FindByNameAndUser(
 
 func (r *IncomeCategoryRepository) FindAllByUser(
 	ctx context.Context,
-	userId incomecategory.ID,
+	userID incomecategory.ID,
 ) ([]*incomecategory.IncomeCategory, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, name, created_at, updated_at
 		 FROM income_categories
 		 WHERE user_id = $1`,
-		userId,
+		userID,
 	)
 	if err != nil {
 		return nil, err
@@ -133,7 +133,7 @@ func (r *IncomeCategoryRepository) FindAllByUser(
 		var c IncomeCategoryDto
 		if err := rows.Scan(
 			&c.ID,
-			&c.UserId,
+			&c.UserID,
 			&c.Name,
 			&c.CreatedAt,
 			&c.UpdatedAt,
@@ -143,7 +143,7 @@ func (r *IncomeCategoryRepository) FindAllByUser(
 
 		ec := incomecategory.Rehydrate(
 			c.ID,
-			c.UserId,
+			c.UserID,
 			c.Name,
 			c.CreatedAt,
 			c.UpdatedAt,

@@ -6,16 +6,16 @@ import (
 )
 
 type TransactionDTO struct {
-	Id     string
-	UserId string
+	ID     string
+	UserID string
 
 	Type string
 
-	FromAccountId *string
-	ToAccountId   *string
+	FromAccountID *string
+	ToAccountID   *string
 
-	IncomeCategoryId  *string
-	ExpenseCategoryId *string
+	IncomeCategoryID  *string
+	ExpenseCategoryID *string
 
 	Amount      int
 	Description string

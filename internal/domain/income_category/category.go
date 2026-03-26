@@ -4,7 +4,7 @@ import "time"
 
 type ID string
 
-func NewId(str string) (ID, error) {
+func NewID(str string) (ID, error) {
 	if str == "" {
 		return "", ErrInvalidID
 	}
@@ -13,13 +13,13 @@ func NewId(str string) (ID, error) {
 
 type IncomeCategory struct {
 	id        ID
-	userId    ID
+	userID    ID
 	name      string
 	createdAt time.Time
 	updatedAt time.Time
 }
 
-func New(id ID, userId ID, name string) (*IncomeCategory, error) {
+func New(id ID, userID ID, name string) (*IncomeCategory, error) {
 	if name == "" || len(name) > 30 {
 		return nil, ErrInvalidName
 	}
@@ -28,17 +28,17 @@ func New(id ID, userId ID, name string) (*IncomeCategory, error) {
 
 	return &IncomeCategory{
 		id:        id,
-		userId:    userId,
+		userID:    userID,
 		name:      name,
 		createdAt: now,
 		updatedAt: now,
 	}, nil
 }
 
-func Rehydrate(id ID, userId ID, name string, createdAt, updatedAt time.Time) *IncomeCategory {
+func Rehydrate(id ID, userID ID, name string, createdAt, updatedAt time.Time) *IncomeCategory {
 	return &IncomeCategory{
 		id:        id,
-		userId:    userId,
+		userID:    userID,
 		name:      name,
 		createdAt: createdAt,
 		updatedAt: updatedAt,
@@ -49,8 +49,8 @@ func (ic *IncomeCategory) ID() ID {
 	return ic.id
 }
 
-func (ic *IncomeCategory) UserId() ID {
-	return ic.userId
+func (ic *IncomeCategory) UserID() ID {
+	return ic.userID
 }
 
 func (ic *IncomeCategory) Name() string {

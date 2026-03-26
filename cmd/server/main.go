@@ -80,6 +80,7 @@ func main() {
 	// query services
 	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
 	var transactionQueryService query.TransactionQueryService = postgres.NewTransactionQueryService(db)
+	var accountQuerService query.AccountQueryService = postgres.NewAccountQueryService(db)
 	// services
 	accountService := account.NewService(accountRepo)
 	transactionService := transaction.NewService(transactionRepo)
@@ -156,6 +157,7 @@ func main() {
 		catQueryService,
 		accountService,
 		transactionQueryService,
+		accountQuerService,
 	)
 	partialsMux.Handle("/partials/transaction-filters", transactionFiltersHandler)
 

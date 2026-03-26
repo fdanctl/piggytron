@@ -4,7 +4,7 @@ import "time"
 
 type ID string
 
-func NewId(str string) (ID, error) {
+func NewID(str string) (ID, error) {
 	if str == "" {
 		return "", ErrInvalidID
 	}
@@ -20,21 +20,21 @@ const (
 
 type Account struct {
 	id       ID
-	userId   ID
+	userID   ID
 	aType    AccountType
 	name     string
 	currency string
 	// goal-specific
 	targetAmount *int
 	targetDate   *time.Time
-	categoryId   *ID
+	categoryID   *ID
 
 	createdAt time.Time
 	updatedAt time.Time
 }
 
 func NewBank(
-	id, userId ID,
+	id, userID ID,
 	name string,
 	currency string,
 ) (*Account, error) {
@@ -49,7 +49,7 @@ func NewBank(
 
 	return &Account{
 		id:        id,
-		userId:    userId,
+		userID:    userID,
 		name:      name,
 		aType:     bank,
 		currency:  currency,
@@ -59,12 +59,12 @@ func NewBank(
 }
 
 func NewGoal(
-	id, userId ID,
+	id, userID ID,
 	name string,
 	currency string,
 	targetAmount int,
 	targetDate *time.Time,
-	categoryId ID,
+	categoryID ID,
 ) (*Account, error) {
 	if name == "" || len(name) > 50 {
 		return nil, ErrInvalidName
@@ -80,12 +80,12 @@ func NewGoal(
 
 	return &Account{
 		id:           id,
-		userId:       userId,
+		userID:       userID,
 		name:         name,
 		aType:        goal,
 		targetAmount: &targetAmount,
 		targetDate:   targetDate,
-		categoryId:   &categoryId,
+		categoryID:   &categoryID,
 		currency:     currency,
 		createdAt:    now,
 		updatedAt:    now,
@@ -93,22 +93,22 @@ func NewGoal(
 }
 
 func Rehydrate(
-	id, userId ID,
+	id, userID ID,
 	aType AccountType,
 	name string,
 	targetAmount *int,
 	targetDate *time.Time,
-	categoryId *ID,
+	categoryID *ID,
 	currency string,
 	createdAt, updatedAt time.Time,
 ) *Account {
 	return &Account{
 		id:           id,
-		userId:       userId,
+		userID:       userID,
 		name:         name,
 		targetAmount: targetAmount,
 		targetDate:   targetDate,
-		categoryId:   categoryId,
+		categoryID:   categoryID,
 		currency:     currency,
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
@@ -119,8 +119,8 @@ func (b *Account) ID() ID {
 	return b.id
 }
 
-func (b *Account) UserId() ID {
-	return b.userId
+func (b *Account) UserID() ID {
+	return b.userID
 }
 
 func (b *Account) Name() string {
@@ -143,8 +143,8 @@ func (b *Account) TargetDate() *time.Time {
 	return b.targetDate
 }
 
-func (b *Account) CategoryId() *ID {
-	return b.categoryId
+func (b *Account) CategoryID() *ID {
+	return b.categoryID
 }
 
 func (b *Account) CreatedAt() time.Time {

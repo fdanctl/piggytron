@@ -12,7 +12,7 @@ import (
 )
 
 type Goal struct {
-	Id           account.ID
+	ID           account.ID
 	Name         string
 	Type         account.AccountType
 	TargetAmount string
@@ -31,7 +31,7 @@ func NewGoal(
 ) Goal {
 	var amount int
 	for _, t := range transactions {
-		if t.ToAccountId() == transaction.ID(g.ID()) {
+		if t.ToAccountID() == transaction.ID(g.ID()) {
 			amount += t.Amount()
 		} else {
 			amount -= t.Amount()
@@ -55,7 +55,7 @@ func NewGoal(
 	}
 
 	return Goal{
-		Id:   g.ID(),
+		ID:   g.ID(),
 		Name: g.Name(),
 		Type: g.Type(),
 		TargetAmount: formatMoney(

@@ -18,17 +18,20 @@ type FilterDialogHandler struct {
 	categoryQueryService query.CategoryQueryService
 	accountService       *accountapp.Service
 	tQueryService        query.TransactionQueryService
+	accQueryService      query.AccountQueryService
 }
 
 func NewFilterDialogHandler(
 	cs query.CategoryQueryService,
 	as *accountapp.Service,
 	tq query.TransactionQueryService,
+	aq query.AccountQueryService,
 ) *FilterDialogHandler {
 	return &FilterDialogHandler{
 		categoryQueryService: cs,
 		accountService:       as,
 		tQueryService:        tq,
+		accQueryService:      aq,
 	}
 }
 
@@ -56,7 +59,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	for _, v := range c {
 		categoryOptions = append(
 			categoryOptions,
-			partials.FilterOption{Label: v.Name, Value: v.Id},
+			partials.FilterOption{Label: v.Name, Value: v.ID},
 		)
 	}
 
@@ -94,7 +97,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resCount, err := h.tQueryService.CountFilteredResults(
-		r.Context(), sessionInfo.UserId, filters,
+		r.Context(), sessionInfo.UserID, filters,
 	)
 	if err != nil {
 		fmt.Println(err)
@@ -102,12 +105,12 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	includedAcc, err := h.accountService.ReadIdNamesIncludes(r.Context(), accounts)
+	includedAcc, err := h.accQueryService.FindIDNamesIncludes(r.Context(), accounts)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	includedCats, err := h.categoryQueryService.FindCategoriesIdIncludes(r.Context(), cats)
+	includedCats, err := h.categoryQueryService.FindCategoriesIDIncludes(r.Context(), cats)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -167,7 +170,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resCount, err := h.tQueryService.CountFilteredResults(
-		r.Context(), sessionInfo.UserId, filters,
+		r.Context(), sessionInfo.UserID, filters,
 	)
 	if err != nil {
 		fmt.Println(err)

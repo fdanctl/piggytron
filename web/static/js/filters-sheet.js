@@ -20,7 +20,7 @@ function resetTransactionFiltersForm() {
  * @param {HTMLInputElement} input
  */
 function toggleFilterPill(ele) {
-  const pillBox = document.querySelector("#curr-filters > ul");
+  const pillBox = document.getElementById("curr-filters");
   if (ele.checked) {
     const newPill = document.createElement("div");
     newPill.classList.add("pill");
@@ -31,18 +31,24 @@ function toggleFilterPill(ele) {
 
     const btn = document.createElement("button");
     btn.classList.add("reset-btn", "flex", "justify-center", "items-center");
+    btn.type = "button";
     btn.innerHTML =
       '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path></svg>';
 
     newPill.appendChild(span);
     newPill.appendChild(btn);
     pillBox.appendChild(newPill);
+    newPill.addEventListener("click", () => {
+      removeFilterPill(newPill);
+      console.log(newPill);
+    });
   } else {
-    pillBox.querySelector(`[data-id="${ele.value}"]`).remove();
+    pillBox.querySelector(`[data-id="${ele.value}"]`)?.remove();
   }
 }
 
 function removeFilterPill(ele) {
+  console.log(ele);
   form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
   for (let i = 0; i < inputs.length; i++) {

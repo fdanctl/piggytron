@@ -4,7 +4,7 @@ import "time"
 
 type ID string
 
-func NewId(str string) (ID, error) {
+func NewID(str string) (ID, error) {
 	if str == "" {
 		return "", ErrInvalidID
 	}
@@ -37,15 +37,15 @@ func NewType(str string) (Type, error) {
 
 type Transaction struct {
 	id     ID
-	userId ID
+	userID ID
 
 	ttype Type
 
-	fromAccountId *ID
-	toAccountId   *ID
+	fromAccountID *ID
+	toAccountID   *ID
 
-	incomeCategoryId  *ID
-	expenseCategoryId *ID
+	incomeCategoryID  *ID
+	expenseCategoryID *ID
 
 	amount      int
 	description string
@@ -55,9 +55,9 @@ type Transaction struct {
 
 func NewIncome(
 	id ID,
-	userId ID,
-	toAccountId ID,
-	incomeCategoryId ID,
+	userID ID,
+	toAccountID ID,
+	incomeCategoryID ID,
 	amount int,
 	description string,
 	date time.Time,
@@ -73,12 +73,12 @@ func NewIncome(
 
 	return &Transaction{
 		id:                id,
-		userId:            id,
+		userID:            id,
 		ttype:             income,
-		fromAccountId:     nil,
-		toAccountId:       &toAccountId,
-		incomeCategoryId:  &incomeCategoryId,
-		expenseCategoryId: nil,
+		fromAccountID:     nil,
+		toAccountID:       &toAccountID,
+		incomeCategoryID:  &incomeCategoryID,
+		expenseCategoryID: nil,
 		amount:            amount,
 		description:       description,
 		date:              date,
@@ -88,9 +88,9 @@ func NewIncome(
 
 func NewExpense(
 	id ID,
-	userId ID,
-	fromAccountId ID,
-	expenseCategoryId ID,
+	userID ID,
+	fromAccountID ID,
+	expenseCategoryID ID,
 	amount int,
 	description string,
 	date time.Time,
@@ -106,12 +106,12 @@ func NewExpense(
 
 	return &Transaction{
 		id:                id,
-		userId:            id,
+		userID:            id,
 		ttype:             expense,
-		fromAccountId:     &fromAccountId,
-		toAccountId:       nil,
-		incomeCategoryId:  nil,
-		expenseCategoryId: &expenseCategoryId,
+		fromAccountID:     &fromAccountID,
+		toAccountID:       nil,
+		incomeCategoryID:  nil,
+		expenseCategoryID: &expenseCategoryID,
 		amount:            amount,
 		description:       description,
 		date:              date,
@@ -121,10 +121,10 @@ func NewExpense(
 
 func NewTransfer(
 	id ID,
-	userId ID,
-	fromAccountId ID,
-	toAccountId ID,
-	expenseCategoryId *ID,
+	userID ID,
+	fromAccountID ID,
+	toAccountID ID,
+	expenseCategoryID *ID,
 	amount int,
 	description string,
 	date time.Time,
@@ -140,12 +140,12 @@ func NewTransfer(
 
 	return &Transaction{
 		id:                id,
-		userId:            id,
+		userID:            id,
 		ttype:             transfer,
-		fromAccountId:     &fromAccountId,
-		toAccountId:       &toAccountId,
-		incomeCategoryId:  nil,
-		expenseCategoryId: expenseCategoryId,
+		fromAccountID:     &fromAccountID,
+		toAccountID:       &toAccountID,
+		incomeCategoryID:  nil,
+		expenseCategoryID: expenseCategoryID,
 		amount:            amount,
 		description:       description,
 		date:              date,
@@ -155,12 +155,12 @@ func NewTransfer(
 
 func Rehydrate(
 	id ID,
-	userId ID,
+	userID ID,
 	ttype Type,
-	fromAccountId *ID,
-	toAccountId *ID,
-	incomeCategoryId *ID,
-	expenseCategoryId *ID,
+	fromAccountID *ID,
+	toAccountID *ID,
+	incomeCategoryID *ID,
+	expenseCategoryID *ID,
 	amount int,
 	description string,
 	date time.Time,
@@ -168,12 +168,12 @@ func Rehydrate(
 ) *Transaction {
 	return &Transaction{
 		id:                id,
-		userId:            id,
+		userID:            id,
 		ttype:             ttype,
-		fromAccountId:     fromAccountId,
-		toAccountId:       toAccountId,
-		incomeCategoryId:  incomeCategoryId,
-		expenseCategoryId: expenseCategoryId,
+		fromAccountID:     fromAccountID,
+		toAccountID:       toAccountID,
+		incomeCategoryID:  incomeCategoryID,
+		expenseCategoryID: expenseCategoryID,
 		amount:            amount,
 		description:       description,
 		date:              date,
@@ -185,8 +185,8 @@ func (t *Transaction) ID() ID {
 	return t.id
 }
 
-func (t *Transaction) UserId() ID {
-	return t.userId
+func (t *Transaction) UserID() ID {
+	return t.userID
 }
 
 func (t *Transaction) Ttype() Type {
@@ -196,32 +196,33 @@ func (t *Transaction) Ttype() Type {
 // TODO: correct
 // return a pointer, if it's nil postgres will be nil (instead of "" of error)
 // for the view let view package handle if == nil
-func (t *Transaction) FromAccountId() ID {
-	if t.fromAccountId == nil {
+
+func (t *Transaction) FromAccountID() ID {
+	if t.fromAccountID == nil {
 		return ID("")
 	}
-	return *t.fromAccountId
+	return *t.fromAccountID
 }
 
-func (t *Transaction) ToAccountId() ID {
-	if t.toAccountId == nil {
+func (t *Transaction) ToAccountID() ID {
+	if t.toAccountID == nil {
 		return ID("")
 	}
-	return *t.toAccountId
+	return *t.toAccountID
 }
 
-func (t *Transaction) IncomeCategoryId() ID {
-	if t.incomeCategoryId == nil {
+func (t *Transaction) IncomeCategoryID() ID {
+	if t.incomeCategoryID == nil {
 		return ID("")
 	}
-	return *t.incomeCategoryId
+	return *t.incomeCategoryID
 }
 
-func (t *Transaction) ExpenseCategoryId() ID {
-	if t.expenseCategoryId == nil {
+func (t *Transaction) ExpenseCategoryID() ID {
+	if t.expenseCategoryID == nil {
 		return ID("")
 	}
-	return *t.expenseCategoryId
+	return *t.expenseCategoryID
 }
 
 func (t *Transaction) Amount() int {

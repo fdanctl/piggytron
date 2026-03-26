@@ -23,7 +23,7 @@ func (h *BanksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.Get(w, r)
 			return
 		}
-		h.GetId(w, r)
+		h.GetID(w, r)
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -41,8 +41,8 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *BanksHandler) GetId(w http.ResponseWriter, r *http.Request) {
-	bank, err := h.service.ReadOneById(r.Context(), r.PathValue("id"))
+func (h *BanksHandler) GetID(w http.ResponseWriter, r *http.Request) {
+	bank, err := h.service.ReadOneByID(r.Context(), r.PathValue("id"))
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return

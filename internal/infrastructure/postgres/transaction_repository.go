@@ -20,15 +20,15 @@ func NewTransactionRepository(db *sql.DB) *TransactionRepository {
 
 type TransactionDto struct {
 	id     transaction.ID
-	userId transaction.ID
+	userID transaction.ID
 
 	ttype transaction.Type
 
-	fromAccountId *transaction.ID
-	toAccountId   *transaction.ID
+	fromAccountID *transaction.ID
+	toAccountID   *transaction.ID
 
-	incomeCategoryId  *transaction.ID
-	expenseCategoryId *transaction.ID
+	incomeCategoryID  *transaction.ID
+	expenseCategoryID *transaction.ID
 
 	amount      int
 	description string
@@ -38,7 +38,7 @@ type TransactionDto struct {
 
 // save
 
-func (r *TransactionRepository) FindById(
+func (r *TransactionRepository) FindByID(
 	ctx context.Context,
 	id transaction.ID,
 ) (*transaction.Transaction, error) {
@@ -53,12 +53,12 @@ func (r *TransactionRepository) FindById(
 	var dto TransactionDto
 	err := row.Scan(
 		&dto.id,
-		&dto.userId,
+		&dto.userID,
 		&dto.ttype,
-		&dto.fromAccountId,
-		&dto.toAccountId,
-		&dto.incomeCategoryId,
-		&dto.expenseCategoryId,
+		&dto.fromAccountID,
+		&dto.toAccountID,
+		&dto.incomeCategoryID,
+		&dto.expenseCategoryID,
 		&dto.amount,
 		&dto.description,
 		&dto.date,
@@ -70,12 +70,12 @@ func (r *TransactionRepository) FindById(
 
 	transaction := transaction.Rehydrate(
 		dto.id,
-		dto.userId,
+		dto.userID,
 		dto.ttype,
-		dto.fromAccountId,
-		dto.toAccountId,
-		dto.incomeCategoryId,
-		dto.expenseCategoryId,
+		dto.fromAccountID,
+		dto.toAccountID,
+		dto.incomeCategoryID,
+		dto.expenseCategoryID,
 		dto.amount,
 		dto.description,
 		dto.date,
@@ -107,12 +107,12 @@ func (r *TransactionRepository) FindAllByUser(
 		var dto TransactionDto
 		err := rows.Scan(
 			&dto.id,
-			&dto.userId,
+			&dto.userID,
 			&dto.ttype,
-			&dto.fromAccountId,
-			&dto.toAccountId,
-			&dto.incomeCategoryId,
-			&dto.expenseCategoryId,
+			&dto.fromAccountID,
+			&dto.toAccountID,
+			&dto.incomeCategoryID,
+			&dto.expenseCategoryID,
 			&dto.amount,
 			&dto.description,
 			&dto.date,
@@ -123,12 +123,12 @@ func (r *TransactionRepository) FindAllByUser(
 		}
 		transaction := transaction.Rehydrate(
 			dto.id,
-			dto.userId,
+			dto.userID,
 			dto.ttype,
-			dto.fromAccountId,
-			dto.toAccountId,
-			dto.incomeCategoryId,
-			dto.expenseCategoryId,
+			dto.fromAccountID,
+			dto.toAccountID,
+			dto.incomeCategoryID,
+			dto.expenseCategoryID,
 			dto.amount,
 			dto.description,
 			dto.date,
@@ -166,12 +166,12 @@ func (r *TransactionRepository) FindAllByAccount(
 		var dto TransactionDto
 		err := rows.Scan(
 			&dto.id,
-			&dto.userId,
+			&dto.userID,
 			&dto.ttype,
-			&dto.fromAccountId,
-			&dto.toAccountId,
-			&dto.incomeCategoryId,
-			&dto.expenseCategoryId,
+			&dto.fromAccountID,
+			&dto.toAccountID,
+			&dto.incomeCategoryID,
+			&dto.expenseCategoryID,
 			&dto.amount,
 			&dto.description,
 			&dto.date,
@@ -182,12 +182,12 @@ func (r *TransactionRepository) FindAllByAccount(
 		}
 		transaction := transaction.Rehydrate(
 			dto.id,
-			dto.userId,
+			dto.userID,
 			dto.ttype,
-			dto.fromAccountId,
-			dto.toAccountId,
-			dto.incomeCategoryId,
-			dto.expenseCategoryId,
+			dto.fromAccountID,
+			dto.toAccountID,
+			dto.incomeCategoryID,
+			dto.expenseCategoryID,
 			dto.amount,
 			dto.description,
 			dto.date,
@@ -225,12 +225,12 @@ func (r *TransactionRepository) FindAllByCategory(
 		var dto TransactionDto
 		err := rows.Scan(
 			&dto.id,
-			&dto.userId,
+			&dto.userID,
 			&dto.ttype,
-			&dto.fromAccountId,
-			&dto.toAccountId,
-			&dto.incomeCategoryId,
-			&dto.expenseCategoryId,
+			&dto.fromAccountID,
+			&dto.toAccountID,
+			&dto.incomeCategoryID,
+			&dto.expenseCategoryID,
 			&dto.amount,
 			&dto.description,
 			&dto.date,
@@ -241,12 +241,12 @@ func (r *TransactionRepository) FindAllByCategory(
 		}
 		transaction := transaction.Rehydrate(
 			dto.id,
-			dto.userId,
+			dto.userID,
 			dto.ttype,
-			dto.fromAccountId,
-			dto.toAccountId,
-			dto.incomeCategoryId,
-			dto.expenseCategoryId,
+			dto.fromAccountID,
+			dto.toAccountID,
+			dto.incomeCategoryID,
+			dto.expenseCategoryID,
 			dto.amount,
 			dto.description,
 			dto.date,
