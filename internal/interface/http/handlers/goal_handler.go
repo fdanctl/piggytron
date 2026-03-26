@@ -44,7 +44,7 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

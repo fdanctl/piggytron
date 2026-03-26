@@ -222,20 +222,7 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return err
 	})
 
-	if r.Header.Get("Hx-Request") == "true" {
-		contents.Render(r.Context(), w)
-		io.WriteString(w, "<title>Dashboard</title>")
-		return
-	}
-
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, contents)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Dashboard").Render(ctx, w)
+	renderWithMainLayout(w, r, "Dashboard", contents)
 }
 
 type BudgetHandler struct{}
@@ -325,20 +312,7 @@ func (h *SignupHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.SignupForm(*views.NewSignupView())
-	if r.Header.Get("Hx-Request") == "true" {
-		form.Render(r.Context(), w)
-		io.WriteString(w, "<title>Signup</title>")
-		return
-	}
-
-	layout := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, form)
-		err := layouts.LogLayout().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), layout)
-	layouts.Base("Signup").Render(ctx, w)
+	renderWithMainLayout(w, r, "Signup", form)
 }
 
 type ExpensesHandler struct{}
@@ -354,18 +328,5 @@ func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	content := partials.Test()
-	if r.Header.Get("Hx-Request") == "true" {
-		content.Render(r.Context(), w)
-		io.WriteString(w, "<title>Expenses</title>")
-		return
-	}
-
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, content)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Expenses").Render(ctx, w)
+	renderWithMainLayout(w, r, "Signup", content)
 }

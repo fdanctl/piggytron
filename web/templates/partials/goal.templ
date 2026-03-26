@@ -1,0 +1,38 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ Goal(g views.Goal, tt []views.Transaction, hasMore bool) {
+	<div class="flex justify-center">
+		<h2 class="h1">{ g.Amount }<sub>/{ g.TargetAmount }</sub></h2>
+	</div>
+	<div>
+		i'm a chart
+	</div>
+	<section id="details">
+		<h4>Details</h4>
+		<div>
+			<p>Name</p>
+			<p>{ g.Name }</p>
+			<p>Status</p>
+			<p>i'm a status</p>
+			<p>Category</p>
+			<p>I'm a category</p>
+			<p>Target amount</p>
+			<p>{ g.TargetAmount }</p>
+			<p>Left</p>
+			<p>I'm what's left</p>
+			<p>Start date:</p>
+			<p>created_at</p>
+			<p>Target date</p>
+			<p>{ g.TargetDate }</p>
+		</div>
+	</section>
+	<section id="history">
+		<h4>History</h4>
+		@TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", g.ID), hasMore)
+	</section>
+}

@@ -12,7 +12,6 @@ import (
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -43,7 +42,7 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			h.Get(w, r)
 			return
 		}
-		h.GetID(w, r)
+		h.GetWithID(w, r)
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -51,7 +50,7 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -94,24 +93,12 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		).Render(ctx, w)
 		return err
 	})
-	if r.Header.Get("Hx-Request") == "true" {
-		content.Render(r.Context(), w)
-		io.WriteString(w, "<title>Categories</title>")
-		return
-	}
 
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, content)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Categories").Render(ctx, w)
+	renderWithMainLayout(w, r, "Categories", content)
 }
 
-func (h *CategoriesHandler) GetID(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
+func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -218,17 +205,5 @@ func (h *CategoriesHandler) GetID(w http.ResponseWriter, r *http.Request) {
 		return nil
 	})
 
-	if r.Header.Get("Hx-Request") == "true" {
-		content.Render(r.Context(), w)
-		fmt.Fprintf(w, "<title>%s</title>", category.GetName())
-		return
-	}
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, content)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base(category.GetName()).Render(ctx, w)
+	renderWithMainLayout(w, r, category.GetName(), content)
 }

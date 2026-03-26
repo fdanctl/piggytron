@@ -10,7 +10,6 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -38,7 +37,7 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -121,18 +120,5 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 			Render(ctx, w)
 	})
 
-	if r.Header.Get("Hx-Request") == "true" {
-		content.Render(r.Context(), w)
-		io.WriteString(w, "<title>Transactions</title>")
-		return
-	}
-
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, content)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Transactions").Render(ctx, w)
+	renderWithMainLayout(w, r, "Transactions", content)
 }

@@ -67,3 +67,151 @@ func (r *AccountQueryService) FindIDNamesIncludes(
 
 	return results, nil
 }
+
+func (r *AccountQueryService) FindGoalsIDNames(
+	ctx context.Context,
+	uid string,
+) ([]query.AccountIDName, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, name
+		 FROM accounts
+		 WHERE user_id = $1 and type = 'goal'`,
+		uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountIDName
+
+	for rows.Next() {
+		var g query.AccountIDName
+		if err := rows.Scan(
+			&g.ID,
+			&g.Name,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, g)
+	}
+	return results, nil
+}
+
+func (r *AccountQueryService) FindAllGoalsWithSum(
+	ctx context.Context,
+	uid string,
+) ([]query.AccountWithSum, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT 
+			a.id, 
+			a.user_id, 
+			a.type, 
+			a.name, 
+			a.currency, 
+			a.target_amount, 
+			a.target_date, 
+			a.category_id, 
+			a.created_at, 
+			a.updated_at, 
+			COALESCE(
+				SUM(
+					CASE
+					  WHEN t.from_account_id = a.id THEN t.amount * -1
+					  ELSE t.amount
+					END
+				),
+				0
+			) AS sum
+		 FROM accounts a
+		 LEFT JOIN transactions t 
+			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 WHERE
+			a.user_id = $1 AND a.type = 'goal'
+		 GROUP BY
+  			a.id`,
+		uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountWithSum
+
+	for rows.Next() {
+		var g query.AccountWithSum
+		if err := rows.Scan(
+			&g.ID,
+			&g.Name,
+			&g.Type,
+			&g.Name,
+			&g.Currency,
+			&g.TargetAmount,
+			&g.TargetDate,
+			&g.CategoryID,
+			&g.CreatedAt,
+			&g.UpdatedAt,
+			&g.Sum,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, g)
+	}
+	return results, nil
+}
+
+func (r *AccountQueryService) FindOneWithSum(
+	ctx context.Context,
+	id string,
+) (query.AccountWithSum, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT
+			a.id,
+			a.user_id,
+			a.type,
+			a.name,
+			a.currency,
+			a.target_amount,
+			a.target_date,
+			a.category_id,
+			a.created_at,
+			a.updated_at,
+			COALESCE(
+				SUM(
+					CASE
+					  WHEN t.from_account_id = a.id THEN t.amount * -1
+					  ELSE t.amount
+					END
+				),
+				0
+			) AS sum
+		 FROM accounts a
+		 LEFT JOIN transactions t
+			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 WHERE
+			a.id = $1	
+		 GROUP BY
+			a.id`,
+		id,
+	)
+
+	var a query.AccountWithSum
+	err := row.Scan(
+		&a.ID,
+		&a.UserID,
+		&a.Type,
+		&a.Name,
+		&a.Currency,
+		&a.TargetAmount,
+		&a.TargetDate,
+		&a.CategoryID,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+		&a.Sum,
+	)
+	return a, err
+}

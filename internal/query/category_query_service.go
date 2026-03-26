@@ -10,6 +10,6 @@ type CategoryWithNameDTO struct {
 }
 
 type CategoryQueryService interface {
-	FindAllCategories(ctx context.Context) ([]CategoryWithNameDTO, error)
+	FindAllCategories(ctx context.Context, uid string) ([]CategoryWithNameDTO, error)
 	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryWithNameDTO, error)
 }

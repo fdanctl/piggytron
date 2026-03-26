@@ -5,16 +5,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/domain/account"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/query"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
 
 type Goal struct {
-	ID           account.ID
+	ID           string
 	Name         string
-	Type         account.AccountType
+	Type         string
 	TargetAmount string
 	TargetDate   string
 	// Category string
@@ -26,57 +25,47 @@ type Goal struct {
 }
 
 func NewGoal(
-	g *account.Account,
-	transactions []*transaction.Transaction,
+	g query.AccountWithSum,
 ) Goal {
-	var amount int
-	for _, t := range transactions {
-		if t.ToAccountID() == transaction.ID(g.ID()) {
-			amount += t.Amount()
-		} else {
-			amount -= t.Amount()
-		}
-	}
-
 	date := "-"
 	monthlyNeeded := "-"
 	monthsLeft := "-"
-	if g.TargetDate() != nil {
-		y, m, _ := g.TargetDate().Date()
+	if g.TargetDate != nil {
+		y, m, _ := g.TargetDate.Date()
 		date = fmt.Sprintf("%s %s", m, strconv.Itoa(y))
 
 		monthsLeft = "exceded"
-		mn := *g.TargetAmount() - amount
+		mn := *g.TargetAmount - g.Sum
 
-		if time.Until(*g.TargetDate()) > 0 {
+		if time.Until(*g.TargetDate) > 0 {
 			ml := int(m - time.Now().Month())
 			for ml < 0 {
 				ml += 12
 			}
 			monthsLeft = strconv.Itoa(ml)
-			mn = (*g.TargetAmount() - amount) / int(ml)
+			mn = (*g.TargetAmount - g.Sum) / int(ml)
 		}
 
 		monthlyNeeded = formatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
 	}
 
 	return Goal{
-		ID:   g.ID(),
-		Name: g.Name(),
-		Type: g.Type(),
+		ID:   g.ID,
+		Name: g.Name,
+		Type: g.Type,
 		TargetAmount: formatMoney(
-			float64(*g.TargetAmount())/100,
+			float64(*g.TargetAmount)/100,
 			currency.EUR,
 			language.AmericanEnglish,
 		),
 		TargetDate: date,
 		Amount: formatMoney(
-			float64(amount)/100,
+			float64(g.Sum)/100,
 			currency.EUR,
 			language.AmericanEnglish,
 		),
 		MonthlyNeeded:      monthlyNeeded,
 		MonthsLeft:         monthsLeft,
-		CompletePercentage: float64(amount) / float64(*g.TargetAmount()) * 100,
+		CompletePercentage: float64(g.Sum) / float64(*g.TargetAmount) * 100,
 	}
 }

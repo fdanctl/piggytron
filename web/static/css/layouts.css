@@ -168,7 +168,7 @@ html {
     margin: var(--spacing-sm);
     margin-left: 0;
     border-radius: var(--radius-md);
-    overflow-y: scroll;
+    overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--color-border) transparent;
   }

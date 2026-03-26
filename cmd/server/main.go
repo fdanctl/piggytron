@@ -80,7 +80,7 @@ func main() {
 	// query services
 	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
 	var transactionQueryService query.TransactionQueryService = postgres.NewTransactionQueryService(db)
-	var accountQuerService query.AccountQueryService = postgres.NewAccountQueryService(db)
+	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
 	// services
 	accountService := account.NewService(accountRepo)
 	transactionService := transaction.NewService(transactionRepo)
@@ -106,8 +106,14 @@ func main() {
 	bh := handlers.BudgetHandler{}
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(&bh))
 
-	goalsHandler := handlers.NewGoalsHandler(accountService, transactionService)
+	goalsHandler := handlers.NewGoalsHandler(
+		accountService,
+		transactionService,
+		transactionQueryService,
+		accountQueryService,
+	)
 	webMux.Handle("/goals", middleware.AuthProtectedRoute(goalsHandler))
+	webMux.Handle("/goals/{id}", middleware.AuthProtectedRoute(goalsHandler))
 
 	banksHandler := handlers.NewBanksHandler(accountService)
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
@@ -157,7 +163,7 @@ func main() {
 		catQueryService,
 		accountService,
 		transactionQueryService,
-		accountQuerService,
+		accountQueryService,
 	)
 	partialsMux.Handle("/partials/transaction-filters", transactionFiltersHandler)
 

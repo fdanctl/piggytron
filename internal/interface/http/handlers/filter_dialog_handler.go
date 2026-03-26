@@ -49,13 +49,13 @@ func (h *FilterDialogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	c, err := h.categoryQueryService.FindAllCategories(r.Context())
+	c, err := h.categoryQueryService.FindAllCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
@@ -129,7 +129,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

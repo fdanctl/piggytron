@@ -26,23 +26,23 @@
   background-color: var(--color-bg-secondary);
 }
 
-.goal-card > div:first-child > p {
+.goal-card > a > div:first-child > p {
   font-size: 0.75rem;
   color: var(--color-text-secondary);
 }
 
-.goal-card > div:nth-child(2) > div > p {
+.goal-card > a > div:nth-child(2) > div > p {
   font-size: 1.125rem;
 }
 .goal-card > div:nth-child(2) > div > p:nth-child(2) {
   color: var(--color-primary);
 }
-.goal-card > div:nth-child(2) > div:nth-child(2) {
+.goal-card > a > div:nth-child(2) > div:nth-child(2) {
   position: relative;
   height: var(--spacing-sm);
   width: 100%;
 }
-.goal-card > div:nth-child(2) > div:nth-child(2) > span {
+.goal-card > a > div:nth-child(2) > div:nth-child(2) > span {
   display: block;
   position: absolute;
   width: 100%;
@@ -50,16 +50,16 @@
   background-color: var(--color-primary);
   border-radius: var(--radius-xl);
 }
-.goal-card > div:nth-child(2) > div:nth-child(2) > span:first-child {
+.goal-card > a > div:nth-child(2) > div:nth-child(2) > span:first-child {
   opacity: 0.35;
 }
 
-.goal-card > div:nth-child(3) > div > p {
+.goal-card > a > div:nth-child(3) > div > p {
   font-size: 0.8rem;
 }
-.goal-card > div:nth-child(3) > div > p:first-child {
+.goal-card > a > div:nth-child(3) > div > p:first-child {
   color: var(--color-text-secondary);
 }
-.goal-card > div:nth-child(3) > div:nth-child(2) {
+.goal-card > a > div:nth-child(3) > div:nth-child(2) {
   text-align: right;
 }

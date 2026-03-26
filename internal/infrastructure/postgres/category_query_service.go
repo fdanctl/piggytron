@@ -23,6 +23,7 @@ func NewCategoryQueryService(db *sql.DB) *CategoryQueryService {
 
 func (s *CategoryQueryService) FindAllCategories(
 	ctx context.Context,
+	uid string,
 ) ([]query.CategoryWithNameDTO, error) {
 	v := ctx.Value(middleware.UserKey)
 	if v == nil {
