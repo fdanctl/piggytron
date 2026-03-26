@@ -37,6 +37,12 @@ func (h *FilteredTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 }
 
 func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	pageq := r.URL.Query().Get("page")
 	if pageq == "" {
 		pageq = "1"
@@ -82,12 +88,6 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 	if maxAmount != "" {
 		queries = append(queries, "maxmount="+minAmount)
 		filterCount++
-	}
-
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	transactions, err := h.query.FindFiltered(

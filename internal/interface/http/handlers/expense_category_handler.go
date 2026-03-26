@@ -43,6 +43,12 @@ func (h *ExpenseCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	name := r.FormValue("name")
 	catType := r.FormValue("type")
 
@@ -59,7 +65,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	category, err := h.service.CreateCategory(r.Context(), name, catType)
+	category, err := h.service.CreateCategory(r.Context(), sessionInfo.UserID, name, catType)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, expensecategoryapp.ErrDuplicate) {

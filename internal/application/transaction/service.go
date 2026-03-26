@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 )
 
 type Service struct {
@@ -30,24 +28,15 @@ func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Tran
 
 func (s *Service) ReadAllByUser(
 	ctx context.Context,
+	userID string,
 	page uint,
 ) ([]*transaction.Transaction, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, nil
-	}
-
-	id, err := transaction.NewID(sessionInfo.UserID)
+	uid, err := transaction.NewID(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	transactions, err := s.repo.FindAllByUser(ctx, id)
+	transactions, err := s.repo.FindAllByUser(ctx, uid)
 	if err != nil {
 		return nil, err
 	}

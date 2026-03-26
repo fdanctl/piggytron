@@ -49,6 +49,12 @@ func (h *FilterDialogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	c, err := h.categoryQueryService.FindAllCategories(r.Context())
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
@@ -63,7 +69,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	account, err := h.accountService.ReadAllByUser(r.Context())
+	account, err := h.accountService.ReadAllByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
@@ -85,12 +91,6 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	maxAmount := q.Get("maxamount")
 
 	filters, err := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -129,6 +129,12 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	r.ParseForm()
 	q := r.Form
 	types := q["types"]
@@ -161,12 +167,6 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	if maxAmount != "" {
 		queries = append(queries, "maxmount="+minAmount)
 		filterCount++
-	}
-
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	resCount, err := h.tQueryService.CountFilteredResults(

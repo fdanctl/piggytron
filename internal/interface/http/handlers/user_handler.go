@@ -142,7 +142,13 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
-	err := h.service.LogoutUser(r.Context())
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.LogoutUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "", http.StatusInternalServerError)
 		return

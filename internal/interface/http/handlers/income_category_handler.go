@@ -43,6 +43,12 @@ func (h *IncomeCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	name := r.FormValue("name")
 	view := views.IncomeCategoryForm{
 		Initial: false,
@@ -56,7 +62,7 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	category, err := h.service.CreateCategory(r.Context(), name)
+	category, err := h.service.CreateCategory(r.Context(), sessionInfo.UserID, name)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, incomecategoryapp.ErrDuplicate) {

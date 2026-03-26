@@ -44,6 +44,12 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	name := r.FormValue("name")
 	currency := r.FormValue("currency")
 	tamount := r.FormValue("target-amount")
@@ -65,7 +71,15 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	goal, err := h.accService.CreateGoal(r.Context(), name, currency, tamount, tdate, cat)
+	goal, err := h.accService.CreateGoal(
+		r.Context(),
+		sessionInfo.UserID,
+		name,
+		currency,
+		tamount,
+		tdate,
+		cat,
+	)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.GoalForm(view).Render(r.Context(), w)

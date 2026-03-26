@@ -3,11 +3,9 @@ package user
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/fdanctl/piggytron/internal/domain/user"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/google/uuid"
 )
 
@@ -88,17 +86,6 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 	return sid, err
 }
 
-func (s *Service) LogoutUser(ctx context.Context) error {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		fmt.Println("not sessionInfo")
-		return nil
-	}
-
-	return s.sessionStore.Remove(ctx, sessionInfo.UserID)
+func (s *Service) LogoutUser(ctx context.Context, id string) error {
+	return s.sessionStore.Remove(ctx, id)
 }

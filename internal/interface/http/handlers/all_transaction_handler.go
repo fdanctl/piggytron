@@ -38,6 +38,12 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	q := r.URL.Query()
 	qtypes := q["types"]
 	qaccounts := q["accounts"]
@@ -70,12 +76,6 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if qmaxAmount != "" {
 		queries = append(queries, "maxmount="+qminAmount)
 		filterCount++
-	}
-
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	tWithCount, err := h.query.FindFilteredWithCount(

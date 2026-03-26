@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/google/uuid"
 )
 
@@ -27,29 +25,21 @@ func NewService(repo account.Repository) *Service {
 
 func (s *Service) CreateBank(
 	ctx context.Context,
+	userID string,
 	name string,
 	currency string,
 ) (*account.Account, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, errors.New("nil context")
+	uid, err := account.NewID(userID)
+	if err != nil {
+		return nil, err
 	}
 
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, errors.New("not sessionInfo")
-	}
-
-	_, err := s.repo.FindBankByNameAndUser(ctx, account.ID(sessionInfo.UserID), name)
+	_, err = s.repo.FindBankByNameAndUser(ctx, uid, name)
 	if err == nil {
 		return nil, ErrDuplicate
 	}
 
 	id, err := account.NewID(uuid.New().String())
-	if err != nil {
-		return nil, err
-	}
-	uid, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,32 +58,24 @@ func (s *Service) CreateBank(
 
 func (s *Service) CreateGoal(
 	ctx context.Context,
+	userID string,
 	name string,
 	currency string,
 	targetAmount string,
 	targetDate string,
 	categoryID string,
 ) (*account.Account, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, errors.New("nil context")
+	uid, err := account.NewID(userID)
+	if err != nil {
+		return nil, err
 	}
 
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, errors.New("not sessionInfo")
-	}
-
-	_, err := s.repo.FindGoalByNameAndUser(ctx, account.ID(sessionInfo.UserID), name)
+	_, err = s.repo.FindGoalByNameAndUser(ctx, account.ID(userID), name)
 	if err == nil {
 		return nil, ErrDuplicate
 	}
 
 	id, err := account.NewID(uuid.New().String())
-	if err != nil {
-		return nil, err
-	}
-	uid, err := account.NewID(sessionInfo.UserID)
 	if err != nil {
 		return nil, err
 	}
@@ -134,18 +116,9 @@ func (s *Service) ReadOneByID(ctx context.Context, id string) (*account.Account,
 
 func (s *Service) ReadAllByUser(
 	ctx context.Context,
+	userID string,
 ) ([]*account.Account, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, nil
-	}
-
-	id, err := account.NewID(sessionInfo.UserID)
+	id, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -160,18 +133,9 @@ func (s *Service) ReadAllByUser(
 
 func (s *Service) ReadAllBanksByUser(
 	ctx context.Context,
+	userID string,
 ) ([]*account.Account, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, nil
-	}
-
-	id, err := account.NewID(sessionInfo.UserID)
+	id, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -186,18 +150,9 @@ func (s *Service) ReadAllBanksByUser(
 
 func (s *Service) ReadAllGoalsByUser(
 	ctx context.Context,
+	userID string,
 ) ([]*account.Account, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, nil
-	}
-
-	id, err := account.NewID(sessionInfo.UserID)
+	id, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
 	}

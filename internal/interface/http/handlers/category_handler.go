@@ -51,7 +51,13 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
-	ec, err := h.expenseCatService.ReadAllUserCategories(r.Context())
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ec, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
@@ -61,7 +67,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		ecView = append(ecView, views.NewExpenseCategory(v))
 	}
 
-	ic, err := h.incomeCatService.ReadAllUserCategories(r.Context())
+	ic, err := h.incomeCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
@@ -105,6 +111,12 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) GetID(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	id := r.PathValue("id")
 	ecat, err := h.expenseCatService.ReadCategory(r.Context(), id)
 	var icat *incomecategory.IncomeCategory
@@ -121,12 +133,12 @@ func (h *CategoriesHandler) GetID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	icats, err := h.incomeCatService.ReadAllUserCategories(r.Context())
+	icats, err := h.incomeCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	ecats, err := h.expenseCatService.ReadAllUserCategories(r.Context())
+	ecats, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
@@ -152,12 +164,6 @@ func (h *CategoriesHandler) GetID(w http.ResponseWriter, r *http.Request) {
 			Href: fmt.Sprintf("/categories/%s", v.ID()),
 			Name: v.Name(),
 		})
-	}
-
-	sessionInfo, err := sessionInfoFormCtx(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
 	}
 
 	filters, err := query.NewTransactionFilters(nil, nil, []string{id}, "", "")

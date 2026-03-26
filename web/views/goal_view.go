@@ -45,12 +45,18 @@ func NewGoal(
 		y, m, _ := g.TargetDate().Date()
 		date = fmt.Sprintf("%s %s", m, strconv.Itoa(y))
 
-		ml := int(m - time.Now().Month())
-		for ml < 0 {
-			ml += 12
+		monthsLeft = "exceded"
+		mn := *g.TargetAmount() - amount
+
+		if time.Until(*g.TargetDate()) > 0 {
+			ml := int(m - time.Now().Month())
+			for ml < 0 {
+				ml += 12
+			}
+			monthsLeft = strconv.Itoa(ml)
+			mn = (*g.TargetAmount() - amount) / int(ml)
 		}
-		monthsLeft = strconv.Itoa(ml)
-		mn := (*g.TargetAmount() - amount) / int(ml)
+
 		monthlyNeeded = formatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
 	}
 

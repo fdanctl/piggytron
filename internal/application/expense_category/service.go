@@ -3,11 +3,8 @@ package expensecategory
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/google/uuid"
 )
 
@@ -26,30 +23,33 @@ func NewService(repo expensecategory.Repository) *Service {
 
 func (s *Service) CreateCategory(
 	ctx context.Context,
+	userID string,
 	name string,
 	expenseType string,
 ) (*expensecategory.ExpenseCategory, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, errors.New("nil context")
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, errors.New("not sessionInfo")
+	uid, err := expensecategory.NewID(userID)
+	if err != nil {
+		return nil, err
 	}
 
 	et, err := expensecategory.NewExpenseType(expenseType)
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.repo.FindByNameAndUser(ctx, expensecategory.ID(sessionInfo.UserID), name)
+
+	_, err = s.repo.FindByNameAndUser(ctx, uid, name)
 	if err == nil {
 		return nil, ErrDuplicate
 	}
+
+	id, err := expensecategory.NewID(uuid.New().String())
+	if err != nil {
+		return nil, err
+	}
+
 	category, err := expensecategory.New(
-		expensecategory.ID(uuid.New().String()),
-		expensecategory.ID(sessionInfo.UserID),
+		id,
+		uid,
 		name,
 		et,
 	)
@@ -73,20 +73,14 @@ func (s *Service) ReadCategory(
 
 func (s *Service) ReadAllUserCategories(
 	ctx context.Context,
+	userID string,
 ) ([]*expensecategory.ExpenseCategory, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		fmt.Println("nil context")
-		return nil, nil
+	uid, err := expensecategory.NewID(userID)
+	if err != nil {
+		return nil, err
 	}
 
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		fmt.Println("not sessionInfo")
-		return nil, nil
-	}
-
-	categories, err := s.repo.FindAllByUser(ctx, expensecategory.ID(sessionInfo.UserID))
+	categories, err := s.repo.FindAllByUser(ctx, uid)
 	if err != nil {
 		return nil, err
 	}

@@ -38,7 +38,13 @@ func (h *GoalsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	goals, err := h.accountService.ReadAllGoalsByUser(r.Context())
+	sessionInfo, err := sessionInfoFormCtx(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	goals, err := h.accountService.ReadAllGoalsByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
