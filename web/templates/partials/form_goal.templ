@@ -5,7 +5,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ GoalForm(v views.GoalForm) {
+templ GoalForm(v views.GoalForm, categories []components.SelectOption) {
 	<form
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/goal"
@@ -26,16 +26,22 @@ templ GoalForm(v views.GoalForm) {
 				"value":       v.Name,
 			},
 		)
-		@components.InputGroup(
+		@components.SelectGroup(
 			"",
 			"Currency",
+			v.Currency,
+			"-- Select currency --",
+			[]components.SelectOption{
+				{
+					Label: "EUR",
+					Value: "EUR",
+				},
+			},
 			views.StringArrToStr(v.ValidateCurrency()),
 			v.CurrencyHasError(),
 			templ.Attributes{
-				"id":    "currency",
-				"type":  "text",
-				"name":  "currency",
-				"value": v.Currency,
+				"id":   "currency",
+				"name": "currency",
 			},
 		)
 		@components.InputGroup(
@@ -63,17 +69,17 @@ templ GoalForm(v views.GoalForm) {
 				"value": v.TargetDate,
 			},
 		)
-		@components.InputGroup(
+		@components.SelectGroup(
 			"",
 			"Category",
+			v.Category,
+			"-- Select category --",
+			categories,
 			views.StringArrToStr(v.ValidateCategory()),
 			v.CategoryHasError(),
 			templ.Attributes{
-				"id":          "category",
-				"type":        "text",
-				"name":        "category",
-				"placeholder": "420,69",
-				"value":       v.Category,
+				"id":   "category",
+				"name": "category",
 			},
 		)
 		@components.Button(

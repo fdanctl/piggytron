@@ -159,6 +159,9 @@ func main() {
 	catHistChartHandler := handlers.NewCatHistChartHandler()
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
+	goalChartHandler := handlers.NewGoalChartHandler()
+	partialsMux.Handle("/partials/charts/goal-hist/{id}", goalChartHandler)
+
 	transactionFiltersHandler := handlers.NewFilterDialogHandler(
 		catQueryService,
 		accountService,

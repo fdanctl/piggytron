@@ -71,3 +71,47 @@ templ CheckBoxPill(label string, attrs templ.Attributes) {
 		<input data-label={ label } class="hidden" type="checkbox" { attrs... }/>
 	</div>
 }
+
+type SelectOption struct {
+	Label string
+	Value string
+}
+
+templ Select(placeholder string, value string, options []SelectOption, hasError bool, attrs templ.Attributes) {
+	{{
+		class := "input"
+		if hasError {
+			class += " error"
+		}
+		if value != "" {
+			for _, o := range options {
+				if value == o.Value {
+					placeholder = o.Label
+				}
+			}
+		}
+	}}
+	@Dropdown(class, placeholder, true) {
+		<ul class="option">
+			for _, o := range options {
+				<li onclick="select(this)" data-value={ o.Value }>
+					<span>{ o.Label }</span>
+					@CheckSvg(16, "", "")
+				</li>
+			}
+		</ul>
+		<input class="hidden" type="text" value={ value } { attrs... }/>
+	}
+}
+
+templ SelectGroup(class, label, value, placeholder string, options []SelectOption, errMsg string, hasError bool, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
+	>
+		if id, ok := attrs["id"]; ok && label != "" {
+			<label for={ id.(string) }>{ label }</label>
+		}
+		@Select(placeholder, value, options, hasError, attrs)
+		<span>{ errMsg }</span>
+	</div>
+}

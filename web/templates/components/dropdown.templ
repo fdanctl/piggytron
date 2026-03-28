@@ -11,7 +11,7 @@ type DropdownOptions struct {
 	name  string
 }
 
-templ Dropdown(class, name string) {
+templ Dropdown(class, name string, minWFull bool) {
 	{{
 		b := make([]byte, 5)
 		_, err := rand.Read(b)
@@ -22,16 +22,21 @@ templ Dropdown(class, name string) {
 	}}
 	<div class="dropdown">
 		<button
-			class={ "reset-btn flex items-center", templ.KV(class, class != "") }
+			class={ "reset-btn", templ.KV(class, class != "") }
+			type="button"
 			popovertarget={ id }
 			style={ fmt.Sprintf("anchor-name: %s;", id) }
 		>
-			{ name }
-			@ChevronDownSvg(16, "", "")
+			<span>
+				{ name }
+			</span>
+			<i class="flex items-center">
+				@ChevronDownSvg(16, "", "")
+			</i>
 		</button>
 		<span
 			id={ id }
-			class="popover"
+			class={ "popover", templ.KV("min-w", minWFull) }
 			style={ fmt.Sprintf("position-anchor: %s;", id) }
 			popover
 		>

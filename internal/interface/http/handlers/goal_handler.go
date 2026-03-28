@@ -38,7 +38,27 @@ func (h *GoalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
-	form := partials.GoalForm(*views.NewGoalForm())
+	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	var catOpts []components.SelectOption
+	for _, v := range cats {
+		catOpts = append(
+			catOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
+	form := partials.GoalForm(*views.NewGoalForm(), catOpts)
 	ctx := templ.WithChildren(r.Context(), form)
 	components.DialogWrapper("", nil).Render(ctx, w)
 }
@@ -66,8 +86,22 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
+		cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+		if err != nil {
+			http.Error(w, "Internal error", http.StatusInternalServerError)
+			return
+		}
+
+		var catOpts []components.SelectOption
+		for _, v := range cats {
+			catOpts = append(
+				catOpts,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
+
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view).Render(r.Context(), w)
+		partials.GoalForm(view, catOpts).Render(r.Context(), w)
 		return
 	}
 
@@ -81,8 +115,22 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		cat,
 	)
 	if err != nil {
+		cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+		if err != nil {
+			http.Error(w, "Internal error", http.StatusInternalServerError)
+			return
+		}
+
+		var catOpts []components.SelectOption
+		for _, v := range cats {
+			catOpts = append(
+				catOpts,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
+
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view).Render(r.Context(), w)
+		partials.GoalForm(view, catOpts).Render(r.Context(), w)
 		return
 	}
 	fmt.Println(goal)

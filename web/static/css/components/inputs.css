@@ -75,7 +75,7 @@
   color: var(--color-error);
 }
 
-.input.error:not(:focus),
+input.input.error:not(:focus),
 .input:has(+ div .pwdToggle) {
   padding-right: calc(20px + var(--spacing-md));
 }
@@ -158,4 +158,29 @@
 }
 .check-pill:has(input[type="checkbox"]:checked) > div:first-child > svg {
   display: block;
+}
+
+/* select options */
+.option > li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 var(--spacing-sm);
+  margin-top: var(--spacing-xs);
+  cursor: pointer;
+  border-radius: var(--radius-xs);
+}
+.option > li:first-child {
+  margin-top: 0;
+}
+
+.option > li > svg {
+  visibility: hidden;
+}
+.option > li.selected,
+.option > li:hover {
+  background-color: var(--color-bg-muted);
+}
+.option > li.selected > svg {
+  visibility: visible;
 }

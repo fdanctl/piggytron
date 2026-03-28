@@ -4,12 +4,12 @@ import (
 	"context"
 )
 
-type CategoryWithNameDTO struct {
+type CategoryNameDTO struct {
 	ID   string
 	Name string
 }
 
 type CategoryQueryService interface {
-	FindAllCategories(ctx context.Context, uid string) ([]CategoryWithNameDTO, error)
-	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryWithNameDTO, error)
+	FindAllCategories(ctx context.Context, uid string) ([]CategoryNameDTO, error)
+	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryNameDTO, error)
 }

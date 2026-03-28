@@ -10,7 +10,7 @@ type AccountIDName struct {
 	Name string
 }
 
-type AccountDTO struct {
+type AccountWithCategory struct {
 	ID       string
 	UserID   string
 	Type     string
@@ -19,14 +19,14 @@ type AccountDTO struct {
 	// goal-specific
 	TargetAmount *int
 	TargetDate   *time.Time
-	CategoryID   *string
+	Category     *CategoryNameDTO
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
 type AccountWithSum struct {
-	AccountDTO
+	AccountWithCategory
 	Sum int
 }
 

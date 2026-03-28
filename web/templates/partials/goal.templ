@@ -2,17 +2,37 @@ package partials
 
 import (
 	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 templ Goal(g views.Goal, tt []views.Transaction, hasMore bool) {
+	<style>
+		#goal-details > div {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			column-gap: var(--spacing-sm);
+		}
+		#goal-details > div > p:nth-child(2n -1) {
+			font-weight: 600;
+			text-align: right;
+		}
+		#goal-details > div > p:nth-child(2n -1)::after {
+			content: ":";
+		}
+	</style>
 	<div class="flex justify-center">
 		<h2 class="h1">{ g.Amount }<sub>/{ g.TargetAmount }</sub></h2>
 	</div>
-	<div>
-		i'm a chart
+	<div
+		class="chart-container"
+		style="margin-top: calc(-1 * var(--spacing-lg));"
+		hx-get={ fmt.Sprintf("/partials/charts/goal-hist/%s", g.ID) }
+		hx-trigger="load"
+	>
+		@components.Loader("htmx-indicator", nil)
 	</div>
-	<section id="details">
+	<section id="goal-details">
 		<h4>Details</h4>
 		<div>
 			<p>Name</p>
@@ -20,15 +40,15 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool) {
 			<p>Status</p>
 			<p>i'm a status</p>
 			<p>Category</p>
-			<p>I'm a category</p>
+			<p>{ g.Category }</p>
 			<p>Target amount</p>
 			<p>{ g.TargetAmount }</p>
 			<p>Left</p>
-			<p>I'm what's left</p>
-			<p>Start date:</p>
-			<p>created_at</p>
+			<p>{ g.AmountLeft }</p>
+			<p>Start date</p>
+			<p>{ views.FormatDate(g.StartDate) }</p>
 			<p>Target date</p>
-			<p>{ g.TargetDate }</p>
+			<p>{ views.FormatDate(g.TargetDate) }</p>
 		</div>
 	</section>
 	<section id="history">

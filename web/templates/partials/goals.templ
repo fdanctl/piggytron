@@ -45,7 +45,7 @@ templ GoalItem(g views.Goal, attrs templ.Attributes) {
 					{ g.Name }
 				</h5>
 				<p class="text-muted">
-					Target: { g.TargetDate }
+					Target: { views.FormatDateMY(g.TargetDate) }
 				</p>
 			</div>
 			<div>

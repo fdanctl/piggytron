@@ -12,13 +12,13 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-type CatHistChartHandler struct{}
+type GoalChartHandler struct{}
 
-func NewCatHistChartHandler() *CatHistChartHandler {
-	return &CatHistChartHandler{}
+func NewGoalChartHandler() *GoalChartHandler {
+	return &GoalChartHandler{}
 }
 
-func (h *CatHistChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *GoalChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -28,12 +28,12 @@ func (h *CatHistChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *CatHistChartHandler) Get(w http.ResponseWriter, r *http.Request) {
-	chart := createBarChart()
+func (h *GoalChartHandler) Get(w http.ResponseWriter, r *http.Request) {
+	line := lineTime()
 	// cut unnecessary html code from echarts
 	// only get what's inside <body></body>
 	buf := bytes.NewBuffer(nil)
-	chart.Render(buf)
+	line.Render(buf)
 	html := buf.String()
 	bodyStart := strings.Index(html, "<body>")
 	bodyEnd := strings.Index(html, "</body>")
@@ -59,45 +59,60 @@ func (h *CatHistChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func generateBarItems() []opts.BarData {
-	items := make([]opts.BarData, 0)
-	for range 12 {
-		items = append(items, opts.BarData{Value: rand.Intn(300)})
+var (
+	itemCntLine = 6
+	fruits      = []string{"Apple", "Banana", "Peach ", "Lemon", "Pear", "Cherry"}
+)
+
+func generateLineItemsTwoAxis(points int, xFunc func(int) interface{}) []opts.LineData {
+	items := make([]opts.LineData, 0)
+	for i := 0; i < points; i++ {
+		items = append(items, opts.LineData{Value: []interface{}{xFunc(i), 100 + rand.Intn(20)}})
 	}
 	return items
 }
 
-func createBarChart() *charts.Bar {
-	bar := charts.NewBar()
-	bar.SetGlobalOptions(
+func lineTime() *charts.Line {
+	line := charts.NewLine()
+	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
 		charts.WithLegendOpts(opts.Legend{
 			Show: opts.Bool(false),
 		}),
+		charts.WithYAxisOpts(opts.YAxis{
+			Min: 0,
+			Max: 200,
+		}),
 		charts.WithColorsOpts(opts.Colors{
 			"#5eefef", "#4bc4c4",
 		}),
+		charts.WithXAxisOpts(opts.XAxis{
+			Type: "time",
+			Min:  time.Date(2025, time.January, 1, 0, 0, 0, 0, time.Local),
+		}),
 		charts.WithTooltipOpts(opts.Tooltip{
+			Trigger:         "axis",
 			BackgroundColor: "rgba(0, 0, 0, 0.7)",
 			BorderColor:     "transparent",
-			Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
 		}),
 	)
 
-	abbv := []string{
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-	}
-
-	currMonth := time.Now().Month() - 1
-	xAxis := make([]string, 12)
-	for i := 11; i >= 0; i-- {
-		m := (((int(currMonth) - i) + 12) % 12)
-		xAxis[11-i] = abbv[m]
-	}
-
-	bar.Assets.ClearPresetJSAssets()
-	bar.SetXAxis(xAxis).
-		AddSeries("Expense", generateBarItems())
-	return bar
+	line.AddSeries(
+		"History",
+		generateLineItemsTwoAxis(
+			20,
+			func(i int) interface{} { return time.Date(2025, time.January, i, 0, 0, 0, 0, time.Local) },
+		),
+	).SetSeriesOptions(
+		charts.WithLineChartOpts(
+			opts.LineChart{
+				Smooth: opts.Bool(true),
+			}),
+		charts.WithAreaStyleOpts(
+			opts.AreaStyle{
+				Opacity: opts.Float(0.5),
+			}),
+	)
+	return line
 }

@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -110,6 +112,10 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	goal, err := h.accountQueryService.FindOneWithSum(r.Context(), id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.NotFound(w, r)
+			return
+		}
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
@@ -155,7 +161,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	for _, t := range transactions {
 		transactionsViews = append(
 			transactionsViews,
-			views.NewTransaction(t),
+			views.NewAccountTransaction(t, &goal.AccountWithCategory),
 		)
 	}
 

@@ -22,3 +22,18 @@ function handleCheckPillToggle(ele) {
   cb.checked = !cb.checked;
   cb.dispatchEvent(new Event("change")); // triggers change event
 }
+
+// select
+function select(ele) {
+  ele.parentElement.nextElementSibling.value = ele.dataset.value;
+  const opts = ele.parentElement.querySelectorAll("li");
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.remove("selected");
+  }
+  ele.classList.add("selected");
+  ele.closest(".popover").hidePopover();
+  let drop = ele.closest(".dropdown");
+  drop.querySelector("button > span").innerText = ele.firstChild.innerText;
+  drop.querySelector("button").classList.remove("error");
+  ele.closest(".input-group").classList.remove("error");
+}

@@ -1,7 +1,6 @@
 package views
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -15,10 +14,12 @@ type Goal struct {
 	Name         string
 	Type         string
 	TargetAmount string
-	TargetDate   string
-	// Category string
-	Amount string
+	StartDate    time.Time
+	TargetDate   time.Time
+	Category     string
+	Amount       string
 
+	AmountLeft         string
 	MonthlyNeeded      string
 	MonthsLeft         string
 	CompletePercentage float64
@@ -27,12 +28,10 @@ type Goal struct {
 func NewGoal(
 	g query.AccountWithSum,
 ) Goal {
-	date := "-"
 	monthlyNeeded := "-"
 	monthsLeft := "-"
 	if g.TargetDate != nil {
-		y, m, _ := g.TargetDate.Date()
-		date = fmt.Sprintf("%s %s", m, strconv.Itoa(y))
+		m := g.TargetDate.Month()
 
 		monthsLeft = "exceded"
 		mn := *g.TargetAmount - g.Sum
@@ -58,9 +57,16 @@ func NewGoal(
 			currency.EUR,
 			language.AmericanEnglish,
 		),
-		TargetDate: date,
+		StartDate:  g.CreatedAt,
+		TargetDate: *g.TargetDate,
+		Category:   g.Category.Name,
 		Amount: formatMoney(
 			float64(g.Sum)/100,
+			currency.EUR,
+			language.AmericanEnglish,
+		),
+		AmountLeft: formatMoney(
+			float64(*g.TargetAmount-g.Sum)/100,
 			currency.EUR,
 			language.AmericanEnglish,
 		),

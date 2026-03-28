@@ -113,7 +113,8 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			a.currency, 
 			a.target_amount, 
 			a.target_date, 
-			a.category_id, 
+			c.id,
+			c.name,
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(
@@ -126,12 +127,14 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 				0
 			) AS sum
 		 FROM accounts a
+		 LEFT JOIN expense_categories c
+			ON a.category_id = c.id
 		 LEFT JOIN transactions t 
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.user_id = $1 AND a.type = 'goal'
 		 GROUP BY
-  			a.id`,
+			a.id, c.id`,
 		uid,
 	)
 	if err != nil {
@@ -143,6 +146,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 
 	for rows.Next() {
 		var g query.AccountWithSum
+		var c query.CategoryNameDTO
 		if err := rows.Scan(
 			&g.ID,
 			&g.Name,
@@ -151,13 +155,15 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			&g.Currency,
 			&g.TargetAmount,
 			&g.TargetDate,
-			&g.CategoryID,
+			&c.ID,
+			&c.Name,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
 		); err != nil {
 			return nil, err
 		}
+		g.Category = &c
 		results = append(results, g)
 	}
 	return results, nil
@@ -177,7 +183,8 @@ func (r *AccountQueryService) FindOneWithSum(
 			a.currency,
 			a.target_amount,
 			a.target_date,
-			a.category_id,
+			c.id,
+			c.name,
 			a.created_at,
 			a.updated_at,
 			COALESCE(
@@ -190,16 +197,19 @@ func (r *AccountQueryService) FindOneWithSum(
 				0
 			) AS sum
 		 FROM accounts a
+		 LEFT JOIN expense_categories c
+			ON a.category_id = c.id
 		 LEFT JOIN transactions t
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.id = $1	
 		 GROUP BY
-			a.id`,
+			a.id, c.id`,
 		id,
 	)
 
 	var a query.AccountWithSum
+	var c query.CategoryNameDTO
 	err := row.Scan(
 		&a.ID,
 		&a.UserID,
@@ -208,10 +218,13 @@ func (r *AccountQueryService) FindOneWithSum(
 		&a.Currency,
 		&a.TargetAmount,
 		&a.TargetDate,
-		&a.CategoryID,
+		&c.ID,
+		&c.Name,
 		&a.CreatedAt,
 		&a.UpdatedAt,
 		&a.Sum,
 	)
+	a.Category = &c
+	fmt.Println(a.Category)
 	return a, err
 }

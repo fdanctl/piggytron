@@ -1,4 +1,11 @@
-.dropdown > button > svg {
+.dropdown > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: var(--spacing-xs);
+}
+
+.dropdown > button > i {
   margin-left: var(--spacing-xs);
 }
 
@@ -14,6 +21,10 @@
     border: none;
     padding-top: 4px;
     background-color: transparent;
+    box-shadow: var(--shadow-lg);
+  }
+  .popover.min-w {
+    min-width: anchor-size(width);
   }
 
   .popover:popover-open {

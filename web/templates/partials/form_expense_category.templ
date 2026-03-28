@@ -26,17 +26,31 @@ templ ExpenseCategoryForm(v views.ExpenseCategoryForm) {
 				"value":       v.Name,
 			},
 		)
-		@components.InputGroup(
+		@components.SelectGroup(
 			"",
 			"Type",
+			v.Type,
+			"-- Select type --",
+			[]components.SelectOption{
+				{
+					Label: "Needs",
+					Value: "needs",
+				},
+				{
+					Label: "Wants",
+					Value: "wants",
+				},
+				{
+					Label: "Savings",
+					Value: "savings",
+				},
+			},
 			views.StringArrToStr(v.ValidateType()),
 			v.TypeHasError(),
 			templ.Attributes{
-				"id":          "type",
-				"type":        "text",
-				"name":        "type",
-				"placeholder": "hello I will be a select",
-				"value":       v.Type,
+				"id":   "type",
+				"type": "text",
+				"name": "type",
 			},
 		)
 		@components.Button(

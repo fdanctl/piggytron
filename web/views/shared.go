@@ -2,7 +2,9 @@ package views
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -34,4 +36,13 @@ func FormatFloat(x float64) string {
 	s = strings.TrimRight(s, "0")
 	s = strings.TrimRight(s, ".")
 	return s
+}
+
+func FormatDateMY(d time.Time) string {
+	y, m, _ := d.Date()
+	return fmt.Sprintf("%s %s", m, strconv.Itoa(y))
+}
+
+func FormatDate(d time.Time) string {
+	return d.Format(time.DateOnly)
 }

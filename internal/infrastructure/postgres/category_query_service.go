@@ -24,7 +24,7 @@ func NewCategoryQueryService(db *sql.DB) *CategoryQueryService {
 func (s *CategoryQueryService) FindAllCategories(
 	ctx context.Context,
 	uid string,
-) ([]query.CategoryWithNameDTO, error) {
+) ([]query.CategoryNameDTO, error) {
 	v := ctx.Value(middleware.UserKey)
 	if v == nil {
 		return nil, nil
@@ -52,10 +52,10 @@ func (s *CategoryQueryService) FindAllCategories(
 	}
 	defer rows.Close()
 
-	var results []query.CategoryWithNameDTO
+	var results []query.CategoryNameDTO
 
 	for rows.Next() {
-		var c query.CategoryWithNameDTO
+		var c query.CategoryNameDTO
 		if err := rows.Scan(
 			&c.ID,
 			&c.Name,
@@ -74,7 +74,7 @@ func (s *CategoryQueryService) FindAllCategories(
 func (s *CategoryQueryService) FindCategoriesIDIncludes(
 	ctx context.Context,
 	ids []string,
-) ([]query.CategoryWithNameDTO, error) {
+) ([]query.CategoryNameDTO, error) {
 	if len(ids) == 0 {
 		return nil, nil
 	}
@@ -108,10 +108,10 @@ func (s *CategoryQueryService) FindCategoriesIDIncludes(
 	}
 	defer rows.Close()
 
-	var results []query.CategoryWithNameDTO
+	var results []query.CategoryNameDTO
 
 	for rows.Next() {
-		var c query.CategoryWithNameDTO
+		var c query.CategoryNameDTO
 		if err := rows.Scan(
 			&c.ID,
 			&c.Name,

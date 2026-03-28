@@ -25,7 +25,7 @@ templ Breadcrumbs(items []BreadcrumbsLink, options []BreadcrumbsLink) {
 					@ChevronRightSvg(20, "", "")
 				</i>
 			} else if len(options) > 0 {
-				@Dropdown("w-fit font-semibold", v.Name) {
+				@Dropdown("w-fit font-semibold", v.Name, false) {
 					<ul class="breadcrumbs-selection">
 						for _, o := range options {
 							<li>
