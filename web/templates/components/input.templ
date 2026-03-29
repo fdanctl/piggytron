@@ -92,9 +92,9 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 		}
 	}}
 	@Dropdown(class, placeholder, true) {
-		<ul class="option">
+		<ul class="options">
 			for _, o := range options {
-				<li onclick="select(this)" data-value={ o.Value }>
+				<li class={ templ.KV("selected", o.Label == placeholder) } onclick="select(this)" data-value={ o.Value }>
 					<span>{ o.Label }</span>
 					@CheckSvg(16, "", "")
 				</li>

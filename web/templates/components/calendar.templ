@@ -1,0 +1,146 @@
+package components
+
+import (
+	"fmt"
+	"strconv"
+	"time"
+)
+
+var months = []SelectOption{
+	{
+		Label: "Jan",
+		Value: "0",
+	},
+	{
+		Label: "Feb",
+		Value: "1",
+	},
+	{
+		Label: "Mar",
+		Value: "2",
+	},
+	{
+		Label: "Apr",
+		Value: "3",
+	},
+	{
+		Label: "May",
+		Value: "4",
+	},
+	{
+		Label: "Jun",
+		Value: "5",
+	},
+	{
+		Label: "Jul",
+		Value: "6",
+	},
+	{
+		Label: "Aug",
+		Value: "7",
+	},
+	{
+		Label: "Sep",
+		Value: "8",
+	},
+	{
+		Label: "Oct",
+		Value: "9",
+	},
+	{
+		Label: "Nov",
+		Value: "10",
+	},
+	{
+		Label: "Dec",
+		Value: "11",
+	},
+}
+
+func generateYearOptions() []SelectOption {
+	firstY := 2120
+	var res []SelectOption
+	for i := 0; i <= 150; i++ {
+		y := strconv.Itoa(firstY - i)
+		res = append(res, SelectOption{Label: y, Value: y})
+	}
+	return res
+}
+
+var weekdays = [7]string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
+
+templ Calendar() {
+	{{
+		currMonth := months[time.Now().Month()-1]
+		yearOpts := generateYearOptions()
+		currYear := strconv.Itoa(time.Now().Year())
+
+		y, m, _ := time.Now().Date()
+		monthFirstWeekDay := time.Date(y, m, 1, 0, 0, 0, 0, time.UTC).Weekday()
+		// mock bellow
+		firstMonthDay := time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC)
+		firstSunday := firstMonthDay.Add((time.Duration(-24 * monthFirstWeekDay)) * time.Hour)
+		fmt.Println("sunday", firstSunday)
+	}}
+	<style>
+		.calendar {
+			width: fit-content;
+		}
+		.calendar .dropdown {
+			width: 4.625rem;
+		}
+		.calendar > div:nth-child(2),
+		.calendar > div:nth-child(3) {
+			display: grid;
+			grid-template-columns: repeat(7, 1fr);
+			gap: var(--spacing-xs);
+		}
+		.calendar > div:nth-child(3) > div {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 2rem;
+			height: 2rem;
+			text-size: 0.875rem;
+			border-radius: var(--radius-sm);
+			cursor: pointer;
+		}
+		.calendar > div:nth-child(3) > div:hover {
+			background-color: var(--color-border);
+		}
+	</style>
+	<div class="calendar">
+		<div class="flex justify-center items-center gap-xs">
+			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, nil)
+			@Select(currMonth.Label, currMonth.Value, months, false, nil)
+			@Select(currYear, currYear, yearOpts, false, nil)
+			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, nil)
+		</div>
+		<div>
+			for _, d := range weekdays {
+				<div class="text-sm text-muted font-medium flex justify-center items-center">{ d }</div>
+			}
+		</div>
+		<div>
+			// 7 * 5
+			for i := 0; i < 35; i++ {
+				{{ day := firstSunday.Add(time.Duration(i*24) * time.Hour) }}
+				<div
+					class={ templ.KV("text-muted", (i < 7 && day.Day() > 7) || (i > 28 && day.Day() < 7)) }
+				>
+					{ day.Day() }
+				</div>
+			}
+			if firstSunday.Add(time.Duration(35 * 24) * time.Hour).Day() > 7 {
+				for i := 35; i < 42; i++ {
+					{{ day := firstSunday.Add(time.Duration(i*24) * time.Hour) }}
+					<div
+						class={ templ.KV("text-muted", (i < 7 && day.Day() > 7) || (i > 28 && day.Day() < 7)) }
+					>
+						{ day.Day() }
+					</div>
+				}
+			}
+		</div>
+	</div>
+}

@@ -177,7 +177,7 @@
 
 /* ===== SPACING ===== */
 .p-xs {
-  padding: var(--spacing-xs);
+  padding: var(--spacing-xs) !important;
 }
 
 .p-sm {

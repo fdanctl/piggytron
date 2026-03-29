@@ -161,7 +161,7 @@ input.input.error:not(:focus),
 }
 
 /* select options */
-.option > li {
+.options > li {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -169,18 +169,19 @@ input.input.error:not(:focus),
   margin-top: var(--spacing-xs);
   cursor: pointer;
   border-radius: var(--radius-xs);
+  gap: var(--spacing-xs);
 }
-.option > li:first-child {
+.options > li:first-child {
   margin-top: 0;
 }
 
-.option > li > svg {
+.options > li > svg {
   visibility: hidden;
 }
-.option > li.selected,
-.option > li:hover {
+.options > li.selected,
+.options > li:hover {
   background-color: var(--color-bg-muted);
 }
-.option > li.selected > svg {
+.options > li.selected > svg {
   visibility: visible;
 }
