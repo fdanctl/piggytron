@@ -18,6 +18,7 @@ templ IncomeCategoryForm(v views.IncomeCategoryForm) {
 			"Name",
 			views.StringArrToStr(v.ValidateName()),
 			v.NameHasError(),
+			true,
 			templ.Attributes{
 				"id":          "name",
 				"type":        "text",

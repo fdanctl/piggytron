@@ -53,10 +53,10 @@ templ Test() {
 	@components.Dropdown("", "t", false) {
 		<h1>hello two</h1>
 	}
-	@components.InputGroup("", "label", "hello error", false, nil)
-	@components.InputGroup("", "label", "hello error", true, nil)
+	@components.InputGroup("", "label", "hello error", false, true, nil)
+	@components.InputGroup("", "label", "hello error", true, true, nil)
 	@components.Input("", false, nil)
 	@components.Input("", true, nil)
 	@components.SearchBar("", nil)
-	@components.Calendar()
+	@components.DateInput("", false, templ.Attributes{"placeholder": "dd/mm/yyyy"})
 }

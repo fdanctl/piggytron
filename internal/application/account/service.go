@@ -89,7 +89,7 @@ func (s *Service) CreateGoal(
 		return nil, ErrNotNumber
 	}
 
-	tDate, err := time.Parse(time.DateOnly, targetDate)
+	tDate, err := time.Parse("02/01/2006", targetDate)
 	var pDate *time.Time
 	if err == nil {
 		pDate = &tDate

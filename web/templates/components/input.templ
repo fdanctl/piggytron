@@ -1,5 +1,11 @@
 package components
 
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+)
+
 templ Input(class string, hasError bool, attrs templ.Attributes) {
 	<div class="relative">
 		<input
@@ -29,12 +35,17 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 	</div>
 }
 
-templ InputGroup(class, label, errMsg string, hasError bool, attrs templ.Attributes) {
+templ InputGroup(class, label, errMsg string, hasError, required bool, attrs templ.Attributes) {
 	<div
 		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
 	>
 		if id, ok := attrs["id"]; ok && label != "" {
-			<label for={ id.(string) }>{ label }</label>
+			<label for={ id.(string) }>
+				{ label }
+				if (!required) {
+					<span>(optional)</span>
+				}
+			</label>
 		}
 		@Input("", hasError, attrs)
 		<span>{ errMsg }</span>
@@ -104,14 +115,94 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 	}
 }
 
-templ SelectGroup(class, label, value, placeholder string, options []SelectOption, errMsg string, hasError bool, attrs templ.Attributes) {
+templ SelectGroup(class, label, value, placeholder string, options []SelectOption, errMsg string, hasError, required bool, attrs templ.Attributes) {
 	<div
 		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
 	>
 		if id, ok := attrs["id"]; ok && label != "" {
-			<label for={ id.(string) }>{ label }</label>
+			<label for={ id.(string) }>
+				{ label }
+				if (!required) {
+					<span>(optional)</span>
+				}
+			</label>
 		}
 		@Select(placeholder, value, options, hasError, attrs)
+		<span>{ errMsg }</span>
+	</div>
+}
+
+templ DateInput(class string, hasError bool, attrs templ.Attributes) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := hex.EncodeToString(b)
+	}}
+	<div class="relative date-input">
+		<input
+			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			onblur="handleInputOnBlur(this)"
+			onkeypress="dateOnchange(event)"
+			{ attrs... }
+		/>
+		<div>
+			<button
+				class="reset-btn flex justify-center items-center"
+				type="button"
+				popovertarget={ id }
+				style={ fmt.Sprintf("anchor-name: %s;", id) }
+			>
+				@CalendarDaysSvg(16, "", "")
+			</button>
+		</div>
+	</div>
+	<div
+		id={ id }
+		class="popover date-input"
+		style={ fmt.Sprintf("position-anchor: %s;", id) }
+		popover
+	>
+		@Calendar()
+	</div>
+	<script>
+		document
+			.getElementById({{ id }})
+			.querySelector(".days")
+			.addEventListener("click", (evt) => {
+				if (evt.target.innerText !== "") {
+					const calendar = evt.target.closest(".calendar");
+					let year = calendar.querySelector("input[name='year']").value;
+					let month = calendar.querySelector("input[name='month']").value;
+
+					const date = new Date(year, month, evt.target.innerText);
+
+					const popover = document.getElementById({{ id }});
+
+					popover.previousElementSibling.querySelector("input").value =
+						date.toLocaleDateString("en-GB");
+
+					popover.hidePopover();
+				}
+			});
+	</script>
+}
+
+templ DateInputGroup(class, label, errMsg string, hasError bool, required bool, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
+	>
+		if id, ok := attrs["id"]; ok && label != "" {
+			<label for={ id.(string) }>
+				{ label }
+				if (!required) {
+					<span>(optional)</span>
+				}
+			</label>
+		}
+		@DateInput("", hasError, attrs)
 		<span>{ errMsg }</span>
 	</div>
 }

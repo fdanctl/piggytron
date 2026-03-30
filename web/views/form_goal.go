@@ -67,6 +67,10 @@ func (v *GoalForm) ValidateTargetAmount() (msgs []string) {
 		return
 	}
 
+	if v.Name == "" {
+		msgs = append(msgs, "Target amount is required")
+	}
+
 	n, err := strconv.Atoi(v.TargetAmount)
 	if err != nil {
 		return append(msgs, "Not a valid number")
@@ -92,7 +96,7 @@ func (v *GoalForm) ValidateTargetDate() (msgs []string) {
 		return
 	}
 
-	date, err := time.Parse(time.DateOnly, v.TargetDate)
+	date, err := time.Parse("02/01/2006", v.TargetDate)
 	if err != nil {
 		return append(msgs, "Invalid date")
 	}

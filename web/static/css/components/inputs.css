@@ -13,6 +13,10 @@
 .input-group > label {
   font-weight: 500;
 }
+.input-group > label > span {
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
 
 .input:not([type="checkbox"], [type="radio"]) {
   width: 100%;
@@ -184,4 +188,37 @@ input.input.error:not(:focus),
 }
 .options > li.selected > svg {
   visibility: visible;
+}
+
+/* date */
+.popover.date-input {
+  display: none;
+  margin: 0;
+  inset: auto;
+  top: anchor(bottom);
+  right: anchor(right);
+  position-try-fallbacks: flip-block;
+  position-try: flip-block;
+  border: none;
+  padding-top: calc(4px + var(--spacing-sm));
+  background-color: transparent;
+  box-shadow: var(--shadow-lg);
+}
+.popover.date-input.min-w {
+  min-width: anchor-size(width);
+}
+
+.popover.date-input:popover-open {
+  display: block;
+}
+
+.popover.date-input > div {
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 }

@@ -25,7 +25,10 @@ function handleCheckPillToggle(ele) {
 
 // select
 function select(ele) {
-  ele.parentElement.nextElementSibling.value = ele.dataset.value;
+  const input = ele.parentElement.nextElementSibling;
+  input.value = ele.dataset.value;
+  input.dispatchEvent(new Event("change")); // triggers change event
+
   const opts = ele.parentElement.querySelectorAll("li");
   for (let i = 0; i < opts.length; i++) {
     opts[i].classList.remove("selected");
@@ -35,5 +38,19 @@ function select(ele) {
   let drop = ele.closest(".dropdown");
   drop.querySelector("button > span").innerText = ele.firstChild.innerText;
   drop.querySelector("button").classList.remove("error");
-  ele.closest(".input-group").classList.remove("error");
+  ele.closest(".input-group")?.classList.remove("error");
+}
+
+// date
+function dateOnchange(evt) {
+  let value = evt.target.value.replace(/\D/g, "");
+
+  if (value.length >= 2) {
+    value = value.slice(0, 2) + "/" + value.slice(2);
+  }
+  if (value.length >= 5) {
+    value = value.slice(0, 5) + "/" + value.slice(5, 8);
+  }
+
+  evt.target.value = value;
 }

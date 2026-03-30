@@ -26,6 +26,7 @@ templ LoginForm(lv views.LoginView) {
 				"Name",
 				views.StringArrToStr(lv.ValidateName()),
 				lv.NameHasError(),
+				true,
 				templ.Attributes{
 					"id":          "name",
 					"type":        "text",
@@ -39,6 +40,7 @@ templ LoginForm(lv views.LoginView) {
 				"Password",
 				views.StringArrToStr(lv.ValidatePassword()),
 				lv.PasswordHasError(),
+				true,
 				templ.Attributes{
 					"id":          "password",
 					"type":        "password",
