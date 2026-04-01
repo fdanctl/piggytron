@@ -60,7 +60,7 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 				<p class="text-subtitle text-sm">{ t.Date }</p>
 			</div>
 		</div>
-		<div class="h5" style={ templ.KV("color: #EF5350;", t.Type == "expense") }>
+		<div class="h5" style={ templ.KV("color: var(--color-positive)", t.Type == "income") }>
 			{ t.Amount }
 		</div>
 	</li>

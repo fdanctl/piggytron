@@ -26,7 +26,7 @@ html {
 }
 
 .dialog {
-  background-color: var(--color-bg-secondary);
+  background-color: var(--color-surface);
   padding: var(--spacing-md) var(--spacing-sm);
   padding-top: 0;
   border-top-left-radius: var(--radius-lg);

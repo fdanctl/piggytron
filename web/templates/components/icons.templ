@@ -283,3 +283,9 @@ templ CheckSvg(size uint8, color string, class string) {
 		<path d="M20 6 9 17l-5-5"></path>
 	}
 }
+
+templ CircleQuestionMark(size uint8, color string, class string) {
+	@svgWrapper(size, color, class) {
+		<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path>
+	}
+}

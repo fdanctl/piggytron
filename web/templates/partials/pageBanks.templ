@@ -1,0 +1,181 @@
+package partials
+
+import "github.com/fdanctl/piggytron/web/templates/components"
+
+templ Banks() {
+	<style>
+		#banks-container {
+			display: grid;
+			gap: var(--spacing-sm);
+		}
+
+		@container main (min-width: 675px) {
+			#summary {
+			}
+		}
+
+		#summary .card {
+			display: flex;
+			justify-content: space-between;
+			width: 100%;
+			gap: var(--spacing-lg);
+		}
+
+		#summary .card > div:nth-child(2) {
+			display: flex;
+			flex-direction: row-reverse;
+			flex-wrap: wrap;
+			gap: calc(var(--spacing-md) + var(--spacing-xs));
+			align-items: center;
+		}
+
+		.metric {
+			text-box-trim: trim-both;
+		}
+		.metric:not(.main-metric) {
+			text-align: right;
+		}
+		.metric > div:first-child {
+			text-transform: uppercase;
+			font-size: 0.65rem;
+			color: var(--color-text-secondary);
+		}
+		.metric > div:nth-child(3) {
+			font-size: 0.65rem;
+			text-box-trim: trim-both;
+			margin-top: -0.125rem;
+		}
+		.metric > div:nth-child(2) {
+			font-weight: bold;
+			font-size: 1.25rem;
+			text-box-trim: trim-both;
+		}
+		.metric.main-metric > div:first-child {
+			font-size: 0.75rem;
+		}
+
+		.metric.main-metric > div:nth-child(3) {
+			font-size: 0.75rem;
+		}
+
+		.metric.main-metric > div:nth-child(2) {
+			font-size: 1.5rem;
+		}
+
+		.metric:not(.main-metric) {
+			border-radius: var(--radius-sm);
+			min-width: 120px;
+		}
+
+		.card {
+			background-color: var(--color-surface);
+			border: 1px solid var(--color-border-secondary);
+			border-radius: var(--radius-md);
+			padding: var(--spacing-md) calc(var(--spacing-md) + var(--spacing-xs));
+		}
+
+		#recent-transactions .transaction {
+			border: none;
+			padding-left: 0;
+			padding-right: 0;
+			border-radius: 0;
+			border-bottom: 1px solid var(--color-border-secondary);
+		}
+		#recent-transactions .transaction:last-child {
+			border-bottom: none;
+		}
+	</style>
+	<div id="banks-container">
+		<section id="summary">
+			<div class="card">
+				<div class="metric main-metric">
+					<h6 class="text-caption text-muted mb-xs">Net Worth</h6>
+					<div>$xx,xxx.xx</div>
+					<div style={ templ.KV("color: var(--color-positive)", true) }>+x.xx% this month</div>
+				</div>
+				<div>
+					<div class="metric">
+						<div>Savings</div>
+						<div>$xx,xxx.xx</div>
+						<div style={ templ.KV("color: var(--color-positive)", true) }>+x.xx%</div>
+					</div>
+					<div class="metric">
+						<div>Available</div>
+						<div>$xx,xxx.xx</div>
+						<div style={ templ.KV("color: var(--color-positive)", true) }>+x.xx%</div>
+					</div>
+					<div class="metric">
+						<div>Goals</div>
+						<div>$xx,xxx.xx</div>
+						<div style={ templ.KV("color: var(--color-negative)", true) }>-x.xx%</div>
+					</div>
+				</div>
+			</div>
+		</section>
+		// TODO make only one get for all charts
+		<section id="asset-breakdown">
+			<div class="card">
+				<h6 class="text-caption text-muted mb-xs">Asset breakdown</h6>
+				<div
+					class="chart-container"
+					style="margin-top: calc(-1 * var(--spacing-lg));"
+				>
+					@components.Loader("", nil)
+				</div>
+			</div>
+		</section>
+		<section id="account-history">
+			<div class="card">
+				<div>
+					<h6 class="text-caption text-muted mb-xs">Account history</h6>
+					// last 30 days, change
+				</div>
+				<div
+					class="chart-container"
+					style="margin-top: calc(-1 * var(--spacing-lg));"
+				>
+					@components.Loader("", nil)
+				</div>
+			</div>
+		</section>
+		<section id="recent-transactions">
+			<div class="card">
+				<h6 class="text-caption text-muted mb-xs">Recent transactions</h6>
+				<div>
+					// remove
+					<ul>
+						<li class="transaction">
+							<div>
+								<div>
+									@components.ArrowRightLeftSvg(0, "", "")
+								</div>
+								<div>
+									<p class="h5 font-medium">description</p>
+									<p class="text-subtitle text-sm">today</p>
+								</div>
+							</div>
+							<div class="h5">
+								$9.99
+							</div>
+						</li>
+						<li class="transaction">
+							<div>
+								<div>
+									@components.ArrowRightLeftSvg(0, "", "")
+								</div>
+								<div>
+									<p class="h5 font-medium">description</p>
+									<p class="text-subtitle text-sm">today</p>
+								</div>
+							</div>
+							<div class="h5">
+								$9.99
+							</div>
+						</li>
+					</ul>
+					<p class="text-center">view all transactions</p>
+				</div>
+			</div>
+		</section>
+	</div>
+}

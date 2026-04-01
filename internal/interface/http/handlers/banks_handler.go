@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 )
 
 type BanksHandler struct {
@@ -42,9 +43,9 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
-	for _, b := range banks {
-		fmt.Fprintf(w, "<a href=\"/banks/%s\">%s</p>", b.ID(), b.Name())
-	}
+	fmt.Println(banks)
+	content := partials.Banks()
+	renderWithMainLayout(w, r, "Banks", content)
 }
 
 func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
