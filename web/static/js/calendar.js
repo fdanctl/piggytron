@@ -55,11 +55,12 @@ function buildMap(ele) {
       break;
     }
 
-    let ddiv = document.createElement("div");
+    let ddiv;
     if (!((i < 7 && d > 7) || (i > 28 && d < 7))) {
+      ddiv = document.createElement("div");
       ddiv.innerText = d;
     } else {
-      <span></span>;
+      ddiv = document.createElement("span");
     }
     daysContainer.appendChild(ddiv);
   }
