@@ -162,6 +162,12 @@ func main() {
 	goalChartHandler := handlers.NewGoalChartHandler()
 	partialsMux.Handle("/partials/charts/goal-hist/{id}", goalChartHandler)
 
+	assetBreakdownHandler := handlers.NewAssetBreakdownChartHandler()
+	partialsMux.Handle("/partials/charts/asset-breakdown", assetBreakdownHandler)
+
+	assetHandler := handlers.NewAccountHistoryChartHandler()
+	partialsMux.Handle("/partials/charts/account-history", assetHandler)
+
 	transactionFiltersHandler := handlers.NewFilterDialogHandler(
 		catQueryService,
 		accountService,

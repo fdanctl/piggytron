@@ -9,6 +9,10 @@ templ Banks() {
 			gap: var(--spacing-sm);
 		}
 
+		#banks-container > section {
+			min-width: 0;
+		}
+
 		@container main (min-width: 675px) {
 			#summary {
 			}
@@ -118,7 +122,9 @@ templ Banks() {
 				<h6 class="text-caption text-muted mb-xs">Asset breakdown</h6>
 				<div
 					class="chart-container"
-					style="margin-top: calc(-1 * var(--spacing-lg));"
+					style="margin: calc(-1 * var(--spacing-lg)) 0;"
+					hx-get="/partials/charts/asset-breakdown"
+					hx-trigger="load"
 				>
 					@components.Loader("", nil)
 				</div>
@@ -132,7 +138,9 @@ templ Banks() {
 				</div>
 				<div
 					class="chart-container"
-					style="margin-top: calc(-1 * var(--spacing-lg));"
+					style="margin: calc(-1 * var(--spacing-lg)) 0;"
+					hx-get="/partials/charts/account-history"
+					hx-trigger="load"
 				>
 					@components.Loader("", nil)
 				</div>
