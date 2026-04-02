@@ -1,0 +1,25 @@
+.calendar {
+  width: fit-content;
+}
+.calendar .dropdown {
+  width: 4.625rem;
+}
+.calendar > div:nth-child(2),
+.calendar > .days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+}
+.calendar > .days > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.calendar > .days > div:hover {
+  background-color: var(--color-border);
+}

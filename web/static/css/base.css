@@ -161,12 +161,11 @@ input[type="number"] {
   --color-negative: #ef5350;
 
   /* Typography */
-  --font-heading:
-    "Helvetica Neue", "Helvetica", "Arial", "ヒラギノ角ゴ ProN W3",
-    "Hiragino Kaku Gothic ProN", メイリオ, Meiryo, sans-serif;
-  --font-body:
-    "Helvetica Neue", "Helvetica", "Arial", "ヒラギノ角ゴ ProN W3",
-    "Hiragino Kaku Gothic ProN", メイリオ, Meiryo, sans-serif;
+  --font-sans: system-ui, sans-serif;
+  --font-mono: monospace;
+
+  --font-heading: var(--font-sans);
+  --font-body: var(--font-sans);
 
   /* Spacing */
   --spacing-xs: 0.25rem;

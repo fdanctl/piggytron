@@ -43,33 +43,6 @@ templ Calendar() {
 		monthFirstWeekDay := firstMonthDay.Weekday()
 		firstSunday := firstMonthDay.Add((time.Duration(-24 * monthFirstWeekDay)) * time.Hour)
 	}}
-	<style>
-		.calendar {
-			width: fit-content;
-		}
-		.calendar .dropdown {
-			width: 4.625rem;
-		}
-		.calendar > div:nth-child(2),
-		.calendar > .days {
-			display: grid;
-			grid-template-columns: repeat(7, 1fr);
-			gap: var(--spacing-xs);
-		}
-		.calendar > .days > div {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			width: 2rem;
-			height: 2rem;
-			text-size: 0.875rem;
-			border-radius: var(--radius-sm);
-			cursor: pointer;
-		}
-		.calendar > .days > div:hover {
-			background-color: var(--color-border);
-		}
-	</style>
 	<div class="calendar unselectable">
 		<div class="flex justify-center items-center gap-xs">
 			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "prevMonth(this)", "type": "button"})
@@ -77,7 +50,7 @@ templ Calendar() {
 			@Select(currYear, currYear, yearOpts, false, templ.Attributes{"name": "year", "onchange": "buildMap(this)"})
 			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "nextMonth(this)", "type": "button"})
 		</div>
-		<div>
+		<div class="mt-sm">
 			for _, d := range weekdays {
 				<div class="text-sm text-muted font-medium flex justify-center items-center">{ d }</div>
 			}

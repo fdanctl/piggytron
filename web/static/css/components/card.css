@@ -1,0 +1,66 @@
+.card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md) calc(var(--spacing-md) + var(--spacing-xs));
+}
+
+.card__title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* bank net worth card */
+.metric-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+@container main (min-width: 600px) {
+  .metric-container {
+    flex-direction: row;
+  }
+}
+
+.metric {
+  text-box-trim: trim-both;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.metric__title {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  color: var(--color-text-secondary);
+  text-box-trim: trim-both;
+  margin-bottom: 0.125rem;
+}
+
+.metric__value {
+  font-weight: bold;
+  font-size: 1.125rem;
+  text-box-trim: trim-both;
+  font-family: var(--font-mono);
+}
+
+.metric__value.xl {
+  font-size: 1.5rem;
+}
+
+.metric__sub {
+  font-size: 0.65rem;
+  text-box-trim: trim-both;
+  font-family: var(--font-mono);
+}
+
+.metric__sub.xl {
+  font-size: 0.75rem;
+}

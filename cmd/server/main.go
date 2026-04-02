@@ -165,8 +165,8 @@ func main() {
 	assetBreakdownHandler := handlers.NewAssetBreakdownChartHandler()
 	partialsMux.Handle("/partials/charts/asset-breakdown", assetBreakdownHandler)
 
-	assetHandler := handlers.NewAccountHistoryChartHandler()
-	partialsMux.Handle("/partials/charts/account-history", assetHandler)
+	accHistChartHandler := handlers.NewAccountHistoryChartHandler()
+	partialsMux.Handle("/partials/charts/account-history", accHistChartHandler)
 
 	transactionFiltersHandler := handlers.NewFilterDialogHandler(
 		catQueryService,
