@@ -154,6 +154,10 @@
   font-weight: 700;
 }
 
+.text-right {
+  text-align: right;
+}
+
 /* Text colors */
 .text-primary {
   color: var(--color-primary);

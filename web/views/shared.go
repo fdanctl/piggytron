@@ -38,11 +38,21 @@ func FormatFloat(x float64) string {
 	return s
 }
 
+// FormatDateMY returns for example June 2026
 func FormatDateMY(d time.Time) string {
 	y, m, _ := d.Date()
 	return fmt.Sprintf("%s %s", m, strconv.Itoa(y))
 }
 
-func FormatDate(d time.Time) string {
+// FormatDateOnly return for in YYYY-MM-DD format
+func FormatDateOnly(d time.Time) string {
 	return d.Format(time.DateOnly)
+}
+
+func FormatDate(date time.Time) string {
+	y := date.Year()
+	m := date.Month()
+	d := date.Day()
+
+	return fmt.Sprintf("%s %d, %d", m, d, y)
 }

@@ -24,11 +24,7 @@
   gap: var(--spacing-sm);
 }
 
-.transaction p {
-  line-height: 1.25rem;
-}
-
-.transaction > div:first-child > div:first-child {
+.transaction__icon {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -39,4 +35,32 @@
   height: fit-content;
   width: fit-content;
   aspect-ratio: 1/1;
+}
+
+.transaction__description,
+.transaction__amount {
+  font-size: 1rem;
+  font-weight: 500;
+  text-box-trim: trim-both;
+  margin-bottom: 2px;
+}
+
+.transaction__sub,
+.transaction__date {
+  font-size: 0.7rem;
+  text-box-trim: trim-both;
+}
+
+.transaction__sub > b {
+  font-weight: 500;
+}
+
+.transaction__sub > span,
+.transaction__date {
+  color: var(--color-text-secondary);
+}
+
+.transaction__amount,
+.transaction__date {
+  font-family: var(--font-mono);
 }

@@ -46,9 +46,9 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool) {
 			<p>Left</p>
 			<p>{ g.AmountLeft }</p>
 			<p>Start date</p>
-			<p>{ views.FormatDate(g.StartDate) }</p>
+			<p>{ views.FormatDateOnly(g.StartDate) }</p>
 			<p>Target date</p>
-			<p>{ views.FormatDate(g.TargetDate) }</p>
+			<p>{ views.FormatDateOnly(g.TargetDate) }</p>
 		</div>
 	</section>
 	<section id="history">

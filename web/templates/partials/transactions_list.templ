@@ -5,6 +5,7 @@ import (
 
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
+	"strings"
 )
 
 templ TransactionsList(transactions []views.Transaction, queryStr string, hasMore bool) {
@@ -45,7 +46,7 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 	<li class="transaction" { attrs... }>
 		<div>
-			<div>
+			<div class="transaction__icon">
 				switch t.Type {
 					case "expense":
 						@components.ArrowLeftSvg(0, "", "")
@@ -56,12 +57,19 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 				}
 			</div>
 			<div>
-				<p class="h5 font-medium">{ t.Description }</p>
-				<p class="text-subtitle text-sm">{ t.Date }</p>
+				<p class="transaction__description">{ t.Description }</p>
+				<p class="transaction__sub">
+					<span>{ t.Category }</span> · <b>{ strings.Join(t.Accounts, " → ") }</b>
+				</p>
 			</div>
 		</div>
-		<div class="h5" style={ templ.KV("color: var(--color-positive)", t.Type == "income") }>
-			{ t.Amount }
+		<div class="text-right">
+			<p class="transaction__amount" style={ templ.KV("color: var(--color-positive)", t.Type == "income") }>
+				{ t.Amount }
+			</p>
+			<p class="transaction__date">
+				{ t.Date }
+			</p>
 		</div>
 	</li>
 }

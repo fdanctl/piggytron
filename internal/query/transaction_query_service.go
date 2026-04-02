@@ -11,11 +11,11 @@ type TransactionDTO struct {
 
 	Type string
 
-	FromAccountID *string
-	ToAccountID   *string
+	FromAccount *string
+	ToAccount   *string
 
-	IncomeCategoryID  *string
-	ExpenseCategoryID *string
+	IncomeCategory  *string
+	ExpenseCategory *string
 
 	Amount      int
 	Description string

@@ -25,14 +25,33 @@ func (r *TransactionQueryService) FindFiltered(
 ) ([]query.TransactionDTO, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
-		 FROM transactions
-		 WHERE user_id = $1
-	     AND ($2::TEXT[] IS NULL OR type = ANY($2))
-	     AND ($3::UUID[] IS NULL OR from_account_id = ANY($3) OR to_account_id = ANY($3))
-	     AND ($4::UUID[] IS NULL OR income_category_id = ANY($4) OR expense_category_id = ANY($4))
-	     AND ($5::BIGINT IS NULL OR amount >= $5)
-	     AND ($6::BIGINT IS NULL OR amount <= $6)
+		`SELECT
+			t.id,
+			t.user_id,
+			t.type,
+			fa.name,
+			ta.name,
+			ic.name,
+			ec.name,
+			t.amount,
+			t.description,
+			t.date,
+			t.created_at
+		 FROM transactions t
+		 LEFT JOIN accounts fa
+			ON t.from_account_id = fa.id
+		 LEFT JOIN accounts ta
+			ON t.to_account_id = ta.id
+		 LEFT JOIN expense_categories ec
+			ON t.expense_category_id = ec.id
+		 LEFT JOIN income_categories ic
+			ON t.income_category_id = ic.id
+		 WHERE t.user_id = $1
+		 AND ($2::TEXT[] IS NULL OR t.type = ANY($2))
+		 AND ($3::UUID[] IS NULL OR t.from_account_id = ANY($3) OR t.to_account_id = ANY($3))
+		 AND ($4::UUID[] IS NULL OR t.income_category_id = ANY($4) OR t.expense_category_id = ANY($4))
+		 AND ($5::BIGINT IS NULL OR t.amount >= $5)
+		 AND ($6::BIGINT IS NULL OR t.amount <= $6)
 		 ORDER BY date DESC
 		 LIMIT $7
 		 OFFSET $8`,
@@ -58,10 +77,10 @@ func (r *TransactionQueryService) FindFiltered(
 			&dto.ID,
 			&dto.UserID,
 			&dto.Type,
-			&dto.FromAccountID,
-			&dto.ToAccountID,
-			&dto.IncomeCategoryID,
-			&dto.ExpenseCategoryID,
+			&dto.FromAccount,
+			&dto.ToAccount,
+			&dto.IncomeCategory,
+			&dto.ExpenseCategory,
 			&dto.Amount,
 			&dto.Description,
 			&dto.Date,
@@ -87,14 +106,34 @@ func (r *TransactionQueryService) FindFilteredWithCount(
 ) (*query.TransactionsWithTotalCount, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at, COUNT(*) OVER() AS total_count
-		 FROM transactions
-		 WHERE user_id = $1
-	     AND ($2::TEXT[] IS NULL OR type = ANY($2))
-	     AND ($3::UUID[] IS NULL OR from_account_id = ANY($3) OR to_account_id = ANY($3))
-	     AND ($4::UUID[] IS NULL OR income_category_id = ANY($4) OR expense_category_id = ANY($4))
-	     AND ($5::BIGINT IS NULL OR amount >= $5)
-	     AND ($6::BIGINT IS NULL OR amount <= $6)
+		`SELECT
+			t.id,
+			t.user_id,
+			t.type,
+			fa.name,
+			ta.name,
+			ic.name,
+			ec.name,
+			t.amount,
+			t.description,
+			t.date,
+			t.created_at,
+			COUNT(*) OVER() AS total_count
+		 FROM transactions t
+		 LEFT JOIN accounts fa
+			ON t.from_account_id = fa.id
+		 LEFT JOIN accounts ta
+			ON t.to_account_id = ta.id
+		 LEFT JOIN expense_categories ec
+			ON t.expense_category_id = ec.id
+		 LEFT JOIN income_categories ic
+			ON t.income_category_id = ic.id
+		 WHERE t.user_id = $1
+	     AND ($2::TEXT[] IS NULL OR t.type = ANY($2))
+	     AND ($3::UUID[] IS NULL OR t.from_account_id = ANY($3) OR t.to_account_id = ANY($3))
+	     AND ($4::UUID[] IS NULL OR t.income_category_id = ANY($4) OR t.expense_category_id = ANY($4))
+	     AND ($5::BIGINT IS NULL OR t.amount >= $5)
+	     AND ($6::BIGINT IS NULL OR t.amount <= $6)
 		 ORDER BY date DESC
 		 LIMIT $7
 		 OFFSET $8`,
@@ -122,10 +161,10 @@ func (r *TransactionQueryService) FindFilteredWithCount(
 			&dto.ID,
 			&dto.UserID,
 			&dto.Type,
-			&dto.FromAccountID,
-			&dto.ToAccountID,
-			&dto.IncomeCategoryID,
-			&dto.ExpenseCategoryID,
+			&dto.FromAccount,
+			&dto.ToAccount,
+			&dto.IncomeCategory,
+			&dto.ExpenseCategory,
 			&dto.Amount,
 			&dto.Description,
 			&dto.Date,
