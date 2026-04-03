@@ -8,6 +8,7 @@ import (
 
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
@@ -43,8 +44,10 @@ func (h *ExpenseCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

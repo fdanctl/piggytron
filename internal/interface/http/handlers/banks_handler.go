@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 )
 
@@ -32,8 +33,10 @@ func (h *BanksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"log/slog"
 	"net"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/fdanctl/piggytron/config"
@@ -51,6 +53,16 @@ func main() {
 		return
 	}
 	defer client.Close()
+
+	var logger *slog.Logger
+
+	if cfg.IsDev {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
+	} else {
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	}
 
 	hasher := user.NewPasswordHasher(
 		cfg.HashConfig.Time,
@@ -185,35 +197,41 @@ func main() {
 		fmt.Fprint(w, time.Now().Format(time.TimeOnly))
 	})
 
-	fmt.Println(time.Now())
-	fmt.Println("Server running at http://localhost:" + cfg.ServerPort)
-	// Try to find local IP
-	addrs, err := net.InterfaceAddrs()
-	if err == nil {
-		for _, addr := range addrs {
-			// check the address type and ignore loopback
-			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-				if ipnet.IP.To4() != nil { // IPv4
-					fmt.Printf(
-						"Accessible on your LAN at: http://%s:%s\n",
-						ipnet.IP.String(),
-						cfg.ServerPort,
-					)
+	logger.Info("server starting", "addr", ":8080")
+
+	if cfg.IsDev {
+		// Try to find local IP
+		addrs, err := net.InterfaceAddrs()
+		if err == nil {
+			for _, addr := range addrs {
+				// check the address type and ignore loopback
+				if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+					if ipnet.IP.To4() != nil { // IPv4
+						logger.Info(
+							fmt.Sprintf(
+								"Accessible on your LAN at: http://%s:%s",
+								ipnet.IP.String(),
+								cfg.ServerPort,
+							),
+						)
+					}
 				}
 			}
 		}
 	}
 
 	rootMux := http.NewServeMux()
-	rootMux.Handle("/", middleware.AuthMiddleware(sessionStore)(webMux))
-	rootMux.Handle(
-		"/partials/",
+	rootMux.Handle("/", webMux)
+	rootMux.Handle("/partials/", middleware.RequireHTMX(partialsMux))
+
+	http.ListenAndServe(
+		":"+cfg.ServerPort,
 		middleware.Chain(
-			partialsMux,
-			middleware.RequireHTMX,
+			rootMux,
+			middleware.RecoveryMiddleware,
+			middleware.RequestIDMiddleware,
+			middleware.LoggingMiddleware(logger),
 			middleware.AuthMiddleware(sessionStore),
 		),
 	)
-
-	http.ListenAndServe(":"+cfg.ServerPort, middleware.LoggingMiddleware(rootMux))
 }

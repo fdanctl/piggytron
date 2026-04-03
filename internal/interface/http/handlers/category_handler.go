@@ -10,6 +10,7 @@ import (
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -50,8 +51,10 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -98,8 +101,10 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

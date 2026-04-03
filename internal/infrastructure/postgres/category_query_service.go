@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
@@ -25,16 +23,6 @@ func (s *CategoryQueryService) FindAllCategories(
 	ctx context.Context,
 	uid string,
 ) ([]query.CategoryNameDTO, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, nil
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, nil
-	}
-
 	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT id, name
@@ -44,7 +32,7 @@ func (s *CategoryQueryService) FindAllCategories(
 		 SELECT id, name
 		 FROM expense_categories
 		 WHERE user_id = $1`,
-		sessionInfo.UserID,
+		uid,
 	)
 	if err != nil {
 		fmt.Println(err)

@@ -2,33 +2,15 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 )
 
 const LIMIT = 30
-
-var ErrInvalidSession = errors.New("invalid session")
-
-func sessionInfoFromCtx(ctx context.Context) (*rdb.SessionInfo, error) {
-	v := ctx.Value(middleware.UserKey)
-	if v == nil {
-		return nil, ErrInvalidSession
-	}
-
-	sessionInfo, ok := v.(*rdb.SessionInfo)
-	if !ok {
-		return nil, ErrInvalidSession
-	}
-	return sessionInfo, nil
-}
 
 func renderWithMainLayout(
 	w http.ResponseWriter,

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	userapp "github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
@@ -142,8 +143,10 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

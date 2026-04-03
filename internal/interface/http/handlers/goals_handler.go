@@ -11,6 +11,7 @@ import (
 	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
 	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -55,8 +56,10 @@ func (h *GoalsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -104,8 +107,10 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
-	sessionInfo, err := sessionInfoFromCtx(r.Context())
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
+		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
