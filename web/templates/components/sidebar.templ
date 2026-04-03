@@ -11,7 +11,7 @@ templ Sidebar() {
 				@ChevronLeftSvg(16, "", "")
 			</div>
 		</div>
-		@Nav()
+		@Nav(nil)
 		for _, liGroup:= range NavLinks {
 			for _, link := range liGroup {
 				<div

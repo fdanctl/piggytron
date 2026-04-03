@@ -5,7 +5,12 @@ import "github.com/fdanctl/piggytron/web/templates/components"
 templ Main() {
 	@components.Sidebar()
 	@components.Header()
-	<main class="main" tabindex="-1" hx-history-elt>
+	<main
+		class="main"
+		tabindex="-1"
+		hx-on::after-swap="window.scrollTo(0, 0);"
+		hx-history-elt
+	>
 		<div id="content">
 			{ children... }
 		</div>
@@ -18,7 +23,9 @@ templ Main() {
 			<div>
 				<div></div>
 			</div>
-			@components.Nav()
+			@components.Nav(templ.Attributes{
+				"hx-swap": "innerHTML show:window:top",
+			})
 		</dialog>
 	</div>
 }

@@ -28,7 +28,7 @@ templ Goals(goals []views.Goal) {
 			class="goal-list"
 			hx-target="#content"
 			hx-boost="true"
-			hx-swap="innerHTML transition:true show:window:top"
+			hx-swap="innerHTML transition:true"
 		>
 			for _, g := range goals {
 				@GoalItem(g, nil)
