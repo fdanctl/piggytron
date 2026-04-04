@@ -29,6 +29,11 @@ func (s *Service) CreateBank(
 	name string,
 	currency string,
 ) (*account.Account, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	uid, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
@@ -65,6 +70,16 @@ func (s *Service) CreateGoal(
 	targetDate string,
 	categoryID string,
 ) (*account.Account, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = uuid.Parse(categoryID)
+	if err != nil {
+		return nil, err
+	}
+
 	uid, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
@@ -107,6 +122,11 @@ func (s *Service) CreateGoal(
 }
 
 func (s *Service) ReadOneByID(ctx context.Context, id string) (*account.Account, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
 	newID, err := account.NewID(id)
 	if err != nil {
 		return nil, err
@@ -118,6 +138,11 @@ func (s *Service) ReadAllByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
@@ -135,6 +160,11 @@ func (s *Service) ReadAllBanksByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := account.NewID(userID)
 	if err != nil {
 		return nil, err
@@ -152,6 +182,11 @@ func (s *Service) ReadAllGoalsByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	id, err := account.NewID(userID)
 	if err != nil {
 		return nil, err

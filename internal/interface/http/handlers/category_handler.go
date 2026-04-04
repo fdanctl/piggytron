@@ -61,6 +61,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	ec, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
@@ -71,6 +72,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	ic, err := h.incomeCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error reading all income categories", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
@@ -115,23 +117,21 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		icat, err = h.incomeCatService.ReadCategory(r.Context(), id)
 		if err != nil {
+			logger.Error("error finding category", "error", err, "cid", id)
 			http.Error(w, "Not found", http.StatusNotFound)
 			return
 		}
 	}
 
-	if ecat == nil && icat == nil {
-		http.Error(w, "Not found", http.StatusNotFound)
-		return
-	}
-
 	icats, err := h.incomeCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error reading all income categories", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 	ecats, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
@@ -158,11 +158,8 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters, err := query.NewTransactionFilters(nil, nil, []string{id}, "", "")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	filters := query.NewTransactionFilters(nil, nil, []string{id}, "", "")
+
 	transactions, err := h.tQueryService.FindFiltered(
 		r.Context(),
 		sessionInfo.UserID,
@@ -171,6 +168,7 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		LIMIT*1-LIMIT,
 	)
 	if err != nil {
+		logger.Error("error finding filtered transactions", "error", err, "filters", filters)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}

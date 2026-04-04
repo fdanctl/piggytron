@@ -15,7 +15,6 @@ import (
 	"github.com/fdanctl/piggytron/internal/application/account"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
-	"github.com/fdanctl/piggytron/internal/application/transaction"
 	"github.com/fdanctl/piggytron/internal/application/user"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
@@ -84,7 +83,7 @@ func main() {
 
 	// repositories
 	accountRepo := postgres.NewAccountRepository(db)
-	transactionRepo := postgres.NewTransactionRepository(db)
+	// transactionRepo := postgres.NewTransactionRepository(db)
 	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	userRepo := postgres.NewUserRepository(db)
@@ -95,7 +94,7 @@ func main() {
 	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
 	// services
 	accountService := account.NewService(accountRepo)
-	transactionService := transaction.NewService(transactionRepo)
+	// transactionService := transaction.NewService(transactionRepo)
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
 	userService := user.NewService(userRepo, hasher, sessionStore)
@@ -120,7 +119,6 @@ func main() {
 
 	goalsHandler := handlers.NewGoalsHandler(
 		accountService,
-		transactionService,
 		transactionQueryService,
 		accountQueryService,
 	)

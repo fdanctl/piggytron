@@ -87,5 +87,9 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 }
 
 func (s *Service) LogoutUser(ctx context.Context, id string) error {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
 	return s.sessionStore.Remove(ctx, id)
 }

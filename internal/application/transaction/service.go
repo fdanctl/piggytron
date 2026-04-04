@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/google/uuid"
 )
 
 type Service struct {
@@ -19,6 +20,11 @@ func NewService(r transaction.Repository) *Service {
 // create transfer
 
 func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
 	newID, err := transaction.NewID(id)
 	if err != nil {
 		return nil, err
@@ -31,6 +37,11 @@ func (s *Service) ReadAllByUser(
 	userID string,
 	page uint,
 ) ([]*transaction.Transaction, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	uid, err := transaction.NewID(userID)
 	if err != nil {
 		return nil, err
@@ -47,6 +58,11 @@ func (s *Service) ReadAllByAccount(
 	ctx context.Context,
 	aid string,
 ) ([]*transaction.Transaction, error) {
+	_, err := uuid.Parse(aid)
+	if err != nil {
+		return nil, err
+	}
+
 	newID, err := transaction.NewID(aid)
 	if err != nil {
 		return nil, err
@@ -58,6 +74,11 @@ func (s *Service) ReadAllByCategory(
 	ctx context.Context,
 	cid string,
 ) ([]*transaction.Transaction, error) {
+	_, err := uuid.Parse(cid)
+	if err != nil {
+		return nil, err
+	}
+
 	newID, err := transaction.NewID(cid)
 	if err != nil {
 		return nil, err

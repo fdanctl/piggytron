@@ -53,11 +53,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	qminAmount := q.Get("minamount")
 	qmaxAmount := q.Get("maxamount")
 
-	filters, err := query.NewTransactionFilters(qtypes, qaccounts, qcats, qminAmount, qmaxAmount)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	filters := query.NewTransactionFilters(qtypes, qaccounts, qcats, qminAmount, qmaxAmount)
 
 	filterCount := len(qtypes) + len(qaccounts) + len(qcats)
 	var page uint = 1
@@ -88,6 +84,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		LIMIT*page-LIMIT,
 	)
 	if err != nil {
+		logger.Error("error finding filtered transactions", "error", err, "filters", filters)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}

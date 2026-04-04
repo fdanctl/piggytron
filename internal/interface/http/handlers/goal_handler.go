@@ -49,6 +49,7 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
@@ -91,8 +92,10 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
 		cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 		if err != nil {
+			logger.Error("error reading all expense categories", "error", err)
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
@@ -120,8 +123,10 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		cat,
 	)
 	if err != nil {
+		logger.Error("error creating goal", "error", err)
 		cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 		if err != nil {
+			logger.Error("error reading all expense categories", "error", err)
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
@@ -138,5 +143,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		partials.GoalForm(view, catOpts).Render(r.Context(), w)
 		return
 	}
+
+	// TODO return goal card
 	fmt.Println(goal)
 }

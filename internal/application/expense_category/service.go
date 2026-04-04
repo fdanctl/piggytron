@@ -27,6 +27,11 @@ func (s *Service) CreateCategory(
 	name string,
 	expenseType string,
 ) (*expensecategory.ExpenseCategory, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	uid, err := expensecategory.NewID(userID)
 	if err != nil {
 		return nil, err
@@ -68,6 +73,11 @@ func (s *Service) ReadCategory(
 	ctx context.Context,
 	id string,
 ) (*expensecategory.ExpenseCategory, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
 	return s.repo.FindByID(ctx, expensecategory.ID(id))
 }
 
@@ -75,6 +85,11 @@ func (s *Service) ReadAllUserCategories(
 	ctx context.Context,
 	userID string,
 ) ([]*expensecategory.ExpenseCategory, error) {
+	_, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
 	uid, err := expensecategory.NewID(userID)
 	if err != nil {
 		return nil, err

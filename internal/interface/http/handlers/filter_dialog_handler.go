@@ -60,6 +60,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	c, err := h.categoryQueryService.FindAllCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error finding all Categories", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
@@ -74,6 +75,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	account, err := h.accountService.ReadAllByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error finding all accounts", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
@@ -93,28 +95,26 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	minAmount := q.Get("minamount")
 	maxAmount := q.Get("maxamount")
 
-	filters, err := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	filters := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
 
 	resCount, err := h.tQueryService.CountFilteredResults(
 		r.Context(), sessionInfo.UserID, filters,
 	)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("counting filters transactions results", "error", err, "filters", filters)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
 	includedAcc, err := h.accQueryService.FindIDNamesIncludes(r.Context(), accounts)
 	if err != nil {
+		logger.Error("find accounts with ids array", "error", err, "accounts_ids", accounts)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 	includedCats, err := h.categoryQueryService.FindCategoriesIDIncludes(r.Context(), cats)
 	if err != nil {
+		logger.Error("find category with ids array", "error", err, "categories_ids", cats)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
@@ -148,11 +148,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	minAmount := q.Get("minamount")
 	maxAmount := q.Get("maxamount")
 
-	filters, err := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	filters := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
 
 	filterCount := len(types) + len(accounts) + len(cats)
 	queries := []string{fmt.Sprintf("page=%d", 2)}
@@ -178,7 +174,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		r.Context(), sessionInfo.UserID, filters,
 	)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("counting filters transactions results", "error", err, "filters", filters)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}

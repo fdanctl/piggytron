@@ -70,6 +70,7 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
 	name := r.FormValue("name")
 	pwd := r.FormValue("password")
 	redirect := r.FormValue("redirect")
@@ -83,6 +84,7 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	// invalid form
 	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.LoginForm(view).Render(r.Context(), w)
 		return
@@ -91,11 +93,13 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	sid, err := h.service.LoginUser(r.Context(), name, pwd)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, userapp.ErrWrongPassword) {
+			logger.Info("error on login", "error", err)
 			view.ErrorMsg = "Name or password are invalid"
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			partials.LoginForm(view).Render(r.Context(), w)
 			return
 		}
+		logger.Error("error on login", "error", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -109,6 +113,7 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
 	name := r.FormValue("name")
 	pwd := r.FormValue("password")
 	pwdConf := r.FormValue("password-confirm")
@@ -122,6 +127,7 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 
 	// invalid form
 	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.SignupForm(view).Render(r.Context(), w)
 		return
@@ -131,7 +137,10 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, userapp.ErrUserExists) {
+			logger.Info("error on signup", "error", err)
 			view.CustomError = err
+		} else {
+			logger.Error("error on signup", "error", err)
 		}
 		partials.SignupForm(view).Render(r.Context(), w)
 		return
@@ -153,6 +162,7 @@ func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 
 	err = h.service.LogoutUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error on logout", "error", err)
 		http.Error(w, "", http.StatusInternalServerError)
 		return
 	}

@@ -10,31 +10,26 @@ import (
 
 	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
-	transactionapp "github.com/fdanctl/piggytron/internal/application/transaction"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 type GoalsHandler struct {
 	accountService      *accountapp.Service
-	transactionService  *transactionapp.Service // will not be needed after TODO
 	tQueryService       query.TransactionQueryService
 	accountQueryService query.AccountQueryService
 }
 
 func NewGoalsHandler(
 	ac *accountapp.Service,
-	ts *transactionapp.Service,
 	tq query.TransactionQueryService,
 	aq query.AccountQueryService,
 ) *GoalsHandler {
 	return &GoalsHandler{
 		accountService:      ac,
-		transactionService:  ts,
 		tQueryService:       tq,
 		accountQueryService: aq,
 	}
@@ -68,7 +63,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		r.Context(), sessionInfo.UserID,
 	)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error("error query goals", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
@@ -90,20 +85,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return err
 	})
 
-	if r.Header.Get("Hx-Request") == "true" {
-		content.Render(r.Context(), w)
-		io.WriteString(w, "<title>Goals</title>")
-		return
-	}
-
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, content)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Goals").Render(ctx, w)
+	renderWithMainLayout(w, r, "Goals", content)
 }
 
 func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
@@ -121,12 +103,14 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
+		logger.Error("error finding one account", "error", err, "aid", id)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
 
 	goals, err := h.accountQueryService.FindGoalsIDNames(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error query goals", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
@@ -139,11 +123,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters, err := query.NewTransactionFilters(nil, []string{id}, nil, "", "")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	filters := query.NewTransactionFilters(nil, []string{id}, nil, "", "")
 
 	transactions, err := h.tQueryService.FindFiltered(
 		r.Context(),
@@ -153,6 +133,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		LIMIT*1-LIMIT,
 	)
 	if err != nil {
+		logger.Error("error find filtered", "error", err, "filters", filters)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}

@@ -63,6 +63,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 
 	msgs := view.Validate()
 	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.ExpenseCategoryForm(view).Render(r.Context(), w)
 		return
@@ -72,7 +73,10 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		if errors.Is(err, expensecategoryapp.ErrDuplicate) {
+			logger.Info("invalid form - duplicated", "error", err)
 			view.CustomError = err
+		} else {
+			logger.Error("error creating category", "error", err)
 		}
 		partials.ExpenseCategoryForm(view).Render(r.Context(), w)
 		return

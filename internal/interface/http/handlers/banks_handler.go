@@ -43,6 +43,7 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	banks, err := h.service.ReadAllBanksByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
+		logger.Error("error reading all banks", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
@@ -52,8 +53,11 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
-	bank, err := h.service.ReadOneByID(r.Context(), r.PathValue("id"))
+	logger := middleware.LoggerFromContext(r.Context())
+	aid := r.PathValue("id")
+	bank, err := h.service.ReadOneByID(r.Context(), aid)
 	if err != nil {
+		logger.Error("error read one bank", "error", err, "account_id", aid)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
