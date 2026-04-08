@@ -39,6 +39,7 @@ templ Dropdown(class, name string, minWFull bool) {
 			class={ "popover", templ.KV("min-w", minWFull) }
 			style={ fmt.Sprintf("position-anchor: %s;", id) }
 			popover
+			ontoggle="handleSelectToggle(event)"
 		>
 			<div>
 				{ children... }

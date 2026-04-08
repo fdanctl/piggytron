@@ -65,3 +65,34 @@ function buildMap(ele) {
     daysContainer.appendChild(ddiv);
   }
 }
+
+function openCalendar(evt) {
+  const inputValue = evt.target.previousSibling.querySelector("input").value;
+  let day;
+  let month;
+  let year;
+  if (inputValue.length < 10) {
+    const presentDay = new Date(Date.now());
+    day = presentDay.getDay();
+    month = presentDay.getMonth();
+    year = presentDay.getFullYear();
+  } else {
+    const ddmmyyyy = inputValue.split("/");
+    day = ddmmyyyy[0];
+    month = ddmmyyyy[1];
+    year = ddmmyyyy[2];
+  }
+
+  const yearInput = evt.target.querySelector("input[name='year']");
+  const monthInput = evt.target.querySelector("input[name='month']");
+  clickOption(yearInput, String(year));
+  clickOption(monthInput, String(month));
+  monthInput.dispatchEvent(new Event("change")); // triggers change event
+
+  const days = evt.target.querySelectorAll(".days > div");
+  for (let i = 0; i < days.length; i++) {
+    if (day == days[i].innerText) {
+      days[i].classList.add("selected");
+    }
+  }
+}

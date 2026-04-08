@@ -197,8 +197,6 @@ input.input.error:not(:focus),
   inset: auto;
   top: anchor(bottom);
   right: anchor(right);
-  position-try-fallbacks: flip-block;
-  position-try: flip-block;
   border: none;
   padding-top: calc(4px + var(--spacing-sm));
   background-color: transparent;
@@ -221,4 +219,23 @@ input.input.error:not(:focus),
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
+}
+
+/* time */
+.time-popover {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.time-popover > div {
+  width: 100px;
+}
+
+.time-popover ul {
+  margin-top: var(--spacing-xs);
+  height: 150px;
+  overflow-y: scroll;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border);
+  scrollbar-width: thin;
 }

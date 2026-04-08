@@ -145,7 +145,8 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 		<input
 			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
 			onblur="handleInputOnBlur(this)"
-			onkeypress="dateOnchange(event)"
+			oninput="handleDateOnChange(event)"
+			maxlength="10"
 			{ attrs... }
 		/>
 		<div>
@@ -164,6 +165,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 		class="popover date-input"
 		style={ fmt.Sprintf("position-anchor: %s;", id) }
 		popover
+		ontoggle="openCalendar(event)"
 	>
 		@Calendar()
 	</div>
@@ -204,5 +206,68 @@ templ DateInputGroup(class, label, errMsg string, hasError bool, required bool, 
 		}
 		@DateInput("", hasError, attrs)
 		<span>{ errMsg }</span>
+	</div>
+}
+
+templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := hex.EncodeToString(b)
+	}}
+	<div class="relative date-input">
+		<input
+			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			onblur="handleInputOnBlur(this)"
+			oninput="handleTimeOnChange(event)"
+			placeholder="--:--"
+			{ attrs... }
+			maxlength="5"
+		/>
+		<div>
+			<button
+				class="reset-btn flex justify-center items-center"
+				type="button"
+				popovertarget={ id }
+				style={ fmt.Sprintf("anchor-name: %s;", id) }
+			>
+				@ClockSvg(16, "", "")
+			</button>
+		</div>
+	</div>
+	<div
+		id={ id }
+		class="popover date-input"
+		style={ fmt.Sprintf("position-anchor: %s;", id) }
+		popover
+		ontoggle="openTimePopover(event)"
+	>
+		<div class="time-popover">
+			<div>
+				<p>Hours</p>
+				<ul class="options">
+					for i := 0; i < 24; i++ {
+						<li data-type="hour" onclick="handleClickTimePopover(this)">
+							<span>{ fmt.Sprintf("%02d", i) }</span>
+							@CheckSvg(16, "", "")
+						</li>
+					}
+				</ul>
+			</div>
+			<div>
+				<p>Minutes</p>
+				<ul class="options">
+					for i := 0; i < 60; i++ {
+						<li data-type="minutes" onclick="handleClickTimePopover(this)">
+							<span>{ fmt.Sprintf("%02d", i) }</span>
+							@CheckSvg(16, "", "")
+						</li>
+					}
+				</ul>
+			</div>
+		</div>
 	</div>
 }

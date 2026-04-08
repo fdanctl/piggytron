@@ -16,8 +16,8 @@
     inset: auto;
     top: anchor(bottom);
     right: anchor(right);
-    position-try-fallbacks: flip-inline;
-    position-try: flip-inline;
+    position-try-fallbacks: flip-block;
+    position-try: flip-block;
     border: none;
     padding-top: 4px;
     background-color: transparent;

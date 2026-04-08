@@ -59,4 +59,6 @@ templ Test() {
 	@components.Input("", true, nil)
 	@components.SearchBar("", nil)
 	@components.DateInput("", false, templ.Attributes{"placeholder": "dd/mm/yyyy"})
+	@components.Input("", false, templ.Attributes{"type": "time"})
+	@components.TimeInput("", false, nil)
 }

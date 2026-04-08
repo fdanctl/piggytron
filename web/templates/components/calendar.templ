@@ -32,7 +32,7 @@ func generateYearOptions() []SelectOption {
 
 var weekdays = [7]string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
 
-templ Calendar() {
+templ CalendarPreRendered() {
 	{{
 		currMonth := months[time.Now().Month()-1]
 		yearOpts := generateYearOptions()
@@ -87,4 +87,22 @@ templ dayDiv(i int, firstSunday time.Time) {
 	} else {
 		<span></span>
 	}
+}
+
+templ Calendar() {
+	{{ yearOpts := generateYearOptions() }}
+	<div class="calendar unselectable">
+		<div class="flex justify-center items-center gap-xs">
+			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "prevMonth(this)", "type": "button"})
+			@Select("", "", months, false, templ.Attributes{"name": "month", "onchange": "buildMap(this)"})
+			@Select("", "", yearOpts, false, templ.Attributes{"name": "year", "onchange": "buildMap(this)"})
+			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "nextMonth(this)", "type": "button"})
+		</div>
+		<div class="mt-sm">
+			for _, d := range weekdays {
+				<div class="text-sm text-muted font-medium flex justify-center items-center">{ d }</div>
+			}
+		</div>
+		<div class="days"></div>
+	</div>
 }

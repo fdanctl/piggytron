@@ -40,7 +40,6 @@ function toggleFilterPill(ele) {
     pillBox.appendChild(newPill);
     newPill.addEventListener("click", () => {
       removeFilterPill(newPill);
-      console.log(newPill);
     });
   } else {
     pillBox.querySelector(`[data-id="${ele.value}"]`)?.remove();
@@ -48,7 +47,6 @@ function toggleFilterPill(ele) {
 }
 
 function removeFilterPill(ele) {
-  console.log(ele);
   form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
   for (let i = 0; i < inputs.length; i++) {
