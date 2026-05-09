@@ -7,6 +7,7 @@ import (
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views"
 )
 
 type BanksHandler struct {
@@ -47,8 +48,12 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(banks)
-	content := partials.Banks()
+
+	var bviews []views.Bank
+	for _, v := range banks {
+		bviews = append(bviews, views.NewBank(v))
+	}
+	content := partials.Banks(bviews)
 	renderWithMainLayout(w, r, "Banks", content)
 }
 

@@ -352,6 +352,56 @@ html {
 #banks-container {
   display: grid;
   gap: var(--spacing-sm);
+  grid-template-areas:
+    "summary"
+    "asset-breakdown"
+    "account-history"
+    "accounts"
+    "recent-transactions";
+}
+
+#summary {
+  grid-area: summary;
+}
+
+#asset-breakdown {
+  grid-area: asset-breakdown;
+}
+
+#account-history {
+  grid-area: account-history;
+}
+
+#accounts {
+  grid-area: accounts;
+  height: 100%;
+}
+#accounts > .card {
+  height: 100%;
+}
+
+#recent-transactions {
+  grid-area: recent-transactions;
+}
+
+@media (min-width: 675px) {
+  #banks-container {
+    grid-template-columns: repeat(6, 1fr);
+
+    grid-template-areas:
+      "summary summary summary summary summary summary"
+      "account-history account-history account-history asset-breakdown asset-breakdown asset-breakdown "
+      "recent-transactions recent-transactions recent-transactions recent-transactions accounts accounts";
+  }
+}
+
+@media (min-width: 800px) {
+  #banks-container {
+    grid-template-areas:
+      "summary summary summary summary summary summary"
+      "account-history account-history account-history account-history asset-breakdown asset-breakdown"
+      "recent-transactions recent-transactions recent-transactions recent-transactions recent-transactions accounts";
+  }
 }
 
 #banks-container > section {

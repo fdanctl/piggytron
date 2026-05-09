@@ -1,8 +1,11 @@
 package partials
 
-import "github.com/fdanctl/piggytron/web/templates/components"
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
 
-templ Banks() {
+templ Banks(banks []views.Bank) {
 	<div id="banks-container">
 		<section id="summary">
 			<div class="card">
@@ -70,11 +73,21 @@ templ Banks() {
 				</div>
 			</div>
 		</section>
+		<section id="accounts">
+			<div class="card">
+				<h6 class="card__title">Accounts</h6>
+				<ul>
+					for _, v := range banks {
+						<li>{ v.Name }</li>
+					}
+				</ul>
+			</div>
+		</section>
 		<section id="recent-transactions">
 			<div class="card">
 				<h6 class="card__title">Recent transactions</h6>
 				<div>
-					// remove
+					// remove, receive the recent transactions and use @transactionItem
 					<ul>
 						<li class="transaction">
 							<div>
