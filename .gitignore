@@ -1,5 +1,7 @@
 .env
 
+tmp/*
+
 web/templates/**/*_templ.go
 web/static/app.js
 web/static/styles.css

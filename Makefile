@@ -39,8 +39,8 @@ tidy:
 	go fix ./...
 	go fmt ./...
 
-.PHONY: dev
 ## dev: native Go + Docker Postgres
+.PHONY: dev
 dev: clean-dev
 	docker run -d \
 	 --name postgres \
@@ -51,25 +51,25 @@ dev: clean-dev
 	 -v ./scripts:/docker-entrypoint-initdb.d \
 	 postgres:16-alpine && \
 	docker run -d --name redis -p ${REDIS_PORT}:6379 redis:latest && \
-	make -j2 generate-static templ-watch
+	DEV="true" go tool air -c .air.toml
 
-.PHONY: generate-static
 ## generate-static: concatenate all js and css files into app.js and styles.css respectively
+.PHONY: generate-static
 generate-static:
 	go run $(GENERATE_STATIC_PATH)
 
-.PHONY: templ-watch
 ## templ-watch: watch for templ files
+.PHONY: templ-watch
 templ-watch:
 	DEV="true" go tool templ generate -watch -cmd="go run $(MAIN_PACKAGE_PATH)"
 
-.PHONY: status
 ## status: show running containers
+.PHONY: status
 status:
 	@docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
 
-.PHONY: clean-dev
 ## clean-dev: stops and removes dev postgres container
+.PHONY: clean-dev
 clean-dev:
 	@echo "Stop and removing dev postgres container..."
 	@docker stop postgres 2>/dev/null || true
@@ -78,8 +78,8 @@ clean-dev:
 	@docker stop redis 2>/dev/null || true
 	@docker rm redis 2>/dev/null || true
 
-.PHONY: clean
 ## clean: clean up the build binaries
+.PHONY: clean
 clean: confirm clean-dev
 	@echo "Cleaning up..."
 	@rm -f web/templates/**/*_templ.go
