@@ -183,8 +183,9 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 
 					const popover = document.getElementById({{ id }});
 
-					popover.previousElementSibling.querySelector("input").value =
-						date.toLocaleDateString("en-GB");
+					const input = popover.previousElementSibling.querySelector("input");
+					input.value = date.toLocaleDateString("en-GB");
+					input.dispatchEvent(new Event("input"));
 
 					popover.hidePopover();
 				}
@@ -269,5 +270,39 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 				</ul>
 			</div>
 		</div>
+	</div>
+}
+
+type ToggleOption struct {
+	Label string
+	Id    string
+	Value string
+}
+
+templ ToggleSwitch(class string, name string, options []ToggleOption, attrs templ.Attributes) {
+	<div class="toggle-switch" style={ fmt.Sprintf("--count: %d", len(options)) }>
+		for i, o := range options {
+			<input
+				id={ o.Id }
+				name={ name }
+				type="radio"
+				value={ o.Value }
+				if i == 0 {
+					checked
+				}
+			/>
+			<label for={ o.Id } onclick="">{ o.Label }</label>
+		}
+	</div>
+}
+
+templ ToggleSwitchGroup(class, label string, name string, options []ToggleOption, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV(class, class != "") }
+	>
+		<label>
+			{ label }
+		</label>
+		@ToggleSwitch("", name, options, attrs)
 	</div>
 }

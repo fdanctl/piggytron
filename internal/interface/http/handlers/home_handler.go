@@ -202,7 +202,7 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		btn2 := components.ButtonWithIcon(
 			"current time",
 			"w-fit",
-			components.BtnOutline,
+			components.BtnOutlinePrimary,
 			components.BtnMedium,
 			templ.Attributes{
 				"hx-get": "/partials/slow",
@@ -211,6 +211,17 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 			components.Spinner(0, "", "indicator"),
 		)
 		if err := btn2.Render(ctx, w); err != nil {
+			return err
+		}
+
+		btn3 := components.Button(
+			"useless button",
+			"w-fit",
+			components.BtnOutline,
+			components.BtnMedium,
+			nil,
+		)
+		if err := btn3.Render(ctx, w); err != nil {
 			return err
 		}
 

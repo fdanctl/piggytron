@@ -76,11 +76,11 @@ function handleDateOnChange(evt) {
   }
 
   // Optional: limit year range
-  if (year.length === 4) {
-    let y = parseInt(year, 10);
-    y = Math.min(Math.max(y, 1900), 2100); // adjust if needed
-    year = y.toString();
-  }
+  // if (year.length === 4) {
+  //   let y = parseInt(year, 10);
+  //   y = Math.min(Math.max(y, 1900), 2100); // adjust if needed
+  //   year = y.toString();
+  // }
 
   let formatted = day;
 
@@ -152,7 +152,9 @@ function handleClickTimePopover(ele) {
     }
   }
 
-  popover.previousSibling.querySelector("input").value = `${h}:${m}`;
+  const input = popover.previousSibling.querySelector("input");
+  input.value = `${h}:${m}`;
+  input.dispatchEvent(new Event("input"));
 }
 
 function openTimePopover(evt) {

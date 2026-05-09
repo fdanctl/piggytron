@@ -18,6 +18,10 @@
   color: var(--color-text-secondary);
 }
 
+.input-group > *:nth-child(2) {
+  margin-top: var(--spacing-xs);
+}
+
 .input:not([type="checkbox"], [type="radio"]) {
   width: 100%;
 }
@@ -196,11 +200,15 @@ input.input.error:not(:focus),
   margin: 0;
   inset: auto;
   top: anchor(bottom);
-  right: anchor(right);
   border: none;
   padding-top: calc(4px + var(--spacing-sm));
   background-color: transparent;
   box-shadow: var(--shadow-lg);
+}
+@media (min-width: 600px) {
+  .popover.date-input {
+    right: anchor(right);
+  }
 }
 .popover.date-input.min-w {
   min-width: anchor-size(width);
@@ -238,4 +246,42 @@ input.input.error:not(:focus),
   border-radius: var(--radius-xs);
   border: 1px solid var(--color-border);
   scrollbar-width: thin;
+}
+
+.toggle-switch {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border: 0.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-switch label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  transition: all 0.15s;
+  white-space: nowrap;
+  border: 0.5px solid transparent;
+}
+
+.toggle-switch input:checked + label {
+  background: var(--color-bg-muted);
+  color: var(--color-text);
+  border: 0.5px solid var(--color-border);
+}
+
+.toggle-switch input {
+  width: 0px;
+  visibility: hidden;
+  display: none;
 }
