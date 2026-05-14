@@ -1,0 +1,103 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+)
+
+templ Budget() {
+	// if budget is empty
+	@lastMonthImport()
+	<div class="budget-stats mt-lg">
+		<div class="card">
+			<h6 class="card__title">Left to budget</h6>
+			<p class={ "metric__value xl text-negative" }>
+				-30€
+			</p>
+			<p class="metric__sub xl mt-xs">
+				of 1 000€ income
+			</p>
+		</div>
+		<div class="card">
+			<h6 class="card__title">Left to spend</h6>
+			<p class="metric__value xl">
+				300€
+			</p>
+			<p class="metric__sub xl mt-xs">
+				budgeted but unspent
+			</p>
+		</div>
+		<div class="card">
+			<h6 class="card__title">Overspent</h6>
+			<p class={ "metric__value xl", templ.KV("text-negative", true) }>
+				20€
+			</p>
+			<p class="metric__sub xl mt-xs">
+				across all categories
+			</p>
+		</div>
+	</div>
+	// TODO dynamic month
+	<div
+		class="chart-container mt-xl mb-xl"
+		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s", "202605") }
+		hx-trigger="load"
+	>
+		@components.Loader("htmx-indicator", nil)
+	</div>
+	<div class="budget-table-container">
+		@budgetTable()
+		@budgetTable()
+		@budgetTable()
+	</div>
+}
+
+// TODO receive current month
+templ lastMonthImport() {
+	<div class="flex">
+		<div class="last-month-import">
+			<div class="last-month-import__icon">
+				@components.CalendarArrowUp(0, "", "")
+			</div>
+			<div>
+				<p class="last-month-import__h">Import April's budget</p>
+				<p class="last-month-import__p">Copy last month's category amounts as a starting point</p>
+			</div>
+			<div class="last-month-import__btns">
+				@components.Button("Dismiss", "last-month-import__dismiss", components.BtnSecondary, components.BtnMedium, nil)
+				@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, nil, components.IconLeft, components.DownloadSvg(0, "", ""))
+			</div>
+		</div>
+	</div>
+}
+
+templ budgetTable() {
+	<div class="budget-table needs">
+		<div class="budget-table__head">
+			<span>Needs (50.00%)</span>
+			<span>Budget</span>
+			<span>Left</span>
+		</div>
+		<div class="budget-table__row">
+			<span>Rent</span>
+			<div class="flex items-center gap-xs">
+				@components.Input(
+					"",
+					false,
+					templ.Attributes{
+						"id":    "cat-id",
+						"type":  "number",
+						"name":  "cat-name",
+						"value": "0",
+					})
+				€
+			</div>
+			<span>100€</span>
+		</div>
+		<div class="budget-table__total-row">
+			<span>Total</span>
+			<span>100€</span>
+			<span>100€</span>
+		</div>
+	</div>
+}

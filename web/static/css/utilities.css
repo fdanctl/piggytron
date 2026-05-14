@@ -171,6 +171,14 @@
   color: var(--color-text-secondary);
 }
 
+.text-positive {
+  color: var(--color-positive);
+}
+
+.text-negative {
+  color: var(--color-negative);
+}
+
 .text-success {
   color: var(--color-success);
 }
@@ -284,6 +292,10 @@
   margin-top: var(--spacing-lg);
 }
 
+.mt-xl {
+  margin-top: var(--spacing-xl);
+}
+
 .mb-xs {
   margin-bottom: var(--spacing-xs);
 }
@@ -294,6 +306,10 @@
 
 .mb-md {
   margin-bottom: var(--spacing-md);
+}
+
+.mb-xl {
+  margin-bottom: var(--spacing-xl);
 }
 
 .mb-lg {

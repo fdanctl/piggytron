@@ -178,6 +178,9 @@ func main() {
 	accHistChartHandler := handlers.NewAccountHistoryChartHandler()
 	partialsMux.Handle("/partials/charts/account-history", accHistChartHandler)
 
+	budgetChartHandler := handlers.NewBudgetChartHandler()
+	partialsMux.Handle("/partials/charts/budget-chart/{month}", budgetChartHandler)
+
 	transactionFiltersHandler := handlers.NewFilterDialogHandler(
 		catQueryService,
 		accountService,

@@ -236,50 +236,6 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	renderWithMainLayout(w, r, "Dashboard", contents)
 }
 
-type BudgetHandler struct{}
-
-func (h *BudgetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		h.Get(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
-	form := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		_, err := io.WriteString(w, "<p>in construction</p>")
-		if err != nil {
-			return err
-		}
-		err = components.Button(
-			"logout",
-			"w-fit",
-			components.BtnDestructive,
-			components.BtnMedium,
-			templ.Attributes{
-				"hx-get": "/partials/auth/logout",
-			},
-		).Render(ctx, w)
-		return err
-	})
-	if r.Header.Get("Hx-Request") == "true" {
-		form.Render(r.Context(), w)
-		io.WriteString(w, "<title>Budget</title>")
-		return
-	}
-
-	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		ctx = templ.WithChildren(ctx, form)
-		err := layouts.Main().Render(ctx, w)
-		return err
-	})
-
-	ctx := templ.WithChildren(r.Context(), main)
-	layouts.Base("Budget").Render(ctx, w)
-}
-
 type LoginHandler struct{}
 
 func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {

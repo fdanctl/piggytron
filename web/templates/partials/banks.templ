@@ -14,7 +14,7 @@ templ Banks(banks []views.Bank) {
 						<h6 class="card__title">Net Worth</h6>
 						<div>
 							<div class="metric__value xl">$00,000.00</div>
-							<div class="metric__sub xl" style={ templ.KV("color: var(--color-positive)", true) }>
+							<div class={ "metric__sub", templ.KV("text-positive", true) }>
 								+0.00% this month
 							</div>
 						</div>
@@ -23,7 +23,7 @@ templ Banks(banks []views.Bank) {
 						<div class="metric">
 							<div class="metric__title">Savings</div>
 							<div class="metric__value">$00,000.00</div>
-							<div class="metric__sub" style={ templ.KV("color: var(--color-positive)", true) }>
+							<div class={ "metric__sub", templ.KV("text-positive", true) }>
 								+0.00%
 							</div>
 						</div>
@@ -32,12 +32,12 @@ templ Banks(banks []views.Bank) {
 							<div class="metric__value">
 								$00,000.00
 							</div>
-							<div class="metric__sub" style={ templ.KV("color: var(--color-positive)", true) }>+0.00%</div>
+							<div class={ "metric__sub", templ.KV("text-positive", true) }>+0.00%</div>
 						</div>
 						<div class="metric">
 							<div class="metric__title">Goals</div>
 							<div class="metric__value">$00,000.00</div>
-							<div class="metric__sub" style={ templ.KV("color: var(--color-negative)", true) }>-0.00%</div>
+							<div class={ "metric__sub",  templ.KV("text-negative", true) } style={  }>-0.00%</div>
 						</div>
 					</div>
 				</div>

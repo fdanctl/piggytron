@@ -187,6 +187,12 @@ templ CalendarDaysSvg(size uint8, color string, class string) {
 	}
 }
 
+templ CalendarArrowUp(size uint8, color string, class string) {
+	@svgWrapper(size, color, class) {
+		<path d="m14 18 4-4 4 4"></path><path d="M16 2v4"></path><path d="M18 22v-8"></path><path d="M21 11.343V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9"></path><path d="M3 10h18"></path><path d="M8 2v4"></path>
+	}
+}
+
 templ MenuSvg(size uint8, color string, class string) {
 	@svgWrapper(size, color, class) {
 		<path d="M4 5h16"></path>
@@ -293,5 +299,11 @@ templ CircleQuestionMarkSvg(size uint8, color string, class string) {
 templ ClockSvg(size uint8, color string, class string) {
 	@svgWrapper(size, color, class) {
 		<circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path>
+	}
+}
+
+templ DownloadSvg(size uint8, color string, class string) {
+	@svgWrapper(size, color, class) {
+		<path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path>
 	}
 }

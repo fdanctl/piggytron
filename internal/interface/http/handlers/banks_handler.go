@@ -1,11 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"net/http"
 
+	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -53,7 +57,19 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 	for _, v := range banks {
 		bviews = append(bviews, views.NewBank(v))
 	}
-	content := partials.Banks(bviews)
+
+	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		err := components.Breadcrumbs([]components.BreadcrumbsLink{
+			{Href: "", Name: "Banks"},
+		}, nil).Render(ctx, w)
+		if err != nil {
+			return err
+		}
+
+		err = partials.Banks(bviews).Render(ctx, w)
+		return err
+	})
+
 	renderWithMainLayout(w, r, "Banks", content)
 }
 
