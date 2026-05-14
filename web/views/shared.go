@@ -18,7 +18,7 @@ func StringArrToStr(arr []string) string {
 	return ""
 }
 
-func formatMoney(amount float64, cur currency.Unit, lang language.Tag) string {
+func FormatMoney(amount float64, cur currency.Unit, lang language.Tag) string {
 	p := message.NewPrinter(lang)
 	symbol := currency.Symbol(cur)
 
@@ -55,4 +55,12 @@ func FormatDate(date time.Time) string {
 	d := date.Day()
 
 	return fmt.Sprintf("%s %d, %d", m, d, y)
+}
+
+// capitalize first letter
+func CapitalizeFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+	return strings.ToUpper(string(s[:1])) + s[1:]
 }

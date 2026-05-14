@@ -2,6 +2,7 @@ package query
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -16,14 +17,14 @@ type TransactionFilters struct {
 	MinAmount *int
 	MaxAmount *int
 
-	// MinDate *time.Time
-	// MaxDate *time.Time
+	MinDate *time.Time
+	MaxDate *time.Time
 }
 
 func NewTransactionFilters(
 	ttype, accountIDs, categoryIDs []string,
 	minAmount, maxAmount string,
-	// minDate, maxDate string,
+	minDate, maxDate string,
 ) *TransactionFilters {
 	var paccs *[]string
 	accs := make([]string, 0, len(accountIDs))

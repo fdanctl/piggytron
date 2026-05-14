@@ -142,6 +142,10 @@
   font-family: var(--font-mono);
 }
 
+.font-normal {
+  font-weight: 400;
+}
+
 .font-medium {
   font-weight: 500;
 }

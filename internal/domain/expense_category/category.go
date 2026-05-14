@@ -14,21 +14,21 @@ func NewID(str string) (ID, error) {
 type ExpenseType string
 
 const (
-	needs   ExpenseType = "needs"
-	wants   ExpenseType = "wants"
-	savings ExpenseType = "savings"
+	Needs   ExpenseType = "needs"
+	Wants   ExpenseType = "wants"
+	Savings ExpenseType = "savings"
 )
 
 func NewExpenseType(str string) (ExpenseType, error) {
 	switch str {
 	case "needs":
-		return needs, nil
+		return Needs, nil
 
 	case "wants":
-		return wants, nil
+		return Wants, nil
 
 	case "savings":
-		return savings, nil
+		return Savings, nil
 
 	default:
 		return "", ErrInvalidType

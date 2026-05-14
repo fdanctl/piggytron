@@ -52,8 +52,18 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	qcats := q["categories"]
 	qminAmount := q.Get("minamount")
 	qmaxAmount := q.Get("maxamount")
+	qminDate := q.Get("mindate")
+	qmaxDate := q.Get("maxdate")
 
-	filters := query.NewTransactionFilters(qtypes, qaccounts, qcats, qminAmount, qmaxAmount)
+	filters := query.NewTransactionFilters(
+		qtypes,
+		qaccounts,
+		qcats,
+		qminAmount,
+		qmaxAmount,
+		qminDate,
+		qmaxDate,
+	)
 
 	filterCount := len(qtypes) + len(qaccounts) + len(qcats)
 	var page uint = 1

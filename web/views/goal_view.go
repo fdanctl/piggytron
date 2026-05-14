@@ -45,14 +45,14 @@ func NewGoal(
 			mn = (*g.TargetAmount - g.Sum) / int(ml)
 		}
 
-		monthlyNeeded = formatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
+		monthlyNeeded = FormatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
 	}
 
 	return Goal{
 		ID:   g.ID,
 		Name: g.Name,
 		Type: g.Type,
-		TargetAmount: formatMoney(
+		TargetAmount: FormatMoney(
 			float64(*g.TargetAmount)/100,
 			currency.EUR,
 			language.AmericanEnglish,
@@ -60,12 +60,12 @@ func NewGoal(
 		StartDate:  g.CreatedAt,
 		TargetDate: *g.TargetDate,
 		Category:   g.Category.Name,
-		Amount: formatMoney(
+		Amount: FormatMoney(
 			float64(g.Sum)/100,
 			currency.EUR,
 			language.AmericanEnglish,
 		),
-		AmountLeft: formatMoney(
+		AmountLeft: FormatMoney(
 			float64(*g.TargetAmount-g.Sum)/100,
 			currency.EUR,
 			language.AmericanEnglish,

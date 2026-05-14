@@ -114,8 +114,8 @@ func main() {
 	hh := handlers.HomeHandler{}
 	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
 
-	bh := handlers.BudgetHandler{}
-	webMux.Handle("/budget", middleware.AuthProtectedRoute(&bh))
+	bh := handlers.NewBudgetHandler(expenseCatService, transactionQueryService)
+	webMux.Handle("/budget", middleware.AuthProtectedRoute(bh))
 
 	goalsHandler := handlers.NewGoalsHandler(
 		accountService,

@@ -158,7 +158,7 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters := query.NewTransactionFilters(nil, nil, []string{id}, "", "")
+	filters := query.NewTransactionFilters(nil, nil, []string{id}, "", "", "", "")
 
 	transactions, err := h.tQueryService.FindFiltered(
 		r.Context(),

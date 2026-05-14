@@ -28,6 +28,16 @@ type TransactionsWithTotalCount struct {
 	Total int
 }
 
+type CategoryExpense struct {
+	ID     string
+	Amount int
+}
+
+type CategoryExpenseWithTotal struct {
+	Data  []CategoryExpense
+	Total int
+}
+
 type TransactionQueryService interface {
 	FindFiltered(
 		ctx context.Context,
@@ -44,4 +54,7 @@ type TransactionQueryService interface {
 	CountFilteredResults(
 		ctx context.Context, uid string, filters *TransactionFilters,
 	) (int, error)
+	GetExpensesByCategoryBetweenDates(
+		ctx context.Context, uid string, minDate time.Time, maxDate time.Time,
+	) (*CategoryExpenseWithTotal, error)
 }

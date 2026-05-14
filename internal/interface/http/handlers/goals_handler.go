@@ -123,7 +123,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters := query.NewTransactionFilters(nil, []string{id}, nil, "", "")
+	filters := query.NewTransactionFilters(nil, []string{id}, nil, "", "", "", "")
 
 	transactions, err := h.tQueryService.FindFiltered(
 		r.Context(),

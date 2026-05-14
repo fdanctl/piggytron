@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/query"
 )
@@ -52,15 +53,19 @@ func (r *TransactionQueryService) FindFiltered(
 		 AND ($4::UUID[] IS NULL OR t.income_category_id = ANY($4) OR t.expense_category_id = ANY($4))
 		 AND ($5::BIGINT IS NULL OR t.amount >= $5)
 		 AND ($6::BIGINT IS NULL OR t.amount <= $6)
+	     AND ($7::TIMESTAMP IS NULL OR t.date >= $7)
+	     AND ($8::TIMESTAMP IS NULL OR t.date < $8)
 		 ORDER BY date DESC
-		 LIMIT $7
-		 OFFSET $8`,
+		 LIMIT NULLIF($9, 0)
+		 OFFSET $10`,
 		uid,
 		filters.Types,
 		filters.AccountIDs,
 		filters.CategoryIDs,
 		filters.MinAmount,
 		filters.MaxAmount,
+		filters.MinDate,
+		filters.MaxDate,
 		limit,
 		offset,
 	)
@@ -134,15 +139,19 @@ func (r *TransactionQueryService) FindFilteredWithCount(
 	     AND ($4::UUID[] IS NULL OR t.income_category_id = ANY($4) OR t.expense_category_id = ANY($4))
 	     AND ($5::BIGINT IS NULL OR t.amount >= $5)
 	     AND ($6::BIGINT IS NULL OR t.amount <= $6)
+	     AND ($7::TIMESTAMP IS NULL OR t.date >= $7)
+	     AND ($8::TIMESTAMP IS NULL OR t.date < $8)
 		 ORDER BY date DESC
-		 LIMIT $7
-		 OFFSET $8`,
+		 LIMIT NULLIF($9, 0)
+		 OFFSET $10`,
 		uid,
 		filters.Types,
 		filters.AccountIDs,
 		filters.CategoryIDs,
 		filters.MinAmount,
 		filters.MaxAmount,
+		filters.MinDate,
+		filters.MaxDate,
 		limit,
 		offset,
 	)
@@ -216,4 +225,57 @@ func (r *TransactionQueryService) CountFilteredResults(
 	}
 
 	return count, nil
+}
+
+func (r *TransactionQueryService) GetExpensesByCategoryBetweenDates(
+	ctx context.Context,
+	uid string,
+	minDate, maxDate time.Time,
+) (*query.CategoryExpenseWithTotal, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT
+			COALESCE(expense_category_id, '00000000-0000-0000-0000-000000000000') AS expense_category_id,
+			COALESCE(SUM(amount), 0) AS total
+		 FROM
+  			transactions
+		 WHERE
+  			type = 'expense'
+  			AND date >= $1
+  			AND date < $2
+		 GROUP BY
+  		 ROLLUP (expense_category_id)`,
+		minDate,
+		maxDate,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var catExpenses []query.CategoryExpense
+	var totalExpense int
+
+	for rows.Next() {
+		var dto query.CategoryExpense
+		err := rows.Scan(
+			&dto.ID,
+			&dto.Amount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if dto.ID == "00000000-0000-0000-0000-000000000000" {
+			totalExpense = dto.Amount
+		} else {
+			catExpenses = append(catExpenses, dto)
+		}
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return &query.CategoryExpenseWithTotal{
+		Data:  catExpenses,
+		Total: totalExpense,
+	}, nil
 }

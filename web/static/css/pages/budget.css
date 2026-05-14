@@ -99,6 +99,7 @@
   background-color: var(--color-surface);
   border: 1px solid var(--color-border-secondary);
   border-radius: var(--radius-md);
+  height: fit-content;
 }
 
 .budget-table > div {

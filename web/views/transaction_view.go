@@ -45,7 +45,7 @@ func NewTransaction(
 		Type:        t.Type,
 		Category:    cat,
 		Accounts:    accs,
-		Amount:      formatMoney(f, currency.EUR, language.AmericanEnglish),
+		Amount:      FormatMoney(f, currency.EUR, language.AmericanEnglish),
 		Date:        FormatDate(t.Date),
 	}
 }
@@ -82,7 +82,7 @@ func NewAccountTransaction(
 		Type:        tpe,
 		Category:    cat,
 		Accounts:    accs,
-		Amount:      formatMoney(f, currency.EUR, language.AmericanEnglish),
+		Amount:      FormatMoney(f, currency.EUR, language.AmericanEnglish),
 		Date:        FormatDate(t.Date),
 	}
 }

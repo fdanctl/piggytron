@@ -2,10 +2,14 @@ package partials
 
 import (
 	"fmt"
+	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
 )
 
-templ Budget() {
+templ Budget(income, leftToSpend int, eCats []views.ExpenseCategory) {
 	// if budget is empty
 	@lastMonthImport()
 	<div class="budget-stats mt-lg">
@@ -15,13 +19,13 @@ templ Budget() {
 				-30€
 			</p>
 			<p class="metric__sub xl mt-xs">
-				of 1 000€ income
+				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income
 			</p>
 		</div>
 		<div class="card">
 			<h6 class="card__title">Left to spend</h6>
-			<p class="metric__value xl">
-				300€
+			<p class={ "metric__value xl", templ.KV("text-negative", leftToSpend < 0) }>
+				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
 			<p class="metric__sub xl mt-xs">
 				budgeted but unspent
@@ -46,9 +50,9 @@ templ Budget() {
 		@components.Loader("htmx-indicator", nil)
 	</div>
 	<div class="budget-table-container">
-		@budgetTable()
-		@budgetTable()
-		@budgetTable()
+		@budgetTable(expensecategory.Needs, eCats)
+		@budgetTable(expensecategory.Wants, eCats)
+		@budgetTable(expensecategory.Savings, eCats)
 	</div>
 }
 
@@ -71,29 +75,33 @@ templ lastMonthImport() {
 	</div>
 }
 
-templ budgetTable() {
-	<div class="budget-table needs">
+templ budgetTable(eType expensecategory.ExpenseType, eCats []views.ExpenseCategory) {
+	<div class={ "budget-table", string(eType) }>
 		<div class="budget-table__head">
-			<span>Needs (50.00%)</span>
+			<span>{ views.CapitalizeFirst(string(eType)) } <span class="font-mono text-xs font-normal">(50.00%)</span></span>
 			<span>Budget</span>
 			<span>Left</span>
 		</div>
-		<div class="budget-table__row">
-			<span>Rent</span>
-			<div class="flex items-center gap-xs">
-				@components.Input(
-					"",
-					false,
-					templ.Attributes{
-						"id":    "cat-id",
-						"type":  "number",
-						"name":  "cat-name",
-						"value": "0",
-					})
-				€
-			</div>
-			<span>100€</span>
-		</div>
+		for _, c := range eCats {
+			if c.ExpenseType == eType {
+				<div class="budget-table__row">
+					<span>{ c.Name }</span>
+					<div class="flex items-center gap-xs">
+						@components.Input(
+							"",
+							false,
+							templ.Attributes{
+								"id":    c.ID,
+								"type":  "number",
+								"name":  c.Name,
+								"value": "0",
+							})
+						€
+					</div>
+					<span>100€</span>
+				</div>
+			}
+		}
 		<div class="budget-table__total-row">
 			<span>Total</span>
 			<span>100€</span>

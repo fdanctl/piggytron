@@ -66,8 +66,18 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 	cats := q["categories"]
 	minAmount := q.Get("minamount")
 	maxAmount := q.Get("maxamount")
+	minDate := q.Get("mindate")
+	maxDate := q.Get("maxdate")
 
-	filters := query.NewTransactionFilters(types, accounts, cats, minAmount, maxAmount)
+	filters := query.NewTransactionFilters(
+		types,
+		accounts,
+		cats,
+		minAmount,
+		maxAmount,
+		minDate,
+		maxDate,
+	)
 
 	filterCount := len(types) + len(accounts) + len(cats)
 	queries := []string{fmt.Sprintf("page=%d", page+1)}
