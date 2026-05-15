@@ -2,30 +2,30 @@ package partials
 
 import (
 	"fmt"
-	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
 
-templ Budget(income, leftToSpend int, eCats []views.ExpenseCategory) {
-	// if budget is empty
+templ Budget(view views.BudgetPageView) {
+	// if view.TotalBudgeted == 0 {
 	@lastMonthImport()
+	// }
 	<div class="budget-stats mt-lg">
 		<div class="card">
 			<h6 class="card__title">Left to budget</h6>
-			<p class={ "metric__value xl text-negative" }>
-				-30€
+			<p class={ "metric__value xl", templ.KV("text-negative", view.LeftToBudget < 0) }>
+				{ views.FormatMoney(float64(view.LeftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
 			<p class="metric__sub xl mt-xs">
-				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income
+				of { views.FormatMoney(float64(view.Income) / 100, currency.EUR, language.AmericanEnglish) } income
 			</p>
 		</div>
 		<div class="card">
 			<h6 class="card__title">Left to spend</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", leftToSpend < 0) }>
-				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
+			<p class={ "metric__value xl", templ.KV("text-negative", view.LeftToSpend < 0) }>
+				{ views.FormatMoney(float64(view.LeftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
 			<p class="metric__sub xl mt-xs">
 				budgeted but unspent
@@ -33,8 +33,8 @@ templ Budget(income, leftToSpend int, eCats []views.ExpenseCategory) {
 		</div>
 		<div class="card">
 			<h6 class="card__title">Overspent</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", true) }>
-				20€
+			<p class={ "metric__value xl", templ.KV("text-negative", view.Overspent != 0) }>
+				{ views.FormatMoney(float64(view.Overspent) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
 			<p class="metric__sub xl mt-xs">
 				across all categories
@@ -50,9 +50,9 @@ templ Budget(income, leftToSpend int, eCats []views.ExpenseCategory) {
 		@components.Loader("htmx-indicator", nil)
 	</div>
 	<div class="budget-table-container">
-		@budgetTable(expensecategory.Needs, eCats)
-		@budgetTable(expensecategory.Wants, eCats)
-		@budgetTable(expensecategory.Savings, eCats)
+		@budgetTable("needs", view.NeedsBudget, view.NeedsSpent, view.NeedsPct, view.NeedsRows)
+		@budgetTable("wants", view.WantsBudget, view.WantsSpent, view.WantsPct, view.WantsRows)
+		@budgetTable("savings", view.SavingsBudget, view.SavingsSpent, view.SavingsPct, view.SavingsRows)
 	</div>
 }
 
@@ -75,37 +75,37 @@ templ lastMonthImport() {
 	</div>
 }
 
-templ budgetTable(eType expensecategory.ExpenseType, eCats []views.ExpenseCategory) {
+templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows []views.BudgetRowView) {
 	<div class={ "budget-table", string(eType) }>
 		<div class="budget-table__head">
-			<span>{ views.CapitalizeFirst(string(eType)) } <span class="font-mono text-xs font-normal">(50.00%)</span></span>
+			<span>{ views.CapitalizeFirst(string(eType)) } <span class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
 			<span>Budget</span>
 			<span>Left</span>
 		</div>
-		for _, c := range eCats {
-			if c.ExpenseType == eType {
-				<div class="budget-table__row">
-					<span>{ c.Name }</span>
-					<div class="flex items-center gap-xs">
-						@components.Input(
-							"",
-							false,
-							templ.Attributes{
-								"id":    c.ID,
-								"type":  "number",
-								"name":  c.Name,
-								"value": "0",
-							})
-						€
-					</div>
-					<span>100€</span>
+		for _, c := range rows {
+			<div class="budget-table__row">
+				<span>{ c.Name }</span>
+				<div class="flex items-center gap-xs">
+					€
+					@components.Input(
+						"",
+						false,
+						templ.Attributes{
+							"id":    c.CID,
+							"type":  "text",
+							"name":  c.Name,
+							"value": views.FormatFloat(float64(c.Budgeted) / 100),
+						})
 				</div>
-			}
+				<span class={ templ.KV("text-negative", c.Left < 0) }>
+					{ views.FormatMoney(float64(c.Left) / 100, currency.EUR, language.AmericanEnglish) }
+				</span>
+			</div>
 		}
 		<div class="budget-table__total-row">
 			<span>Total</span>
-			<span>100€</span>
-			<span>100€</span>
+			<span>{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }</span>
+			<span class={ templ.KV("text-negative", totalSpent < 0) }>{ views.FormatMoney(float64(totalSpent) / 100, currency.EUR, language.AmericanEnglish) }</span>
 		</div>
 	</div>
 }

@@ -164,6 +164,7 @@
 
 .budget-table__row {
   text-align: right;
+  border-bottom: 1px solid var(--color-border-secondary);
 }
 .budget-table__row > span:first-child {
   text-align: left;

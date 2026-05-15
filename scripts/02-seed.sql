@@ -413,8 +413,8 @@ SELECT
   NULL,
   ROUND(random() * 300000 + 50000)::BIGINT,
   'Salary / Income',
-  '2026-03-11',
-  '2026-03-11'
+  '2026-05-11',
+  '2026-05-11'
 FROM
   users u
   JOIN accounts a ON u.id = a.user_id
@@ -446,8 +446,8 @@ SELECT
   ec.id,
   ROUND(random() * 20000 + 1000)::BIGINT,
   'Monthly expense',
-  '2026-03-11',
-  '2026-03-11'
+  '2026-05-11',
+  '2026-05-11'
 FROM
   users u
   JOIN accounts a ON u.id = a.user_id
@@ -481,8 +481,8 @@ SELECT
   NULL,
   ROUND(random() * 100000 + 10000)::BIGINT,
   'Transfer between accounts',
-  '2026-03-11',
-  '2026-03-11'
+  '2026-05-11',
+  '2026-05-11'
 FROM
   users u
   JOIN accounts a_from ON u.id = a_from.user_id
@@ -491,3 +491,28 @@ WHERE
   u.name = 'gopher'
   AND a_from.name = 'Cash'
   AND a_to.name = 'Main';
+
+-- 2️⃣ budget
+INSERT INTO
+  monthly_budgets (
+    id,
+    user_id,
+    category_id,
+    month,
+    amount,
+    created_at,
+    updated_at
+  )
+SELECT
+  gen_random_uuid(),
+  u.id,
+  ec.id,
+  '2026-05-11',
+  ROUND(random() * 20000 + 1000)::BIGINT,
+  '2026-05-11',
+  '2026-05-11'
+FROM
+  users u
+  JOIN expense_categories ec ON u.id = ec.user_id
+WHERE
+  u.name = 'gopher';

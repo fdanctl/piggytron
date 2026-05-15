@@ -87,6 +87,7 @@ func main() {
 	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	userRepo := postgres.NewUserRepository(db)
+	// budgetRepo := postgres.NewBudgetRepository(db)
 
 	// query services
 	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
@@ -98,6 +99,7 @@ func main() {
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
 	userService := user.NewService(userRepo, hasher, sessionStore)
+	// budgetService := budget.NewService(budgetRepo)
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
@@ -114,7 +116,7 @@ func main() {
 	hh := handlers.HomeHandler{}
 	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
 
-	bh := handlers.NewBudgetHandler(expenseCatService, transactionQueryService)
+	bh := handlers.NewBudgetHandler(catQueryService, transactionQueryService)
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(bh))
 
 	goalsHandler := handlers.NewGoalsHandler(

@@ -211,6 +211,7 @@ func (r *TransactionQueryService) CountFilteredResults(
 	     AND ($4::UUID[] IS NULL OR income_category_id = ANY($4) OR expense_category_id = ANY($4))
 	     AND ($5::BIGINT IS NULL OR amount >= $5)
 	     AND ($6::BIGINT IS NULL OR amount <= $6)`,
+		// TODO add min max date
 		uid,
 		filters.Types,
 		filters.AccountIDs,

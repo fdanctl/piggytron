@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -17,17 +16,17 @@ import (
 )
 
 type BudgetHandler struct {
-	expenseCatService *expensecategoryapp.Service
-	transactionQuery  query.TransactionQueryService
+	categoryQuery    query.CategoryQueryService
+	transactionQuery query.TransactionQueryService
 }
 
 func NewBudgetHandler(
-	es *expensecategoryapp.Service,
-	q query.TransactionQueryService,
+	cq query.CategoryQueryService,
+	tq query.TransactionQueryService,
 ) *BudgetHandler {
 	return &BudgetHandler{
-		expenseCatService: es,
-		transactionQuery:  q,
+		transactionQuery: tq,
+		categoryQuery:    cq,
 	}
 }
 
@@ -77,32 +76,19 @@ func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	logger.Debug("total income: " + fmt.Sprint(totalIncome))
 
-	catExpenses, err := h.transactionQuery.GetExpensesByCategoryBetweenDates(
+	categoryBudgetSpent, err := h.categoryQuery.GetExpenseCategoriesBudgetSpent(
 		r.Context(),
 		sessionInfo.UserID,
 		minD,
 		maxD,
 	)
 	if err != nil {
-		logger.Error("error getings expenses by category", "error", err)
+		logger.Error("error geting category budget-spent", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
-	logger.Debug("total expense: " + fmt.Sprint(catExpenses.Total))
-	logger.Debug("total expense: " + fmt.Sprint(catExpenses.Data))
 
-	ec, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
-		return
-	}
-	var ecView []views.ExpenseCategory
-	for _, v := range ec {
-		ecView = append(ecView, views.NewExpenseCategory(v))
-	}
-
-	leftToSpend := totalIncome - catExpenses.Total
+	pageView := views.NewBudgetPageView(totalIncome, categoryBudgetSpent)
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		err := components.Breadcrumbs([]components.BreadcrumbsLink{
@@ -112,7 +98,7 @@ func (h *BudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		err = partials.Budget(totalIncome, leftToSpend, ecView).Render(ctx, w)
+		err = partials.Budget(pageView).Render(ctx, w)
 		return err
 	})
 

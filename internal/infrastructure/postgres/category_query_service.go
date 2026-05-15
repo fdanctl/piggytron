@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/query"
 )
@@ -107,6 +108,67 @@ func (s *CategoryQueryService) FindCategoriesIDIncludes(
 			return nil, err
 		}
 		results = append(results, c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
+	ctx context.Context,
+	uid string,
+	minDate, maxDate time.Time,
+) ([]query.ExpenseCategoryBudgetSpent, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+        SELECT
+          c.id as cid,
+          b.id as bid,
+          c.type,
+          c.name,
+          COALESCE(b.amount, 0),
+          COALESCE(SUM(t.amount), 0)
+        FROM
+          expense_categories c
+          LEFT JOIN transactions t ON c.id = t.expense_category_id
+          AND t.date >= $1
+          AND t.date < $2
+          LEFT JOIN monthly_budgets b ON c.id = b.category_id
+          AND b.month >= $1
+          AND b.month < $2
+        WHERE
+          c.user_id = $3
+        GROUP BY
+          c.id,
+          b.id`,
+		minDate,
+		maxDate,
+		uid,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.ExpenseCategoryBudgetSpent
+
+	for rows.Next() {
+		var dto query.ExpenseCategoryBudgetSpent
+		if err := rows.Scan(
+			&dto.CID,
+			&dto.BID,
+			&dto.Type,
+			&dto.Name,
+			&dto.Budgeted,
+			&dto.Spent,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, dto)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
