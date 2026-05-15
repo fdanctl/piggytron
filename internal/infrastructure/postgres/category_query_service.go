@@ -36,7 +36,6 @@ func (s *CategoryQueryService) FindAllCategories(
 		uid,
 	)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()

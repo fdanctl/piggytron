@@ -1,8 +1,6 @@
 package views
 
 import (
-	"fmt"
-
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
@@ -56,7 +54,6 @@ func NewBudgetPageView(
 	var needs, wants, savings []BudgetRowView
 
 	for _, v := range catBudgetSpent {
-		fmt.Println(v)
 		totalBudgeted += v.Budgeted
 		totalSpent += v.Spent
 		left := v.Budgeted - v.Spent

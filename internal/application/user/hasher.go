@@ -83,13 +83,11 @@ func (h *PasswordHasher) Verify(hash, password string) (bool, error) {
 
 	salt, err := base64.RawStdEncoding.DecodeString(arr[4])
 	if err != nil {
-		fmt.Println(err)
 		return false, err
 	}
 
 	hash1, err := base64.RawStdEncoding.DecodeString(arr[5])
 	if err != nil {
-		fmt.Println(err)
 		return false, err
 	}
 

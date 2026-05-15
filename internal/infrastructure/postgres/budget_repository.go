@@ -82,9 +82,9 @@ func (r *BudgetRepository) UpdateAmount(
 		`
         UPDATE monthly_budgets
         SET
-            amount = $2,
-            updated_at = $3
-        WHERE id = $4
+            amount = $1,
+            updated_at = $2
+        WHERE id = $3
         `,
 		amount,
 		time.Now(),

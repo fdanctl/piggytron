@@ -3,7 +3,6 @@ package incomecategory
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	"github.com/google/uuid"
@@ -84,7 +83,6 @@ func (s *Service) ReadAllUserCategories(
 
 	categories, err := s.repo.FindAllByUser(ctx, uid)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 

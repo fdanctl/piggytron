@@ -225,6 +225,5 @@ func (r *AccountQueryService) FindOneWithSum(
 		&a.Sum,
 	)
 	a.Category = &c
-	fmt.Println(a.Category)
 	return a, err
 }
