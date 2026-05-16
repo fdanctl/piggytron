@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/lib/pq"
 )
 
 type AccountRepository struct {
@@ -33,23 +35,36 @@ type AccountDto struct {
 	UpdatedAt time.Time
 }
 
-func (r *AccountRepository) Save(ctx context.Context, account *account.Account) error {
+func (r *AccountRepository) Create(ctx context.Context, a *account.Account) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO accounts (id, user_id, type, name, currency, target_amount, target_date, category_id, created_at, updated_at)
 	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-		account.ID(),
-		account.UserID(),
-		account.Type(),
-		account.Name(),
-		account.Currency(),
-		account.TargetAmount(),
-		account.TargetDate(),
-		account.CategoryID(),
-		account.CreatedAt(),
-		account.UpdatedAt(),
+		a.ID(),
+		a.UserID(),
+		a.Type(),
+		a.Name(),
+		a.Currency(),
+		a.TargetAmount(),
+		a.TargetDate(),
+		a.CategoryID(),
+		a.CreatedAt(),
+		a.UpdatedAt(),
 	)
-	return err
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return account.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*account.Account, error) {

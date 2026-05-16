@@ -7,4 +7,5 @@ var (
 	ErrInvalidName     = errors.New("invalid name")
 	ErrInvalidCurrency = errors.New("invalid currency")
 	ErrNegativeNumber  = errors.New("number can't be negative")
+	ErrDuplicate       = errors.New("duplicate")
 )

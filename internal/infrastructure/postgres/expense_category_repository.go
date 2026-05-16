@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
+	"github.com/lib/pq"
 )
 
 type ExpenseCategoryRepository struct {
@@ -27,7 +29,7 @@ type ExpenseCategoryDto struct {
 	UpdatedAt   time.Time
 }
 
-func (r *ExpenseCategoryRepository) Save(
+func (r *ExpenseCategoryRepository) Create(
 	ctx context.Context,
 	category *expensecategory.ExpenseCategory,
 ) error {
@@ -42,7 +44,20 @@ func (r *ExpenseCategoryRepository) Save(
 		category.CreatedAt(),
 		category.UpdatedAt(),
 	)
-	return err
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return expensecategory.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *ExpenseCategoryRepository) FindByID(

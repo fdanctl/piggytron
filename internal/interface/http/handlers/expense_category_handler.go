@@ -8,6 +8,7 @@ import (
 
 	"github.com/a-h/templ"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
+	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -72,7 +73,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 	category, err := h.service.CreateCategory(r.Context(), sessionInfo.UserID, name, catType)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, expensecategoryapp.ErrDuplicate) {
+		if errors.Is(err, expensecategory.ErrDuplicate) {
 			logger.Info("invalid form - duplicated", "error", err)
 			view.CustomError = err
 		} else {

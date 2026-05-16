@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/user"
+	"github.com/lib/pq"
 )
 
 type UserRepository struct {
@@ -18,18 +20,31 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) Save(ctx context.Context, user *user.User) error {
+func (r *UserRepository) Create(ctx context.Context, u *user.User) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO users (id, name, password_hash, created_at, updated_at)
 		 VALUES($1,$2,$3,$4,$5)`,
-		user.ID(),
-		user.Name(),
-		user.PasswordHash(),
-		user.CreatedAt(),
-		user.UpdatedAt(),
+		u.ID(),
+		u.Name(),
+		u.PasswordHash(),
+		u.CreatedAt(),
+		u.UpdatedAt(),
 	)
-	return err
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return user.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *UserRepository) FindByID(ctx context.Context, id user.ID) (*user.User, error) {

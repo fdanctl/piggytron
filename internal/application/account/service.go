@@ -14,10 +14,7 @@ type Service struct {
 	repo account.Repository
 }
 
-var (
-	ErrDuplicate = errors.New("duplicate bank")
-	ErrNotNumber = errors.New("not number")
-)
+var ErrNotNumber = errors.New("not number")
 
 func NewService(repo account.Repository) *Service {
 	return &Service{repo: repo}
@@ -39,11 +36,6 @@ func (s *Service) CreateBank(
 		return nil, err
 	}
 
-	_, err = s.repo.FindBankByNameAndUser(ctx, uid, name)
-	if err == nil {
-		return nil, ErrDuplicate
-	}
-
 	id, err := account.NewID(uuid.New().String())
 	if err != nil {
 		return nil, err
@@ -54,7 +46,7 @@ func (s *Service) CreateBank(
 		return nil, err
 	}
 
-	err = s.repo.Save(ctx, account)
+	err = s.repo.Create(ctx, account)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +77,6 @@ func (s *Service) CreateGoal(
 		return nil, err
 	}
 
-	_, err = s.repo.FindGoalByNameAndUser(ctx, account.ID(userID), name)
-	if err == nil {
-		return nil, ErrDuplicate
-	}
-
 	id, err := account.NewID(uuid.New().String())
 	if err != nil {
 		return nil, err
@@ -114,7 +101,7 @@ func (s *Service) CreateGoal(
 		return nil, err
 	}
 
-	err = s.repo.Save(ctx, account)
+	err = s.repo.Create(ctx, account)
 	if err != nil {
 		return nil, err
 	}

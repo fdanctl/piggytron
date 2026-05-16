@@ -3,7 +3,6 @@ package views
 import (
 	"errors"
 
-	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
 	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
 )
 
@@ -29,7 +28,7 @@ func (v *ExpenseCategoryForm) ValidateName() (msgs []string) {
 	if v.Name == "" {
 		msgs = append(msgs, "Name is required")
 	}
-	if errors.Is(v.CustomError, expensecategoryapp.ErrDuplicate) {
+	if errors.Is(v.CustomError, expensecategory.ErrDuplicate) {
 		msgs = append(msgs, v.CustomError.Error())
 	}
 	if len(v.Name) > 30 {

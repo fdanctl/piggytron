@@ -8,6 +8,7 @@ import (
 
 	"github.com/a-h/templ"
 	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
+	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -69,7 +70,7 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	category, err := h.service.CreateCategory(r.Context(), sessionInfo.UserID, name)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, incomecategoryapp.ErrDuplicate) {
+		if errors.Is(err, incomecategory.ErrDuplicate) {
 			logger.Info("invalid form - duplicated", "error", err)
 			view.CustomError = err
 		} else {

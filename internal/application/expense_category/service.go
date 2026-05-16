@@ -2,15 +2,9 @@ package expensecategory
 
 import (
 	"context"
-	"errors"
 
 	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrCategoryExists = errors.New("category already exists")
-	ErrDuplicate      = errors.New("duplicate category")
 )
 
 type Service struct {
@@ -42,11 +36,6 @@ func (s *Service) CreateCategory(
 		return nil, err
 	}
 
-	_, err = s.repo.FindByNameAndUser(ctx, uid, name)
-	if err == nil {
-		return nil, ErrDuplicate
-	}
-
 	id, err := expensecategory.NewID(uuid.New().String())
 	if err != nil {
 		return nil, err
@@ -62,7 +51,7 @@ func (s *Service) CreateCategory(
 		return nil, err
 	}
 
-	err = s.repo.Save(ctx, category)
+	err = s.repo.Create(ctx, category)
 	if err != nil {
 		return nil, err
 	}

@@ -9,10 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	ErrWrongPassword = errors.New("password not match")
-	ErrUserExists    = errors.New("user already taken")
-)
+var ErrWrongPassword = errors.New("password not match")
 
 type Service struct {
 	repo         user.Repository
@@ -32,16 +29,12 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 		return "", err
 	}
 
-	_, err = s.repo.FindByName(ctx, name)
-	if err == nil {
-		return "", ErrUserExists
-	}
 	u, err := user.New(user.ID(uuid.New().String()), name, hash)
 	if err != nil {
 		return "", err
 	}
 
-	err = s.repo.Save(ctx, u)
+	err = s.repo.Create(ctx, u)
 	if err != nil {
 		return "", err
 	}

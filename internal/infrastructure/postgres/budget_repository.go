@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
 	budget "github.com/fdanctl/piggytron/internal/domain/monthly_budget"
+	"github.com/lib/pq"
 )
 
 type BudgetRepository struct {
@@ -30,7 +32,7 @@ type BudgetDto struct {
 
 func (r *BudgetRepository) Create(
 	ctx context.Context,
-	budget *budget.Budget,
+	b *budget.Budget,
 ) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -38,15 +40,28 @@ func (r *BudgetRepository) Create(
 		INSERT INTO monthly_budgets (id, user_id, category_id, month, amount, created_at, updated_at)
 		VALUES($1,$2,$3,$4,$5,$6,$7)
 		`,
-		budget.ID(),
-		budget.UserID(),
-		budget.CategoryID(),
-		budget.Month(),
-		budget.Amount(),
-		budget.CreatedAt(),
-		budget.UpdatedAt(),
+		b.ID(),
+		b.UserID(),
+		b.CategoryID(),
+		b.Month(),
+		b.Amount(),
+		b.CreatedAt(),
+		b.UpdatedAt(),
 	)
-	return err
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return budget.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 // func (r *BudgetRepository) Update(

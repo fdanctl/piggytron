@@ -2,13 +2,10 @@ package incomecategory
 
 import (
 	"context"
-	"errors"
 
 	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
 	"github.com/google/uuid"
 )
-
-var ErrDuplicate = errors.New("duplicate category")
 
 type Service struct {
 	repo incomecategory.Repository
@@ -33,11 +30,6 @@ func (s *Service) CreateCategory(
 		return nil, err
 	}
 
-	_, err = s.repo.FindByNameAndUser(ctx, uid, name)
-	if err == nil {
-		return nil, ErrDuplicate
-	}
-
 	id, err := incomecategory.NewID(uuid.New().String())
 	if err != nil {
 		return nil, err
@@ -48,7 +40,7 @@ func (s *Service) CreateCategory(
 		return nil, err
 	}
 
-	err = s.repo.Save(ctx, category)
+	err = s.repo.Create(ctx, category)
 	if err != nil {
 		return nil, err
 	}

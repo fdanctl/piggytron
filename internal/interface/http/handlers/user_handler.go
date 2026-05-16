@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	userapp "github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/domain/user"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -136,7 +137,7 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 	sid, err := h.service.CreateUser(r.Context(), name, pwd)
 	if err != nil {
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, userapp.ErrUserExists) {
+		if errors.Is(err, user.ErrDuplicate) {
 			logger.Info("error on signup", "error", err)
 			view.CustomError = err
 		} else {

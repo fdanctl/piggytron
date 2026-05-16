@@ -3,7 +3,7 @@ package views
 import (
 	"errors"
 
-	"github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/domain/user"
 )
 
 type SignupView struct {
@@ -29,7 +29,7 @@ func (v *SignupView) ValidateName() (msgs []string) {
 	if v.Name == "" {
 		msgs = append(msgs, "Name is required")
 	}
-	if errors.Is(v.CustomError, user.ErrUserExists) {
+	if errors.Is(v.CustomError, user.ErrDuplicate) {
 		msgs = append(msgs, v.CustomError.Error())
 	}
 	if len(v.Name) > 50 {

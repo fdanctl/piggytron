@@ -14,7 +14,9 @@ CREATE TABLE income_categories (
   --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  deleted_at TIMESTAMP
+  deleted_at TIMESTAMP,
+  --
+  UNIQUE (user_id, name)
 );
 
 CREATE TABLE expense_categories (
@@ -26,7 +28,9 @@ CREATE TABLE expense_categories (
   --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  deleted_at TIMESTAMP
+  deleted_at TIMESTAMP,
+  --
+  UNIQUE (user_id, name)
 );
 
 CREATE TABLE accounts (
@@ -59,7 +63,8 @@ CREATE TABLE accounts (
       -- AND target_date IS NOT NULL
       AND category_id IS NOT NULL
     )
-  )
+  ),
+  UNIQUE (name, type, user_id)
 );
 
 CREATE TABLE transactions (
