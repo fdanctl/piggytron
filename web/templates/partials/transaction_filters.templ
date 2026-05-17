@@ -40,27 +40,42 @@ templ TransactionsFilters(
 				<h4>Filters</h4>
 				<div
 					class="flex justify-center items-center cursor-pointer"
-					onclick="closeLastDialog()"
+					data-action="ui.dialog.close-last"
 				>
 					@components.XSvg(16, "", "")
 				</div>
 			</div>
 			<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
 				for _, v := range currAcc {
-					@Pill(v.Name, templ.Attributes{"data-id": string(v.ID), "onclick": "removeFilterPill(this)"})
+					@Pill(
+						v.Name,
+						templ.Attributes{
+							"data-id":     string(v.ID),
+							"data-action": "ui.filters.remove",
+						},
+					)
 				}
 				for _, v := range currCats {
-					@Pill(v.Name, templ.Attributes{"data-id": string(v.ID), "onclick": "removeFilterPill(this)"})
+					@Pill(
+						v.Name,
+						templ.Attributes{
+							"data-id":     string(v.ID),
+							"data-action": "ui.filters.remove",
+						},
+					)
 				}
 			</ul>
 		</div>
-		<div hx-include="input" style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;">
+		<div
+			hx-include="input"
+			style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;"
+		>
 			<div>
 				<div class="flex justify-between items-center mb-sm">
 					<h6>Accounts/Goals</h6>
 					<div
 						class="cursor-pointer flex justify-center items-center"
-						onclick="accordionToggle(this)"
+						data-action="ui.filters-accordion.toggle"
 					>
 						<i>
 							@components.PlusSvg(16, "", "")
@@ -75,12 +90,13 @@ templ TransactionsFilters(
 						@components.CheckBoxPill(
 							o.Label,
 							templ.Attributes{
-								"name":      "accounts",
-								"value":     o.Value,
-								"checked":   slices.Contains(q["accounts"], o.Value),
-								"hx-post":   "/partials/transaction-filters",
-								"hx-target": "#filters-result-btn",
-								"onchange":  "toggleFilterPill(this)",
+								"name":       "accounts",
+								"value":      o.Value,
+								"checked":    slices.Contains(q["accounts"], o.Value),
+								"hx-post":    "/partials/transaction-filters",
+								"hx-target":  "#filters-result-btn",
+								"hx-trigger": "input",
+								"data-input": "ui.filters.toggle",
 							},
 						)
 					}
@@ -91,7 +107,7 @@ templ TransactionsFilters(
 					<h6>Categories</h6>
 					<div
 						class="cursor-pointer flex justify-center items-center"
-						onclick="accordionToggle(this)"
+						data-action="ui.filters-accordion.toggle"
 					>
 						<i>
 							@components.PlusSvg(16, "", "")
@@ -106,12 +122,13 @@ templ TransactionsFilters(
 						@components.CheckBoxPill(
 							o.Label,
 							templ.Attributes{
-								"name":      "categories",
-								"value":     o.Value,
-								"checked":   slices.Contains(q["categories"], o.Value),
-								"hx-post":   "/partials/transaction-filters",
-								"hx-target": "#filters-result-btn",
-								"onchange":  "toggleFilterPill(this)",
+								"name":       "categories",
+								"value":      o.Value,
+								"checked":    slices.Contains(q["categories"], o.Value),
+								"hx-post":    "/partials/transaction-filters",
+								"hx-target":  "#filters-result-btn",
+								"hx-trigger": "input",
+								"data-input": "ui.filters.toggle",
 							},
 						)
 					}
@@ -125,14 +142,22 @@ templ TransactionsFilters(
 					"w-full",
 					components.BtnOutline,
 					components.BtnMedium,
-					templ.Attributes{"type": "button", "onclick": "resetTransactionFiltersForm()"})
+					templ.Attributes{
+						"type":        "button",
+						"data-action": "ui.filters.reset",
+					},
+				)
 			}
 			@components.Button(
 				fmt.Sprintf("Show %d results", count),
 				"w-full",
 				components.BtnPrimary,
 				components.BtnMedium,
-				templ.Attributes{"type": "button", "onclick": "closeLastDialog()"})
+				templ.Attributes{
+					"type":        "button",
+					"data-action": "ui.dialog.close-last",
+				},
+			)
 		</div>
 	</form>
 }

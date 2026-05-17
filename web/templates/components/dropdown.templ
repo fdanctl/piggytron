@@ -24,6 +24,8 @@ templ Dropdown(class, name string, minWFull bool) {
 		<button
 			class={ "reset-btn", templ.KV(class, class != "") }
 			type="button"
+			data-action="ui.select.toggle"
+			data-target={ id }
 			popovertarget={ id }
 			style={ fmt.Sprintf("anchor-name: %s;", id) }
 		>
@@ -39,7 +41,6 @@ templ Dropdown(class, name string, minWFull bool) {
 			class={ "popover", templ.KV("min-w", minWFull) }
 			style={ fmt.Sprintf("position-anchor: %s;", id) }
 			popover
-			ontoggle="handleSelectToggle(event)"
 		>
 			<div>
 				{ children... }

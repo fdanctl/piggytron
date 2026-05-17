@@ -45,10 +45,26 @@ templ CalendarPreRendered() {
 	}}
 	<div class="calendar unselectable">
 		<div class="flex justify-center items-center gap-xs">
-			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "prevMonth(this)", "type": "button"})
-			@Select(currMonth.Label, currMonth.Value, months, false, templ.Attributes{"name": "month", "onchange": "buildMap(this)"})
-			@Select(currYear, currYear, yearOpts, false, templ.Attributes{"name": "year", "onchange": "buildMap(this)"})
-			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "nextMonth(this)", "type": "button"})
+			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge,
+				templ.Attributes{
+					"data-action": "ui.calendar.prev-month",
+					"type":        "button",
+				})
+			@Select(currMonth.Label, currMonth.Value, months, false,
+				templ.Attributes{
+					"name":        "month",
+					"data-change": "ui.calendar.rebuild",
+				})
+			@Select(currYear, currYear, yearOpts, false,
+				templ.Attributes{
+					"name":        "year",
+					"data-change": "ui.calendar.rebuild",
+				})
+			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge,
+				templ.Attributes{
+					"data-action": "ui.calendar.next-month",
+					"type":        "button",
+				})
 		</div>
 		<div class="mt-sm">
 			for _, d := range weekdays {
@@ -81,6 +97,7 @@ templ dayDiv(i int, firstSunday time.Time) {
 	if !(i < 7 && day.Day() > 7 || i > 28 && day.Day() < 7) {
 		<div
 			class={ templ.KV("text-muted", (i < 7 && day.Day() > 7) || (i > 28 && day.Day() < 7)) }
+			onclick=""
 		>
 			{ day.Day() }
 		</div>
@@ -93,10 +110,26 @@ templ Calendar() {
 	{{ yearOpts := generateYearOptions() }}
 	<div class="calendar unselectable">
 		<div class="flex justify-center items-center gap-xs">
-			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "prevMonth(this)", "type": "button"})
-			@Select("", "", months, false, templ.Attributes{"name": "month", "onchange": "buildMap(this)"})
-			@Select("", "", yearOpts, false, templ.Attributes{"name": "year", "onchange": "buildMap(this)"})
-			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge, templ.Attributes{"onclick": "nextMonth(this)", "type": "button"})
+			@IconButton(ChevronLeftSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge,
+				templ.Attributes{
+					"data-action": "ui.calendar.prev-month",
+					"type":        "button",
+				})
+			@Select("", "", months, false,
+				templ.Attributes{
+					"name":        "month",
+					"data-change": "ui.calendar.rebuild",
+				})
+			@Select("", "", yearOpts, false,
+				templ.Attributes{
+					"name":        "year",
+					"data-change": "ui.calendar.rebuild",
+				})
+			@IconButton(ChevronRightSvg(0, "", ""), "p-xs", BtnGhost, BtnLarge,
+				templ.Attributes{
+					"data-action": "ui.calendar.next-month",
+					"type":        "button",
+				})
 		</div>
 		<div class="mt-sm">
 			for _, d := range weekdays {

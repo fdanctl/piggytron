@@ -33,7 +33,7 @@ templ Nav(attrs templ.Attributes) {
 		class="nav"
 		hx-target="#content"
 		hx-boost="true"
-		hx-on::after-request="closeLastDialog();"
+		data-afterrequest="ui.nav.navigate"
 		{ attrs... }
 	>
 		<ul class="unselectable">
@@ -51,26 +51,14 @@ templ Nav(attrs templ.Attributes) {
 
 templ navLi(v navLink) {
 	<li
-		data-name={ v.name }
-		onmouseenter="sidebarShowPopover(this)"
-		onmouseleave="sidebarHidePopover(this)"
 		style={ setAnchorName(v.name) }
 	>
 		<a
-			tabindex="0"
+			data-name={ v.name }
 			onkeydown="event.key === 'Enter' && event.target.click()"
 			if v.href != "" {
 				href={ v.href }
 			}
-			if len(v.sub) > 0 {
-				onfocus="sidebarShowPopover(this.parentElement); handleExpandOpen(this.parentElement.querySelector('.sublinks'))"
-				onmousedown="event.preventDefault(); handleExpandToggle(event);"
-				onclick="sidebarTogglePopover(this.parentElement)"
-			} else {
-				onfocus="sidebarShowPopover(this.parentElement)"
-				onclick="event.stopPropagation(); handleCloseAllSublinks(event); handleActiveLink(this)"
-			}
-			onblur="sidebarHidePopover(this.parentElement);"
 		>
 			<i class="flex justify-center">
 				@v.icon
@@ -85,16 +73,11 @@ templ navLi(v navLink) {
 		if len(v.sub) > 0 {
 			<div class="sublinks">
 				<ul>
-					for i, sub := range v.sub {
+					for _, sub := range v.sub {
 						<li>
 							<a
 								data-name={ v.name }
 								href={ sub.href }
-								onclick="event.stopPropagation(); handleExpandRemove(this.closest('.sublinks')); handleActiveLink(this); "
-								onfocus="sidebarShowPopover(this); handleExpandOpen(this.closest('.sublinks')); handleSublinkFocus(this)"
-								if i == len(v.sub) - 1 {
-									onblur="handleExpandRemove(this.closest('.sublinks'));"
-								}
 							>
 								@ChevronRightSvg(16, "", "")
 								<span>

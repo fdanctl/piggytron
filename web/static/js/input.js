@@ -6,7 +6,7 @@ function handleInputOnBlur(ele) {
   }
 }
 
-function handlePasswordToggle(ele) {
+function passwordToggle({ ele }) {
   const pwdInput = ele.parentElement.parentElement.children[0];
   if (pwdInput.type === "password") {
     pwdInput.type = "text";
@@ -17,17 +17,17 @@ function handlePasswordToggle(ele) {
   ele.children[1].classList.toggle("hidden");
 }
 
-function handleCheckPillToggle(ele) {
+function checkboxPillToggle({ ele }) {
   let cb = ele.querySelector("input");
   cb.checked = !cb.checked;
-  cb.dispatchEvent(new Event("change")); // triggers change event
+  cb.dispatchEvent(new Event("input", { bubbles: true })); // triggers change event
 }
 
 // select
-function select(ele) {
+function selectSelect({ ele, data }) {
   const input = ele.parentElement.nextElementSibling;
-  input.value = ele.dataset.value;
-  input.dispatchEvent(new Event("change")); // triggers change event
+  input.value = data.value;
+  input.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 
   const opts = ele.parentElement.querySelectorAll("li");
   for (let i = 0; i < opts.length; i++) {
@@ -43,18 +43,23 @@ function select(ele) {
   }
 }
 
-function handleSelectToggle(evt) {
-  const popover = evt.currentTarget;
+function selectToggle({ data }) {
+  const popover = document.getElementById(data.target);
 
-  if (popover.matches(":popover-open")) {
-    const selected = popover.querySelector(".selected");
-    selected?.scrollIntoView({ block: "center" });
-  }
+  requestAnimationFrame(() => {
+    if (popover.matches(":popover-open")) {
+      const selected = popover.querySelector(".selected");
+
+      selected?.scrollIntoView({
+        block: "center",
+      });
+    }
+  });
 }
 
 // date
-function handleDateOnChange(evt) {
-  let raw = evt.target.value.replace(/\D/g, "");
+function dateOnChange({ ele }) {
+  let raw = ele.value.replace(/\D/g, "");
 
   // Limit to 8 digits (DDMMYYYY)
   raw = raw.slice(0, 8);
@@ -92,12 +97,62 @@ function handleDateOnChange(evt) {
     formatted += "/" + year;
   }
 
-  evt.target.value = formatted;
+  ele.value = formatted;
+}
+
+function openCalendar({ data }) {
+  const target = document.getElementById(data.target);
+  // might need to import if I use webpack
+  buildCalendar({ ele: target.querySelector(".calendar") });
+  const inputValue = target.previousSibling.querySelector("input").value;
+  let day;
+  let month;
+  let year;
+  if (inputValue.length < 10) {
+    const presentDay = new Date(Date.now());
+    day = presentDay.getDate();
+    month = presentDay.getMonth();
+    year = presentDay.getFullYear();
+  } else {
+    const ddmmyyyy = inputValue.split("/");
+    day = ddmmyyyy[0];
+    month = ddmmyyyy[1];
+    year = ddmmyyyy[2];
+  }
+
+  const yearInput = target.querySelector("input[name='year']");
+  const monthInput = target.querySelector("input[name='month']");
+  clickOption(yearInput, String(year));
+  clickOption(monthInput, String(month));
+  monthInput.dispatchEvent(new Event("change"), { bubbles: true }); // triggers change event
+
+  const days = target.querySelectorAll(".days > div");
+  for (let i = 0; i < days.length; i++) {
+    if (day == Number(days[i].innerText)) {
+      days[i].classList.add("selected");
+    }
+  }
+}
+
+function selectDay({ ele, evt }) {
+  if (!Number.isNaN(Number(evt.target.innerHTML))) {
+    const calendar = evt.target.closest(".calendar");
+    let year = calendar.querySelector("input[name='year']").value;
+    let month = calendar.querySelector("input[name='month']").value;
+
+    const date = new Date(year, month, evt.target.innerText);
+
+    const input = ele.previousElementSibling.querySelector("input");
+    input.value = date.toLocaleDateString("en-GB");
+    input.dispatchEvent(new Event("input"));
+
+    ele.hidePopover();
+  }
 }
 
 // time
-function handleTimeOnChange(evt) {
-  let value = evt.target.value.replace(/\D/g, "");
+function timeOnChange({ ele }) {
+  let value = ele.value.replace(/\D/g, "");
 
   value = value.slice(0, 4);
 
@@ -121,10 +176,10 @@ function handleTimeOnChange(evt) {
     formatted += ":" + minutes;
   }
 
-  evt.target.value = formatted;
+  ele.value = formatted;
 }
 
-function handleClickTimePopover(ele) {
+function selectTime({ ele }) {
   const popover = ele.closest(".popover");
 
   const opts = ele.parentElement.querySelectorAll("li");
@@ -157,13 +212,13 @@ function handleClickTimePopover(ele) {
   input.dispatchEvent(new Event("input"));
 }
 
-function openTimePopover(evt) {
-  const inputValue = evt.target
+function openTimePopover({ data }) {
+  const target = document.getElementById(data.target);
+  const inputValue = target
     .closest(".popover")
     .previousSibling.querySelector("input").value;
 
-  const popover = evt.target;
-  const opts = popover.querySelectorAll("li");
+  const opts = target.querySelectorAll("li");
   for (let i = 0; i < opts.length; i++) {
     opts[i].classList.remove("selected");
   }
@@ -176,7 +231,7 @@ function openTimePopover(evt) {
   let h = hhmm[0];
   let m = hhmm[1];
 
-  const harr = popover.querySelectorAll('[data-type="hour"]');
+  const harr = target.querySelectorAll('[data-type="hour"]');
   for (let i = 0; i < harr.length; i++) {
     if (harr[i].innerText === h) {
       harr[i].classList.add("selected");
@@ -184,7 +239,7 @@ function openTimePopover(evt) {
     }
   }
 
-  const marr = popover.querySelectorAll('[data-type="minutes"]');
+  const marr = target.querySelectorAll('[data-type="minutes"]');
   for (let i = 0; i < marr.length; i++) {
     if (marr[i].innerText === m) {
       marr[i].classList.add("selected");
@@ -192,10 +247,68 @@ function openTimePopover(evt) {
     }
   }
 
-  if (popover.matches(":popover-open")) {
-    const selected = popover.querySelectorAll(".selected");
+  if (target.matches(":popover-open")) {
+    const selected = target.querySelectorAll(".selected");
     for (let i = 0; i < selected.length; i++) {
       selected[i].scrollIntoView({ block: "center" });
     }
   }
 }
+
+document.addEventListener("focusout", (evt) => {
+  if (!(evt.target instanceof HTMLInputElement)) return;
+
+  handleInputOnBlur(evt.target);
+});
+
+document.addEventListener("click", (evt) => {
+  const ele = evt.target.closest("[data-action]");
+
+  if (!ele) return;
+
+  if (ele.dataset.action === "ui.password.toggle") {
+    passwordToggle({ ele });
+  }
+
+  if (ele.dataset.action === "ui.checkbox-pill.toggle") {
+    checkboxPillToggle({ ele });
+  }
+
+  if (ele.dataset.action === "ui.select.option") {
+    selectSelect({ ele, data: ele.dataset });
+  }
+
+  if (ele.dataset.action === "ui.date-input.toggle") {
+    openCalendar({ data: ele.dataset });
+  }
+
+  if (ele.dataset.action === "ui.date-input.select") {
+    selectDay({ ele, evt });
+  }
+
+  if (ele.dataset.action === "ui.time-input.toggle") {
+    openTimePopover({ data: ele.dataset });
+  }
+
+  if (ele.dataset.action === "ui.time-input.select") {
+    selectTime({ ele });
+  }
+
+  if (ele.dataset.action === "ui.select.toggle") {
+    selectToggle({ data: ele.dataset });
+  }
+});
+
+document.addEventListener("input", (evt) => {
+  const ele = evt.target.closest("[data-input]");
+
+  if (!ele) return;
+
+  if (ele.dataset.input === "ui.date-input.input") {
+    dateOnChange({ ele });
+  }
+
+  if (ele.dataset.input === "ui.time-input.input") {
+    timeOnChange({ ele });
+  }
+});

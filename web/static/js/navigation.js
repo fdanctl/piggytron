@@ -2,7 +2,7 @@
 // let colapsed set in sidebar-initial
 const sidebar = document.getElementById("sidebar");
 
-const handleColapseSidebar = () => {
+const colapseSidebar = () => {
   document.documentElement.classList.toggle("sidebar-colapsed");
   colapsed = !colapsed;
   localStorage.setItem("colapsed", colapsed);
@@ -34,6 +34,11 @@ const sidebarHidePopover = (ele) => {
 
 // === dialog x nav sheet === //
 const dialogRoot = document.querySelector("#dialog-root");
+
+function openNavSheet() {
+  dialogRoot.querySelector("#nav-sheet").showModal();
+}
+
 const closeLastDialog = () => {
   const lc = dialogRoot.lastChild;
   lc.classList.add("closing");
@@ -55,7 +60,7 @@ dialogRoot?.lastChild.addEventListener("toggle", (e) => {
 });
 
 document.addEventListener("click", (e) => {
-  if (e.target === dialogRoot.lastChild) {
+  if (e.target === dialogRoot?.lastChild) {
     closeLastDialog();
   }
 });
@@ -68,7 +73,7 @@ document.addEventListener("touchstart", (e) => {
 });
 
 document.addEventListener("touchmove", (e) => {
-  if (e.target === dialogRoot.lastChild) {
+  if (e.target === dialogRoot?.lastChild) {
     e.preventDefault();
     const deltaY = e.touches[0].clientY - noStartYPosition;
     if (deltaY > 0) {
@@ -78,7 +83,7 @@ document.addEventListener("touchmove", (e) => {
 });
 
 document.addEventListener("touchend", (e) => {
-  if (e.target === dialogRoot.lastChild) {
+  if (e.target === dialogRoot?.lastChild) {
     const deltaY = e.changedTouches[0].clientY - noStartYPosition;
     if (deltaY / e.view.outerHeight > 0.2) {
       closeLastDialog();
@@ -104,12 +109,15 @@ for (let i = 0; i < a.length; i++) {
 
 const handleActiveLink = (ele) => {
   a.forEach((e) => e.classList.remove("active"));
-  const pathname = ele.pathname;
+  let pathname = window.location.pathname;
+  if (pathname === "/") {
+    pathname = "dashboard";
+  }
   for (let i = 0; i < a.length; i++) {
     const text = a[i].text.trim().toLowerCase();
     a[i].classList.toggle("active", pathname.includes(text));
   }
-  ele.classList.add("active");
+  ele?.classList.add("active");
 };
 
 const handleCloseAllSublinks = (ev) => {
@@ -119,24 +127,15 @@ const handleCloseAllSublinks = (ev) => {
     allSublinks[i].classList.remove("open");
   }
 };
-const handleExpandToggle = (ev) => {
-  ev.stopPropagation();
 
-  const closestSublinks = ev.target.closest("li").querySelector(".sublinks");
-
-  const isOpen = closestSublinks.matches(".open");
-
-  handleCloseAllSublinks(ev);
-
-  if (!isOpen) {
-    if (
-      document.documentElement.classList.contains("sidebar-colapsed") &&
-      closestSublinks.closest("#sidebar")
-    ) {
-      return;
-    }
-    closestSublinks.classList.add("open");
+const handleExpandToggle = (ele) => {
+  if (
+    document.documentElement.classList.contains("sidebar-colapsed") &&
+    ele.closest("#sidebar")
+  ) {
+    return;
   }
+  ele.classList.toggle("open");
 };
 
 const handleExpandOpen = (ele) => {
@@ -162,3 +161,117 @@ const handleSublinkFocus = (ele) => {
     }
   }
 };
+
+const sidebarLinks = document.querySelectorAll("#sidebar [data-name]");
+
+for (let i = 0; i < sidebarLinks.length; i++) {
+  sidebarLinks[i];
+}
+
+for (let i = 0; i < sidebarLinks.length; i++) {
+  const link = sidebarLinks[i];
+  link.addEventListener("mouseenter", (evt) => {
+    sidebarShowPopover(link);
+  });
+
+  link.addEventListener("mouseleave", (evt) => {
+    sidebarHidePopover(link);
+  });
+
+  link.addEventListener("blur", (evt) => {
+    sidebarHidePopover(link);
+    if (link.closest(".sublinks") && !link.nextElementSibling) {
+      handleExpandRemove(link.closest(".sublinks"));
+    }
+  });
+
+  link.addEventListener("mousedown", (evt) => {
+    const nextSibling = link.nextElementSibling;
+    if (nextSibling?.classList.contains("sublinks")) {
+      evt.preventDefault();
+      handleExpandOpen(link);
+    }
+  });
+
+  link.addEventListener("focus", (evt) => {
+    const nextSibling = link.nextElementSibling;
+    if (nextSibling?.classList.contains("sublinks")) {
+      // sidebarShowPopover(link);
+      handleExpandOpen(nextSibling);
+    } else if (link.closest(".sublinks")) {
+      handleExpandOpen(link.closest(".sublinks"));
+    }
+  });
+
+  link.addEventListener("click", (evt) => {
+    const nextSibling = link.nextElementSibling;
+    if (nextSibling?.classList.contains("sublinks")) {
+      handleExpandToggle(nextSibling);
+    } else if (link.closest(".sublinks")) {
+      handleExpandRemove(link.closest(".sublinks"));
+    } else {
+      evt.stopPropagation();
+    }
+    const popover = link.closest(".popover");
+    if (popover) {
+      sidebarHidePopover(popover);
+    }
+  });
+}
+
+document.addEventListener("htmx:afterRequest", (evt) => {
+  const ele = evt.target.closest("[data-afterrequest]");
+
+  if (!ele) return;
+
+  if (ele.dataset.afterrequest === "ui.nav.navigate") {
+    closeLastDialog();
+    handleActiveLink();
+    document.getElementsByTagName("main")[0].focus();
+  }
+
+  if (ele.dataset.afterrequest === "ui.form.disable-btns") {
+    disableBtns(ele);
+  }
+});
+
+const navSheetLinks = document.querySelectorAll("#nav-sheet [data-name]");
+
+for (let i = 0; i < navSheetLinks.length; i++) {
+  const link = navSheetLinks[i];
+
+  link.addEventListener("click", (evt) => {
+    const nextSibling = link.nextElementSibling;
+    if (nextSibling?.classList.contains("sublinks")) {
+      handleExpandToggle(nextSibling);
+    } else if (link.closest(".sublinks")) {
+      handleExpandRemove(link.closest(".sublinks"));
+      handleActiveLink(link);
+    } else {
+      evt.stopPropagation();
+      handleActiveLink(link);
+      handleCloseAllSublinks(evt);
+    }
+    const popover = link.closest(".popover");
+    if (popover) {
+      sidebarHidePopover(popover);
+    }
+  });
+}
+
+document.addEventListener("click", (evt) => {
+  const ele = evt.target.closest("[data-action]");
+
+  if (!ele) return;
+
+  if (ele.dataset.action === "ui.sidebar.colapse") {
+    colapseSidebar();
+  }
+  if (ele.dataset.action === "ui.nav-sheet.open") {
+    openNavSheet();
+  }
+
+  if (ele.dataset.action === "ui.dialog.close-last") {
+    closeLastDialog();
+  }
+});

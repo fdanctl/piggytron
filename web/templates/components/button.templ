@@ -22,7 +22,7 @@ const (
 )
 
 templ Button(text, class string, variant btnVariant, size btnSize, attrs templ.Attributes) {
-	<button class={ "btn", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+	<button class={ "btn unselectable", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
 		{ text }
 	</button>
 }

@@ -8,7 +8,7 @@ function clickOption(ele, value) {
   }
 }
 
-function prevMonth(ele) {
+function prevMonth({ ele }) {
   const calendar = ele.closest(".calendar");
   const month = calendar.querySelector("input[name='month']");
   if (month.value === "0") {
@@ -18,10 +18,10 @@ function prevMonth(ele) {
   } else {
     clickOption(month, String(Number(month.value) - 1));
   }
-  month.dispatchEvent(new Event("change")); // triggers change event
+  month.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 }
 
-function nextMonth(ele) {
+function nextMonth({ ele }) {
   const calendar = ele.closest(".calendar");
   const month = calendar.querySelector("input[name='month']");
   if (month.value === "11") {
@@ -31,10 +31,10 @@ function nextMonth(ele) {
   } else {
     clickOption(month, String(Number(month.value) + 1));
   }
-  month.dispatchEvent(new Event("change")); // triggers change event
+  month.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 }
 
-function buildMap(ele) {
+function buildCalendar({ ele }) {
   const calendar = ele.closest(".calendar");
   const year = calendar.querySelector("input[name='year']").value;
   const month = calendar.querySelector("input[name='month']").value;
@@ -66,33 +66,26 @@ function buildMap(ele) {
   }
 }
 
-function openCalendar(evt) {
-  const inputValue = evt.target.previousSibling.querySelector("input").value;
-  let day;
-  let month;
-  let year;
-  if (inputValue.length < 10) {
-    const presentDay = new Date(Date.now());
-    day = presentDay.getDay();
-    month = presentDay.getMonth();
-    year = presentDay.getFullYear();
-  } else {
-    const ddmmyyyy = inputValue.split("/");
-    day = ddmmyyyy[0];
-    month = ddmmyyyy[1];
-    year = ddmmyyyy[2];
+document.addEventListener("click", (evt) => {
+  const ele = evt.target.closest("[data-action]");
+
+  if (!ele) return;
+
+  if (ele.dataset.action === "ui.calendar.prev-month") {
+    prevMonth({ ele });
   }
 
-  const yearInput = evt.target.querySelector("input[name='year']");
-  const monthInput = evt.target.querySelector("input[name='month']");
-  clickOption(yearInput, String(year));
-  clickOption(monthInput, String(month));
-  monthInput.dispatchEvent(new Event("change")); // triggers change event
-
-  const days = evt.target.querySelectorAll(".days > div");
-  for (let i = 0; i < days.length; i++) {
-    if (day == days[i].innerText) {
-      days[i].classList.add("selected");
-    }
+  if (ele.dataset.action === "ui.calendar.next-month") {
+    nextMonth({ ele });
   }
-}
+});
+
+document.addEventListener("change", (evt) => {
+  const ele = evt.target.closest("[data-change]");
+
+  if (!ele) return;
+
+  if (ele.dataset.change === "ui.calendar.rebuild") {
+    buildCalendar({ ele });
+  }
+});

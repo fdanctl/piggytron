@@ -7,7 +7,7 @@ templ Sidebar() {
 		@Logo()
 		<div>
 			<hr/>
-			<div onclick="handleColapseSidebar()">
+			<div data-action="ui.sidebar.colapse" onclick="">
 				@ChevronLeftSvg(16, "", "")
 			</div>
 		</div>
@@ -20,8 +20,6 @@ templ Sidebar() {
 					id={ link.name + "-popover" }
 					popover="auto"
 					style={ getAnchorName(link.name) }
-					onmouseenter="sidebarShowPopover(this)"
-					onmouseleave="sidebarHidePopover(this)"
 				>
 					<div>
 						<span>{ link.name }</span>
@@ -29,10 +27,15 @@ templ Sidebar() {
 							<ul
 								hx-target="#content"
 								hx-boost="true"
+								data-afterrequest="ui.nav.navigate"
 							>
 								for _, sublink := range link.sub {
 									<li>
-										<a href={ sublink.href } onclick="handleActiveLink(this); sidebarHidePopover(this.closest('.popover')); document.getElementsByTagName('main')[0].focus()">
+										<a
+											href={ sublink.href }
+											class="w-full"
+											style="display: block;"
+										>
 											{ sublink.name }
 										</a>
 									</li>

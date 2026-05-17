@@ -193,7 +193,6 @@
 }
 
 .sublinks {
-  margin-top: 5px;
   padding-left: 10px;
   overflow: hidden;
   display: grid;
@@ -206,6 +205,7 @@
 }
 
 .sublinks.open {
+  margin-top: 5px;
   grid-template-rows: 1fr;
 }
 

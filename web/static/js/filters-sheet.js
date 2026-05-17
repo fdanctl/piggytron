@@ -1,4 +1,4 @@
-function accordionToggle(ele) {
+function filterAccordionToggle({ ele }) {
   const div = ele.parentElement.parentElement.children[1];
   div.classList.toggle("flex-wrap");
   ele.children[0].classList.toggle("hidden");
@@ -11,7 +11,7 @@ function resetTransactionFiltersForm() {
   for (let i = 0; i < inputs.length; i++) {
     inputs[i].checked = false;
   }
-  inputs[0]?.dispatchEvent(new Event("change")); // triggers change event
+  inputs[0]?.dispatchEvent(new Event("input", { bubbles: true })); // triggers change event
   const pillBox = document.getElementById("curr-filters");
   pillBox.innerHTML = "";
 }
@@ -19,7 +19,7 @@ function resetTransactionFiltersForm() {
 /**
  * @param {HTMLInputElement} input
  */
-function toggleFilterPill(ele) {
+function toggleFilterPill({ ele }) {
   const pillBox = document.getElementById("curr-filters");
   if (ele.checked) {
     const newPill = document.createElement("div");
@@ -38,21 +38,47 @@ function toggleFilterPill(ele) {
     newPill.appendChild(span);
     newPill.appendChild(btn);
     pillBox.appendChild(newPill);
-    newPill.addEventListener("click", () => {
-      removeFilterPill(newPill);
-    });
+    newPill.dataset.action = "ui.filters.remove";
   } else {
     pillBox.querySelector(`[data-id="${ele.value}"]`)?.remove();
   }
 }
 
-function removeFilterPill(ele) {
-  form = document.getElementById("transactions-filters");
+function removeFilterPill({ ele }) {
+  const form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
   for (let i = 0; i < inputs.length; i++) {
     if (inputs[i].value === ele.dataset.id) {
       inputs[i].checked = false;
-      inputs[i]?.dispatchEvent(new Event("change")); // triggers change event
+      inputs[i]?.dispatchEvent(new Event("input", { bubbles: true })); // triggers change event
     }
   }
 }
+
+document.addEventListener("click", (evt) => {
+  const ele = evt.target.closest("[data-action]");
+
+  if (!ele) return;
+
+  if (ele.dataset.action === "ui.filters.remove") {
+    removeFilterPill({ ele });
+  }
+
+  if (ele.dataset.action === "ui.filters-accordion.toggle") {
+    filterAccordionToggle({ ele });
+  }
+
+  if (ele.dataset.action === "ui.filters.reset") {
+    resetTransactionFiltersForm();
+  }
+});
+
+document.addEventListener("input", (evt) => {
+  const ele = evt.target.closest("[data-input]");
+
+  if (!ele) return;
+
+  if (ele.dataset.input === "ui.filters.toggle") {
+    toggleFilterPill({ ele });
+  }
+});

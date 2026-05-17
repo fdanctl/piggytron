@@ -208,7 +208,10 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 			"w-full",
 			components.BtnOutline,
 			components.BtnMedium,
-			templ.Attributes{"type": "button", "onclick": "resetTransactionFiltersForm()"},
+			templ.Attributes{
+				"type":        "button",
+				"data-action": "ui.filters.reset",
+			},
 		).Render(r.Context(), w)
 	}
 	components.Button(
@@ -216,7 +219,10 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		"w-full",
 		components.BtnPrimary,
 		components.BtnMedium,
-		templ.Attributes{"type": "button", "onclick": "closeLastDialog()"},
+		templ.Attributes{
+			"type":        "button",
+			"data-action": "ui.dialog.close-last",
+		},
 	).Render(r.Context(), w)
 
 	templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {

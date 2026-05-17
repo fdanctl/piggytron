@@ -204,6 +204,8 @@ input.input.error:not(:focus),
   padding-top: calc(4px + var(--spacing-sm));
   background-color: transparent;
   box-shadow: var(--shadow-lg);
+  position-try-fallbacks: flip-block;
+  position-try: flip-block;
 }
 @media (min-width: 600px) {
   .popover.date-input {

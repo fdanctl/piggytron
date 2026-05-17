@@ -10,7 +10,6 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 	<div class="relative">
 		<input
 			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
-			onblur="handleInputOnBlur(this)"
 			{ attrs... }
 		/>
 		<div>
@@ -18,10 +17,11 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 				@CircleXSvg(16, "", "")
 			</i>
 			if t, ok := attrs["type"]; ok && t == "password" {
-				<div
-					onclick="handlePasswordToggle(this)"
-					onkeydown="event.key === 'Enter' && event.target.click()"
-					class="pwdToggle"
+				<button
+					type="button"
+					data-action="ui.password.toggle"
+					onclick=""
+					class="reset-btn pwdToggle"
 				>
 					<i>
 						@EyeSvg(20, "", "")
@@ -29,7 +29,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 					<i class="hidden">
 						@EyeOffSvg(20, "", "")
 					</i>
-				</div>
+				</button>
 			}
 		</div>
 	</div>
@@ -72,7 +72,11 @@ templ SearchBar(class string, attrs templ.Attributes) {
 }
 
 templ CheckBoxPill(label string, attrs templ.Attributes) {
-	<div class="check-pill" onclick="handleCheckPillToggle(this)">
+	<div
+		class="check-pill"
+		data-action="ui.checkbox-pill.toggle"
+		onclick=""
+	>
 		<div>
 			@CheckSvg(12, "", "")
 		</div>
@@ -105,7 +109,12 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 	@Dropdown(class, placeholder, true) {
 		<ul class="options">
 			for _, o := range options {
-				<li class={ templ.KV("selected", o.Label == placeholder) } onclick="select(this)" data-value={ o.Value }>
+				<li
+					class={ templ.KV("selected", o.Label == placeholder) }
+					data-action="ui.select.option"
+					onclick=""
+					data-value={ o.Value }
+				>
 					<span>{ o.Label }</span>
 					@CheckSvg(16, "", "")
 				</li>
@@ -144,8 +153,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 	<div class="relative date-input">
 		<input
 			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
-			onblur="handleInputOnBlur(this)"
-			oninput="handleDateOnChange(event)"
+			data-input="ui.date-input.input"
 			maxlength="10"
 			{ attrs... }
 		/>
@@ -153,6 +161,8 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 			<button
 				class="reset-btn flex justify-center items-center"
 				type="button"
+				data-action="ui.date-input.toggle"
+				data-target={ id }
 				popovertarget={ id }
 				style={ fmt.Sprintf("anchor-name: %s;", id) }
 			>
@@ -165,32 +175,10 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 		class="popover date-input"
 		style={ fmt.Sprintf("position-anchor: %s;", id) }
 		popover
-		ontoggle="openCalendar(event)"
+		data-action="ui.date-input.select"
 	>
 		@Calendar()
 	</div>
-	<script>
-		document
-			.getElementById({{ id }})
-			.querySelector(".days")
-			.addEventListener("click", (evt) => {
-				if (evt.target.innerText !== "") {
-					const calendar = evt.target.closest(".calendar");
-					let year = calendar.querySelector("input[name='year']").value;
-					let month = calendar.querySelector("input[name='month']").value;
-
-					const date = new Date(year, month, evt.target.innerText);
-
-					const popover = document.getElementById({{ id }});
-
-					const input = popover.previousElementSibling.querySelector("input");
-					input.value = date.toLocaleDateString("en-GB");
-					input.dispatchEvent(new Event("input"));
-
-					popover.hidePopover();
-				}
-			});
-	</script>
 }
 
 templ DateInputGroup(class, label, errMsg string, hasError bool, required bool, attrs templ.Attributes) {
@@ -222,8 +210,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 	<div class="relative date-input">
 		<input
 			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
-			onblur="handleInputOnBlur(this)"
-			oninput="handleTimeOnChange(event)"
+			data-input="ui.time-input.input"
 			placeholder="--:--"
 			{ attrs... }
 			maxlength="5"
@@ -232,6 +219,8 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 			<button
 				class="reset-btn flex justify-center items-center"
 				type="button"
+				data-action="ui.time-input.toggle"
+				data-target={ id }
 				popovertarget={ id }
 				style={ fmt.Sprintf("anchor-name: %s;", id) }
 			>
@@ -244,14 +233,16 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 		class="popover date-input"
 		style={ fmt.Sprintf("position-anchor: %s;", id) }
 		popover
-		ontoggle="openTimePopover(event)"
 	>
 		<div class="time-popover">
 			<div>
 				<p>Hours</p>
 				<ul class="options">
 					for i := 0; i < 24; i++ {
-						<li data-type="hour" onclick="handleClickTimePopover(this)">
+						<li
+							data-type="hour"
+							data-action="ui.time-input.select"
+						>
 							<span>{ fmt.Sprintf("%02d", i) }</span>
 							@CheckSvg(16, "", "")
 						</li>
@@ -262,7 +253,10 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 				<p>Minutes</p>
 				<ul class="options">
 					for i := 0; i < 60; i++ {
-						<li data-type="minutes" onclick="handleClickTimePopover(this)">
+						<li
+							data-type="minutes"
+							data-action="ui.time-input.select"
+						>
 							<span>{ fmt.Sprintf("%02d", i) }</span>
 							@CheckSvg(16, "", "")
 						</li>
