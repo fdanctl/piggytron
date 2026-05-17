@@ -1,8 +1,8 @@
 // === sidebar === //
-// let colapsed set in sidebar-initial
+let colapsed = localStorage.getItem("colapsed") === "true";
 const sidebar = document.getElementById("sidebar");
 
-const colapseSidebar = () => {
+export const colapseSidebar = () => {
   document.documentElement.classList.toggle("sidebar-colapsed");
   colapsed = !colapsed;
   localStorage.setItem("colapsed", colapsed);
@@ -35,11 +35,11 @@ const sidebarHidePopover = (ele) => {
 // === dialog x nav sheet === //
 const dialogRoot = document.querySelector("#dialog-root");
 
-function openNavSheet() {
+export function openNavSheet() {
   dialogRoot.querySelector("#nav-sheet").showModal();
 }
 
-const closeLastDialog = () => {
+export const closeLastDialog = () => {
   const lc = dialogRoot.lastChild;
   lc.classList.add("closing");
 
@@ -219,21 +219,11 @@ for (let i = 0; i < sidebarLinks.length; i++) {
   });
 }
 
-document.addEventListener("htmx:afterRequest", (evt) => {
-  const ele = evt.target.closest("[data-afterrequest]");
-
-  if (!ele) return;
-
-  if (ele.dataset.afterrequest === "ui.nav.navigate") {
-    closeLastDialog();
-    handleActiveLink();
-    document.getElementsByTagName("main")[0].focus();
-  }
-
-  if (ele.dataset.afterrequest === "ui.form.disable-btns") {
-    disableBtns(ele);
-  }
-});
+export function navigate() {
+  closeLastDialog();
+  handleActiveLink();
+  document.getElementsByTagName("main")[0].focus();
+}
 
 const navSheetLinks = document.querySelectorAll("#nav-sheet [data-name]");
 
@@ -258,20 +248,3 @@ for (let i = 0; i < navSheetLinks.length; i++) {
     }
   });
 }
-
-document.addEventListener("click", (evt) => {
-  const ele = evt.target.closest("[data-action]");
-
-  if (!ele) return;
-
-  if (ele.dataset.action === "ui.sidebar.colapse") {
-    colapseSidebar();
-  }
-  if (ele.dataset.action === "ui.nav-sheet.open") {
-    openNavSheet();
-  }
-
-  if (ele.dataset.action === "ui.dialog.close-last") {
-    closeLastDialog();
-  }
-});

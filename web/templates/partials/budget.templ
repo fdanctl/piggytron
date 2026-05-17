@@ -91,10 +91,13 @@ templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows [
 						"",
 						false,
 						templ.Attributes{
-							"id":    c.CID,
-							"type":  "text",
-							"name":  c.Name,
-							"value": views.FormatFloat(float64(c.Budgeted) / 100),
+							"id":            c.CID,
+							"type":          "text",
+							"name":          c.Name,
+							"value":         views.FormatFloat(float64(c.Budgeted) / 100),
+							"data-focus":    "ui.cash-input.focus",
+							"data-input":    "ui.cash-input.input",
+							"data-focusout": "ui.cash-input.blur",
 						})
 				</div>
 				<span class={ templ.KV("text-negative", c.Left < 0) }>

@@ -1,6 +1,6 @@
 import { buildCalendar, clickOption } from "./calendar";
 
-function handleInputOnBlur(ele) {
+export function handleInputOnBlur(ele) {
   ele.classList.toggle("error", !ele.validity.valid);
   const parent = ele.parentElement.parentElement;
   if (parent.classList.contains("input-group")) {
@@ -8,7 +8,7 @@ function handleInputOnBlur(ele) {
   }
 }
 
-function passwordToggle({ ele }) {
+export function passwordToggle({ ele }) {
   const pwdInput = ele.parentElement.parentElement.children[0];
   if (pwdInput.type === "password") {
     pwdInput.type = "text";
@@ -19,14 +19,14 @@ function passwordToggle({ ele }) {
   ele.children[1].classList.toggle("hidden");
 }
 
-function checkboxPillToggle({ ele }) {
+export function checkboxPillToggle({ ele }) {
   let cb = ele.querySelector("input");
   cb.checked = !cb.checked;
   cb.dispatchEvent(new Event("input", { bubbles: true })); // triggers change event
 }
 
 // select
-function selectSelect({ ele, data }) {
+export function selectSelect({ ele, data }) {
   const input = ele.parentElement.nextElementSibling;
   input.value = data.value;
   input.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
@@ -45,7 +45,7 @@ function selectSelect({ ele, data }) {
   }
 }
 
-function selectToggle({ data }) {
+export function selectToggle({ data }) {
   const popover = document.getElementById(data.target);
 
   requestAnimationFrame(() => {
@@ -59,8 +59,38 @@ function selectToggle({ data }) {
   });
 }
 
+// cash input
+export function sanitizeCashInput({ ele }) {
+  let value = ele.value.replace(/[^0-9.]/g, "");
+  const parts = value.split(".");
+  if (parts.length > 2) {
+    value = parts[0] + "." + parts.slice(1).join("");
+  } else if (parts.length === 2 && parts[1].length > 2) {
+    value = parts[0] + "." + parts[1].slice(0, 2);
+  }
+
+  ele.value = value;
+}
+
+export function cashInputBlur({ ele }) {
+  if (ele.value.length === 0) {
+    ele.value = "0.00";
+  }
+
+  let value = ele.value.replace(/[^0-9.]/g, "");
+  const parts = value.split(".");
+  if (parts.length > 1 && parts[1].length < 2) {
+    ele.value += "0";
+  }
+}
+
+export function cashInputFocus({ ele }) {
+  const length = ele.value.length;
+  ele.setSelectionRange(length, length);
+}
+
 // date
-function dateOnChange({ ele }) {
+export function dateOnChange({ ele }) {
   let raw = ele.value.replace(/\D/g, "");
 
   // Limit to 8 digits (DDMMYYYY)
@@ -102,7 +132,7 @@ function dateOnChange({ ele }) {
   ele.value = formatted;
 }
 
-function openCalendar({ data }) {
+export function openCalendar({ data }) {
   const target = document.getElementById(data.target);
   buildCalendar({ ele: target.querySelector(".calendar") });
   const inputValue = target.previousSibling.querySelector("input").value;
@@ -135,7 +165,7 @@ function openCalendar({ data }) {
   }
 }
 
-function selectDay({ ele, evt }) {
+export function selectDay({ ele, evt }) {
   if (!Number.isNaN(Number(evt.target.innerHTML))) {
     const calendar = evt.target.closest(".calendar");
     let year = calendar.querySelector("input[name='year']").value;
@@ -152,7 +182,7 @@ function selectDay({ ele, evt }) {
 }
 
 // time
-function timeOnChange({ ele }) {
+export function timeOnChange({ ele }) {
   let value = ele.value.replace(/\D/g, "");
 
   value = value.slice(0, 4);
@@ -180,7 +210,7 @@ function timeOnChange({ ele }) {
   ele.value = formatted;
 }
 
-function selectTime({ ele }) {
+export function selectTime({ ele }) {
   const popover = ele.closest(".popover");
 
   const opts = ele.parentElement.querySelectorAll("li");
@@ -213,7 +243,7 @@ function selectTime({ ele }) {
   input.dispatchEvent(new Event("input"));
 }
 
-function openTimePopover({ data }) {
+export function openTimePopover({ data }) {
   const target = document.getElementById(data.target);
   const inputValue = target
     .closest(".popover")
@@ -255,61 +285,3 @@ function openTimePopover({ data }) {
     }
   }
 }
-
-document.addEventListener("focusout", (evt) => {
-  if (!(evt.target instanceof HTMLInputElement)) return;
-
-  handleInputOnBlur(evt.target);
-});
-
-document.addEventListener("click", (evt) => {
-  const ele = evt.target.closest("[data-action]");
-
-  if (!ele) return;
-
-  if (ele.dataset.action === "ui.password.toggle") {
-    passwordToggle({ ele });
-  }
-
-  if (ele.dataset.action === "ui.checkbox-pill.toggle") {
-    checkboxPillToggle({ ele });
-  }
-
-  if (ele.dataset.action === "ui.select.option") {
-    selectSelect({ ele, data: ele.dataset });
-  }
-
-  if (ele.dataset.action === "ui.date-input.toggle") {
-    openCalendar({ data: ele.dataset });
-  }
-
-  if (ele.dataset.action === "ui.date-input.select") {
-    selectDay({ ele, evt });
-  }
-
-  if (ele.dataset.action === "ui.time-input.toggle") {
-    openTimePopover({ data: ele.dataset });
-  }
-
-  if (ele.dataset.action === "ui.time-input.select") {
-    selectTime({ ele });
-  }
-
-  if (ele.dataset.action === "ui.select.toggle") {
-    selectToggle({ data: ele.dataset });
-  }
-});
-
-document.addEventListener("input", (evt) => {
-  const ele = evt.target.closest("[data-input]");
-
-  if (!ele) return;
-
-  if (ele.dataset.input === "ui.date-input.input") {
-    dateOnChange({ ele });
-  }
-
-  if (ele.dataset.input === "ui.time-input.input") {
-    timeOnChange({ ele });
-  }
-});

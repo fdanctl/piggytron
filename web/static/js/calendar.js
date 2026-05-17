@@ -8,7 +8,7 @@ export function clickOption(ele, value) {
   }
 }
 
-function prevMonth({ ele }) {
+export function prevMonth({ ele }) {
   const calendar = ele.closest(".calendar");
   const month = calendar.querySelector("input[name='month']");
   if (month.value === "0") {
@@ -21,7 +21,7 @@ function prevMonth({ ele }) {
   month.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 }
 
-function nextMonth({ ele }) {
+export function nextMonth({ ele }) {
   const calendar = ele.closest(".calendar");
   const month = calendar.querySelector("input[name='month']");
   if (month.value === "11") {
@@ -65,27 +65,3 @@ export function buildCalendar({ ele }) {
     daysContainer.appendChild(ddiv);
   }
 }
-
-document.addEventListener("click", (evt) => {
-  const ele = evt.target.closest("[data-action]");
-
-  if (!ele) return;
-
-  if (ele.dataset.action === "ui.calendar.prev-month") {
-    prevMonth({ ele });
-  }
-
-  if (ele.dataset.action === "ui.calendar.next-month") {
-    nextMonth({ ele });
-  }
-});
-
-document.addEventListener("change", (evt) => {
-  const ele = evt.target.closest("[data-change]");
-
-  if (!ele) return;
-
-  if (ele.dataset.change === "ui.calendar.rebuild") {
-    buildCalendar({ ele });
-  }
-});

@@ -1,11 +1,11 @@
-function filterAccordionToggle({ ele }) {
+export function filterAccordionToggle({ ele }) {
   const div = ele.parentElement.parentElement.children[1];
   div.classList.toggle("flex-wrap");
   ele.children[0].classList.toggle("hidden");
   ele.children[1].classList.toggle("hidden");
 }
 
-function resetTransactionFiltersForm() {
+export function resetTransactionFiltersForm() {
   const form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
   for (let i = 0; i < inputs.length; i++) {
@@ -19,7 +19,7 @@ function resetTransactionFiltersForm() {
 /**
  * @param {HTMLInputElement} input
  */
-function toggleFilterPill({ ele }) {
+export function toggleFilterPill({ ele }) {
   const pillBox = document.getElementById("curr-filters");
   if (ele.checked) {
     const newPill = document.createElement("div");
@@ -44,7 +44,7 @@ function toggleFilterPill({ ele }) {
   }
 }
 
-function removeFilterPill({ ele }) {
+export function removeFilterPill({ ele }) {
   const form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
   for (let i = 0; i < inputs.length; i++) {
@@ -54,31 +54,3 @@ function removeFilterPill({ ele }) {
     }
   }
 }
-
-document.addEventListener("click", (evt) => {
-  const ele = evt.target.closest("[data-action]");
-
-  if (!ele) return;
-
-  if (ele.dataset.action === "ui.filters.remove") {
-    removeFilterPill({ ele });
-  }
-
-  if (ele.dataset.action === "ui.filters-accordion.toggle") {
-    filterAccordionToggle({ ele });
-  }
-
-  if (ele.dataset.action === "ui.filters.reset") {
-    resetTransactionFiltersForm();
-  }
-});
-
-document.addEventListener("input", (evt) => {
-  const ele = evt.target.closest("[data-input]");
-
-  if (!ele) return;
-
-  if (ele.dataset.input === "ui.filters.toggle") {
-    toggleFilterPill({ ele });
-  }
-});

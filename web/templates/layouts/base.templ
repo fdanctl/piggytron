@@ -24,7 +24,21 @@ templ Base(title string) {
 			<script defer src="/static/echarts-6.0.0.min.js"></script>
 			<script defer src="/static/assets/app.js"></script>
 			<script src="/static/sidebar-initial.js"></script>
-			<script src="/static/theme.js"></script>
+			<script>
+				let c = localStorage.getItem("colapsed") === "true";
+				document.documentElement.classList.toggle("sidebar-colapsed", c);
+			</script>
+			<script>
+				const theme = localStorage.getItem("theme") || "system";
+				const prefersDark = window.matchMedia(
+					"(prefers-color-scheme: dark)",
+				).matches;
+				const isDark = theme === "dark" || (theme === "system" && prefersDark);
+
+				if (isDark) {
+					document.documentElement.setAttribute("data-theme", "dark");
+				}
+			</script>
 		</head>
 		<body>
 			{ children... }
