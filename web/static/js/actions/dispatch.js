@@ -10,6 +10,7 @@ const eventAttributes = {
   change: "change",
   focusin: "focus",
   focusout: "focusout",
+  keydown: "keydown",
   "htmx:afterRequest": "afterrequest",
 };
 

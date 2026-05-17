@@ -125,7 +125,7 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 		`
         SELECT
           c.id as cid,
-          b.id as bid,
+          COALESCE(b.id, '00000000-0000-0000-0000-000000000000') as bid,
           c.type,
           c.name,
           COALESCE(b.amount, 0),

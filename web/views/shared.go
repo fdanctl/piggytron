@@ -2,6 +2,7 @@ package views
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -29,6 +30,18 @@ func FormatMoney(amount float64, cur currency.Unit, lang language.Tag) string {
 	}
 
 	return p.Sprintf("%s%s%.2f", sign, symbol, amount)
+}
+
+func FormatAmount(v float64) string {
+	p := message.NewPrinter(language.English)
+
+	if math.Mod(v, 1) == 0 {
+		// no decimals
+		return p.Sprintf("%d", int64(v))
+	}
+
+	// keep 2 decimals
+	return p.Sprintf("%.2f", v)
 }
 
 func FormatFloat(x float64) string {

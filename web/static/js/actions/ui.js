@@ -9,6 +9,7 @@ import { disableBtns } from "../form";
 import {
   cashInputBlur,
   cashInputFocus,
+  cashInputNav,
   checkboxPillToggle,
   dateOnChange,
   openCalendar,
@@ -58,6 +59,8 @@ export const uiActions = {
   "ui.time-input.select": selectTime,
 
   "ui.select.toggle": selectToggle,
+
+  "ui.cash-input.keydown": cashInputNav,
 
   "ui.cash-input.input": sanitizeCashInput,
 

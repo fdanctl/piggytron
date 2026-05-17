@@ -89,6 +89,42 @@ export function cashInputFocus({ ele }) {
   ele.setSelectionRange(length, length);
 }
 
+export function cashInputNav({ evt }) {
+  const key = evt.code;
+
+  if (key === "Enter" || key === "KeyJ" || key === "ArrowDown") {
+    nextInput();
+  } else if (key === "KeyK" || key === "ArrowUp") {
+    prevInput();
+  }
+}
+
+function getInputs() {
+  return [...document.querySelectorAll("input[name='amount']")];
+}
+
+function nextInput() {
+  const items = getInputs();
+  const current = document.activeElement;
+
+  const idx = items.indexOf(current);
+
+  if (idx !== -1 && idx < items.length - 1) {
+    items[idx + 1].focus();
+  }
+}
+
+function prevInput() {
+  const items = getInputs();
+  const current = document.activeElement;
+
+  const idx = items.indexOf(current);
+
+  if (idx > 0) {
+    items[idx - 1].focus();
+  }
+}
+
 // date
 export function dateOnChange({ ele }) {
   let raw = ele.value.replace(/\D/g, "");

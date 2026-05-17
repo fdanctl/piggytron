@@ -13,6 +13,7 @@ import (
 
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/account"
+	"github.com/fdanctl/piggytron/internal/application/budget"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/user"
@@ -87,19 +88,20 @@ func main() {
 	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	userRepo := postgres.NewUserRepository(db)
-	// budgetRepo := postgres.NewBudgetRepository(db)
+	budgetRepo := postgres.NewBudgetRepository(db)
 
 	// query services
 	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
 	var transactionQueryService query.TransactionQueryService = postgres.NewTransactionQueryService(db)
 	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
+
 	// services
 	accountService := account.NewService(accountRepo)
 	// transactionService := transaction.NewService(transactionRepo)
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
 	userService := user.NewService(userRepo, hasher, sessionStore)
-	// budgetService := budget.NewService(budgetRepo)
+	budgetService := budget.NewService(budgetRepo)
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
@@ -116,7 +118,7 @@ func main() {
 	hh := handlers.HomeHandler{}
 	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
 
-	bh := handlers.NewBudgetHandler(catQueryService, transactionQueryService)
+	bh := handlers.NewBudgetPageHandler(catQueryService, transactionQueryService)
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(bh))
 
 	goalsHandler := handlers.NewGoalsHandler(
@@ -158,6 +160,9 @@ func main() {
 
 	userHandler := handlers.NewUserHandler(userService, sessionCM)
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
+
+	budgetHandler := handlers.NewBudgetHandler(budgetService)
+	partialsMux.Handle("/partials/budget", budgetHandler)
 
 	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
 	partialsMux.Handle("/partials/income-category", incomeCatHandler)

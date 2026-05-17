@@ -76,7 +76,7 @@ templ lastMonthImport() {
 }
 
 templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows []views.BudgetRowView) {
-	<div class={ "budget-table", string(eType) }>
+	<div class={ "budget-table", string(eType) } hx-include="find [name='total-budget']">
 		<div class="budget-table__head">
 			<span>{ views.CapitalizeFirst(string(eType)) } <span class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
 			<span>Budget</span>
@@ -93,12 +93,19 @@ templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows [
 						templ.Attributes{
 							"id":            c.CID,
 							"type":          "text",
-							"name":          c.Name,
-							"value":         views.FormatFloat(float64(c.Budgeted) / 100),
+							"name":          "amount",
+							"value":         views.FormatAmount(float64(c.Budgeted) / 100),
+							"data-keydown":  "ui.cash-input.keydown",
 							"data-focus":    "ui.cash-input.focus",
-							"data-input":    "ui.cash-input.input",
 							"data-focusout": "ui.cash-input.blur",
+							"data-input":    "ui.cash-input.input",
+							"hx-target":     fmt.Sprintf("#%s-total-budget", eType),
+							"hx-post":       "/partials/budget",
+							"hx-trigger":    "input changed delay:500ms, keyup[key=='Enter']",
+							"hx-include":    "inherit, next [name='bid'], next [name='cid']",
 						})
+					<input type="hidden" name="bid" value={ c.BID }/>
+					<input type="hidden" name="cid" value={ c.CID }/>
 				</div>
 				<span class={ templ.KV("text-negative", c.Left < 0) }>
 					{ views.FormatMoney(float64(c.Left) / 100, currency.EUR, language.AmericanEnglish) }
@@ -107,8 +114,13 @@ templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows [
 		}
 		<div class="budget-table__total-row">
 			<span>Total</span>
-			<span>{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }</span>
-			<span class={ templ.KV("text-negative", totalSpent < 0) }>{ views.FormatMoney(float64(totalSpent) / 100, currency.EUR, language.AmericanEnglish) }</span>
+			<span id={ fmt.Sprintf("%s-total-budget", eType) }>
+				<input type="hidden" name="total-budget" value={ totalBudget }/>
+				{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }
+			</span>
+			<span class={ templ.KV("text-negative", totalSpent < 0) }>
+				{ views.FormatMoney(float64(totalSpent) / 100, currency.EUR, language.AmericanEnglish) }
+			</span>
 		</div>
 	</div>
 }

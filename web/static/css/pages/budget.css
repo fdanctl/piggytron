@@ -64,6 +64,12 @@
   gap: var(--spacing-sm);
 }
 
+@container main (min-width: 800px) {
+  .budget-table-container {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @container main (min-width: 600px) {
   .last-month-import__icon {
     display: flex;
@@ -88,10 +94,6 @@
 
   .budget-stats .metric__sub {
     display: block;
-  }
-
-  .budget-table-container {
-    grid-template-columns: 1fr 1fr;
   }
 }
 

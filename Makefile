@@ -84,5 +84,5 @@ clean-dev:
 clean: confirm clean-dev
 	@echo "Cleaning up..."
 	@rm -f web/templates/**/*_templ.go
-	@rm -f web/static/app.js
-	@rm -f web/static/styles.css
+	@rm -f web/static/assets/app.js
+	@rm -f web/static/assets/app.css
