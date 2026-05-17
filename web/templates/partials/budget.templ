@@ -91,19 +91,21 @@ templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows [
 						"",
 						false,
 						templ.Attributes{
-							"id":            c.CID,
-							"type":          "text",
-							"name":          "amount",
-							"value":         views.FormatAmount(float64(c.Budgeted) / 100),
-							"data-keydown":  "ui.cash-input.keydown",
-							"data-focus":    "ui.cash-input.focus",
-							"data-focusout": "ui.cash-input.blur",
-							"data-input":    "ui.cash-input.input",
-							"hx-target":     fmt.Sprintf("#%s-total-budget", eType),
-							"hx-post":       "/partials/budget",
-							"hx-trigger":    "input changed delay:500ms, keyup[key=='Enter']",
-							"hx-include":    "inherit, next [name='bid'], next [name='cid']",
+							"id":                   c.CID,
+							"type":                 "text",
+							"name":                 "amount",
+							"value":                views.FormatAmount(float64(c.Budgeted) / 100),
+							"data-keydown":         "ui.cash-input.keydown",
+							"data-focus":           "ui.cash-input.focus",
+							"data-focusout":        "ui.cash-input.blur",
+							"data-input":           "ui.cash-input.input",
+							"hx-target":            fmt.Sprintf("#%s-total-budget", eType),
+							"hx-post":              "/partials/budget",
+							"hx-trigger":           "input changed delay:500ms, keyup[key=='Enter']",
+							"hx-include":           "inherit, next [name='ps'], next [name='bid'], next [name='cid']",
+							"hx-on::after-request": "this.parentElement.nextElementSibling.value = Number(this.value) * 100",
 						})
+					<input type="hidden" name="ps" value={ c.Budgeted }/>
 					<input type="hidden" name="bid" value={ c.BID }/>
 					<input type="hidden" name="cid" value={ c.CID }/>
 				</div>

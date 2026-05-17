@@ -48,8 +48,15 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	amount := params.Get("amount")
 	cid := params.Get("cid")
 	bid := params.Get("bid")
+	ps := params.Get("ps")
 	ptotal := params.Get("total-budget")
 
+	prev, err := strconv.Atoi(ps)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	total, err := strconv.Atoi(ptotal)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
@@ -61,7 +68,9 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	cents := 0
 
 	length := utf8.RuneCountInString(amount)
-	if i == -1 {
+	if amount == "" {
+		cents = 0
+	} else if i == -1 {
 		cents, err = strconv.Atoi(amount)
 		if err != nil {
 			http.Error(w, "invalid amount", http.StatusBadRequest)
@@ -86,9 +95,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	fmt.Println(total)
-	total += cents
-	fmt.Println(total)
+	total += cents - prev
 
 	if bid == "" || bid == "00000000-0000-0000-0000-000000000000" {
 		_, err := h.service.CreateBudget(r.Context(), sessionID.UserID, cid, now, cents)
@@ -106,11 +113,12 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	str := views.FormatMoney(float64(total)/100, currency.EUR, language.AmericanEnglish)
-	fmt.Fprint(
+	fmt.Fprintf(
 		w,
 		`
-		<input type="hidden" name="total-budget" value={ totalBudget }/>
+		<input type="hidden" name="total-budget" value="%d"/>%s
 		`,
+		total,
 		str,
 	)
 }
