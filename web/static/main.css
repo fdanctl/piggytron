@@ -1,0 +1,21 @@
+@import "./css/base.css";
+
+@import "./css/components/badges.css";
+@import "./css/components/breadcrumbs.css";
+@import "./css/components/buttons.css";
+@import "./css/components/calendar.css";
+@import "./css/components/card.css";
+@import "./css/components/charts.css";
+@import "./css/components/dropdown.css";
+@import "./css/components/goal-card.css";
+@import "./css/components/inputs.css";
+@import "./css/components/loader.css";
+@import "./css/components/navigation.css";
+@import "./css/components/transaction-card.css";
+@import "./css/components/transaction-filters.css";
+
+@import "./css/pages/bank.css";
+@import "./css/pages/budget.css";
+
+@import "./css/layouts.css";
+@import "./css/utilities.css";

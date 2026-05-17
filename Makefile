@@ -2,7 +2,6 @@
 export
 
 MAIN_PACKAGE_PATH = ./cmd/server/main.go
-GENERATE_STATIC_PATH = ./cmd/generate/main.go
 
 ## help: print this help message
 .PHONY: help
@@ -39,6 +38,13 @@ tidy:
 	go fix ./...
 	go fmt ./...
 
+## dev-build: generate templ go, files and bundle js and css, and build server
+.PHONY: dev-build
+dev-build:
+	go tool templ generate
+	npm run dev:build
+	go build -o ./tmp/main ./cmd/server/main.go
+
 ## dev: native Go + Docker Postgres
 .PHONY: dev
 dev: clean-dev
@@ -52,11 +58,6 @@ dev: clean-dev
 	 postgres:16-alpine && \
 	docker run -d --name redis -p ${REDIS_PORT}:6379 redis:latest && \
 	DEV="true" go tool air -c .air.toml
-
-## generate-static: concatenate all js and css files into app.js and styles.css respectively
-.PHONY: generate-static
-generate-static:
-	go run $(GENERATE_STATIC_PATH)
 
 ## templ-watch: watch for templ files
 .PHONY: templ-watch

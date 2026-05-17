@@ -3,5 +3,7 @@
 tmp/*
 
 web/templates/**/*_templ.go
-web/static/app.js
-web/static/styles.css
+web/static/assets/app.js
+web/static/assets/app.css
+
+node_modules/*

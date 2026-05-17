@@ -1,3 +1,5 @@
+import { buildCalendar, clickOption } from "./calendar";
+
 function handleInputOnBlur(ele) {
   ele.classList.toggle("error", !ele.validity.valid);
   const parent = ele.parentElement.parentElement;
@@ -102,7 +104,6 @@ function dateOnChange({ ele }) {
 
 function openCalendar({ data }) {
   const target = document.getElementById(data.target);
-  // might need to import if I use webpack
   buildCalendar({ ele: target.querySelector(".calendar") });
   const inputValue = target.previousSibling.querySelector("input").value;
   let day;

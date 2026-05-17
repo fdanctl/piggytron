@@ -8,11 +8,11 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./tmp/main"
-  cmd = "go tool templ generate && go run ./cmd/generate/main.go && go build -o ./tmp/main ./cmd/server/main.go"
+  cmd = "make dev-build"
   delay = 1000
   entrypoint = ["./tmp/main"]
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
-  exclude_file = ["web/static/app.js", "web/static/styles.css"]
+  exclude_file = ["web/static/assets/app.js", "web/static/assets/app.css"]
   exclude_regex = ["_test.go", "_templ.go"]
   exclude_unchanged = false
   follow_symlink = false

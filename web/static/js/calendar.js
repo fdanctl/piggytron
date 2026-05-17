@@ -1,4 +1,4 @@
-function clickOption(ele, value) {
+export function clickOption(ele, value) {
   const options = ele.closest(".dropdown").querySelectorAll("li");
   for (let i = 0; i < options.length; i++) {
     if (options[i].dataset.value === value) {
@@ -34,7 +34,7 @@ function nextMonth({ ele }) {
   month.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 }
 
-function buildCalendar({ ele }) {
+export function buildCalendar({ ele }) {
   const calendar = ele.closest(".calendar");
   const year = calendar.querySelector("input[name='year']").value;
   const month = calendar.querySelector("input[name='month']").value;

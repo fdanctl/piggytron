@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "dev:js": "esbuild web/static/main.js --bundle --outfile=web/static/assets/app.js",
+    "dev:css": "esbuild web/static/main.css --bundle --outfile=web/static/assets/app.css",
+    "dev:build": "npm run dev:js && npm run dev:css",
+    "build:js": "esbuild web/static/main.js --bundle --minify --outfile=web/static/assets/app.js",
+    "build:css": "esbuild web/static/main.css --bundle --minify --outfile=web/static/assets/app.css",
+    "build": "npm run build:js && npm run build:css"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
