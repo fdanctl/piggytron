@@ -306,6 +306,7 @@ input.input.error:not(:focus),
 
   background-size: 250% 100%;
   background-repeat: no-repeat;
+  background-position: -30% 0;
 
   animation: scan-animation 0.75s linear;
 }
