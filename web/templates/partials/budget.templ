@@ -111,7 +111,7 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 							"data-focus":            "ui.cash-input.focus",
 							"data-focusout":         "ui.cash-input.blur",
 							"data-input":            "ui.cash-input.input",
-							"hx-target":             "#prev-amount",
+							"hx-target":             "next [name='prev-amount']",
 							"hx-swap":               "outerHTML",
 							"hx-post":               "/partials/budget",
 							"hx-trigger":            "input changed delay:500ms, keyup[key=='Enter']",
@@ -119,7 +119,7 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 							"hx-on::before-request": "this.classList.add('scan')",
 							"hx-on::after-request":  "setTimeout(() => { this.classList.remove('scan'); }, 1000);",
 						})
-					<input id="prev-amount" type="hidden" name="prev-amount" value={ c.Budgeted }/>
+					<input type="hidden" name="prev-amount" value={ c.Budgeted }/>
 					<input type="hidden" name="bid" value={ c.BID }/>
 					<input type="hidden" name="cid" value={ c.CID }/>
 				</div>
