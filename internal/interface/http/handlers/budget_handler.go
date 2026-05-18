@@ -8,11 +8,11 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/budget"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
-	"golang.org/x/text/currency"
-	"golang.org/x/text/language"
 )
 
 type BudgetHandler struct {
@@ -48,16 +48,18 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	amount := params.Get("amount")
 	cid := params.Get("cid")
 	bid := params.Get("bid")
-	ps := params.Get("ps")
-	ptotal := params.Get("total-budget")
+	ps := params.Get("prev-amount")
+	catType := params.Get("ctype")
+	ptotalBudgeted := params.Get("total-budgeted")
+	ptotalRowBudget := params.Get("total-row-budget")
+	ptotalRowLeft := params.Get("total-row-left")
+	pcatLeft := params.Get("cat-left")
+	pleftToBudget := params.Get("ltb")
+	pleftToSpent := params.Get("lts")
+	pincome := params.Get("income")
+	poverspent := params.Get("overspent")
 
 	prev, err := strconv.Atoi(ps)
-	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	total, err := strconv.Atoi(ptotal)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -95,7 +97,17 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	now := time.Now()
 
-	total += cents - prev
+	if cents == prev {
+		logger.Debug("nothing to do")
+		fmt.Fprintf(
+			w,
+			`
+		<input id="prev-amount" type="hidden" name="prev-amount" value="%d"/>
+		`,
+			cents,
+		)
+		return
+	}
 
 	if bid == "" || bid == "00000000-0000-0000-0000-000000000000" {
 		_, err := h.service.CreateBudget(r.Context(), sessionID.UserID, cid, now, cents)
@@ -112,13 +124,130 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	str := views.FormatMoney(float64(total)/100, currency.EUR, language.AmericanEnglish)
+
+	addedAmount := cents - prev
+	fmt.Println(addedAmount)
+
+	leftToSpent, err := strconv.Atoi(pleftToSpent)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	leftToSpent += addedAmount
+
+	leftToBudget, err := strconv.Atoi(pleftToBudget)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	leftToBudget += addedAmount
+
+	income, err := strconv.Atoi(pincome)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	income += addedAmount
+
+	totalBudgeted, err := strconv.Atoi(ptotalBudgeted)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	totalBudgeted += addedAmount
+
+	overspent, err := strconv.Atoi(poverspent)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	catLeft, err := strconv.Atoi(pcatLeft)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// if prev left is overspent reset this spent
+	if catLeft < 0 {
+		overspent += catLeft
+	}
+	// update
+	catLeft += addedAmount
+	// if new left is overspent add to overspent
+	if catLeft < 0 {
+		overspent -= catLeft
+	}
+
+	totalRowBudget, err := strconv.Atoi(ptotalRowBudget)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	totalRowBudget += addedAmount
+
+	totalRowLeft, err := strconv.Atoi(ptotalRowLeft)
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	totalRowLeft += addedAmount
+
 	fmt.Fprintf(
 		w,
 		`
-		<input type="hidden" name="total-budget" value="%d"/>%s
+		<input id="prev-amount" type="hidden" name="prev-amount" value="%d"/>
 		`,
-		total,
-		str,
+		cents,
+	)
+
+	obb := templ.Join(
+		partials.CatRowLeftCell(cid, catLeft, templ.Attributes{
+			"hx-swap-oob": "outerHTML",
+		}),
+		partials.BudgetStats(
+			totalBudgeted,
+			leftToBudget,
+			income,
+			leftToSpent,
+			overspent,
+			templ.Attributes{
+				"hx-swap-oob": "outerHTML",
+			},
+		),
+		partials.TotalRow(catType, totalRowBudget, totalRowLeft, templ.Attributes{
+			"hx-swap-oob": "outerHTML",
+		}),
+	)
+
+	obb.Render(r.Context(), w)
+
+	fmt.Fprintf(
+		w,
+		`
+		<span id="%s-pct" hx-swap-oob="outerHTML class="font-mono text-xs font-normal">
+		(%s%%)
+		</span>
+		`,
+		catType,
+		views.FormatFloat((float64(totalRowBudget)/float64(totalBudgeted))*100),
+	)
+
+	fmt.Fprintf(
+		w,
+		`
+		<span id="%s-pct" hx-swap-oob="outerHTML class="font-mono text-xs font-normal">
+		(%s%%)
+		</span>
+		`,
+		catType,
+		views.FormatFloat((float64(totalRowBudget)/float64(totalBudgeted))*100),
 	)
 }

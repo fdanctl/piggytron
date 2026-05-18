@@ -12,35 +12,7 @@ templ Budget(view views.BudgetPageView) {
 	// if view.TotalBudgeted == 0 {
 	@lastMonthImport()
 	// }
-	<div class="budget-stats mt-lg">
-		<div class="card">
-			<h6 class="card__title">Left to budget</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", view.LeftToBudget < 0) }>
-				{ views.FormatMoney(float64(view.LeftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
-			</p>
-			<p class="metric__sub xl mt-xs">
-				of { views.FormatMoney(float64(view.Income) / 100, currency.EUR, language.AmericanEnglish) } income
-			</p>
-		</div>
-		<div class="card">
-			<h6 class="card__title">Left to spend</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", view.LeftToSpend < 0) }>
-				{ views.FormatMoney(float64(view.LeftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
-			</p>
-			<p class="metric__sub xl mt-xs">
-				budgeted but unspent
-			</p>
-		</div>
-		<div class="card">
-			<h6 class="card__title">Overspent</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", view.Overspent != 0) }>
-				{ views.FormatMoney(float64(view.Overspent) / 100, currency.EUR, language.AmericanEnglish) }
-			</p>
-			<p class="metric__sub xl mt-xs">
-				across all categories
-			</p>
-		</div>
-	</div>
+	@BudgetStats(view.TotalBudgeted, view.LeftToBudget, view.Income, view.LeftToSpend, view.Overspent, nil)
 	// TODO dynamic month
 	<div
 		class="chart-container mt-xl mb-xl"
@@ -50,9 +22,9 @@ templ Budget(view views.BudgetPageView) {
 		@components.Loader("htmx-indicator", nil)
 	</div>
 	<div class="budget-table-container">
-		@budgetTable("needs", view.NeedsBudget, view.NeedsSpent, view.NeedsPct, view.NeedsRows)
-		@budgetTable("wants", view.WantsBudget, view.WantsSpent, view.WantsPct, view.WantsRows)
-		@budgetTable("savings", view.SavingsBudget, view.SavingsSpent, view.SavingsPct, view.SavingsRows)
+		@budgetTable("needs", view.NeedsBudget, view.NeedsLeft, view.NeedsPct, view.NeedsRows)
+		@budgetTable("wants", view.WantsBudget, view.WantsLeft, view.WantsPct, view.WantsRows)
+		@budgetTable("savings", view.SavingsBudget, view.SavingsLeft, view.SavingsPct, view.SavingsRows)
 	</div>
 }
 
@@ -75,15 +47,56 @@ templ lastMonthImport() {
 	</div>
 }
 
-templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows []views.BudgetRowView) {
-	<div class={ "budget-table", string(eType) } hx-include="find [name='total-budget']">
+templ BudgetStats(totalBudgeted, leftToBudget, income, leftToSpend, overspent int, attrs templ.Attributes) {
+	<div id="budget-stats" class="budget-stats mt-lg" { attrs... }>
+		<div class="card">
+			<h6 class="card__title">Left to budget</h6>
+			<p class={ "metric__value xl", templ.KV("text-negative", leftToBudget < 0) }>
+				{ views.FormatMoney(float64(leftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
+				<input id="ltb-input" type="hidden" name="ltb" value={ leftToBudget }/>
+				<input id="total-budgeted" type="hidden" name="total-budgeted" value={ totalBudgeted }/>
+			</p>
+			<p class="metric__sub xl mt-xs">
+				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income
+				<input id="income-input" type="hidden" name="income" value={ income }/>
+			</p>
+		</div>
+		<div class="card">
+			<h6 class="card__title">Left to spend</h6>
+			<p id="left-to-spent" class={ "metric__value xl", templ.KV("text-negative", leftToSpend < 0) }>
+				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
+				<input id="lts-input" type="hidden" name="lts" value={ leftToSpend }/>
+			</p>
+			<p class="metric__sub xl mt-xs">
+				budgeted but unspent
+			</p>
+		</div>
+		<div class="card">
+			<h6 class="card__title">Overspent</h6>
+			<p class={ "metric__value xl", templ.KV("text-negative", overspent != 0) }>
+				{ views.FormatMoney(float64(overspent) / 100, currency.EUR, language.AmericanEnglish) }
+			</p>
+			<p class="metric__sub xl mt-xs">
+				across all categories
+				<input id="overspent" type="hidden" name="overspent" value={ overspent }/>
+			</p>
+		</div>
+	</div>
+}
+
+templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView) {
+	<div
+		class={ "budget-table", string(eType) }
+		hx-include="inherit, find [name='total-row-budget'], find [name='total-row-left'], find [name='ctype']"
+	>
+		<input type="hidden" name="ctype" value={ eType }/>
 		<div class="budget-table__head">
-			<span>{ views.CapitalizeFirst(string(eType)) } <span class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
+			<span>{ views.CapitalizeFirst(string(eType)) } <span id={ fmt.Sprintf("%s-pct", eType) } class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
 			<span>Budget</span>
 			<span>Left</span>
 		</div>
 		for _, c := range rows {
-			<div class="budget-table__row">
+			<div class="budget-table__row" hx-include="inherit, find [name='cat-left']">
 				<span>{ c.Name }</span>
 				<div class="flex items-center gap-xs">
 					€
@@ -91,38 +104,49 @@ templ budgetTable(eType string, totalBudget, totalSpent int, pct float64, rows [
 						"",
 						false,
 						templ.Attributes{
-							"id":                   c.CID,
-							"type":                 "text",
-							"name":                 "amount",
-							"value":                views.FormatAmount(float64(c.Budgeted) / 100),
-							"data-keydown":         "ui.cash-input.keydown",
-							"data-focus":           "ui.cash-input.focus",
-							"data-focusout":        "ui.cash-input.blur",
-							"data-input":           "ui.cash-input.input",
-							"hx-target":            fmt.Sprintf("#%s-total-budget", eType),
-							"hx-post":              "/partials/budget",
-							"hx-trigger":           "input changed delay:500ms, keyup[key=='Enter']",
-							"hx-include":           "inherit, next [name='ps'], next [name='bid'], next [name='cid']",
-							"hx-on::after-request": "this.parentElement.nextElementSibling.value = Number(this.value) * 100",
+							"type":                  "text",
+							"name":                  "amount",
+							"value":                 views.FormatAmount(float64(c.Budgeted) / 100),
+							"data-keydown":          "ui.cash-input.keydown",
+							"data-focus":            "ui.cash-input.focus",
+							"data-focusout":         "ui.cash-input.blur",
+							"data-input":            "ui.cash-input.input",
+							"hx-target":             "#prev-amount",
+							"hx-swap":               "outerHTML",
+							"hx-post":               "/partials/budget",
+							"hx-trigger":            "input changed delay:500ms, keyup[key=='Enter']",
+							"hx-include":            "inherit, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='bid'], next [name='cid']",
+							"hx-on::before-request": "this.classList.add('scan')",
+							"hx-on::after-request":  "setTimeout(() => { this.classList.remove('scan'); }, 1000);",
 						})
-					<input type="hidden" name="ps" value={ c.Budgeted }/>
+					<input id="prev-amount" type="hidden" name="prev-amount" value={ c.Budgeted }/>
 					<input type="hidden" name="bid" value={ c.BID }/>
 					<input type="hidden" name="cid" value={ c.CID }/>
 				</div>
-				<span class={ templ.KV("text-negative", c.Left < 0) }>
-					{ views.FormatMoney(float64(c.Left) / 100, currency.EUR, language.AmericanEnglish) }
-				</span>
+				@CatRowLeftCell(c.CID, c.Left, nil)
 			</div>
 		}
-		<div class="budget-table__total-row">
-			<span>Total</span>
-			<span id={ fmt.Sprintf("%s-total-budget", eType) }>
-				<input type="hidden" name="total-budget" value={ totalBudget }/>
-				{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }
-			</span>
-			<span class={ templ.KV("text-negative", totalSpent < 0) }>
-				{ views.FormatMoney(float64(totalSpent) / 100, currency.EUR, language.AmericanEnglish) }
-			</span>
-		</div>
+		@TotalRow(eType, totalBudget, totalLeft, nil)
+	</div>
+}
+
+templ CatRowLeftCell(catID string, left int, attrs templ.Attributes) {
+	<span id={ catID } class={ templ.KV("text-negative", left < 0) } { attrs... }>
+		{ views.FormatMoney(float64(left) / 100, currency.EUR, language.AmericanEnglish) }
+		<input type="hidden" name="cat-left" value={ left }/>
+	</span>
+}
+
+templ TotalRow(eType string, totalBudget, totalLeft int, attrs templ.Attributes) {
+	<div id={ fmt.Sprintf("%s-total-row", eType) } class="budget-table__total-row" { attrs... }>
+		<span>Total</span>
+		<span>
+			<input type="hidden" name="total-row-budget" value={ totalBudget }/>
+			{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }
+		</span>
+		<span class={ templ.KV("text-negative", totalLeft < 0) }>
+			<input type="hidden" name="total-row-left" value={ totalLeft }/>
+			{ views.FormatMoney(float64(totalLeft) / 100, currency.EUR, language.AmericanEnglish) }
+		</span>
 	</div>
 }

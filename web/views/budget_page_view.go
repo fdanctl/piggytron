@@ -14,15 +14,15 @@ type BudgetPageView struct {
 	WantsRows     []BudgetRowView
 	SavingsRows   []BudgetRowView
 
-	NeedsSpent  int
+	NeedsLeft   int
 	NeedsBudget int
 	NeedsPct    float64
 
-	WantsSpent  int
+	WantsLeft   int
 	WantsBudget int
 	WantsPct    float64
 
-	SavingsSpent  int
+	SavingsLeft   int
 	SavingsBudget int
 	SavingsPct    float64
 }
@@ -89,22 +89,22 @@ func NewBudgetPageView(
 		TotalBudgeted: totalBudgeted,
 		LeftToBudget:  income - totalBudgeted,
 		Income:        income,
-		LeftToSpend:   income - totalSpent,
+		LeftToSpend:   totalBudgeted - totalSpent,
 		Overspent:     overspent * -1,
 		NeedsRows:     needs,
 		WantsRows:     wants,
 		SavingsRows:   savings,
 
 		NeedsBudget: needsBudget,
-		NeedsSpent:  needsSpent * -1,
+		NeedsLeft:   needsBudget - needsSpent,
 		NeedsPct:    (float64(needsBudget) / float64(totalBudgeted)) * 100,
 
 		WantsBudget: wantsBudget,
-		WantsSpent:  wantsSpent * -1,
+		WantsLeft:   wantsBudget - wantsSpent,
 		WantsPct:    (float64(wantsBudget) / float64(totalBudgeted)) * 100,
 
 		SavingsBudget: savingsBudget,
-		SavingsSpent:  savingsSpent * -1,
+		SavingsLeft:   savingsBudget - savingsSpent,
 		SavingsPct:    (float64(savingsBudget) / float64(totalBudgeted)) * 100,
 	}
 }

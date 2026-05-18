@@ -287,3 +287,31 @@ input.input.error:not(:focus),
   visibility: hidden;
   display: none;
 }
+
+.no-outline:focus {
+  box-shadow: none !important;
+}
+
+.scan {
+  position: relative;
+
+  background-image: linear-gradient(
+    90deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.05) 40%,
+    rgba(94, 239, 239, 0.35) 50%,
+    rgba(255, 255, 255, 0.05) 60%,
+    transparent 80%
+  );
+
+  background-size: 250% 100%;
+  background-repeat: no-repeat;
+
+  animation: scan-animation 0.75s linear;
+}
+
+@keyframes scan-animation {
+  to {
+    background-position: 200% 0;
+  }
+}

@@ -73,30 +73,60 @@ export function sanitizeCashInput({ ele }) {
 }
 
 export function cashInputBlur({ ele }) {
-  if (ele.value.length === 0) {
-    ele.value = "0.00";
+  let value = ele.value.replace(/[^0-9.]/g, "");
+
+  let parts = value.split(".");
+  let intPart = parts[0] || "0";
+  let decimalPart = parts[1] || "";
+
+  if (decimalPart !== "") {
+    while (decimalPart.length < 2) {
+      decimalPart += "0";
+    }
+    decimalPart = decimalPart.slice(0, 2);
   }
 
-  let value = ele.value.replace(/[^0-9.]/g, "");
-  const parts = value.split(".");
-  if (parts.length > 1 && parts[1].length < 2) {
-    ele.value += "0";
-  }
+  intPart = parseInt(intPart || "0", 10).toLocaleString("en-US");
+
+  ele.value = `${intPart}${decimalPart != "" ? "." + decimalPart : ""}`;
 }
 
 export function cashInputFocus({ ele }) {
+  ele.value = ele.value.replaceAll(",", "");
   const length = ele.value.length;
   ele.setSelectionRange(length, length);
 }
 
 export function cashInputNav({ evt }) {
+  // allow text shortcuts and reload page
+  if (
+    (evt.ctrlKey || evt.metaKey) &&
+    ["c", "v", "x", "a", "r"].includes(evt.key.toLowerCase())
+  ) {
+    return;
+  }
+
+  const allowedKeys = [
+    "Backspace",
+    "Tab",
+    "ArrowLeft",
+    "ArrowRight",
+    "Delete",
+    "Enter",
+  ];
+
+  if (allowedKeys.includes(evt.key) || /^[0-9.]$/.test(evt.key)) return;
+
   const key = evt.code;
 
-  if (key === "Enter" || key === "KeyJ" || key === "ArrowDown") {
+  if (key === "KeyJ" || key === "ArrowDown") {
     nextInput();
   } else if (key === "KeyK" || key === "ArrowUp") {
     prevInput();
   }
+
+  // avoid making a request if not a number or dot
+  evt.preventDefault();
 }
 
 function getInputs() {
