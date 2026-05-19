@@ -14,6 +14,7 @@ import (
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/account"
 	"github.com/fdanctl/piggytron/internal/application/budget"
+	"github.com/fdanctl/piggytron/internal/application/charts"
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/user"
@@ -102,6 +103,7 @@ func main() {
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
 	userService := user.NewService(userRepo, hasher, sessionStore)
 	budgetService := budget.NewService(budgetRepo)
+	chartsService := charts.NewService()
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
@@ -161,7 +163,11 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService, sessionCM)
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
 
-	budgetHandler := handlers.NewBudgetHandler(budgetService)
+	budgetHandler := handlers.NewBudgetHandler(
+		budgetService,
+		chartsService,
+		catQueryService,
+	)
 	partialsMux.Handle("/partials/budget", budgetHandler)
 
 	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
@@ -185,7 +191,10 @@ func main() {
 	accHistChartHandler := handlers.NewAccountHistoryChartHandler()
 	partialsMux.Handle("/partials/charts/account-history", accHistChartHandler)
 
-	budgetChartHandler := handlers.NewBudgetChartHandler()
+	budgetChartHandler := handlers.NewBudgetChartHandler(
+		chartsService,
+		catQueryService,
+	)
 	partialsMux.Handle("/partials/charts/budget-chart/{month}", budgetChartHandler)
 
 	transactionFiltersHandler := handlers.NewFilterDialogHandler(

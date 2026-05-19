@@ -15,6 +15,7 @@ templ Budget(view views.BudgetPageView) {
 	@BudgetStats(view.TotalBudgeted, view.LeftToBudget, view.Income, view.LeftToSpend, view.Overspent, nil)
 	// TODO dynamic month
 	<div
+		id="budget-sankey"
 		class="chart-container mt-xl mb-xl"
 		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s", "202605") }
 		hx-trigger="load"

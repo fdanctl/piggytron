@@ -125,7 +125,7 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 		`
         SELECT
           c.id as cid,
-          COALESCE(b.id, '00000000-0000-0000-0000-000000000000') as bid,
+          COALESCE(b.id, '00000000-0000-0000-0000-000000000000') AS bid,
           c.type,
           c.name,
           COALESCE(b.amount, 0),
@@ -148,7 +148,6 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 		uid,
 	)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -164,6 +163,74 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 			&dto.Name,
 			&dto.Budgeted,
 			&dto.Spent,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, dto)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (s *CategoryQueryService) GetCategoriesBudgetSpent(
+	ctx context.Context,
+	uid string,
+	minDate, maxDate time.Time,
+) ([]query.CategoryBudget, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+        SELECT
+          c.name AS name,
+          c.type AS category_type,
+          COALESCE(b.amount, 0) AS value
+        FROM
+          expense_categories c
+          LEFT JOIN monthly_budgets b ON c.id = b.category_id
+          AND b.month >= $1
+          AND b.month < $2
+        WHERE
+          c.user_id = $3
+        GROUP BY
+          c.id,
+          b.id
+
+		UNION ALL
+
+		SELECT
+          c.name AS name,
+    	  'income' AS category_type,
+    	  COALESCE(SUM(t.amount), 0) AS value
+		FROM
+    	  income_categories c
+    	  LEFT JOIN transactions t 
+          ON c.id = t.income_category_id
+          AND t.date >= $1
+          AND t.date < $2
+		WHERE
+		  c.user_id = $3
+		GROUP BY
+    	  c.id`,
+		minDate,
+		maxDate,
+		uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.CategoryBudget
+
+	for rows.Next() {
+		var dto query.CategoryBudget
+		if err := rows.Scan(
+			&dto.Name,
+			&dto.Type,
+			&dto.Value,
 		); err != nil {
 			return nil, err
 		}

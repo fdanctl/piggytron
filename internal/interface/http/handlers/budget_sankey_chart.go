@@ -5,16 +5,27 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
+	"github.com/fdanctl/piggytron/internal/application/charts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
-	"github.com/go-echarts/go-echarts/v2/charts"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-type BudgetChartHandler struct{}
+type BudgetChartHandler struct {
+	chartsService *charts.Service
+	categoryQuery query.CategoryQueryService
+}
 
-func NewBudgetChartHandler() *BudgetChartHandler {
-	return &BudgetChartHandler{}
+func NewBudgetChartHandler(
+	cs *charts.Service,
+	cq query.CategoryQueryService,
+) *BudgetChartHandler {
+	return &BudgetChartHandler{
+		chartsService: cs,
+		categoryQuery: cq,
+	}
 }
 
 func (h *BudgetChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -31,12 +42,54 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	month := r.PathValue("month")
 	logger := middleware.LoggerFromContext(r.Context())
 	logger.Debug(month)
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	line := sankeyBase()
+	now := time.Now()
+
+	minD := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+	maxD := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	categoryBudget, err := h.categoryQuery.GetCategoriesBudgetSpent(
+		r.Context(),
+		sessionInfo.UserID,
+		minD,
+		maxD,
+	)
+	if err != nil {
+		logger.Error("error geting category budget-spent", "error", err)
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	nodes := []opts.SankeyNode{
+		{
+			Name: "Budget",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#194e4e",
+			},
+		},
+	}
+	var links []opts.SankeyLink
+
+	for _, v := range categoryBudget {
+		if v.Value > 0 {
+			node, link := h.chartsService.MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
+			nodes = append(nodes, node)
+			links = append(links, link)
+		}
+	}
+
+	sankey := h.chartsService.MakeSankey(nodes, links, true)
+
+	// TODO MAKE THIS A REUSABLE FUNC
 	// cut unnecessary html code from echarts
 	// only get what's inside <body></body>
 	buf := bytes.NewBuffer(nil)
-	line.Render(buf)
+	sankey.Render(buf)
 	html := buf.String()
 	bodyStart := strings.Index(html, "<body>")
 	bodyEnd := strings.Index(html, "</body>")
@@ -60,82 +113,4 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		observer_%s.observe(document.getElementById("%s"))
 		</script>`, id, id, id, id, id, id, id,
 	)
-}
-
-var (
-	sankeyNode = []opts.SankeyNode{
-		{Name: "Salary"},
-		{Name: "Side hustle"},
-		{
-			Name: "Budget",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#194e4e",
-			},
-		},
-
-		{
-			Name: "Rent",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#95bf98", // needs
-			},
-		},
-		{
-			Name: "Utilities",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#95bf98", // needs
-			},
-		},
-		{
-			Name: "Eating out",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#d9725b", // wants
-			},
-		},
-		{
-			Name: "Investments",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#bea9ba", // savings
-			},
-		},
-	}
-
-	sankeyLink = []opts.SankeyLink{
-		{Source: "Salary", Target: "Budget", Value: 80},
-		{Source: "Side hustle", Target: "Budget", Value: 20},
-		{Source: "Budget", Target: "Rent", Value: 40},
-		{Source: "Budget", Target: "Utilities", Value: 10},
-		{Source: "Budget", Target: "Eating out", Value: 25},
-		{Source: "Budget", Target: "Investments", Value: 25},
-	}
-)
-
-func sankeyBase() *charts.Sankey {
-	sankey := charts.NewSankey()
-	sankey.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
-		charts.WithLegendOpts(opts.Legend{
-			Show: opts.Bool(false),
-		}),
-		charts.WithTooltipOpts(opts.Tooltip{
-			BackgroundColor: "rgba(0, 0, 0, 0.7)",
-			BorderColor:     "transparent",
-			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
-		}),
-	)
-
-	sankey.AddSeries(
-		"sankey",
-		sankeyNode,
-		sankeyLink,
-		charts.WithLineStyleOpts(opts.LineStyle{
-			Color:     "target",
-			Curveness: 0.5,
-		}),
-		charts.WithLabelOpts(opts.Label{
-			Show: opts.Bool(true),
-			// TODO different colors for dark and light themes
-			Color: "#fff",
-		}),
-	)
-	return sankey
 }

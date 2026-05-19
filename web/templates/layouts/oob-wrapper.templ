@@ -1,0 +1,7 @@
+package layouts
+
+templ OOBWraper(id, swap string, attrs templ.Attributes, component templ.Component) {
+	<div id={ id } hx-swap-oob={ swap } { attrs... }>
+		@component
+	</div>
+}

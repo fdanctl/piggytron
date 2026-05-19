@@ -5,6 +5,7 @@
   top: 0;
   padding: 1rem;
   display: flex;
+  align-items: end;
   gap: 0.25rem;
   overflow-x: hidden;
   width: 100%;

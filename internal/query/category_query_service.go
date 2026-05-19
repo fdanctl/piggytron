@@ -19,6 +19,13 @@ type ExpenseCategoryBudgetSpent struct {
 	Spent    int
 }
 
+// if it's income amount will be the money in
+type CategoryBudget struct {
+	Name  string
+	Type  string
+	Value int
+}
+
 type CategoryQueryService interface {
 	FindAllCategories(ctx context.Context, uid string) ([]CategoryNameDTO, error)
 	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryNameDTO, error)
@@ -28,4 +35,10 @@ type CategoryQueryService interface {
 		minDate time.Time,
 		maxDate time.Time,
 	) ([]ExpenseCategoryBudgetSpent, error)
+	GetCategoriesBudgetSpent(
+		ctx context.Context,
+		uid string,
+		minDate time.Time,
+		maxDate time.Time,
+	) ([]CategoryBudget, error)
 }

@@ -10,18 +10,30 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/budget"
+	"github.com/fdanctl/piggytron/internal/application/charts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
 type BudgetHandler struct {
-	service *budget.Service
+	service       *budget.Service
+	chartsService *charts.Service
+	categoryQuery query.CategoryQueryService
 }
 
-func NewBudgetHandler(s *budget.Service) *BudgetHandler {
+func NewBudgetHandler(
+	s *budget.Service,
+	cs *charts.Service,
+	cq query.CategoryQueryService,
+) *BudgetHandler {
 	return &BudgetHandler{
-		service: s,
+		service:       s,
+		chartsService: cs,
+		categoryQuery: cq,
 	}
 }
 
@@ -36,7 +48,7 @@ func (h *BudgetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
-	sessionID, err := middleware.SessionInfoFromCtx(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -126,7 +138,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if bid == "" || bid == "00000000-0000-0000-0000-000000000000" {
-		_, err := h.service.CreateBudget(r.Context(), sessionID.UserID, cid, now, cents)
+		_, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
 		if err != nil {
 			msg := "Error creating budget"
 			logger.Error(msg, "error", err)
@@ -152,7 +164,6 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	addedAmount := cents - prev
-	fmt.Println(addedAmount)
 
 	leftToSpent, err := strconv.Atoi(pleftToSpent)
 	if err != nil {
@@ -257,6 +268,41 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	totalRowLeft += addedAmount
 
+	minD := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+	maxD := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	categoryBudget, err := h.categoryQuery.GetCategoriesBudgetSpent(
+		r.Context(),
+		sessionInfo.UserID,
+		minD,
+		maxD,
+	)
+	if err != nil {
+		logger.Error("error geting category budget-spent", "error", err)
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	nodes := []opts.SankeyNode{
+		{
+			Name: "Budget",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#194e4e",
+			},
+		},
+	}
+	var links []opts.SankeyLink
+
+	for _, v := range categoryBudget {
+		if v.Value > 0 {
+			node, link := h.chartsService.MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
+			nodes = append(nodes, node)
+			links = append(links, link)
+		}
+	}
+
+	sankey := h.chartsService.MakeSankey(nodes, links, false)
+	chartComponent := h.chartsService.ConvertChartToTemplComponent(sankey)
+
 	obb := templ.Join(
 		partials.AmountPrevInput(strconv.Itoa(cents)),
 		partials.CatRowLeftCell(cid, catLeft, templ.Attributes{
@@ -276,6 +322,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			"hx-swap-oob": "outerHTML",
 		}),
 		partials.PctSpan(catType, totalRowBudget, totalBudgeted),
+		layouts.OOBWraper("budget-sankey", "innerHTML", nil, chartComponent),
 	)
 
 	obb.Render(r.Context(), w)
