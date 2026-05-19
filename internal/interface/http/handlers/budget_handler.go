@@ -11,8 +11,8 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/budget"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
-	"github.com/fdanctl/piggytron/web/views"
 )
 
 type BudgetHandler struct {
@@ -62,7 +62,11 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	prev, err := strconv.Atoi(ps)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(ps),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 
@@ -75,12 +79,24 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	} else if i == -1 {
 		cents, err = strconv.Atoi(amount)
 		if err != nil {
-			http.Error(w, "invalid amount", http.StatusBadRequest)
+			msg := fmt.Sprintf("%s is not a valid amount", amount)
+			logger.Error(msg, "error", err)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.AmountPrevInput(ps),
+				components.SendToast(components.Error, msg),
+			).Render(r.Context(), w)
 			return
 		}
 		cents *= 100
 	} else if length-1-i > 2 {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
+		msg := fmt.Sprintf("%s is not a valid amount", amount)
+		logger.Error(msg, "error", err)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(ps),
+			components.SendToast(components.Error, msg),
+		).Render(r.Context(), w)
 		return
 	} else {
 		for length-i < 3 {
@@ -90,7 +106,13 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 		cents, err = strconv.Atoi(strings.Replace(amount, ".", "", 1))
 		if err != nil {
-			http.Error(w, "invalid amount", http.StatusBadRequest)
+			msg := fmt.Sprintf("%s is not a valid amount", amount)
+			logger.Error(msg, "error", err)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.AmountPrevInput(ps),
+				components.SendToast(components.Error, msg),
+			).Render(r.Context(), w)
 			return
 		}
 	}
@@ -99,28 +121,32 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	if cents == prev {
 		logger.Debug("nothing to do")
-		fmt.Fprintf(
-			w,
-			`
-		<input id="prev-amount" type="hidden" name="prev-amount" value="%d"/>
-		`,
-			cents,
-		)
+		partials.AmountPrevInput(ps).Render(r.Context(), w)
 		return
 	}
 
 	if bid == "" || bid == "00000000-0000-0000-0000-000000000000" {
 		_, err := h.service.CreateBudget(r.Context(), sessionID.UserID, cid, now, cents)
 		if err != nil {
-			logger.Error("error creating budget", "error", err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			msg := "Error creating budget"
+			logger.Error(msg, "error", err)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.AmountPrevInput(ps),
+				components.SendToast(components.Error, msg),
+			).Render(r.Context(), w)
 			return
 		}
 	} else {
 		err := h.service.UpdateBudgetAmount(r.Context(), bid, cents)
 		if err != nil {
-			logger.Error("error updating budget", "error", err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			msg := "Error updating budget"
+			logger.Error(msg, "error", err)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.AmountPrevInput(ps),
+				components.SendToast(components.Error, msg),
+			).Render(r.Context(), w)
 			return
 		}
 	}
@@ -131,7 +157,11 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	leftToSpent, err := strconv.Atoi(pleftToSpent)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 	leftToSpent += addedAmount
@@ -139,23 +169,34 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	leftToBudget, err := strconv.Atoi(pleftToBudget)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
-	leftToBudget += addedAmount
+	leftToBudget -= addedAmount
 
 	income, err := strconv.Atoi(pincome)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
-	income += addedAmount
 
 	totalBudgeted, err := strconv.Atoi(ptotalBudgeted)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 	totalBudgeted += addedAmount
@@ -163,14 +204,22 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	overspent, err := strconv.Atoi(poverspent)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 
 	catLeft, err := strconv.Atoi(pcatLeft)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 	// if prev left is overspent reset this spent
@@ -187,7 +236,11 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	totalRowBudget, err := strconv.Atoi(ptotalRowBudget)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 	totalRowBudget += addedAmount
@@ -195,20 +248,17 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	totalRowLeft, err := strconv.Atoi(ptotalRowLeft)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		templ.Join(
+			partials.AmountPrevInput(strconv.Itoa(cents)),
+			components.SendToast(components.Error, "Unexpected error. Reload page."),
+		).Render(r.Context(), w)
 		return
 	}
 	totalRowLeft += addedAmount
 
-	fmt.Fprintf(
-		w,
-		`
-		<input id="prev-amount" type="hidden" name="prev-amount" value="%d"/>
-		`,
-		cents,
-	)
-
 	obb := templ.Join(
+		partials.AmountPrevInput(strconv.Itoa(cents)),
 		partials.CatRowLeftCell(cid, catLeft, templ.Attributes{
 			"hx-swap-oob": "outerHTML",
 		}),
@@ -225,29 +275,8 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		partials.TotalRow(catType, totalRowBudget, totalRowLeft, templ.Attributes{
 			"hx-swap-oob": "outerHTML",
 		}),
+		partials.PctSpan(catType, totalRowBudget, totalBudgeted),
 	)
 
 	obb.Render(r.Context(), w)
-
-	fmt.Fprintf(
-		w,
-		`
-		<span id="%s-pct" hx-swap-oob="outerHTML class="font-mono text-xs font-normal">
-		(%s%%)
-		</span>
-		`,
-		catType,
-		views.FormatFloat((float64(totalRowBudget)/float64(totalBudgeted))*100),
-	)
-
-	fmt.Fprintf(
-		w,
-		`
-		<span id="%s-pct" hx-swap-oob="outerHTML class="font-mono text-xs font-normal">
-		(%s%%)
-		</span>
-		`,
-		catType,
-		views.FormatFloat((float64(totalRowBudget)/float64(totalBudgeted))*100),
-	)
 }

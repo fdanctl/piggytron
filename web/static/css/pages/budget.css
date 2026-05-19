@@ -106,7 +106,7 @@
 
 .budget-table > div {
   display: grid;
-  grid-template-columns: 1fr 110px 90px;
+  grid-template-columns: 1fr 100px 100px;
   padding: 6px 14px;
   align-items: center;
 }

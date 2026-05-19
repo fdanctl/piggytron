@@ -196,17 +196,19 @@ for (let i = 0; i < sidebarLinks.length; i++) {
   link.addEventListener("focus", (evt) => {
     const nextSibling = link.nextElementSibling;
     if (nextSibling?.classList.contains("sublinks")) {
-      // sidebarShowPopover(link);
       handleExpandOpen(nextSibling);
     } else if (link.closest(".sublinks")) {
+      handleSublinkFocus(link);
       handleExpandOpen(link.closest(".sublinks"));
     }
+    sidebarShowPopover(link);
   });
 
   link.addEventListener("click", (evt) => {
     const nextSibling = link.nextElementSibling;
     if (nextSibling?.classList.contains("sublinks")) {
       handleExpandToggle(nextSibling);
+      sidebarShowPopover(link);
     } else if (link.closest(".sublinks")) {
       handleExpandRemove(link.closest(".sublinks"));
     } else {

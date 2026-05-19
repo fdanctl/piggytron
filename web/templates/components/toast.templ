@@ -1,0 +1,21 @@
+package components
+
+type toastLevel string
+
+const (
+	Success toastLevel = "success"
+	Warning toastLevel = "warning"
+	Error   toastLevel = "error"
+	Info    toastLevel = "info"
+)
+
+templ SendToast(level toastLevel, msg string) {
+	<div hx-swap-oob="beforeend:#toast-root">
+		<div class={ "toast", string(level) } data-animationend="ui.element.remove">
+			@CheckSvg(16, "", "")
+			<div>
+				<p>{ msg }</p>
+			</div>
+		</div>
+	</div>
+}

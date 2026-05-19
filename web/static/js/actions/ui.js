@@ -29,7 +29,13 @@ import {
   openNavSheet,
 } from "../navigation";
 
+function removeEle({ ele }) {
+  ele.remove();
+}
+
 export const uiActions = {
+  "ui.element.remove": removeEle,
+
   "ui.calendar.prev-month": prevMonth,
 
   "ui.calendar.next-month": nextMonth,

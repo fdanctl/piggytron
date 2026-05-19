@@ -150,3 +150,13 @@ templ TotalRow(eType string, totalBudget, totalLeft int, attrs templ.Attributes)
 		</span>
 	</div>
 }
+
+templ AmountPrevInput(amount string) {
+	<input type="hidden" name="prev-amount" value={ amount }/>
+}
+
+templ PctSpan(catType string, totalRowBudget, totalBudgeted int) {
+	<span id={ fmt.Sprintf("%s-pct", catType) } hx-swap-oob="outerHTML" class="font-mono text-xs font-normal">
+		({ views.FormatFloat((float64(totalRowBudget)/float64(totalBudgeted))*100) }%)
+	</span>
+}

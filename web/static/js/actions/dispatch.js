@@ -12,6 +12,7 @@ const eventAttributes = {
   focusout: "focusout",
   keydown: "keydown",
   "htmx:afterRequest": "afterrequest",
+  animationend: "animationend",
 };
 
 document.addEventListener("focusout", (evt) => {

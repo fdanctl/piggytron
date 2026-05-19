@@ -61,4 +61,8 @@ templ Test() {
 	@components.DateInput("", false, templ.Attributes{"placeholder": "dd/mm/yyyy"})
 	@components.Input("", false, templ.Attributes{"type": "time"})
 	@components.TimeInput("", false, nil)
+	@components.SendToast(components.Info, "Info")
+	@components.SendToast(components.Warning, "Warning")
+	@components.SendToast(components.Error, "Error")
+	@components.SendToast(components.Success, "Success")
 }
