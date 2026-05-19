@@ -1,10 +1,7 @@
 package handlers
 
 import (
-	"bytes"
-	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/charts"
@@ -84,33 +81,6 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sankey := h.chartsService.MakeSankey(nodes, links, true)
-
-	// TODO MAKE THIS A REUSABLE FUNC
-	// cut unnecessary html code from echarts
-	// only get what's inside <body></body>
-	buf := bytes.NewBuffer(nil)
-	sankey.Render(buf)
-	html := buf.String()
-	bodyStart := strings.Index(html, "<body>")
-	bodyEnd := strings.Index(html, "</body>")
-	fragment := html[bodyStart+len("<body>") : bodyEnd]
-
-	idStart := strings.Index(fragment, "id=\"")
-	id := fragment[idStart+len("id=\"") : idStart+len("id=\"")+12]
-
-	fmt.Fprint(w, fragment)
-	// ResizeObserver script
-	fmt.Fprintf(w, `<script>
-		// block resize when chart is animating
-		let initialized_%s = false;
-		const observer_%s = new ResizeObserver(() => {
-			if (!initialized_%s) {
-				initialized_%s = true;
-				return;
-			}
-			goecharts_%s.resize()
-		})
-		observer_%s.observe(document.getElementById("%s"))
-		</script>`, id, id, id, id, id, id, id,
-	)
+	chartComponent := h.chartsService.ConvertChartToTemplComponent(sankey)
+	chartComponent.Render(r.Context(), w)
 }
