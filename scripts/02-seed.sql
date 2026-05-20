@@ -295,6 +295,7 @@ INSERT INTO
     user_id,
     name,
     type,
+    is_saving,
     currency,
     created_at,
     updated_at
@@ -304,6 +305,7 @@ SELECT
   u.id,
   'Cash',
   'bank',
+  false,
   'eur',
   '2026-03-11',
   '2026-03-11'
@@ -318,6 +320,7 @@ INSERT INTO
     user_id,
     name,
     type,
+    is_saving,
     currency,
     created_at,
     updated_at
@@ -327,6 +330,7 @@ SELECT
   u.id,
   'Main',
   'bank',
+  false,
   'eur',
   '2026-03-11',
   '2026-03-11'
@@ -341,6 +345,7 @@ INSERT INTO
     user_id,
     name,
     type,
+    is_saving,
     currency,
     created_at,
     updated_at
@@ -350,6 +355,7 @@ SELECT
   u.id,
   'Savings',
   'bank',
+  true,
   'eur',
   '2026-03-11',
   '2026-03-11'

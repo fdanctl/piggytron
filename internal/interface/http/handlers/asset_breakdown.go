@@ -84,19 +84,20 @@ func pieRadius() *charts.Pie {
 }`
 
 	pie.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
-		charts.WithLegendOpts(opts.Legend{
-			Top:    "center",
-			Right:  "0",
-			Orient: "vertical",
-		}),
+		charts.WithInitializationOpts(opts.Initialization{Width: "300%", Height: "100%"}),
+		// charts.WithLegendOpts(opts.Legend{
+		// 	Show:   opts.Bool(false),
+		// 	Top:    "center",
+		// 	Right:  "0",
+		// 	Orient: "vertical",
+		// }),
 		charts.WithColorsOpts(opts.Colors{
 			"#b185a7", "#95bf98", "#d9725b", "#297373",
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
 			BackgroundColor: "rgba(0, 0, 0, 0.7)",
 			BorderColor:     "transparent",
-			Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
 		}),
 	)
 

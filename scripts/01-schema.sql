@@ -39,6 +39,7 @@ CREATE TABLE accounts (
   --
   name VARCHAR(50) NOT NULL,
   type VARCHAR(10) NOT NULL CHECK (type IN ('bank', 'goal')),
+  is_saving BOOLEAN, -- bank specific
   --
   currency VARCHAR(10) NOT NULL,
   -- Goal-specific fields (NULL if type = 'bank')
@@ -53,12 +54,14 @@ CREATE TABLE accounts (
   CHECK (
     (
       type = 'bank'
+      AND is_saving IS NOT NULL
       AND target_amount IS NULL
       AND target_date IS NULL
       AND category_id IS NULL
     )
     OR (
       type = 'goal'
+      AND is_saving IS NULL
       AND target_amount IS NOT NULL
       -- AND target_date IS NOT NULL
       AND category_id IS NOT NULL

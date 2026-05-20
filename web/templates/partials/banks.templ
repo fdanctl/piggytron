@@ -1,11 +1,12 @@
 package partials
 
 import (
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ Banks(banks []views.Bank) {
+templ Banks(banks []views.Bank, transactions []views.Transaction) {
 	<div id="banks-container">
 		<section id="summary">
 			<div class="card">
@@ -49,7 +50,6 @@ templ Banks(banks []views.Bank) {
 				<h6 class="card__title">Asset breakdown</h6>
 				<div
 					class="chart-container"
-					style="margin: calc(-1 * var(--spacing-lg)) 0;"
 					hx-get="/partials/charts/asset-breakdown"
 					hx-trigger="load"
 				>
@@ -65,7 +65,6 @@ templ Banks(banks []views.Bank) {
 				</div>
 				<div
 					class="chart-container"
-					style="margin: calc(-1 * var(--spacing-lg)) 0;"
 					hx-get="/partials/charts/account-history"
 					hx-trigger="load"
 				>
@@ -76,9 +75,14 @@ templ Banks(banks []views.Bank) {
 		<section id="accounts">
 			<div class="card">
 				<h6 class="card__title">Accounts</h6>
-				<ul>
+				<ul class="space-y-xs">
 					for _, v := range banks {
-						<li>{ v.Name }</li>
+						<li>
+							<a class="account-card" href={ fmt.Sprint("/banks/", v.ID) }>
+								{ v.Name }
+								@components.ChevronRightSvg(0, "", "")
+							</a>
+						</li>
 					}
 				</ul>
 			</div>
@@ -87,38 +91,14 @@ templ Banks(banks []views.Bank) {
 			<div class="card">
 				<h6 class="card__title">Recent transactions</h6>
 				<div>
-					// remove, receive the recent transactions and use @transactionItem
 					<ul>
-						<li class="transaction">
-							<div>
-								<div>
-									@components.ArrowRightLeftSvg(0, "", "")
-								</div>
-								<div>
-									<p class="h5 font-medium">description</p>
-									<p class="text-subtitle text-sm">today</p>
-								</div>
-							</div>
-							<div class="h5">
-								$9.99
-							</div>
-						</li>
-						<li class="transaction">
-							<div>
-								<div>
-									@components.ArrowRightLeftSvg(0, "", "")
-								</div>
-								<div>
-									<p class="h5 font-medium">description</p>
-									<p class="text-subtitle text-sm">today</p>
-								</div>
-							</div>
-							<div class="h5">
-								$9.99
-							</div>
-						</li>
+						for i, t := range transactions {
+							@TransactionItem(t, templ.Attributes{
+								"style": fmt.Sprintf("animation-delay: %dms", i*30),
+							})
+						}
 					</ul>
-					<p class="text-center">view all transactions</p>
+					<a href="/transactions/all" class="text-center" style="display: block;">view all transactions</a>
 				</div>
 			</div>
 		</section>

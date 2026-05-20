@@ -280,3 +280,69 @@ func (r *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 		Total: totalExpense,
 	}, nil
 }
+
+func (r *TransactionQueryService) GetRecentTransactions(
+	ctx context.Context, uid string, limit uint,
+) ([]query.TransactionDTO, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT
+			t.id,
+			t.user_id,
+			t.type,
+			fa.name,
+			ta.name,
+			ic.name,
+			ec.name,
+			t.amount,
+			t.description,
+			t.date,
+			t.created_at
+		 FROM transactions t
+		 LEFT JOIN accounts fa
+			ON t.from_account_id = fa.id
+		 LEFT JOIN accounts ta
+			ON t.to_account_id = ta.id
+		 LEFT JOIN expense_categories ec
+			ON t.expense_category_id = ec.id
+		 LEFT JOIN income_categories ic
+			ON t.income_category_id = ic.id
+		 WHERE t.user_id = $1
+		 ORDER BY date DESC
+		 LIMIT NULLIF($2, 0)`,
+		uid,
+		limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var transactions []query.TransactionDTO
+
+	for rows.Next() {
+		var dto query.TransactionDTO
+		err := rows.Scan(
+			&dto.ID,
+			&dto.UserID,
+			&dto.Type,
+			&dto.FromAccount,
+			&dto.ToAccount,
+			&dto.IncomeCategory,
+			&dto.ExpenseCategory,
+			&dto.Amount,
+			&dto.Description,
+			&dto.Date,
+			&dto.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		transactions = append(transactions, dto)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return transactions, nil
+}

@@ -57,4 +57,7 @@ type TransactionQueryService interface {
 	GetExpensesByCategoryBetweenDates(
 		ctx context.Context, uid string, minDate time.Time, maxDate time.Time,
 	) (*CategoryExpenseWithTotal, error)
+	GetRecentTransactions(
+		ctx context.Context, uid string, limit uint,
+	) ([]TransactionDTO, error)
 }

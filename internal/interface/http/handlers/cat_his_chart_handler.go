@@ -80,7 +80,7 @@ func createBarChart() *charts.Bar {
 		charts.WithTooltipOpts(opts.Tooltip{
 			BackgroundColor: "rgba(0, 0, 0, 0.7)",
 			BorderColor:     "transparent",
-			Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
 		}),
 	)
 

@@ -15,18 +15,18 @@ const monthMap = new Map([
 
 // TODO rename
 // TODO will not work with minified js
-function myTooltipFormatter(p) {
-  const color = p.color || "#666";
-  const name = monthMap.get(p.name) || p.name;
-  return (
-    '<span style="color:white;font-size:14px;font-weight:medium;">' +
-    name +
-    ': <span style="color:' +
-    color +
-    ';font-weight:bold">' +
-    "€" +
-    p.value +
-    "</span>" +
-    "</span>"
-  );
-}
+// function myTooltipFormatter(p) {
+//   const color = p.color || "#666";
+//   const name = monthMap.get(p.name) || p.name;
+//   return (
+//     '<span style="color:white;font-size:14px;font-weight:medium;">' +
+//     name +
+//     ': <span style="color:' +
+//     color +
+//     ';font-weight:bold">' +
+//     "€" +
+//     p.value +
+//     "</span>" +
+//     "</span>"
+//   );
+// }

@@ -131,7 +131,7 @@ func main() {
 	webMux.Handle("/goals", middleware.AuthProtectedRoute(goalsHandler))
 	webMux.Handle("/goals/{id}", middleware.AuthProtectedRoute(goalsHandler))
 
-	banksHandler := handlers.NewBanksHandler(accountService)
+	banksHandler := handlers.NewBanksHandler(accountService, transactionQueryService)
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
 
