@@ -18,15 +18,18 @@ import (
 type BanksHandler struct {
 	service          *accountapp.Service
 	transactionQuery query.TransactionQueryService
+	accountQuery     query.AccountQueryService
 }
 
 func NewBanksHandler(
 	s *accountapp.Service,
 	tq query.TransactionQueryService,
+	aq query.AccountQueryService,
 ) *BanksHandler {
 	return &BanksHandler{
 		service:          s,
 		transactionQuery: tq,
+		accountQuery:     aq,
 	}
 }
 
@@ -54,18 +57,6 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	banks, err := h.service.ReadAllBanksByUser(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all banks", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
-		return
-	}
-
-	var bviews []views.Bank
-	for _, v := range banks {
-		bviews = append(bviews, views.NewBank(v))
-	}
-
 	transactions, err := h.transactionQuery.GetRecentTransactions(
 		r.Context(),
 		sessionInfo.UserID,
@@ -77,10 +68,14 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tviews []views.Transaction
-	for _, v := range transactions {
-		tviews = append(tviews, views.NewTransaction(v))
+	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error finding accounts", "error", err)
+		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		return
 	}
+
+	pageView := views.NewBankPage(accounts, transactions)
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		err := components.Breadcrumbs([]components.BreadcrumbsLink{
@@ -90,7 +85,7 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		err = partials.Banks(bviews, tviews).Render(ctx, w)
+		err = partials.Banks(pageView).Render(ctx, w)
 		return err
 	})
 

@@ -99,6 +99,78 @@ func (r *AccountQueryService) FindGoalsIDNames(
 	return results, nil
 }
 
+func (r *AccountQueryService) FindAllWithSum(
+	ctx context.Context,
+	uid string,
+) ([]query.AccountWithSum, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT 
+			a.id, 
+			a.user_id, 
+			a.type, 
+			a.name, 
+			a.is_saving, 
+			a.currency, 
+			a.target_amount, 
+			a.target_date, 
+			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
+			COALESCE(c.name,''),
+			a.created_at, 
+			a.updated_at, 
+			COALESCE(
+				SUM(
+					CASE
+					  WHEN t.from_account_id = a.id THEN t.amount * -1
+					  ELSE t.amount
+					END
+				),
+				0
+			) AS sum
+		 FROM accounts a
+		 LEFT JOIN expense_categories c
+			ON a.category_id = c.id
+		 LEFT JOIN transactions t 
+			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 WHERE
+			a.user_id = $1
+		 GROUP BY
+			a.id, c.id`,
+		uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountWithSum
+
+	for rows.Next() {
+		var g query.AccountWithSum
+		var c query.CategoryNameDTO
+		if err := rows.Scan(
+			&g.ID,
+			&g.UserID,
+			&g.Type,
+			&g.Name,
+			&g.IsSaving,
+			&g.Currency,
+			&g.TargetAmount,
+			&g.TargetDate,
+			&c.ID,
+			&c.Name,
+			&g.CreatedAt,
+			&g.UpdatedAt,
+			&g.Sum,
+		); err != nil {
+			return nil, err
+		}
+		g.Category = &c
+		results = append(results, g)
+	}
+	return results, nil
+}
+
 func (r *AccountQueryService) FindAllGoalsWithSum(
 	ctx context.Context,
 	uid string,
@@ -110,6 +182,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			a.user_id, 
 			a.type, 
 			a.name, 
+			a.is_saving, 
 			a.currency, 
 			a.target_amount, 
 			a.target_date, 
@@ -149,9 +222,10 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 		var c query.CategoryNameDTO
 		if err := rows.Scan(
 			&g.ID,
-			&g.Name,
+			&g.UserID,
 			&g.Type,
 			&g.Name,
+			&g.IsSaving,
 			&g.Currency,
 			&g.TargetAmount,
 			&g.TargetDate,
@@ -180,6 +254,7 @@ func (r *AccountQueryService) FindOneWithSum(
 			a.user_id,
 			a.type,
 			a.name,
+			a.is_saving, 
 			a.currency,
 			a.target_amount,
 			a.target_date,
@@ -215,6 +290,7 @@ func (r *AccountQueryService) FindOneWithSum(
 		&a.UserID,
 		&a.Type,
 		&a.Name,
+		&a.IsSaving,
 		&a.Currency,
 		&a.TargetAmount,
 		&a.TargetDate,

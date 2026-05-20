@@ -25,6 +25,7 @@ func (s *Service) CreateBank(
 	userID string,
 	name string,
 	currency string,
+	isSaving bool,
 ) (*account.Account, error) {
 	_, err := uuid.Parse(userID)
 	if err != nil {
@@ -41,7 +42,7 @@ func (s *Service) CreateBank(
 		return nil, err
 	}
 
-	account, err := account.NewBank(id, uid, name, currency)
+	account, err := account.NewBank(id, uid, name, currency, isSaving)
 	if err != nil {
 		return nil, err
 	}

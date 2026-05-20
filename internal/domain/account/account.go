@@ -23,6 +23,7 @@ type Account struct {
 	userID   ID
 	aType    AccountType
 	name     string
+	isSaving *bool
 	currency string
 	// goal-specific
 	targetAmount *int
@@ -37,6 +38,7 @@ func NewBank(
 	id, userID ID,
 	name string,
 	currency string,
+	isSaving bool,
 ) (*Account, error) {
 	if name == "" || len(name) > 50 {
 		return nil, ErrInvalidName
@@ -52,6 +54,7 @@ func NewBank(
 		userID:    userID,
 		name:      name,
 		aType:     bank,
+		isSaving:  &isSaving,
 		currency:  currency,
 		createdAt: now,
 		updatedAt: now,
@@ -96,6 +99,7 @@ func Rehydrate(
 	id, userID ID,
 	aType AccountType,
 	name string,
+	isSaving *bool,
 	targetAmount *int,
 	targetDate *time.Time,
 	categoryID *ID,
@@ -106,6 +110,7 @@ func Rehydrate(
 		id:           id,
 		userID:       userID,
 		name:         name,
+		isSaving:     isSaving,
 		targetAmount: targetAmount,
 		targetDate:   targetDate,
 		categoryID:   categoryID,
@@ -129,6 +134,10 @@ func (b *Account) Name() string {
 
 func (b *Account) Type() AccountType {
 	return b.aType
+}
+
+func (b *Account) IsSaving() *bool {
+	return b.isSaving
 }
 
 func (b *Account) Currency() string {
