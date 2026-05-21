@@ -362,6 +362,10 @@
   width: fit-content;
 }
 
+.h-fit {
+  height: fit-content;
+}
+
 .w-full {
   width: 100%;
 }

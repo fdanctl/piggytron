@@ -58,7 +58,7 @@ templ Banks(view views.BankPage) {
 				<h6 class="card__title">Asset breakdown</h6>
 				<div
 					class="chart-container"
-					hx-get="/partials/charts/asset-breakdown"
+					hx-get="/partials/charts/banks"
 					hx-trigger="load"
 				>
 					@components.Loader("", nil)
@@ -72,9 +72,8 @@ templ Banks(view views.BankPage) {
 					// last 30 days, change
 				</div>
 				<div
+					id="account-history-chart"
 					class="chart-container"
-					hx-get="/partials/charts/account-history"
-					hx-trigger="load"
 				>
 					@components.Loader("", nil)
 				</div>
@@ -83,8 +82,12 @@ templ Banks(view views.BankPage) {
 		<section id="accounts">
 			<div class="card">
 				<div class="flex justify-between" style="color: var(--color-text-secondary);">
-					<h6 class="card__title">Accounts</h6>
-					@components.PlusSvg(16, "", "")
+					<h6 class="flex justify-between items-center w-full card__title">
+						Accounts
+						<button class="reset-btn w-fit h-fit flex cursor-pointer">
+							@components.PlusSvg(16, "", "")
+						</button>
+					</h6>
 				</div>
 				<ul class="space-y-xs">
 					for _, v := range view.Banks {

@@ -189,11 +189,12 @@ func main() {
 	goalChartHandler := handlers.NewGoalChartHandler()
 	partialsMux.Handle("/partials/charts/goal-hist/{id}", goalChartHandler)
 
-	assetBreakdownHandler := handlers.NewAssetBreakdownChartHandler()
-	partialsMux.Handle("/partials/charts/asset-breakdown", assetBreakdownHandler)
-
-	accHistChartHandler := handlers.NewAccountHistoryChartHandler()
-	partialsMux.Handle("/partials/charts/account-history", accHistChartHandler)
+	banksChartsHandler := handlers.NewBanksChartsHandler(
+		chartsService,
+		transactionQueryService,
+		accountQueryService,
+	)
+	partialsMux.Handle("/partials/charts/banks", banksChartsHandler)
 
 	budgetChartHandler := handlers.NewBudgetChartHandler(
 		chartsService,

@@ -31,10 +31,18 @@ type AccountWithSum struct {
 	Sum int
 }
 
+type AccountDailyChange struct {
+	ID     string
+	Name   string
+	Date   time.Time
+	Change int
+}
+
 type AccountQueryService interface {
 	FindIDNamesIncludes(ctx context.Context, ids []string) ([]AccountIDName, error)
 	FindGoalsIDNames(ctx context.Context, uid string) ([]AccountIDName, error)
 	FindAllWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	FindOneWithSum(ctx context.Context, id string) (AccountWithSum, error)
+	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
 }

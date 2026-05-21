@@ -303,3 +303,51 @@ func (r *AccountQueryService) FindOneWithSum(
 	a.Category = &c
 	return a, err
 }
+
+func (r *AccountQueryService) GetBanksDailyChange(
+	ctx context.Context,
+	uid string,
+) ([]query.AccountDailyChange, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT
+			a.id,
+			a.name,
+			DATE(date) AS day,
+			SUM(
+				CASE
+				  WHEN t.from_account_id = a.id THEN t.amount * -1
+				  ELSE t.amount
+				END
+			) AS change
+		 FROM accounts a
+		 LEFT JOIN transactions t
+			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 WHERE
+			a.user_id = $1 AND a.type = 'bank'
+		 GROUP BY DATE(date), a.id
+		 ORDER BY day`,
+
+		uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountDailyChange
+
+	for rows.Next() {
+		var r query.AccountDailyChange
+		if err := rows.Scan(
+			&r.ID,
+			&r.Name,
+			&r.Date,
+			&r.Change,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, r)
+	}
+	return results, nil
+}
