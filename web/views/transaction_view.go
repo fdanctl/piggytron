@@ -12,6 +12,8 @@ type Transaction struct {
 	Type        string
 	Category    string
 	Accounts    []string
+	FromAccount string
+	ToAccount   string
 	Amount      string
 	Date        string
 }
@@ -52,21 +54,21 @@ func NewTransaction(
 
 func NewAccountTransaction(
 	t query.TransactionDTO,
-	a *query.AccountWithCategory,
+	accName string,
 ) Transaction {
 	f := float64(t.Amount) / 100
 	tpe := "income"
-	if t.FromAccount != nil && *t.FromAccount == a.Name {
+	if t.FromAccount != nil && *t.FromAccount == accName {
 		tpe = "expense"
 		f *= -1
 	}
 
-	var cat string
-	if t.ExpenseCategory != nil {
-		cat = *t.ExpenseCategory
-	} else {
-		cat = *t.IncomeCategory
-	}
+	// var cat string
+	// if t.ExpenseCategory != nil {
+	// 	cat = *t.ExpenseCategory
+	// } else {
+	// 	cat = *t.IncomeCategory
+	// }
 
 	accs := make([]string, 0, 2)
 	if t.FromAccount != nil {
@@ -80,9 +82,9 @@ func NewAccountTransaction(
 		ID:          t.ID,
 		Description: t.Description,
 		Type:        tpe,
-		Category:    cat,
-		Accounts:    accs,
-		Amount:      FormatMoney(f, currency.EUR, language.AmericanEnglish),
-		Date:        FormatDate(t.Date),
+		// Category:    cat,
+		Accounts: accs,
+		Amount:   FormatMoney(f, currency.EUR, language.AmericanEnglish),
+		Date:     FormatDate(t.Date),
 	}
 }

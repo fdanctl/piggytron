@@ -1,0 +1,11 @@
+package components
+
+import "fmt"
+import "math"
+
+templ ProgressBar(class string, pct float64) {
+	<div class={ "progress-bar",  templ.KV(class, class != "") }>
+		<span class="w-full"></span>
+		<span style={ fmt.Sprintf("width: %f%%;", math.Min(pct, 100)) }></span>
+	</div>
+}

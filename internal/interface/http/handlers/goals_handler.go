@@ -125,7 +125,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 
 	filters := query.NewTransactionFilters(nil, []string{id}, nil, "", "", "", "")
 
-	transactions, err := h.tQueryService.FindFiltered(
+	transactions, err := h.tQueryService.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
 		filters,
@@ -138,16 +138,16 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var hasMore bool
-	if len(transactions) == LIMIT+1 {
+	if len(transactions.Data) == LIMIT+1 {
 		hasMore = true
-		transactions = transactions[0 : len(transactions)-1]
+		transactions.Data = transactions.Data[0 : len(transactions.Data)-1]
 	}
 
 	var transactionsViews []views.Transaction
-	for _, t := range transactions {
+	for _, t := range transactions.Data {
 		transactionsViews = append(
 			transactionsViews,
-			views.NewAccountTransaction(t, &goal.AccountWithCategory),
+			views.NewAccountTransaction(t, goal.AccountWithCategory.Name),
 		)
 	}
 
@@ -166,7 +166,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		return partials.Goal(views.NewGoal(goal), transactionsViews, hasMore).
+		return partials.Goal(views.NewGoal(goal), transactionsViews, hasMore, transactions.Total).
 			Render(ctx, w)
 	})
 

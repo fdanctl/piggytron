@@ -320,6 +320,10 @@
   margin-bottom: var(--spacing-lg);
 }
 
+.ml-xs {
+  margin-left: var(--spacing-xs);
+}
+
 .space-y-xs > * + * {
   margin-top: var(--spacing-xs);
 }

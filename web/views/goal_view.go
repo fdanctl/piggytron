@@ -13,7 +13,7 @@ type Goal struct {
 	ID           string
 	Name         string
 	Type         string
-	TargetAmount string
+	TargetAmount int
 	StartDate    time.Time
 	TargetDate   time.Time
 	Category     string
@@ -49,14 +49,15 @@ func NewGoal(
 	}
 
 	return Goal{
-		ID:   g.ID,
-		Name: g.Name,
-		Type: g.Type,
-		TargetAmount: FormatMoney(
-			float64(*g.TargetAmount)/100,
-			currency.EUR,
-			language.AmericanEnglish,
-		),
+		ID:           g.ID,
+		Name:         g.Name,
+		Type:         g.Type,
+		TargetAmount: *g.TargetAmount,
+		// TargetAmount: FormatMoney(
+		// 	float64(*g.TargetAmount)/100,
+		// 	currency.EUR,
+		// 	language.AmericanEnglish,
+		// ),
 		StartDate:  g.CreatedAt,
 		TargetDate: *g.TargetDate,
 		Category:   g.Category.Name,

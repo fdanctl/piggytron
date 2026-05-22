@@ -183,11 +183,17 @@ func main() {
 	filteredTransaction := handlers.NewFilteredTransactionsHandler(transactionQueryService)
 	partialsMux.Handle("/partials/transactions", filteredTransaction)
 
+	goalContributions := handlers.NewGoalContributionsHandler(transactionQueryService)
+	partialsMux.Handle("/partials/contributions", goalContributions)
+
 	catHistChartHandler := handlers.NewCatHistChartHandler()
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
-	goalChartHandler := handlers.NewGoalChartHandler()
-	partialsMux.Handle("/partials/charts/goal-hist/{id}", goalChartHandler)
+	accountChartHandler := handlers.NewAccountChartHandler(
+		chartsService,
+		accountQueryService,
+	)
+	partialsMux.Handle("/partials/charts/account-hist/{id}", accountChartHandler)
 
 	banksChartsHandler := handlers.NewBanksChartsHandler(
 		chartsService,

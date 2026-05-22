@@ -40,13 +40,13 @@
   color: var(--color-primary);
 }
 
-.goal-card__complete-bar {
+.progress-bar {
   position: relative;
   height: var(--spacing-sm);
   width: 100%;
 }
 
-.goal-card__complete-bar > span {
+.progress-bar > span {
   display: block;
   position: absolute;
   width: 100%;
@@ -55,7 +55,7 @@
   border-radius: var(--radius-xl);
 }
 
-.goal-card__complete-bar > span:first-child {
+.progress-bar > span:first-child {
   opacity: 0.35;
 }
 

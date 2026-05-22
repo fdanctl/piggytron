@@ -4,55 +4,172 @@ import (
 	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"time"
 )
 
-templ Goal(g views.Goal, tt []views.Transaction, hasMore bool) {
-	<style>
-		#goal-details > div {
-			display: grid;
-			grid-template-columns: auto 1fr;
-			column-gap: var(--spacing-sm);
-		}
-		#goal-details > div > p:nth-child(2n -1) {
-			font-weight: 600;
-			text-align: right;
-		}
-		#goal-details > div > p:nth-child(2n -1)::after {
-			content: ":";
-		}
-	</style>
-	<div class="flex justify-center">
-		<h2 class="h1">{ g.Amount }<sub>/{ g.TargetAmount }</sub></h2>
-	</div>
-	<div
-		class="chart-container"
-		style="margin-top: calc(-1 * var(--spacing-lg));"
-		hx-get={ fmt.Sprintf("/partials/charts/goal-hist/%s", g.ID) }
-		hx-trigger="load"
-	>
-		@components.Loader("htmx-indicator", nil)
-	</div>
-	<section id="goal-details">
-		<h4>Details</h4>
-		<div>
-			<p>Name</p>
-			<p>{ g.Name }</p>
-			<p>Status</p>
-			<p>i'm a status</p>
-			<p>Category</p>
-			<p>{ g.Category }</p>
-			<p>Target amount</p>
-			<p>{ g.TargetAmount }</p>
-			<p>Left</p>
-			<p>{ g.AmountLeft }</p>
-			<p>Start date</p>
-			<p>{ views.FormatDateOnly(g.StartDate) }</p>
-			<p>Target date</p>
-			<p>{ views.FormatDateOnly(g.TargetDate) }</p>
+templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
+	<div class="flex justify-between">
+		<div class="goal-amount-target">
+			<h2>{ g.Amount }</h2>
+			<span class="text-base">/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</span>
 		</div>
-	</section>
-	<section id="history">
-		<h4>History</h4>
-		@TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", g.ID), hasMore)
-	</section>
+		<div class="goal-actions">
+			@components.ButtonWithIcon(
+				"Contribute",
+				"",
+				components.BtnSecondary,
+				components.BtnMedium,
+				nil,
+				components.IconLeft,
+				components.PlusSvg(0, "", ""),
+			)
+			@components.ButtonWithIcon(
+				"Edit goal",
+				"",
+				components.BtnSecondary,
+				components.BtnMedium,
+				nil,
+				components.IconLeft,
+				components.SquarePenSvg(0, "", ""),
+			)
+		</div>
+	</div>
+	@components.ProgressBar("mt-md", g.CompletePercentage)
+	<div class="flex justify-between text-subtitle text-xs mt-xs">
+		<span>
+			{ views.FormatMoney(0.00, currency.EUR, language.AmericanEnglish) }
+		</span>
+		<span>
+			{ views.FormatFloat(g.CompletePercentage) }% · on track for { views.FormatDate(g.TargetDate) }
+		</span>
+		<span>
+			{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+		</span>
+	</div>
+	@components.ButtonWithIcon(
+		"Contribute",
+		"mobile-contribute-btn mt-xl",
+		components.BtnSecondary,
+		components.BtnMedium,
+		nil,
+		components.IconLeft,
+		components.PlusSvg(0, "", ""),
+	)
+	<div class="goal-grid mt-xl">
+		<div
+			class="chart-container"
+			style="margin-top: calc(-1 * var(--spacing-lg));"
+			hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount) }
+			hx-trigger="load"
+		>
+			@components.Loader("htmx-indicator", nil)
+		</div>
+		<section class="card" id="goal-details">
+			<div class="flex justify-between w-full">
+				<h4 class="card__title mb-md">Details</h4>
+				<button
+					class="reset-btn w-fit h-fit flex cursor-pointer"
+					style="color: var(--color-text-secondary);"
+				>
+					@components.PenSvg(14, "", "")
+				</button>
+			</div>
+			<ul class="goal-details__list">
+				<li class="goal-details__item">
+					<span class="goal-details__key">Status</span>
+					<span class="goal-details__value">status</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Category</span>
+					<span class="goal-details__value">{ g.Category }</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Target amount</span>
+					<span class="goal-details__value">{ g.TargetAmount }</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Left</span>
+					<span class="goal-details__value">{ g.AmountLeft }</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Start date</span>
+					<span class="goal-details__value">{ views.FormatDate(g.StartDate) }</span>
+				</li>
+				// check if it's set
+				<li class="goal-details__item">
+					<span class="goal-details__key">Target date</span>
+					<span class="goal-details__value">{ views.FormatDate(g.TargetDate) }</span>
+				</li>
+			</ul>
+		</section>
+		<section id="history">
+			<div class="flex justify-between">
+				<h4 class="card__title">History</h4>
+				<span class="text-muted text-xs">
+					{ ttCount } movements
+				</span>
+			</div>
+			@contributionsList(g.Name, tt, fmt.Sprintf("page=2&accounts=%sname=%s", g.ID, g.Name), hasMore)
+		</section>
+	</div>
+}
+
+templ contributionsList(goalName string, transactions []views.Transaction, queryStr string, hasMore bool) {
+	<ul
+		id="icontributions"
+		class="space-y-sm"
+		hx-indicator="#infinite-indicator"
+	>
+		if len(transactions) == 0 {
+			<p>no transactions</p>
+		}
+		for i, t := range transactions {
+			if i == len(transactions) - 1 && hasMore {
+				@ContributionItem(t, templ.Attributes{
+					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
+					"hx-get":       fmt.Sprintf("/partials/contributions?%s", queryStr),
+					"hx-trigger":   "intersect once",
+					"hx-swap":      "afterend",
+					"hx-indicator": "#infinite-indicator",
+				})
+			} else {
+				@ContributionItem(t, templ.Attributes{
+					"style": fmt.Sprintf("animation-delay: %dms", i*30),
+				})
+			}
+		}
+	</ul>
+	<div id="infinite-indicator" class="indicator">
+		@components.Loader("", nil)
+	</div>
+}
+
+templ ContributionItem(t views.Transaction, attrs templ.Attributes) {
+	<li class="transaction" { attrs... }>
+		<div>
+			<div class="transaction__icon">
+				switch t.Type {
+					case "expense":
+						@components.ArrowLeftSvg(0, "", "")
+					case "income":
+						@components.ArrowRightSvg(0, "", "")
+					case "transfer":
+						@components.ArrowRightLeftSvg(0, "", "")
+				}
+			</div>
+			<div>
+				<p class="transaction__description">{ t.Date }</p>
+			</div>
+		</div>
+		<div class="text-right">
+			<p
+				class="transaction__amount"
+				style={ templ.KV("color: var(--color-positive)", t.Type == "income"), templ.KV("color: var(--color-negative)", t.Type == "expense") }
+			>
+				{ t.Amount }
+			</p>
+		</div>
+	</li>
 }

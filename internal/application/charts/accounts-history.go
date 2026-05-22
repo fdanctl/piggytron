@@ -1,7 +1,6 @@
 package charts
 
 import (
-	"fmt"
 	"math"
 	"time"
 
@@ -15,8 +14,6 @@ func (s *Service) GenerateYearAccountsHistLine(
 ) (map[string][]opts.LineData, int, int) {
 	var min, max float64
 	datas := make(map[string][]opts.LineData)
-
-	fmt.Println(hist)
 
 	runningTotals := make(map[string]int)
 	lastDate := make(map[string]time.Time)
@@ -85,9 +82,51 @@ func (s *Service) LineTime(m map[string][]opts.LineData, min, max int) *charts.L
 	)
 
 	for k, v := range m {
-		fmt.Println(k, v)
 		line.AddSeries(k, v).
 			SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
+	}
+	return line
+}
+
+func (s *Service) LineTimeAccount(
+	m map[string][]opts.LineData,
+	min, max float64,
+	since time.Time,
+) *charts.Line {
+	line := charts.NewLine()
+	line.SetGlobalOptions(
+		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
+		charts.WithLegendOpts(opts.Legend{
+			Show: opts.Bool(false),
+		}),
+		charts.WithYAxisOpts(opts.YAxis{
+			Min: min,
+			Max: max,
+		}),
+		charts.WithColorsOpts(opts.Colors{
+			"#5eefef", "#4bc4c4",
+		}),
+		charts.WithXAxisOpts(opts.XAxis{
+			Type: "time",
+			Min:  since,
+		}),
+		charts.WithTooltipOpts(opts.Tooltip{
+			Trigger:         "axis",
+			BackgroundColor: "rgba(0, 0, 0, 0.7)",
+			BorderColor:     "transparent",
+			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
+		}),
+	)
+
+	for k, v := range m {
+		line.AddSeries(k, v).
+			SetSeriesOptions(
+				charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}),
+				charts.WithAreaStyleOpts(
+					opts.AreaStyle{
+						Opacity: opts.Float(0.5),
+					}),
+			)
 	}
 	return line
 }

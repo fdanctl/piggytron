@@ -45,4 +45,5 @@ type AccountQueryService interface {
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	FindOneWithSum(ctx context.Context, id string) (AccountWithSum, error)
 	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
+	GetAccountDailyChange(ctx context.Context, id string) ([]AccountDailyChange, error)
 }
