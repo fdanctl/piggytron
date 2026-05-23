@@ -1,7 +1,9 @@
 package views
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,14 +16,16 @@ type GoalForm struct {
 	Name         string
 	Currency     string
 	TargetAmount string
+	StartDate    string
 	TargetDate   string
 	Category     string
 }
 
 func NewGoalForm() *GoalForm {
 	return &GoalForm{
-		Initial:  true,
-		Currency: currency.EUR.String(),
+		Initial:   true,
+		StartDate: time.Now().Format("02/01/2006"),
+		Currency:  currency.EUR.String(),
 	}
 }
 
@@ -67,11 +71,14 @@ func (v *GoalForm) ValidateTargetAmount() (msgs []string) {
 		return
 	}
 
-	if v.Name == "" {
+	if v.TargetAmount == "" {
 		msgs = append(msgs, "Target amount is required")
 	}
 
-	n, err := strconv.Atoi(v.TargetAmount)
+	str := strings.ReplaceAll(v.TargetAmount, ",", "")
+	str = strings.Replace(str, ".", "", 1)
+
+	n, err := strconv.Atoi(str)
 	if err != nil {
 		return append(msgs, "Not a valid number")
 	}
@@ -84,6 +91,35 @@ func (v *GoalForm) ValidateTargetAmount() (msgs []string) {
 
 func (v *GoalForm) TargetAmountHasError() bool {
 	return len(v.ValidateTargetAmount()) > 0
+}
+
+func (v *GoalForm) ValidateStartDate() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	sdate, err := time.Parse("02/01/2006", v.StartDate)
+	if err != nil {
+		fmt.Println("bro...")
+		return append(msgs, "Invalid date")
+	}
+
+	if v.TargetDate == "" {
+		return
+	}
+
+	tdate, _ := time.Parse("02/01/2006", v.TargetDate)
+
+	duration := tdate.Sub(sdate)
+	if duration < 0 {
+		msgs = append(msgs, "Start date can't be after target date")
+	}
+
+	return msgs
+}
+
+func (v *GoalForm) StartDateHasError() bool {
+	return len(v.ValidateStartDate()) > 0
 }
 
 func (v *GoalForm) ValidateTargetDate() (msgs []string) {
@@ -140,6 +176,7 @@ func (v *GoalForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateName()...)
 	msgs = append(msgs, v.ValidateCurrency()...)
 	msgs = append(msgs, v.ValidateTargetAmount()...)
+	msgs = append(msgs, v.ValidateStartDate()...)
 	msgs = append(msgs, v.ValidateTargetDate()...)
 	msgs = append(msgs, v.ValidateCategory()...)
 	return msgs

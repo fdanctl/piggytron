@@ -77,3 +77,7 @@ func CapitalizeFirst(s string) string {
 	}
 	return strings.ToUpper(string(s[:1])) + s[1:]
 }
+
+func MonthDiff(a, b time.Time) int {
+	return (b.Year()-a.Year())*12 + int(b.Month()-a.Month())
+}

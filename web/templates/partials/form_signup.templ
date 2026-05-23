@@ -24,11 +24,10 @@ templ SignupForm(lv views.SignupView) {
 				lv.NameHasError(),
 				true,
 				templ.Attributes{
-					"id":          "name",
-					"type":        "text",
-					"name":        "name",
-					"placeholder": "Name",
-					"value":       lv.Name,
+					"id":    "name",
+					"type":  "text",
+					"name":  "name",
+					"value": lv.Name,
 				},
 			)
 			@components.InputGroup(
@@ -38,11 +37,10 @@ templ SignupForm(lv views.SignupView) {
 				lv.PasswordHasError(),
 				true,
 				templ.Attributes{
-					"id":          "password",
-					"type":        "password",
-					"name":        "password",
-					"placeholder": "Password",
-					"value":       lv.Password,
+					"id":    "password",
+					"type":  "password",
+					"name":  "password",
+					"value": lv.Password,
 				},
 			)
 			@components.InputGroup(
@@ -52,11 +50,10 @@ templ SignupForm(lv views.SignupView) {
 				lv.PasswordHasError(),
 				true,
 				templ.Attributes{
-					"id":          "password-confirm",
-					"type":        "password",
-					"name":        "password-confirm",
-					"placeholder": "Confirm password",
-					"value":       lv.PasswordConfirm,
+					"id":    "password-confirm",
+					"type":  "password",
+					"name":  "password-confirm",
+					"value": lv.PasswordConfirm,
 				},
 			)
 		</div>

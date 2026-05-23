@@ -44,6 +44,7 @@ CREATE TABLE accounts (
   currency VARCHAR(10) NOT NULL,
   -- Goal-specific fields (NULL if type = 'bank')
   target_amount BIGINT,
+  start_date TIMESTAMP,
   target_date TIMESTAMP,
   category_id UUID REFERENCES expense_categories (id),
   --
@@ -56,6 +57,7 @@ CREATE TABLE accounts (
       type = 'bank'
       AND is_saving IS NOT NULL
       AND target_amount IS NULL
+      AND start_date IS NULL
       AND target_date IS NULL
       AND category_id IS NULL
     )
@@ -63,6 +65,7 @@ CREATE TABLE accounts (
       type = 'goal'
       AND is_saving IS NULL
       AND target_amount IS NOT NULL
+      AND start_date IS NOT NULL
       -- AND target_date IS NOT NULL
       AND category_id IS NOT NULL
     )

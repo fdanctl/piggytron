@@ -306,7 +306,7 @@ SELECT
   'Cash',
   'bank',
   false,
-  'eur',
+  'EUR',
   '2026-03-11',
   '2026-03-11'
 FROM
@@ -372,6 +372,7 @@ INSERT INTO
     type,
     currency,
     target_amount,
+    start_date,
     target_date,
     category_id,
     created_at,
@@ -384,6 +385,7 @@ SELECT
   'goal',
   'eur',
   2000000,
+  '2026-03-11',
   '2026-06-06',
   c.id,
   '2026-03-11',

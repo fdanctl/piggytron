@@ -1,6 +1,9 @@
+import { closeLastDialog } from "./navigation";
+
 document.body.addEventListener("htmx:historyRestore", (ev) => {
   // nav active link
-  title = document.title;
+  let title = document.title;
+  const a = document.querySelectorAll("nav a");
   a.forEach((e) => e.classList.remove("active"));
   for (let i = 0; i < a.length; i++) {
     const text = a[i].text.trim().toLowerCase();

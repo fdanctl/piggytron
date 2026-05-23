@@ -19,6 +19,8 @@ html {
 
 #content {
   min-height: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 #sidebar {
@@ -75,12 +77,13 @@ html {
 
 @media (min-width: 600px) {
   .dialog {
-    padding: var(--spacing-md) var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-md);
     border-radius: var(--radius-sm);
     transition: opacity 150ms ease-in;
     opacity: 1;
 
-    max-width: 80vw;
+    max-width: 600px;
+    width: 90vw;
     max-height: 80vh;
     top: 50%;
     left: 50%;
@@ -217,9 +220,17 @@ html {
 }
 
 /* === categories === */
-#income-cat,
-#expense-cat {
+#categories-container {
   margin-top: var(--spacing-lg);
+  display: grid;
+  row-gap: var(--spacing-lg);
+  column-gap: var(--spacing-md);
+}
+
+@container main (min-width: 675px) {
+  #categories-container {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 #income-cat li,
@@ -248,7 +259,6 @@ html {
 
 #income-cat a,
 #expense-cat a {
-  display: block;
   width: 100%;
   height: 100%;
 }
@@ -263,7 +273,7 @@ html {
 
 /* === login === */
 #login-main {
-  padding: var(--spacing-sm);
+  padding: var(--spacing-md);
   padding-left: 0;
   height: 100vh;
   overflow: hidden;
@@ -272,7 +282,7 @@ html {
 @scope (#login-main) {
   header {
     display: flex;
-    padding-left: var(--spacing-xs);
+    padding-left: var(--spacing-sm);
     align-items: center;
     gap: 0.2rem;
   }
@@ -281,6 +291,7 @@ html {
     height: 100%;
     display: grid;
     grid-template-rows: auto 1fr;
+    width: 100%;
   }
 
   #content > div {

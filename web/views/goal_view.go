@@ -31,18 +31,17 @@ func NewGoal(
 	monthlyNeeded := "-"
 	monthsLeft := "-"
 	if g.TargetDate != nil {
-		m := g.TargetDate.Month()
-
 		monthsLeft = "exceded"
 		mn := *g.TargetAmount - g.Sum
 
+		ml := MonthDiff(time.Now(), *g.TargetDate)
+
 		if time.Until(*g.TargetDate) > 0 {
-			ml := int(m - time.Now().Month())
-			for ml < 0 {
-				ml += 12
-			}
 			monthsLeft = strconv.Itoa(ml)
-			mn = (*g.TargetAmount - g.Sum) / int(ml)
+			if ml <= 0 {
+				ml++
+			}
+			mn = (*g.TargetAmount - g.Sum) / ml
 		}
 
 		monthlyNeeded = FormatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
@@ -58,7 +57,7 @@ func NewGoal(
 		// 	currency.EUR,
 		// 	language.AmericanEnglish,
 		// ),
-		StartDate:  g.CreatedAt,
+		StartDate:  *g.StartDate,
 		TargetDate: *g.TargetDate,
 		Category:   g.Category.Name,
 		Amount: FormatMoney(

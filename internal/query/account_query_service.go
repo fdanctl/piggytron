@@ -2,8 +2,11 @@ package query
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+var ErrNoHistory = errors.New("no history found")
 
 type AccountIDName struct {
 	ID   string
@@ -19,6 +22,7 @@ type AccountWithCategory struct {
 	Currency string
 	// goal-specific
 	TargetAmount *int
+	StartDate    *time.Time
 	TargetDate   *time.Time
 	Category     *CategoryNameDTO
 

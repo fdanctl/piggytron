@@ -79,6 +79,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	name := r.FormValue("name")
 	currency := r.FormValue("currency")
 	tamount := r.FormValue("target-amount")
+	sdate := r.FormValue("start-date")
 	tdate := r.FormValue("target-date")
 	cat := r.FormValue("category")
 
@@ -87,6 +88,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		Name:         name,
 		Currency:     currency,
 		TargetAmount: tamount,
+		StartDate:    sdate,
 		TargetDate:   tdate,
 		Category:     cat,
 	}
@@ -119,6 +121,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		name,
 		currency,
 		tamount,
+		sdate,
 		tdate,
 		cat,
 	)

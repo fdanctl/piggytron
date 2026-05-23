@@ -28,11 +28,10 @@ templ LoginForm(lv views.LoginView) {
 				lv.NameHasError(),
 				true,
 				templ.Attributes{
-					"id":          "name",
-					"type":        "text",
-					"name":        "name",
-					"placeholder": "Name",
-					"value":       lv.Name,
+					"id":    "name",
+					"type":  "text",
+					"name":  "name",
+					"value": lv.Name,
 				},
 			)
 			@components.InputGroup(
@@ -42,11 +41,10 @@ templ LoginForm(lv views.LoginView) {
 				lv.PasswordHasError(),
 				true,
 				templ.Attributes{
-					"id":          "password",
-					"type":        "password",
-					"name":        "password",
-					"placeholder": "Password",
-					"value":       lv.Password,
+					"id":    "password",
+					"type":  "password",
+					"name":  "password",
+					"value": lv.Password,
 				},
 			)
 		</div>

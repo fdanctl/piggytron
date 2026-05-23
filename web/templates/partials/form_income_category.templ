@@ -7,12 +7,13 @@ import (
 
 templ IncomeCategoryForm(v views.IncomeCategoryForm) {
 	<form
+		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/income-category"
 		hx-swap="outerHTML"
 		novalidate
 	>
-		<h4>New income category</h4>
+		<h4 class="mb-md">New income category</h4>
 		@components.InputGroup(
 			"",
 			"Name",
@@ -27,14 +28,16 @@ templ IncomeCategoryForm(v views.IncomeCategoryForm) {
 				"value":       v.Name,
 			},
 		)
-		@components.Button(
-			"Enter",
-			"mt-md",
-			components.BtnPrimary,
-			components.BtnMedium,
-			templ.Attributes{
-				"type": "submit",
-			},
-		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
 	</form>
 }

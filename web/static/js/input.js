@@ -97,7 +97,7 @@ export function cashInputFocus({ ele }) {
   ele.setSelectionRange(length, length);
 }
 
-export function cashInputNav({ evt }) {
+export function budgetInput({ evt }) {
   // allow text shortcuts and reload page
   if (
     (evt.ctrlKey || evt.metaKey) &&
@@ -212,9 +212,9 @@ export function openCalendar({ data }) {
     year = presentDay.getFullYear();
   } else {
     const ddmmyyyy = inputValue.split("/");
-    day = ddmmyyyy[0];
-    month = ddmmyyyy[1];
-    year = ddmmyyyy[2];
+    day = Number(ddmmyyyy[0]);
+    month = Number(ddmmyyyy[1]) - 1;
+    year = Number(ddmmyyyy[2]);
   }
 
   const yearInput = target.querySelector("input[name='year']");

@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"strconv"
+	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/google/uuid"
@@ -14,7 +16,10 @@ type Service struct {
 	repo account.Repository
 }
 
-var ErrNotNumber = errors.New("not number")
+var (
+	ErrInvalidAmount = errors.New("invalid amount")
+	ErrInvalidDate   = errors.New("invalid date")
+)
 
 func NewService(repo account.Repository) *Service {
 	return &Service{repo: repo}
@@ -60,6 +65,7 @@ func (s *Service) CreateGoal(
 	name string,
 	currency string,
 	targetAmount string,
+	startDate string,
 	targetDate string,
 	categoryID string,
 ) (*account.Account, error) {
@@ -87,9 +93,36 @@ func (s *Service) CreateGoal(
 		return nil, err
 	}
 
-	tAmount, err := strconv.Atoi(targetAmount)
+	targetAmount = strings.ReplaceAll(targetAmount, ",", "")
+	i := strings.Index(targetAmount, ".")
+	tAmount := 0
+
+	length := utf8.RuneCountInString(targetAmount)
+	if targetAmount == "" {
+		tAmount = 0
+	} else if i == -1 {
+		tAmount, err = strconv.Atoi(targetAmount)
+		if err != nil {
+			return nil, ErrInvalidAmount
+		}
+		tAmount *= 100
+	} else if length-1-i > 2 {
+		return nil, ErrInvalidAmount
+	} else {
+		for length-i < 3 {
+			targetAmount += "0"
+			length++
+		}
+
+		tAmount, err = strconv.Atoi(strings.Replace(targetAmount, ".", "", 1))
+		if err != nil {
+			return nil, ErrInvalidAmount
+		}
+	}
+
+	sDate, err := time.Parse("02/01/2006", startDate)
 	if err != nil {
-		return nil, ErrNotNumber
+		return nil, ErrInvalidDate
 	}
 
 	tDate, err := time.Parse("02/01/2006", targetDate)
@@ -97,7 +130,7 @@ func (s *Service) CreateGoal(
 	if err == nil {
 		pDate = &tDate
 	}
-	account, err := account.NewGoal(id, uid, name, currency, tAmount, pDate, cid)
+	account, err := account.NewGoal(id, uid, name, currency, tAmount, sDate, pDate, cid)
 	if err != nil {
 		return nil, err
 	}

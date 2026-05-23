@@ -3,8 +3,10 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/query"
 )
@@ -113,6 +115,7 @@ func (r *AccountQueryService) FindAllWithSum(
 			a.is_saving, 
 			a.currency, 
 			a.target_amount, 
+			a.start_date, 
 			a.target_date, 
 			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
 			COALESCE(c.name,''),
@@ -156,6 +159,7 @@ func (r *AccountQueryService) FindAllWithSum(
 			&g.IsSaving,
 			&g.Currency,
 			&g.TargetAmount,
+			&g.StartDate,
 			&g.TargetDate,
 			&c.ID,
 			&c.Name,
@@ -185,6 +189,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			a.is_saving, 
 			a.currency, 
 			a.target_amount, 
+			a.start_date, 
 			a.target_date, 
 			c.id,
 			c.name,
@@ -228,6 +233,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			&g.IsSaving,
 			&g.Currency,
 			&g.TargetAmount,
+			&g.StartDate,
 			&g.TargetDate,
 			&c.ID,
 			&c.Name,
@@ -257,6 +263,7 @@ func (r *AccountQueryService) FindOneWithSum(
 			a.is_saving, 
 			a.currency,
 			a.target_amount,
+			a.start_date,
 			a.target_date,
 			c.id,
 			c.name,
@@ -293,6 +300,7 @@ func (r *AccountQueryService) FindOneWithSum(
 		&a.IsSaving,
 		&a.Currency,
 		&a.TargetAmount,
+		&a.StartDate,
 		&a.TargetDate,
 		&c.ID,
 		&c.Name,
@@ -331,6 +339,9 @@ func (r *AccountQueryService) GetBanksDailyChange(
 		uid,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, query.ErrNoHistory
+		}
 		return nil, err
 	}
 	defer rows.Close()
@@ -339,14 +350,22 @@ func (r *AccountQueryService) GetBanksDailyChange(
 
 	for rows.Next() {
 		var r query.AccountDailyChange
+		var date *time.Time = nil
+		var change *int = nil
 		if err := rows.Scan(
 			&r.ID,
 			&r.Name,
-			&r.Date,
-			&r.Change,
+			&date,
+			&change,
 		); err != nil {
 			return nil, err
 		}
+
+		if date == nil || change == nil {
+			continue
+		}
+		r.Date = *date
+		r.Change = *change
 		results = append(results, r)
 	}
 	return results, nil
@@ -379,6 +398,9 @@ func (r *AccountQueryService) GetAccountDailyChange(
 		id,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, query.ErrNoHistory
+		}
 		return nil, err
 	}
 	defer rows.Close()
@@ -387,14 +409,22 @@ func (r *AccountQueryService) GetAccountDailyChange(
 
 	for rows.Next() {
 		var r query.AccountDailyChange
+		var date *time.Time = nil
+		var change *int = nil
 		if err := rows.Scan(
 			&r.ID,
 			&r.Name,
-			&r.Date,
-			&r.Change,
+			&date,
+			&change,
 		); err != nil {
 			return nil, err
 		}
+
+		if date == nil || change == nil {
+			continue
+		}
+		r.Date = *date
+		r.Change = *change
 		results = append(results, r)
 	}
 	return results, nil

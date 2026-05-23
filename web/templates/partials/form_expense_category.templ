@@ -7,12 +7,13 @@ import (
 
 templ ExpenseCategoryForm(v views.ExpenseCategoryForm) {
 	<form
+		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/expense-category"
 		hx-swap="outerHTML"
 		novalidate
 	>
-		<h4>New expense category</h4>
+		<h4 class="mb-md">New expense category</h4>
 		@components.InputGroup(
 			"",
 			"Name",
@@ -55,14 +56,16 @@ templ ExpenseCategoryForm(v views.ExpenseCategoryForm) {
 				"name": "type",
 			},
 		)
-		@components.Button(
-			"Enter",
-			"mt-md",
-			components.BtnPrimary,
-			components.BtnMedium,
-			templ.Attributes{
-				"type": "submit",
-			},
-		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
 	</form>
 }

@@ -27,6 +27,7 @@ type Account struct {
 	currency string
 	// goal-specific
 	targetAmount *int
+	startDate    *time.Time
 	targetDate   *time.Time
 	categoryID   *ID
 
@@ -66,6 +67,7 @@ func NewGoal(
 	name string,
 	currency string,
 	targetAmount int,
+	startDate time.Time,
 	targetDate *time.Time,
 	categoryID ID,
 ) (*Account, error) {
@@ -87,6 +89,7 @@ func NewGoal(
 		name:         name,
 		aType:        goal,
 		targetAmount: &targetAmount,
+		startDate:    &startDate,
 		targetDate:   targetDate,
 		categoryID:   &categoryID,
 		currency:     currency,
@@ -101,6 +104,7 @@ func Rehydrate(
 	name string,
 	isSaving *bool,
 	targetAmount *int,
+	startDate *time.Time,
 	targetDate *time.Time,
 	categoryID *ID,
 	currency string,
@@ -112,6 +116,7 @@ func Rehydrate(
 		name:         name,
 		isSaving:     isSaving,
 		targetAmount: targetAmount,
+		startDate:    startDate,
 		targetDate:   targetDate,
 		categoryID:   categoryID,
 		currency:     currency,
@@ -146,6 +151,10 @@ func (b *Account) Currency() string {
 
 func (b *Account) TargetAmount() *int {
 	return b.targetAmount
+}
+
+func (b *Account) StartDate() *time.Time {
+	return b.startDate
 }
 
 func (b *Account) TargetDate() *time.Time {
