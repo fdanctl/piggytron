@@ -1,11 +1,13 @@
 package views
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/google/uuid"
 	"golang.org/x/text/currency"
 )
@@ -19,6 +21,9 @@ type GoalForm struct {
 	StartDate    string
 	TargetDate   string
 	Category     string
+
+	ErrorMsg    string
+	CustomError error
 }
 
 func NewGoalForm() *GoalForm {
@@ -36,6 +41,10 @@ func (v *GoalForm) ValidateName() (msgs []string) {
 
 	if v.Name == "" {
 		msgs = append(msgs, "Name is required")
+	}
+
+	if errors.Is(v.CustomError, account.ErrDuplicate) {
+		msgs = append(msgs, v.CustomError.Error())
 	}
 
 	if len(v.Name) > 50 {
@@ -56,7 +65,7 @@ func (v *GoalForm) ValidateCurrency() (msgs []string) {
 
 	_, err := currency.ParseISO(v.Currency)
 	if err != nil {
-		msgs = append(msgs, v.Category+" is not a valid currency")
+		msgs = append(msgs, v.Currency+" is not a valid currency")
 	}
 
 	return msgs

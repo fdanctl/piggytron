@@ -84,7 +84,12 @@ templ Banks(view views.BankPage) {
 				<div class="flex justify-between" style="color: var(--color-text-secondary);">
 					<h6 class="flex justify-between items-center w-full card__title">
 						Accounts
-						<button class="reset-btn w-fit h-fit flex cursor-pointer">
+						<button
+							class="reset-btn w-fit h-fit flex cursor-pointer"
+							hx-get="/partials/bank"
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
+						>
 							@components.PlusSvg(16, "", "")
 						</button>
 					</h6>

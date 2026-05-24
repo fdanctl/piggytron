@@ -45,9 +45,11 @@ templ GoalItem(g views.Goal, attrs templ.Attributes) {
 				<h5>
 					{ g.Name }
 				</h5>
-				<p class="goal-card__target-date">
-					Target: { views.FormatDateMY(g.TargetDate) }
-				</p>
+				if g.TargetDate != nil {
+					<p class="goal-card__target-date">
+						Target: { views.FormatDateMY(*g.TargetDate) }
+					</p>
+				}
 			</div>
 			<div class="mb-xs">
 				<div class="flex justify-between items-end">

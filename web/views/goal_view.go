@@ -15,7 +15,7 @@ type Goal struct {
 	Type         string
 	TargetAmount int
 	StartDate    time.Time
-	TargetDate   time.Time
+	TargetDate   *time.Time
 	Category     string
 	Amount       string
 
@@ -58,7 +58,7 @@ func NewGoal(
 		// 	language.AmericanEnglish,
 		// ),
 		StartDate:  *g.StartDate,
-		TargetDate: *g.TargetDate,
+		TargetDate: g.TargetDate,
 		Category:   g.Category.Name,
 		Amount: FormatMoney(
 			float64(g.Sum)/100,

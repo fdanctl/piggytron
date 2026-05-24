@@ -1,0 +1,71 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ BankForm(v views.BankForm) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/bank"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<h4 class="mb-md">New Account</h4>
+		@components.InputGroup(
+			"",
+			"Name",
+			views.StringArrToStr(v.ValidateName()),
+			v.NameHasError(),
+			true,
+			templ.Attributes{
+				"id":          "name",
+				"type":        "text",
+				"name":        "name",
+				"placeholder": "Savings",
+				"value":       v.Name,
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"Currency",
+			v.Currency,
+			"-- Select currency --",
+			[]components.SelectOption{
+				{
+					Label: "EUR",
+					Value: "EUR",
+				},
+			},
+			views.StringArrToStr(v.ValidateCurrency()),
+			v.CurrencyHasError(),
+			true,
+			templ.Attributes{
+				"id":   "currency",
+				"name": "currency",
+			},
+		)
+		@components.Checkbox(
+			"",
+			"Is savings account",
+			v.IsSavings,
+			templ.Attributes{
+				"id":   "is-savings",
+				"name": "savings",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

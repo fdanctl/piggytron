@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
 	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -126,7 +128,13 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		cat,
 	)
 	if err != nil {
-		logger.Error("error creating goal", "error", err)
+		if errors.Is(err, account.ErrDuplicate) {
+			logger.Info("invalid form - duplicated", "error", err)
+			view.CustomError = err
+		} else {
+			logger.Error("error creating goal", "error", err)
+		}
+
 		cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 		if err != nil {
 			logger.Error("error reading all expense categories", "error", err)

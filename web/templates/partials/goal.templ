@@ -42,7 +42,10 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 			{ views.FormatMoney(0.00, currency.EUR, language.AmericanEnglish) }
 		</span>
 		<span>
-			{ views.FormatFloat(g.CompletePercentage) }% · on track for { views.FormatDate(g.TargetDate) }
+			{ views.FormatFloat(g.CompletePercentage) }% 
+			if g.TargetDate != nil {
+				· on track for { views.FormatDate(*g.TargetDate) }
+			}
 		</span>
 		<span>
 			{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
@@ -87,7 +90,9 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 				</li>
 				<li class="goal-details__item">
 					<span class="goal-details__key">Target amount</span>
-					<span class="goal-details__value">{ g.TargetAmount }</span>
+					<span class="goal-details__value">
+						{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+					</span>
 				</li>
 				<li class="goal-details__item">
 					<span class="goal-details__key">Left</span>
@@ -97,11 +102,12 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 					<span class="goal-details__key">Start date</span>
 					<span class="goal-details__value">{ views.FormatDate(g.StartDate) }</span>
 				</li>
-				// check if it's set
-				<li class="goal-details__item">
-					<span class="goal-details__key">Target date</span>
-					<span class="goal-details__value">{ views.FormatDate(g.TargetDate) }</span>
-				</li>
+				if g.TargetDate != nil {
+					<li class="goal-details__item">
+						<span class="goal-details__key">Target date</span>
+						<span class="goal-details__value">{ views.FormatDate(*g.TargetDate) }</span>
+					</li>
+				}
 			</ul>
 		</section>
 		<section id="history">

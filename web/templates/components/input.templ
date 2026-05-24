@@ -141,6 +141,22 @@ templ SelectGroup(class, label, value, placeholder string, options []SelectOptio
 	</div>
 }
 
+templ Checkbox(class, label string, value bool, attrs templ.Attributes) {
+	<label class={ "checkbox", templ.KV(class, class !="") }>
+		<input
+			type="checkbox"
+			if value {
+				checked
+			}
+			{ attrs... }
+		/>
+		<span class="checkbox-box">
+			@CheckSvg(0, "", "")
+		</span>
+		<span>{ label }</span>
+	</label>
+}
+
 templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 	{{
 		b := make([]byte, 5)

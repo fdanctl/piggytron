@@ -216,6 +216,9 @@ func main() {
 	)
 	partialsMux.Handle("/partials/transaction-filters", transactionFiltersHandler)
 
+	bankHandler := handlers.NewBankHandler(accountService)
+	partialsMux.Handle("/partials/bank", bankHandler)
+
 	goalHandler := handlers.NewGoalHandler(accountService, expenseCatService)
 	partialsMux.Handle("/partials/goal", goalHandler)
 

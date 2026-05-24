@@ -40,7 +40,6 @@ func (h *BanksChartsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
-	logger.Debug("here")
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		logger.Error("unexpected error", "error", err)

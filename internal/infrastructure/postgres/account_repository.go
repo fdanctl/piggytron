@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
@@ -39,7 +38,6 @@ type AccountDto struct {
 }
 
 func (r *AccountRepository) Create(ctx context.Context, a *account.Account) error {
-	fmt.Println("hello", *a)
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO accounts (id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at)
