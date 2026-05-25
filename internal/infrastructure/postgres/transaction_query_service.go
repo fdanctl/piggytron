@@ -55,7 +55,7 @@ func (r *TransactionQueryService) FindFiltered(
 		 AND ($6::BIGINT IS NULL OR t.amount <= $6)
 	     AND ($7::TIMESTAMP IS NULL OR t.date >= $7)
 	     AND ($8::TIMESTAMP IS NULL OR t.date < $8)
-		 ORDER BY date DESC
+		 ORDER BY date DESC, created_at DESC
 		 LIMIT NULLIF($9, 0)
 		 OFFSET $10`,
 		uid,
@@ -141,7 +141,7 @@ func (r *TransactionQueryService) FindFilteredWithCount(
 	     AND ($6::BIGINT IS NULL OR t.amount <= $6)
 	     AND ($7::TIMESTAMP IS NULL OR t.date >= $7)
 	     AND ($8::TIMESTAMP IS NULL OR t.date < $8)
-		 ORDER BY date DESC
+		 ORDER BY date DESC, created_at DESC
 		 LIMIT NULLIF($9, 0)
 		 OFFSET $10`,
 		uid,
@@ -308,7 +308,7 @@ func (r *TransactionQueryService) GetRecentTransactions(
 		 LEFT JOIN income_categories ic
 			ON t.income_category_id = ic.id
 		 WHERE t.user_id = $1
-		 ORDER BY date DESC
+		 ORDER BY date DESC, created_at DESC
 		 LIMIT NULLIF($2, 0)`,
 		uid,
 		limit,

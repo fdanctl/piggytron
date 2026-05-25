@@ -28,6 +28,7 @@ import {
   navigate,
   openNavSheet,
 } from "../navigation";
+import { changeTab } from "../tabs";
 
 function removeEle({ ele }) {
   ele.remove();
@@ -87,4 +88,6 @@ export const uiActions = {
   "ui.nav.navigate": navigate,
 
   "ui.form.disable-btns": disableBtns,
+
+  "ui.tab.change": changeTab,
 };

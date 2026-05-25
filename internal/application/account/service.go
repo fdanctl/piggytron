@@ -3,10 +3,7 @@ package account
 import (
 	"context"
 	"errors"
-	"strconv"
-	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/google/uuid"
@@ -64,9 +61,9 @@ func (s *Service) CreateGoal(
 	userID string,
 	name string,
 	currency string,
-	targetAmount string,
-	startDate string,
-	targetDate string,
+	targetAmount int,
+	startDate time.Time,
+	targetDate *time.Time,
 	categoryID string,
 ) (*account.Account, error) {
 	_, err := uuid.Parse(userID)
@@ -93,44 +90,16 @@ func (s *Service) CreateGoal(
 		return nil, err
 	}
 
-	targetAmount = strings.ReplaceAll(targetAmount, ",", "")
-	i := strings.Index(targetAmount, ".")
-	tAmount := 0
-
-	length := utf8.RuneCountInString(targetAmount)
-	if targetAmount == "" {
-		tAmount = 0
-	} else if i == -1 {
-		tAmount, err = strconv.Atoi(targetAmount)
-		if err != nil {
-			return nil, ErrInvalidAmount
-		}
-		tAmount *= 100
-	} else if length-1-i > 2 {
-		return nil, ErrInvalidAmount
-	} else {
-		for length-i < 3 {
-			targetAmount += "0"
-			length++
-		}
-
-		tAmount, err = strconv.Atoi(strings.Replace(targetAmount, ".", "", 1))
-		if err != nil {
-			return nil, ErrInvalidAmount
-		}
-	}
-
-	sDate, err := time.Parse("02/01/2006", startDate)
-	if err != nil {
-		return nil, ErrInvalidDate
-	}
-
-	tDate, err := time.Parse("02/01/2006", targetDate)
-	var pDate *time.Time
-	if err == nil {
-		pDate = &tDate
-	}
-	account, err := account.NewGoal(id, uid, name, currency, tAmount, sDate, pDate, cid)
+	account, err := account.NewGoal(
+		id,
+		uid,
+		name,
+		currency,
+		targetAmount,
+		startDate,
+		targetDate,
+		cid,
+	)
 	if err != nil {
 		return nil, err
 	}

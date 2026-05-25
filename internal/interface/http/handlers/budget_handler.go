@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
-	"unicode/utf8"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/budget"
@@ -82,51 +80,15 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i := strings.Index(amount, ".")
-	cents := 0
-
-	length := utf8.RuneCountInString(amount)
-	if amount == "" {
-		cents = 0
-	} else if i == -1 {
-		cents, err = strconv.Atoi(amount)
-		if err != nil {
-			msg := fmt.Sprintf("%s is not a valid amount", amount)
-			logger.Error(msg, "error", err)
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				partials.AmountPrevInput(ps),
-				components.SendToast(components.Error, msg),
-			).Render(r.Context(), w)
-			return
-		}
-		cents *= 100
-	} else if length-1-i > 2 {
+	cents, err := convertAmountStrToInt(amount)
+	if err != nil {
 		msg := fmt.Sprintf("%s is not a valid amount", amount)
-		logger.Error(msg, "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
 			partials.AmountPrevInput(ps),
 			components.SendToast(components.Error, msg),
 		).Render(r.Context(), w)
 		return
-	} else {
-		for length-i < 3 {
-			amount += "0"
-			length++
-		}
-
-		cents, err = strconv.Atoi(strings.Replace(amount, ".", "", 1))
-		if err != nil {
-			msg := fmt.Sprintf("%s is not a valid amount", amount)
-			logger.Error(msg, "error", err)
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				partials.AmountPrevInput(ps),
-				components.SendToast(components.Error, msg),
-			).Render(r.Context(), w)
-			return
-		}
 	}
 
 	now := time.Now()

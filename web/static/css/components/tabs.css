@@ -1,0 +1,28 @@
+.tabs-list {
+  display: flex;
+  gap: var(--spacing-xs);
+  border-bottom: 2px solid var(--color-border-secondary);
+}
+
+.tab-trigger {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: -2px;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-trigger:hover {
+  border-bottom: 2px solid var(--color-primary-muted);
+}
+.tab-trigger.active {
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.tab-content {
+  margin-top: var(--spacing-md);
+}

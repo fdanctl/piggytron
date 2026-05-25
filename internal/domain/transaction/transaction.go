@@ -73,7 +73,7 @@ func NewIncome(
 
 	return &Transaction{
 		id:                id,
-		userID:            id,
+		userID:            userID,
 		ttype:             income,
 		fromAccountID:     nil,
 		toAccountID:       &toAccountID,
@@ -106,7 +106,7 @@ func NewExpense(
 
 	return &Transaction{
 		id:                id,
-		userID:            id,
+		userID:            userID,
 		ttype:             expense,
 		fromAccountID:     &fromAccountID,
 		toAccountID:       nil,
@@ -140,7 +140,7 @@ func NewTransfer(
 
 	return &Transaction{
 		id:                id,
-		userID:            id,
+		userID:            userID,
 		ttype:             transfer,
 		fromAccountID:     &fromAccountID,
 		toAccountID:       &toAccountID,
@@ -168,7 +168,7 @@ func Rehydrate(
 ) *Transaction {
 	return &Transaction{
 		id:                id,
-		userID:            id,
+		userID:            userID,
 		ttype:             ttype,
 		fromAccountID:     fromAccountID,
 		toAccountID:       toAccountID,
@@ -189,40 +189,24 @@ func (t *Transaction) UserID() ID {
 	return t.userID
 }
 
-func (t *Transaction) Ttype() Type {
+func (t *Transaction) Type() Type {
 	return t.ttype
 }
 
-// TODO: correct
-// return a pointer, if it's nil postgres will be nil (instead of "" of error)
-// for the view let view package handle if == nil
-
-func (t *Transaction) FromAccountID() ID {
-	if t.fromAccountID == nil {
-		return ID("")
-	}
-	return *t.fromAccountID
+func (t *Transaction) FromAccountID() *ID {
+	return t.fromAccountID
 }
 
-func (t *Transaction) ToAccountID() ID {
-	if t.toAccountID == nil {
-		return ID("")
-	}
-	return *t.toAccountID
+func (t *Transaction) ToAccountID() *ID {
+	return t.toAccountID
 }
 
-func (t *Transaction) IncomeCategoryID() ID {
-	if t.incomeCategoryID == nil {
-		return ID("")
-	}
-	return *t.incomeCategoryID
+func (t *Transaction) IncomeCategoryID() *ID {
+	return t.incomeCategoryID
 }
 
-func (t *Transaction) ExpenseCategoryID() ID {
-	if t.expenseCategoryID == nil {
-		return ID("")
-	}
-	return *t.expenseCategoryID
+func (t *Transaction) ExpenseCategoryID() *ID {
+	return t.expenseCategoryID
 }
 
 func (t *Transaction) Amount() int {

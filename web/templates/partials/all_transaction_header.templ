@@ -20,6 +20,14 @@ templ AllTransactionsHeader(
 				"hx-target": "#dialog-root",
 				"hx-swap":   "beforeend",
 			})
+			<button
+				class="reset-btn w-fit h-fit flex cursor-pointer"
+				hx-get="/partials/transaction"
+				hx-target="#dialog-root"
+				hx-swap="beforeend"
+			>
+				@components.PlusSvg(16, "", "")
+			</button>
 		</div>
 	</div>
 }

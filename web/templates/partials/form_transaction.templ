@@ -1,0 +1,427 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ formWrapper(title, postURL string) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/transaction"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<h4 class="mb-md">New Account</h4>
+		{ children... }
+	</form>
+}
+
+templ TransactionForm(
+	vi views.IncomeForm,
+	ve views.ExpenseForm,
+	vt views.TransferForm,
+	incomeCategories,
+	expenseCategories,
+	accounts []components.SelectOption,
+) {
+	<h4 class="mb-md">New Transaction</h4>
+	<div class="tabs-list">
+		<button
+			class="reset-btn tab-trigger active"
+			data-tab="income"
+			data-action="ui.tab.change"
+			data-tab-trigger="transaction"
+		>
+			Income
+		</button>
+		<button
+			class="reset-btn tab-trigger"
+			data-tab="expense"
+			data-action="ui.tab.change"
+			data-tab-trigger="transaction"
+		>
+			Expense
+		</button>
+		<button
+			class="reset-btn tab-trigger"
+			data-tab="transfer"
+			data-action="ui.tab.change"
+			data-tab-trigger="transaction"
+		>
+			Transfer
+		</button>
+	</div>
+	<div class="tab-content" id="income-content" data-tab-content="transaction">
+		@IncomeForm(vi, incomeCategories, accounts)
+	</div>
+	<div class="tab-content hidden" id="expense-content" data-tab-content="transaction">
+		@ExpenseForm(ve, expenseCategories, accounts)
+	</div>
+	<div class="tab-content hidden" id="transfer-content" data-tab-content="transaction">
+		@TransferForm(vt, expenseCategories, accounts)
+	</div>
+}
+
+templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOption) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/transaction"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<input type="hidden" name="type" value="income"/>
+		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
+			@components.InputGroup(
+				"",
+				"Amount",
+				views.StringArrToStr(v.ValidateAmount()),
+				v.AmountHasError(),
+				true,
+				templ.Attributes{
+					"id":            "income-amount",
+					"type":          "text",
+					"name":          "amount",
+					"placeholder":   "420.69",
+					"value":         v.Amount,
+					"data-focus":    "ui.cash-input.focus",
+					"data-focusout": "ui.cash-input.blur",
+					"data-input":    "ui.cash-input.input",
+				},
+			)
+			@components.SelectGroup(
+				"",
+				"Currency",
+				v.Currency,
+				"-- Select currency --",
+				[]components.SelectOption{
+					{
+						Label: "EUR",
+						Value: "EUR",
+					},
+				},
+				views.StringArrToStr(v.ValidateCurrency()),
+				v.CurrencyHasError(),
+				true,
+				templ.Attributes{
+					"id":   "currency",
+					"name": "currency",
+				},
+			)
+		</div>
+		@components.InputGroup(
+			"",
+			"Description",
+			views.StringArrToStr(v.ValidateDescription()),
+			v.DescriptionHasError(),
+			true,
+			templ.Attributes{
+				"id":          "income-description",
+				"type":        "text",
+				"name":        "description",
+				"placeholder": "Salary",
+				"value":       v.Description,
+			},
+		)
+		@components.DateInputGroup(
+			"w-full",
+			"Date",
+			views.StringArrToStr(v.ValidateDate()),
+			v.DateHasError(),
+			true,
+			templ.Attributes{
+				"id":    "income-date",
+				"type":  "text",
+				"name":  "date",
+				"value": v.Date,
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"Category",
+			v.Category,
+			"-- Select category --",
+			categories,
+			views.StringArrToStr(v.ValidateCategory()),
+			v.CategoryHasError(),
+			true,
+			templ.Attributes{
+				"id":   "income-category",
+				"name": "category",
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"Destination",
+			v.DestinationAcc,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateDestinationAcc()),
+			v.DestinationAccHasError(),
+			true,
+			templ.Attributes{
+				"id":   "income-destination",
+				"name": "destination",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Confirm",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}
+
+templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectOption) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/transaction"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<input type="hidden" name="type" value="expense"/>
+		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
+			@components.InputGroup(
+				"",
+				"Amount",
+				views.StringArrToStr(v.ValidateAmount()),
+				v.AmountHasError(),
+				true,
+				templ.Attributes{
+					"id":            "expense-amount",
+					"type":          "text",
+					"name":          "amount",
+					"placeholder":   "420.69",
+					"value":         v.Amount,
+					"data-focus":    "ui.cash-input.focus",
+					"data-focusout": "ui.cash-input.blur",
+					"data-input":    "ui.cash-input.input",
+				},
+			)
+			@components.SelectGroup(
+				"",
+				"Currency",
+				v.Currency,
+				"-- Select currency --",
+				[]components.SelectOption{
+					{
+						Label: "EUR",
+						Value: "EUR",
+					},
+				},
+				views.StringArrToStr(v.ValidateCurrency()),
+				v.CurrencyHasError(),
+				true,
+				templ.Attributes{
+					"id":   "currency",
+					"name": "currency",
+				},
+			)
+		</div>
+		@components.InputGroup(
+			"",
+			"Description",
+			views.StringArrToStr(v.ValidateDescription()),
+			v.DescriptionHasError(),
+			true,
+			templ.Attributes{
+				"id":          "expense-description",
+				"type":        "text",
+				"name":        "description",
+				"placeholder": "Salary",
+				"value":       v.Description,
+			},
+		)
+		@components.DateInputGroup(
+			"w-full",
+			"Date",
+			views.StringArrToStr(v.ValidateDate()),
+			v.DateHasError(),
+			true,
+			templ.Attributes{
+				"id":    "expense-date",
+				"type":  "text",
+				"name":  "date",
+				"value": v.Date,
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"Category",
+			v.Category,
+			"-- Select category --",
+			categories,
+			views.StringArrToStr(v.ValidateCategory()),
+			v.CategoryHasError(),
+			true,
+			templ.Attributes{
+				"id":   "expense-category",
+				"name": "category",
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"From",
+			v.SourceAcc,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateSourceAcc()),
+			v.SourceAccHasError(),
+			true,
+			templ.Attributes{
+				"id":   "expense-source",
+				"name": "source",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Confirm",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}
+
+templ TransferForm(v views.TransferForm, categories, accounts []components.SelectOption) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/transaction"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<input type="hidden" name="type" value="transfer"/>
+		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
+			@components.InputGroup(
+				"",
+				"Amount",
+				views.StringArrToStr(v.ValidateAmount()),
+				v.AmountHasError(),
+				true,
+				templ.Attributes{
+					"id":            "transfer-amount",
+					"type":          "text",
+					"name":          "amount",
+					"placeholder":   "420.69",
+					"value":         v.Amount,
+					"data-focus":    "ui.cash-input.focus",
+					"data-focusout": "ui.cash-input.blur",
+					"data-input":    "ui.cash-input.input",
+				},
+			)
+			@components.SelectGroup(
+				"",
+				"Currency",
+				v.Currency,
+				"-- Select currency --",
+				[]components.SelectOption{
+					{
+						Label: "EUR",
+						Value: "EUR",
+					},
+				},
+				views.StringArrToStr(v.ValidateCurrency()),
+				v.CurrencyHasError(),
+				true,
+				templ.Attributes{
+					"id":   "currency",
+					"name": "currency",
+				},
+			)
+		</div>
+		@components.InputGroup(
+			"",
+			"Description",
+			views.StringArrToStr(v.ValidateDescription()),
+			v.DescriptionHasError(),
+			true,
+			templ.Attributes{
+				"id":          "transfer-description",
+				"type":        "text",
+				"name":        "description",
+				"placeholder": "Salary",
+				"value":       v.Description,
+			},
+		)
+		@components.DateInputGroup(
+			"w-full",
+			"Date",
+			views.StringArrToStr(v.ValidateDate()),
+			v.DateHasError(),
+			true,
+			templ.Attributes{
+				"id":    "transfer-date",
+				"type":  "text",
+				"name":  "date",
+				"value": v.Date,
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"Category",
+			v.Category,
+			"-- Select category --",
+			categories,
+			views.StringArrToStr(v.ValidateCategory()),
+			v.CategoryHasError(),
+			false,
+			templ.Attributes{
+				"id":   "transfer-category",
+				"name": "category",
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"From",
+			v.SourceAcc,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateSourceAcc()),
+			v.SourceAccHasError(),
+			true,
+			templ.Attributes{
+				"id":   "transfer-source",
+				"name": "source",
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"To",
+			v.DestinationAcc,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateDestinationAcc()),
+			v.DestinationAccHasError(),
+			true,
+			templ.Attributes{
+				"id":   "transfer-destination",
+				"name": "destination",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Confirm",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

@@ -2,7 +2,6 @@ package views
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -109,7 +108,6 @@ func (v *GoalForm) ValidateStartDate() (msgs []string) {
 
 	sdate, err := time.Parse("02/01/2006", v.StartDate)
 	if err != nil {
-		fmt.Println("bro...")
 		return append(msgs, "Invalid date")
 	}
 

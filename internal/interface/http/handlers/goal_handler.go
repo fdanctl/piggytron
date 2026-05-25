@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/a-h/templ"
 	accountapp "github.com/fdanctl/piggytron/internal/application/account"
@@ -117,14 +118,32 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	amount, err := convertAmountStrToInt(tamount)
+	if err != nil {
+		http.Error(w, "Invalid amount", http.StatusBadRequest)
+		return
+	}
+
+	startDate, err := time.Parse("02/01/2006", sdate)
+	if err != nil {
+		http.Error(w, "Invalid date", http.StatusBadRequest)
+		return
+	}
+
+	targetDate, err := time.Parse("02/01/2006", tdate)
+	var pDate *time.Time
+	if err == nil {
+		pDate = &targetDate
+	}
+
 	goal, err := h.accService.CreateGoal(
 		r.Context(),
 		sessionInfo.UserID,
 		name,
 		currency,
-		tamount,
-		sdate,
-		tdate,
+		amount,
+		startDate,
+		pDate,
 		cat,
 	)
 	if err != nil {

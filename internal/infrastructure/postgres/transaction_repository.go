@@ -36,7 +36,41 @@ type TransactionDto struct {
 	createdAt   time.Time
 }
 
-// save
+func (r *TransactionRepository) Create(ctx context.Context, t *transaction.Transaction) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`INSERT INTO transactions (
+		    id,
+		    user_id,
+		    type,
+		    from_account_id,
+			to_account_id,
+		    income_category_id,
+		    expense_category_id,
+		    amount,
+		    description,
+		    date,
+		    created_at
+		 )
+	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+		t.ID(),
+		t.UserID(),
+		t.Type(),
+		t.FromAccountID(),
+		t.ToAccountID(),
+		t.IncomeCategoryID(),
+		t.ExpenseCategoryID(),
+		t.Amount(),
+		t.Description(),
+		t.Date(),
+		t.CreatedAt(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (r *TransactionRepository) FindByID(
 	ctx context.Context,
@@ -93,7 +127,7 @@ func (r *TransactionRepository) FindAllByUser(
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
 		 FROM transactions
 		 WHERE user_id = $1
-		 ORDER BY date DESC`,
+		 ORDER BY date DESC, created_at DESC`,
 		uid,
 	)
 	if err != nil {
@@ -152,7 +186,7 @@ func (r *TransactionRepository) FindAllByAccount(
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
 		 FROM transactions
 		 WHERE from_account_id = $1 OR to_account_id = $1
-		 ORDER BY date DESC`,
+		 ORDER BY date DESC, created_at DESC`,
 		aid,
 	)
 	if err != nil {
@@ -211,7 +245,7 @@ func (r *TransactionRepository) FindAllByCategory(
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
 		 FROM transactions
 		 WHERE income_category_id = $1 OR expense_category_id = $1
-		 ORDER BY date DESC`,
+		 ORDER BY date DESC, created_at DESC`,
 		cid,
 	)
 	if err != nil {
