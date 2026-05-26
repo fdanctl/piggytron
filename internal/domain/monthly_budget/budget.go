@@ -27,7 +27,7 @@ func New(
 	month time.Time,
 	amount int,
 ) (*Budget, error) {
-	if amount <= 0 {
+	if amount < 0 {
 		return nil, ErrInvalidAmount
 	}
 

@@ -69,12 +69,13 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	pincome := params.Get("income")
 	poverspent := params.Get("overspent")
 
+	budgetID := bid
 	prev, err := strconv.Atoi(ps)
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(ps),
+			partials.BudgetInfoInputs(prev, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -85,7 +86,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("%s is not a valid amount", amount)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(ps),
+			partials.BudgetInfoInputs(prev, budgetID, cid),
 			components.SendToast(components.Error, msg),
 		).Render(r.Context(), w)
 		return
@@ -95,22 +96,23 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	if cents == prev {
 		logger.Debug("nothing to do")
-		partials.AmountPrevInput(ps).Render(r.Context(), w)
+		partials.BudgetInfoInputs(prev, budgetID, cid).Render(r.Context(), w)
 		return
 	}
 
 	if bid == "" || bid == "00000000-0000-0000-0000-000000000000" {
-		_, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
+		b, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
 		if err != nil {
 			msg := "Error creating budget"
 			logger.Error(msg, "error", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
-				partials.AmountPrevInput(ps),
+				partials.BudgetInfoInputs(prev, budgetID, cid),
 				components.SendToast(components.Error, msg),
 			).Render(r.Context(), w)
 			return
 		}
+		budgetID = string(b.ID())
 	} else {
 		err := h.service.UpdateBudgetAmount(r.Context(), bid, cents)
 		if err != nil {
@@ -118,7 +120,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			logger.Error(msg, "error", err)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
-				partials.AmountPrevInput(ps),
+				partials.BudgetInfoInputs(prev, budgetID, cid),
 				components.SendToast(components.Error, msg),
 			).Render(r.Context(), w)
 			return
@@ -132,7 +134,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -144,7 +146,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -156,7 +158,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -167,7 +169,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -179,7 +181,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -190,7 +192,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -211,7 +213,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -223,7 +225,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		logger.Error("unexpected error", "error", err)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		templ.Join(
-			partials.AmountPrevInput(strconv.Itoa(cents)),
+			partials.BudgetInfoInputs(cents, budgetID, cid),
 			components.SendToast(components.Error, "Unexpected error. Reload page."),
 		).Render(r.Context(), w)
 		return
@@ -266,7 +268,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	chartComponent := h.chartsService.ConvertChartToTemplComponent(sankey)
 
 	obb := templ.Join(
-		partials.AmountPrevInput(strconv.Itoa(cents)),
+		partials.BudgetInfoInputs(cents, budgetID, cid),
 		partials.CatRowLeftCell(cid, catLeft, templ.Attributes{
 			"hx-swap-oob": "outerHTML",
 		}),
