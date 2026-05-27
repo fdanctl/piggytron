@@ -195,7 +195,7 @@ func main() {
 	goalContributions := handlers.NewGoalContributionsHandler(transactionQueryService)
 	partialsMux.Handle("/partials/contributions", goalContributions)
 
-	catHistChartHandler := handlers.NewCatHistChartHandler()
+	catHistChartHandler := handlers.NewCatHistChartHandler(chartsService, catQueryService)
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
 	accountChartHandler := handlers.NewAccountChartHandler(

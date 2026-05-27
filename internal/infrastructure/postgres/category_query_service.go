@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -240,5 +241,89 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
 		return nil, err
 	}
 
+	return results, nil
+}
+
+func (s *CategoryQueryService) GetYearMonthlyValue(
+	ctx context.Context,
+	year int,
+	id string,
+) ([]query.CategoryMonthlyValue, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`SELECT
+		  ic.id,
+		  ic.name,
+		  EXTRACT(
+			MONTH
+			FROM
+			  t.date
+		  ) as month,
+		  SUM(t.amount) AS value
+		FROM
+		  income_categories ic
+		  LEFT JOIN transactions t ON ic.id = t.income_category_id
+		WHERE
+		  ic.id = $1
+		  AND EXTRACT(
+			YEAR
+			FROM
+			  t.date
+		  ) = $2
+		GROUP BY
+		  month,
+		  ic.id
+
+		UNION ALL
+
+		SELECT
+		  ec.id,
+		  ec.name,
+		  EXTRACT(
+			MONTH
+			FROM
+			  t.date
+		  ) as month,
+		  SUM(t.amount) AS value
+		FROM
+		  expense_categories ec
+		  LEFT JOIN transactions t ON ec.id = t.expense_category_id
+		WHERE
+		  ec.id = $1
+		  AND EXTRACT(
+			YEAR
+			FROM
+			  t.date
+		  ) = $2
+		GROUP BY
+		  month,
+		  ec.id
+		ORDER BY
+		  month`,
+		id,
+		year,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, query.ErrNoHistory
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.CategoryMonthlyValue
+
+	for rows.Next() {
+		var r query.CategoryMonthlyValue
+		if err := rows.Scan(
+			&r.ID,
+			&r.Name,
+			&r.Month,
+			&r.Value,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, r)
+	}
 	return results, nil
 }

@@ -26,6 +26,13 @@ type CategoryBudget struct {
 	Value int
 }
 
+type CategoryMonthlyValue struct {
+	ID    string
+	Name  string
+	Month int
+	Value int
+}
+
 type CategoryQueryService interface {
 	FindAllCategories(ctx context.Context, uid string) ([]CategoryNameDTO, error)
 	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryNameDTO, error)
@@ -41,4 +48,9 @@ type CategoryQueryService interface {
 		minDate time.Time,
 		maxDate time.Time,
 	) ([]CategoryBudget, error)
+	GetYearMonthlyValue(
+		ctx context.Context,
+		year int,
+		id string,
+	) ([]CategoryMonthlyValue, error)
 }

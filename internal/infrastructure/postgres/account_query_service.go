@@ -489,7 +489,6 @@ func (r *AccountQueryService) GetAccountDailyChange(
 			a.id = $1
 		 GROUP BY DATE(date), a.id
 		 ORDER BY day`,
-
 		id,
 	)
 	if err != nil {
