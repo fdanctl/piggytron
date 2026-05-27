@@ -94,14 +94,9 @@ templ Banks(view views.BankPage) {
 						</button>
 					</h6>
 				</div>
-				<ul class="space-y-xs">
+				<ul id="accounts-list" class="space-y-xs">
 					for _, v := range view.Banks {
-						<li>
-							<a class="account-card" href={ fmt.Sprint("/banks/", v.ID) }>
-								{ v.Name }
-								@components.ChevronRightSvg(0, "", "")
-							</a>
-						</li>
+						@AccountItem(v.ID, v.Name)
 					}
 				</ul>
 			</div>
@@ -122,4 +117,13 @@ templ Banks(view views.BankPage) {
 			</div>
 		</section>
 	</div>
+}
+
+templ AccountItem(id, name string) {
+	<li>
+		<a class="account-card" href={ fmt.Sprint("/banks/", id) }>
+			{ name }
+			@components.ChevronRightSvg(0, "", "")
+		</a>
+	</li>
 }

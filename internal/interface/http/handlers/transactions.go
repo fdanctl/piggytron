@@ -157,6 +157,34 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 	category := r.FormValue("category")
 	destination := r.FormValue("destination")
 
+	cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var catOpts []components.SelectOption
+	for _, v := range cats {
+		catOpts = append(
+			catOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
+	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all accounts", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var accOpts []components.SelectOption
+	for _, v := range acc {
+		accOpts = append(
+			accOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
 	view := views.IncomeForm{
 		Initial:        false,
 		Amount:         amount,
@@ -169,34 +197,6 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 	msgs := view.Validate()
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
-
-		cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all expense categories", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		var catOpts []components.SelectOption
-		for _, v := range cats {
-			catOpts = append(
-				catOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
-
-		acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all accounts", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		var accOpts []components.SelectOption
-		for _, v := range acc {
-			accOpts = append(
-				accOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.IncomeForm(view, catOpts, accOpts).Render(r.Context(), w)
@@ -232,6 +232,12 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Internal error", http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
+	templ.Join(
+		partials.IncomeForm(view, catOpts, accOpts),
+		components.SendToast(components.Success, "Expense transaction added"),
+	).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Request) {
@@ -250,6 +256,34 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 	category := r.FormValue("category")
 	source := r.FormValue("source")
 
+	cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var catOpts []components.SelectOption
+	for _, v := range cats {
+		catOpts = append(
+			catOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
+	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all accounts", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var accOpts []components.SelectOption
+	for _, v := range acc {
+		accOpts = append(
+			accOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
 	view := views.ExpenseForm{
 		Initial:     false,
 		Amount:      amount,
@@ -262,34 +296,6 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 	msgs := view.Validate()
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
-
-		cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all expense categories", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		var catOpts []components.SelectOption
-		for _, v := range cats {
-			catOpts = append(
-				catOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
-
-		acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all accounts", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		var accOpts []components.SelectOption
-		for _, v := range acc {
-			accOpts = append(
-				accOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.ExpenseForm(view, catOpts, accOpts).Render(r.Context(), w)
@@ -325,6 +331,12 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Internal error", http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
+	templ.Join(
+		partials.ExpenseForm(view, catOpts, accOpts),
+		components.SendToast(components.Success, "Income transaction added"),
+	).Render(r.Context(), w)
 }
 
 func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Request) {
@@ -344,6 +356,34 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
 
+	cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var catOpts []components.SelectOption
+	for _, v := range cats {
+		catOpts = append(
+			catOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
+	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all accounts", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var accOpts []components.SelectOption
+	for _, v := range acc {
+		accOpts = append(
+			accOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
 	view := views.TransferForm{
 		Initial:        false,
 		Amount:         amount,
@@ -357,34 +397,6 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 	msgs := view.Validate()
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
-
-		cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all expense categories", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		var catOpts []components.SelectOption
-		for _, v := range cats {
-			catOpts = append(
-				catOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
-
-		acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all accounts", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-		var accOpts []components.SelectOption
-		for _, v := range acc {
-			accOpts = append(
-				accOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.TransferForm(view, catOpts, accOpts).Render(r.Context(), w)
@@ -421,4 +433,10 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Internal error", http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
+	templ.Join(
+		partials.TransferForm(view, catOpts, accOpts),
+		components.SendToast(components.Success, "Transfer transaction added"),
+	).Render(r.Context(), w)
 }

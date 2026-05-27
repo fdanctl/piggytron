@@ -12,7 +12,16 @@ const (
 templ SendToast(level toastLevel, msg string) {
 	<div hx-swap-oob="beforeend:#toast-root">
 		<div class={ "toast", string(level) } data-animationend="ui.element.remove">
-			@CheckSvg(16, "", "")
+			switch level {
+				case Success:
+					@CheckSvg(16, "", "")
+				case Warning:
+					@TriangleAlertSvg(16, "", "")
+				case Error:
+					@CircleXSvg(16, "", "")
+				case Info:
+					@InfoSvg(16, "", "")
+			}
 			<div>
 				<p>{ msg }</p>
 			</div>

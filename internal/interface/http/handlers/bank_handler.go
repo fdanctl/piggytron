@@ -10,6 +10,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -89,5 +90,24 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		partials.BankForm(view).Render(r.Context(), w)
 		return
 	}
-	logger.Debug(fmt.Sprint("bankID", bank.ID()))
+
+	w.Header().Set(
+		"HX-Trigger",
+		fmt.Sprintf(`{
+		"closeModal": true,
+		"contentPush": {
+			"url": "/banks/%s"
+		}
+		}`, bank.ID()),
+	)
+
+	templ.Join(
+		partials.BankForm(view),
+		layouts.OOBWraper(
+			"accounts-list",
+			"beforeend",
+			nil,
+			partials.AccountItem(string(bank.ID()), bank.Name()),
+		),
+	).Render(r.Context(), w)
 }

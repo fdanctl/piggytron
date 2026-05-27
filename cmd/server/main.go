@@ -228,7 +228,9 @@ func main() {
 	bankHandler := handlers.NewBankHandler(accountService)
 	partialsMux.Handle("/partials/bank", bankHandler)
 
-	goalHandler := handlers.NewGoalHandler(accountService, expenseCatService)
+	goalHandler := handlers.NewGoalHandler(
+		accountService, accountQueryService, expenseCatService,
+	)
 	partialsMux.Handle("/partials/goal", goalHandler)
 
 	// TODO remove

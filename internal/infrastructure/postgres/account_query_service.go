@@ -70,6 +70,37 @@ func (r *AccountQueryService) FindIDNamesIncludes(
 	return results, nil
 }
 
+func (r *AccountQueryService) FindBanksIDNames(
+	ctx context.Context,
+	uid string,
+) ([]query.AccountIDName, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, name
+		 FROM accounts
+		 WHERE user_id = $1 and type = 'bank'`,
+		uid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountIDName
+
+	for rows.Next() {
+		var g query.AccountIDName
+		if err := rows.Scan(
+			&g.ID,
+			&g.Name,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, g)
+	}
+	return results, nil
+}
+
 func (r *AccountQueryService) FindGoalsIDNames(
 	ctx context.Context,
 	uid string,
@@ -99,6 +130,70 @@ func (r *AccountQueryService) FindGoalsIDNames(
 		results = append(results, g)
 	}
 	return results, nil
+}
+
+func (r *AccountQueryService) FindWithSum(
+	ctx context.Context,
+	id string,
+) (*query.AccountWithSum, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT 
+			a.id, 
+			a.user_id, 
+			a.type, 
+			a.name, 
+			a.is_saving, 
+			a.currency, 
+			a.target_amount, 
+			a.start_date, 
+			a.target_date, 
+			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
+			COALESCE(c.name,''),
+			a.created_at, 
+			a.updated_at, 
+			COALESCE(
+				SUM(
+					CASE
+					  WHEN t.from_account_id = a.id THEN t.amount * -1
+					  ELSE t.amount
+					END
+				),
+				0
+			) AS sum
+		 FROM accounts a
+		 LEFT JOIN expense_categories c
+			ON a.category_id = c.id
+		 LEFT JOIN transactions t 
+			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 WHERE
+			a.id = $1
+		 GROUP BY
+			a.id, c.id`,
+		id,
+	)
+	var g query.AccountWithSum
+	var c query.CategoryNameDTO
+	if err := row.Scan(
+		&g.ID,
+		&g.UserID,
+		&g.Type,
+		&g.Name,
+		&g.IsSaving,
+		&g.Currency,
+		&g.TargetAmount,
+		&g.StartDate,
+		&g.TargetDate,
+		&c.ID,
+		&c.Name,
+		&g.CreatedAt,
+		&g.UpdatedAt,
+		&g.Sum,
+	); err != nil {
+		return nil, err
+	}
+	g.Category = &c
+	return &g, nil
 }
 
 func (r *AccountQueryService) FindAllWithSum(

@@ -25,3 +25,15 @@ document.body.addEventListener("expenseCategoryAdded", function (ev) {
   document.querySelector("#expense-cat h4").innerText =
     `Expenses (${li.length + 1})`;
 });
+
+document.body.addEventListener("closeModal", function (ev) {
+  closeLastDialog();
+});
+
+document.body.addEventListener("contentPush", function (ev) {
+  htmx.ajax("GET", ev.detail.url, {
+    target: "#content",
+    swap: "innerHTML transition:true",
+    push: "true",
+  });
+});

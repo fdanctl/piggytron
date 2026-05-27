@@ -94,6 +94,13 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	aid := r.PathValue("id")
 	bank, err := h.service.ReadOneByID(r.Context(), aid)
 	if err != nil {
@@ -101,6 +108,41 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w, "<p>%s</p>", bank.Name())
-	fmt.Fprintf(w, "<p>%s</p>", bank.Currency())
+
+	banks, err := h.accountQuery.FindBanksIDNames(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error query goals", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	var optionsLinks []components.BreadcrumbsLink
+	for _, g := range banks {
+		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+			Href: fmt.Sprintf("/banks/%s", g.ID),
+			Name: g.Name,
+		})
+	}
+
+	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
+			{
+				Href: "/banks",
+				Name: "Banks",
+			},
+			{
+				Href: "/banks/" + string(bank.ID()),
+				Name: bank.Name(),
+			},
+		}, optionsLinks)
+		if err := breadcrumbs.Render(ctx, w); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(w, "<p>%s</p>", bank.Name())
+		fmt.Fprintf(w, "<p>%s</p>", bank.Currency())
+		return nil
+	})
+
+	renderWithMainLayout(w, r, bank.Name(), content)
 }
