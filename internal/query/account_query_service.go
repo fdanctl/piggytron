@@ -24,7 +24,7 @@ type AccountWithCategory struct {
 	TargetAmount *int
 	StartDate    *time.Time
 	TargetDate   *time.Time
-	Category     *CategoryNameDTO
+	Category     *CategoryDTO
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -49,7 +49,6 @@ type AccountQueryService interface {
 	FindWithSum(ctx context.Context, id string) (*AccountWithSum, error)
 	FindAllWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
-	FindOneWithSum(ctx context.Context, id string) (AccountWithSum, error)
 	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
 	GetAccountDailyChange(ctx context.Context, id string) ([]AccountDailyChange, error)
 }

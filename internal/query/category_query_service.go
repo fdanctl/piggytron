@@ -10,6 +10,12 @@ type CategoryNameDTO struct {
 	Name string
 }
 
+type CategoryDTO struct {
+	ID   string
+	Name string
+	Type string
+}
+
 type ExpenseCategoryBudgetSpent struct {
 	CID      string
 	BID      string
@@ -34,6 +40,7 @@ type CategoryMonthlyValue struct {
 }
 
 type CategoryQueryService interface {
+	FindByID(ctx context.Context, id string) (*CategoryDTO, error)
 	FindAllCategories(ctx context.Context, uid string) ([]CategoryNameDTO, error)
 	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryNameDTO, error)
 	GetExpenseCategoriesBudgetSpent(

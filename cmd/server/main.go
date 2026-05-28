@@ -99,7 +99,7 @@ func main() {
 
 	// services
 	accountService := account.NewService(accountRepo)
-	transactionService := transaction.NewService(transactionRepo)
+	transactionService := transaction.NewService(transactionRepo, db)
 	expenseCatService := expensecategory.NewService(expenseCatRepo)
 	incomeCatService := incomecategory.NewService(incomeCatRepo)
 	userService := user.NewService(userRepo, hasher, sessionStore)

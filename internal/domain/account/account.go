@@ -113,6 +113,7 @@ func Rehydrate(
 	return &Account{
 		id:           id,
 		userID:       userID,
+		aType:        aType,
 		name:         name,
 		isSaving:     isSaving,
 		targetAmount: targetAmount,

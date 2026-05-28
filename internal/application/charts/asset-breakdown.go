@@ -15,11 +15,6 @@ func (s *Service) MakeAssetsPieItems(acc []query.AccountWithSum, count int) []op
 	})
 	var data []opts.PieData
 	for _, v := range acc {
-		// TODO remove this if, sum will never be negative
-		// transaction will have rule to avoid negative balance
-		if v.Sum < 0 {
-			v.Sum *= -1
-		}
 		data = append(data, opts.PieData{Name: v.Name, Value: float64(v.Sum) / float64(100)})
 	}
 	return data

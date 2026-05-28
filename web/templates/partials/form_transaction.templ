@@ -25,6 +25,7 @@ templ TransactionForm(
 	incomeCategories,
 	expenseCategories,
 	accounts []components.SelectOption,
+	accountsNoGoals []components.SelectOption,
 ) {
 	<h4 class="mb-md">New Transaction</h4>
 	<div class="tabs-list">
@@ -54,10 +55,10 @@ templ TransactionForm(
 		</button>
 	</div>
 	<div class="tab-content" id="income-content" data-tab-content="transaction">
-		@IncomeForm(vi, incomeCategories, accounts)
+		@IncomeForm(vi, incomeCategories, accountsNoGoals)
 	</div>
 	<div class="tab-content hidden" id="expense-content" data-tab-content="transaction">
-		@ExpenseForm(ve, expenseCategories, accounts)
+		@ExpenseForm(ve, expenseCategories, accountsNoGoals)
 	</div>
 	<div class="tab-content hidden" id="transfer-content" data-tab-content="transaction">
 		@TransferForm(vt, expenseCategories, accounts)

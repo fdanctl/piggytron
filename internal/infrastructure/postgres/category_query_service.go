@@ -12,13 +12,40 @@ import (
 )
 
 type CategoryQueryService struct {
-	db *sql.DB
+	db DBTX
 }
 
-func NewCategoryQueryService(db *sql.DB) *CategoryQueryService {
+func NewCategoryQueryService(db DBTX) *CategoryQueryService {
 	return &CategoryQueryService{
 		db: db,
 	}
+}
+
+func (s *CategoryQueryService) FindByID(
+	ctx context.Context,
+	id string,
+) (*query.CategoryDTO, error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		`SELECT id, name, 'income' AS type
+		 FROM income_categories
+		 WHERE id = $1
+		 UNION
+		 SELECT id, name, type
+		 FROM expense_categories
+		 WHERE id = $1`,
+		id,
+	)
+	var c query.CategoryDTO
+	err := row.Scan(
+		&c.ID,
+		&c.Name,
+		&c.Type,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &c, err
 }
 
 func (s *CategoryQueryService) FindAllCategories(

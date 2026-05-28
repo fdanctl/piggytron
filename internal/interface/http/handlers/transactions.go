@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -10,6 +11,7 @@ import (
 	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
 	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
 	"github.com/fdanctl/piggytron/internal/application/transaction"
+	transactionDomain "github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -94,12 +96,20 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+
+	var accOptsNoGoals []components.SelectOption
 	var accOpts []components.SelectOption
 	for _, v := range acc {
 		accOpts = append(
 			accOpts,
 			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
 		)
+		if v.IsSaving() != nil && !*v.IsSaving() {
+			accOptsNoGoals = append(
+				accOptsNoGoals,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
 	}
 
 	form := partials.TransactionForm(
@@ -109,6 +119,7 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		icatOpts,
 		ecatOpts,
 		accOpts,
+		accOptsNoGoals,
 	)
 	ctx := templ.WithChildren(r.Context(), form)
 	components.DialogWrapper("", nil).Render(ctx, w)
@@ -171,7 +182,7 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 		)
 	}
 
-	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	acc, err := h.accService.ReadAllBanksByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all accounts", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -179,10 +190,12 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 	}
 	var accOpts []components.SelectOption
 	for _, v := range acc {
-		accOpts = append(
-			accOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
+		if v.IsSaving() != nil && !*v.IsSaving() {
+			accOpts = append(
+				accOpts,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
 	}
 
 	view := views.IncomeForm{
@@ -225,18 +238,17 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 		category,
 		destination,
 	)
-
-	fmt.Println(t.ID())
 	if err != nil {
 		logger.Error("error creating transaction", "error", err)
 		http.Error(w, "Internal error", http.StatusBadRequest)
 		return
 	}
+	fmt.Println(t.ID())
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
 		partials.IncomeForm(view, catOpts, accOpts),
-		components.SendToast(components.Success, "Expense transaction added"),
+		components.SendToast(components.Success, "Income transaction added"),
 	).Render(r.Context(), w)
 }
 
@@ -256,7 +268,7 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 	category := r.FormValue("category")
 	source := r.FormValue("source")
 
-	cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -270,7 +282,7 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 		)
 	}
 
-	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	acc, err := h.accService.ReadAllBanksByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all accounts", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -278,10 +290,12 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 	}
 	var accOpts []components.SelectOption
 	for _, v := range acc {
-		accOpts = append(
-			accOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
+		if v.IsSaving() != nil && !*v.IsSaving() {
+			accOpts = append(
+				accOpts,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
 	}
 
 	view := views.ExpenseForm{
@@ -324,18 +338,25 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 		category,
 		source,
 	)
-
-	fmt.Println(t.ID())
 	if err != nil {
+		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.ExpenseForm(view, catOpts, accOpts),
+				components.SendToast(components.Error, "Negative balance"),
+			).Render(r.Context(), w)
+			return
+		}
 		logger.Error("error creating transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusBadRequest)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+	logger.Debug(string(t.ID()))
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
 		partials.ExpenseForm(view, catOpts, accOpts),
-		components.SendToast(components.Success, "Income transaction added"),
+		components.SendToast(components.Success, "Expense transaction added"),
 	).Render(r.Context(), w)
 }
 
@@ -356,7 +377,7 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
 
-	cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
@@ -426,13 +447,42 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		source,
 		destination,
 	)
-
-	fmt.Println(t.ID())
 	if err != nil {
+		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.TransferForm(view, catOpts, accOpts),
+				components.SendToast(components.Error, err.Error()),
+			).Render(r.Context(), w)
+			return
+		}
+
+		if errors.Is(err, transactionDomain.ErrGoalCategory) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.TransferForm(view, catOpts, accOpts),
+				components.SendToast(components.Error, err.Error()),
+			).Render(r.Context(), w)
+			return
+		}
+
+		if errors.Is(err, transactionDomain.ErrNotSavingsCategory) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			templ.Join(
+				partials.TransferForm(view, catOpts, accOpts),
+				components.SendToast(
+					components.Error,
+					"Category must be savings type to send money to savings account",
+				),
+			).Render(r.Context(), w)
+			return
+		}
+
 		logger.Error("error creating transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusBadRequest)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+	logger.Debug(string(t.ID()))
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(

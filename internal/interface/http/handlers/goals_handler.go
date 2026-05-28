@@ -97,7 +97,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	id := r.PathValue("id")
-	goal, err := h.accountQueryService.FindOneWithSum(r.Context(), id)
+	goal, err := h.accountQueryService.FindWithSum(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			http.NotFound(w, r)
@@ -166,7 +166,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		return partials.Goal(views.NewGoal(goal), transactionsViews, hasMore, transactions.Total).
+		return partials.Goal(views.NewGoal(*goal), transactionsViews, hasMore, transactions.Total).
 			Render(ctx, w)
 	})
 

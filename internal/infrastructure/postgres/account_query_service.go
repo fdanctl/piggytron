@@ -12,10 +12,10 @@ import (
 )
 
 type AccountQueryService struct {
-	db *sql.DB
+	db DBTX
 }
 
-func NewAccountQueryService(db *sql.DB) *AccountQueryService {
+func NewAccountQueryService(db DBTX) *AccountQueryService {
 	return &AccountQueryService{
 		db: db,
 	}
@@ -150,6 +150,7 @@ func (r *AccountQueryService) FindWithSum(
 			a.target_date, 
 			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
 			COALESCE(c.name,''),
+			COALESCE(c.type,'income'),
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(
@@ -173,7 +174,7 @@ func (r *AccountQueryService) FindWithSum(
 		id,
 	)
 	var g query.AccountWithSum
-	var c query.CategoryNameDTO
+	var c query.CategoryDTO
 	if err := row.Scan(
 		&g.ID,
 		&g.UserID,
@@ -186,6 +187,7 @@ func (r *AccountQueryService) FindWithSum(
 		&g.TargetDate,
 		&c.ID,
 		&c.Name,
+		&c.Type,
 		&g.CreatedAt,
 		&g.UpdatedAt,
 		&g.Sum,
@@ -214,6 +216,7 @@ func (r *AccountQueryService) FindAllWithSum(
 			a.target_date, 
 			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
 			COALESCE(c.name,''),
+			COALESCE(c.type,'income'),
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(
@@ -245,7 +248,7 @@ func (r *AccountQueryService) FindAllWithSum(
 
 	for rows.Next() {
 		var g query.AccountWithSum
-		var c query.CategoryNameDTO
+		var c query.CategoryDTO
 		if err := rows.Scan(
 			&g.ID,
 			&g.UserID,
@@ -258,6 +261,7 @@ func (r *AccountQueryService) FindAllWithSum(
 			&g.TargetDate,
 			&c.ID,
 			&c.Name,
+			&c.Type,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
@@ -288,6 +292,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			a.target_date, 
 			c.id,
 			c.name,
+			COALESCE(c.type,'income'),
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(
@@ -319,7 +324,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 
 	for rows.Next() {
 		var g query.AccountWithSum
-		var c query.CategoryNameDTO
+		var c query.CategoryDTO
 		if err := rows.Scan(
 			&g.ID,
 			&g.UserID,
@@ -332,6 +337,7 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 			&g.TargetDate,
 			&c.ID,
 			&c.Name,
+			&c.Type,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
@@ -342,69 +348,6 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 		results = append(results, g)
 	}
 	return results, nil
-}
-
-func (r *AccountQueryService) FindOneWithSum(
-	ctx context.Context,
-	id string,
-) (query.AccountWithSum, error) {
-	row := r.db.QueryRowContext(
-		ctx,
-		`SELECT
-			a.id,
-			a.user_id,
-			a.type,
-			a.name,
-			a.is_saving, 
-			a.currency,
-			a.target_amount,
-			a.start_date,
-			a.target_date,
-			c.id,
-			c.name,
-			a.created_at,
-			a.updated_at,
-			COALESCE(
-				SUM(
-					CASE
-					  WHEN t.from_account_id = a.id THEN t.amount * -1
-					  ELSE t.amount
-					END
-				),
-				0
-			) AS sum
-		 FROM accounts a
-		 LEFT JOIN expense_categories c
-			ON a.category_id = c.id
-		 LEFT JOIN transactions t
-			ON a.id = t.to_account_id OR a.id = t.from_account_id
-		 WHERE
-			a.id = $1	
-		 GROUP BY
-			a.id, c.id`,
-		id,
-	)
-
-	var a query.AccountWithSum
-	var c query.CategoryNameDTO
-	err := row.Scan(
-		&a.ID,
-		&a.UserID,
-		&a.Type,
-		&a.Name,
-		&a.IsSaving,
-		&a.Currency,
-		&a.TargetAmount,
-		&a.StartDate,
-		&a.TargetDate,
-		&c.ID,
-		&c.Name,
-		&a.CreatedAt,
-		&a.UpdatedAt,
-		&a.Sum,
-	)
-	a.Category = &c
-	return a, err
 }
 
 func (r *AccountQueryService) GetBanksDailyChange(

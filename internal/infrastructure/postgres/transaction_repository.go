@@ -2,17 +2,16 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 )
 
 type TransactionRepository struct {
-	db *sql.DB
+	db DBTX
 }
 
-func NewTransactionRepository(db *sql.DB) *TransactionRepository {
+func NewTransactionRepository(db DBTX) *TransactionRepository {
 	return &TransactionRepository{
 		db: db,
 	}

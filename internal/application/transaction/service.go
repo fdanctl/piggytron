@@ -2,22 +2,23 @@ package transaction
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/google/uuid"
 )
 
 type Service struct {
 	repo transaction.Repository
+	db   *sql.DB
 }
 
-func NewService(r transaction.Repository) *Service {
-	return &Service{repo: r}
+func NewService(r transaction.Repository, db *sql.DB) *Service {
+	return &Service{repo: r, db: db}
 }
-
-// create expense
-// create transfer
 
 func (s *Service) CreateIncome(
 	ctx context.Context,
@@ -59,17 +60,40 @@ func (s *Service) CreateIncome(
 		return nil, err
 	}
 
-	transaction, err := transaction.NewIncome(
+	t, err := transaction.NewIncome(
 		id, uid, toAccID, cid, amount, description, date)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.repo.Create(ctx, transaction)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	return transaction, nil
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	rtx := postgres.NewTransactionRepository(tx)
+
+	account, err := qtx.FindWithSum(ctx, dstID)
+	if err != nil {
+		return nil, err
+	}
+
+	if account.IsSaving != nil && *account.IsSaving {
+		return nil, transaction.ErrInvalidAccount
+	}
+
+	err = rtx.Create(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }
 
 func (s *Service) CreateExpense(
@@ -112,17 +136,44 @@ func (s *Service) CreateExpense(
 		return nil, err
 	}
 
-	transaction, err := transaction.NewExpense(
+	t, err := transaction.NewExpense(
 		id, uid, fromAccID, cid, amount, description, date)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.repo.Create(ctx, transaction)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	return transaction, nil
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	rtx := postgres.NewTransactionRepository(tx)
+
+	account, err := qtx.FindWithSum(ctx, srcID)
+	if err != nil {
+		return nil, err
+	}
+
+	if account.Sum-amount < 0 {
+		return nil, transaction.ErrNegativeBalance
+	}
+
+	if account.IsSaving != nil && !*account.IsSaving {
+		return nil, transaction.ErrInvalidAccount
+	}
+
+	err = rtx.Create(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }
 
 func (s *Service) CreateTransfer(
@@ -170,17 +221,64 @@ func (s *Service) CreateTransfer(
 		cid = &tempID
 	}
 
-	transaction, err := transaction.NewTransfer(
+	t, err := transaction.NewTransfer(
 		id, uid, fromAccID, toAccID, cid, amount, description, date)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.repo.Create(ctx, transaction)
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
-	return transaction, nil
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	rtx := postgres.NewTransactionRepository(tx)
+	cqtx := postgres.NewCategoryQueryService(tx)
+
+	fromAccount, err := qtx.FindWithSum(ctx, srcID)
+	toAccount, err := qtx.FindWithSum(ctx, dstID)
+	if err != nil {
+		return nil, err
+	}
+
+	if fromAccount.Sum-amount < 0 {
+		return nil, transaction.ErrNegativeBalance
+	}
+
+	if toAccount.Type == "goal" && toAccount.Category.ID != catID {
+		return nil, fmt.Errorf(
+			"%w: %s goal must be %s category",
+			transaction.ErrGoalCategory,
+			toAccount.Name,
+			toAccount.Category.Name,
+		)
+	}
+
+	if toAccount.IsSaving != nil && *toAccount.IsSaving {
+		if catID == "" {
+			return nil, transaction.ErrNotSavingsCategory
+		}
+		cat, err := cqtx.FindByID(ctx, catID)
+		if err != nil {
+			return nil, err
+		}
+		if cat.Type != "savings" {
+			return nil, transaction.ErrNotSavingsCategory
+		}
+	}
+
+	err = rtx.Create(ctx, t)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return t, nil
 }
 
 func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
