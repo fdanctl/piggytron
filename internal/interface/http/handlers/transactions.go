@@ -112,15 +112,40 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	form := partials.TransactionForm(
-		*views.NewIncomeForm(),
-		*views.NewExpenseForm(),
-		*views.NewTransferForm(),
-		icatOpts,
-		ecatOpts,
-		accOpts,
-		accOptsNoGoals,
-	)
+	var form templ.Component
+	action := r.PathValue("action")
+	switch action {
+	case "goal":
+		view := views.NewTransferForm()
+		acc, err := h.accService.FindOneByID(r.Context(), r.PathValue("id"))
+		if err != nil {
+			logger.Error("error finding goal ", "error", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+		if acc.Type() != "goal" {
+			logger.Error("error finding goal ", "error", err)
+			http.Error(w, "internal error", http.StatusBadRequest)
+			return
+		}
+		view.Initial = true
+		view.Description = fmt.Sprintf("%s contribution", acc.Name())
+		view.DestinationAcc = r.PathValue("id")
+		view.Category = string(*acc.CategoryID())
+		form = partials.GoalContributionForm(*view, ecatOpts, accOpts)
+
+	default:
+		form = partials.TransactionForm(
+			*views.NewIncomeForm(),
+			*views.NewExpenseForm(),
+			*views.NewTransferForm(),
+			icatOpts,
+			ecatOpts,
+			accOpts,
+			accOptsNoGoals,
+		)
+	}
+
 	ctx := templ.WithChildren(r.Context(), form)
 	components.DialogWrapper("", nil).Render(ctx, w)
 }

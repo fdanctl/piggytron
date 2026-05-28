@@ -21,7 +21,11 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 				"",
 				components.BtnSecondary,
 				components.BtnMedium,
-				nil,
+				templ.Attributes{
+					"hx-get":    fmt.Sprintf("/partials/transaction/goal/%s", g.ID),
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
 				components.IconLeft,
 				components.PlusSvg(0, "", ""),
 			)
@@ -113,9 +117,14 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 		<section id="history">
 			<div class="flex justify-between">
 				<h4 class="card__title">History</h4>
-				<span class="text-muted text-xs">
-					{ ttCount } movements
-				</span>
+				<div class="flex items-start gap-xs">
+					<span class="text-muted text-xs">
+						{ ttCount } movements
+					</span>
+					<a class="text-xs" href={ fmt.Sprintf("/transactions/all?accounts=%s", g.ID) }>
+						view all
+					</a>
+				</div>
 			</div>
 			@contributionsList(g.Name, tt, fmt.Sprintf("page=2&accounts=%sname=%s", g.ID, g.Name), hasMore)
 		</section>

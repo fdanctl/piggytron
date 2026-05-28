@@ -129,6 +129,17 @@ export function budgetInput({ evt }) {
   evt.preventDefault();
 }
 
+export function budgetInputScan({ ele }) {
+  ele.classList.add("scan");
+  ele.addEventListener(
+    "animationend",
+    () => {
+      ele.classList.remove("scan");
+    },
+    { once: true },
+  );
+}
+
 function getInputs() {
   return [...document.querySelectorAll("input[name='amount']")];
 }

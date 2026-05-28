@@ -21,6 +21,7 @@ import {
   selectTime,
   selectToggle,
   timeOnChange,
+  budgetInputScan,
 } from "../input";
 import {
   closeLastDialog,
@@ -68,6 +69,8 @@ export const uiActions = {
   "ui.select.toggle": selectToggle,
 
   "ui.budget-input.keydown": budgetInput,
+
+  "ui.budget-input.animate": budgetInputScan,
 
   "ui.cash-input.input": sanitizeCashInput,
 

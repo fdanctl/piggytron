@@ -191,6 +191,7 @@ func main() {
 		accountService,
 	)
 	partialsMux.Handle("/partials/transaction", transactionsHandler)
+	partialsMux.Handle("/partials/transaction/{action}/{id}", transactionsHandler)
 
 	goalContributions := handlers.NewGoalContributionsHandler(transactionQueryService)
 	partialsMux.Handle("/partials/contributions", goalContributions)

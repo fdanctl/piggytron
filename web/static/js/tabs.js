@@ -1,5 +1,4 @@
 export function changeTab({ ele, data }) {
-  console.log(data.tabTrigger);
   const triggers = document.querySelectorAll(
     `[data-tab-trigger="${data.tabTrigger}"]`,
   );

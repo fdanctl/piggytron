@@ -22,6 +22,20 @@ func NewService(repo account.Repository) *Service {
 	return &Service{repo: repo}
 }
 
+func (s *Service) FindOneByID(ctx context.Context, id string) (*account.Account, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	accID, err := account.NewID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.repo.FindByID(ctx, accID)
+}
+
 func (s *Service) CreateBank(
 	ctx context.Context,
 	userID string,

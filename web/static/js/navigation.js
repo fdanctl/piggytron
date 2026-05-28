@@ -43,14 +43,20 @@ export const closeLastDialog = () => {
   const lc = dialogRoot.lastChild;
   lc.classList.add("closing");
 
-  setTimeout(() => {
-    lc.close();
-    lc.classList.remove("closing");
-    // if not nav sheet remove from dom
-    if (!lc.matches("#nav-sheet")) {
-      lc.remove();
-    }
-  }, 200);
+  lc.addEventListener(
+    "transitionend",
+    () => {
+      lc.close();
+      lc.classList.remove("closing");
+      // if not nav sheet remove from dom
+      if (!lc.matches("#nav-sheet")) {
+        lc.remove();
+      }
+    },
+    { once: true },
+  );
+
+  setTimeout(() => {}, 200);
 };
 
 dialogRoot?.lastChild.addEventListener("toggle", (e) => {
@@ -65,35 +71,66 @@ document.addEventListener("click", (e) => {
   }
 });
 
-let noStartYPosition = 0;
+let startY = 0;
+let currentDialog = null;
+let dragging = false;
+
 document.addEventListener("touchstart", (e) => {
-  if (e.target === dialogRoot) {
-    noStartYPosition = e.touches[0].clientY;
-  }
+  const dialog = e.target.closest(".dialog");
+
+  if (dialog !== dialogRoot?.lastElementChild) return;
+  if (dialog.scrollTop > 0) return;
+
+  currentDialog = dialog;
+  startY = e.touches[0].clientY;
+  dragging = true;
 });
 
-document.addEventListener("touchmove", (e) => {
-  if (e.target === dialogRoot?.lastChild) {
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    if (!dragging || !currentDialog) return;
+
+    const deltaY = e.touches[0].clientY - startY;
+
+    // allow normal scrolling
+    if (currentDialog.scrollTop > 0) return;
+
+    // only handle pull-down
+    if (deltaY <= 0) return;
+
     e.preventDefault();
-    const deltaY = e.touches[0].clientY - noStartYPosition;
-    if (deltaY > 0) {
-      dialogRoot.lastChild.style.transform = `translateY(${deltaY}px)`;
-    }
-  }
-});
+
+    currentDialog.style.transform = `translateY(${deltaY}px)`;
+  },
+  { passive: false },
+);
 
 document.addEventListener("touchend", (e) => {
-  if (e.target === dialogRoot?.lastChild) {
-    const deltaY = e.changedTouches[0].clientY - noStartYPosition;
-    if (deltaY / e.view.outerHeight > 0.2) {
-      closeLastDialog();
-      setTimeout(() => {
-        dialogRoot.lastChild.style.transform = "translateY(0)";
-      }, 10);
-    } else {
-      dialogRoot.lastChild.style.transform = "translateY(0)";
-    }
+  if (!dragging || !currentDialog) return;
+  if (currentDialog.scrollTop > 0) return;
+
+  const deltaY = e.changedTouches[0].clientY - startY;
+  const shouldClose = deltaY > window.innerHeight * 0.2;
+
+  currentDialog.style.transition = "transform 200ms ease";
+
+  if (shouldClose) {
+    currentDialog.style.transform = "translateY(100%)";
+
+    currentDialog.addEventListener(
+      "transitionend",
+      () => {
+        closeLastDialog();
+      },
+      { once: true },
+    );
+  } else {
+    currentDialog.style.transform = "translateY(0)";
   }
+
+  dragging = false;
+  currentDialog = null;
 });
 
 // === nav === //

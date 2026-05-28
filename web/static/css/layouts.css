@@ -47,7 +47,7 @@ html {
 }
 
 .dialog:open {
-  touch-action: none;
+  /* touch-action: none; */
 }
 
 .dialog::backdrop {
@@ -63,7 +63,7 @@ html {
   outline: none;
 }
 
-.dialog > div:first-child {
+.dialog > .dialog__bar {
   width: 100%;
   height: var(--spacing-md);
   display: flex;
@@ -71,11 +71,26 @@ html {
   align-items: center;
 }
 
-.dialog > div:first-child > div {
+.dialog > .dialog__bar > div {
   width: 3rem;
   height: 3px;
   border-radius: var(--radius-md);
   background-color: var(--color-border);
+}
+
+.dialog__x {
+  visibility: hidden;
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--color-border);
+  cursor: pointer;
+}
+.dialog__x:hover {
+  color: var(--color-error);
 }
 
 @media (min-width: 600px) {
@@ -106,7 +121,7 @@ html {
     outline: none;
   }
 
-  .dialog > div:first-child {
+  .dialog > .dialog__bar {
     display: none;
   }
 
@@ -130,6 +145,9 @@ html {
   .dialog.sheet.closing {
     transform: translateX(100%) !important;
     opacity: 1;
+  }
+  .dialog__x {
+    visibility: visible;
   }
 }
 
