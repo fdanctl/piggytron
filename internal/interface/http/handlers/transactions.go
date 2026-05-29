@@ -128,7 +128,6 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "internal error", http.StatusBadRequest)
 			return
 		}
-		view.Initial = true
 		view.Description = fmt.Sprintf("%s contribution", acc.Name())
 		view.DestinationAcc = r.PathValue("id")
 		view.Category = string(*acc.CategoryID())
@@ -440,12 +439,25 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		SourceAcc:      source,
 		DestinationAcc: destination,
 	}
+
+	var form templ.Component
+	action := r.PathValue("action")
+	logger.Debug(action)
+
+	switch action {
+	case "goal":
+		form = partials.GoalContributionForm(view, catOpts, accOpts)
+
+	default:
+		form = partials.TransferForm(view, catOpts, accOpts)
+	}
+
 	msgs := view.Validate()
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.TransferForm(view, catOpts, accOpts).Render(r.Context(), w)
+		form.Render(r.Context(), w)
 		return
 	}
 
@@ -476,7 +488,7 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
-				partials.TransferForm(view, catOpts, accOpts),
+				form,
 				components.SendToast(components.Error, err.Error()),
 			).Render(r.Context(), w)
 			return
@@ -485,7 +497,7 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		if errors.Is(err, transactionDomain.ErrGoalCategory) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
-				partials.TransferForm(view, catOpts, accOpts),
+				form,
 				components.SendToast(components.Error, err.Error()),
 			).Render(r.Context(), w)
 			return
@@ -494,7 +506,7 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		if errors.Is(err, transactionDomain.ErrNotSavingsCategory) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
-				partials.TransferForm(view, catOpts, accOpts),
+				form,
 				components.SendToast(
 					components.Error,
 					"Category must be savings type to send money to savings account",
@@ -509,9 +521,17 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 	}
 	logger.Debug(string(t.ID()))
 
+	switch action {
+	case "goal":
+		form = partials.GoalContributionForm(view, catOpts, accOpts)
+
+	default:
+		form = partials.TransferForm(view, catOpts, accOpts)
+	}
+
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
-		partials.TransferForm(view, catOpts, accOpts),
+		form,
 		components.SendToast(components.Success, "Transfer transaction added"),
 	).Render(r.Context(), w)
 }

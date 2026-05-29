@@ -37,3 +37,14 @@ document.body.addEventListener("contentPush", function (ev) {
     push: "true",
   });
 });
+
+document.body.addEventListener("refetch-transactions", function (ev) {
+  const isGoalPage = document.getElementsByClassName("goal-actions").length > 0;
+  if (isGoalPage) {
+    htmx.ajax("GET", window.location.pathname, {
+      target: "#content",
+      swap: "innerHTML",
+      push: "true",
+    });
+  }
+});

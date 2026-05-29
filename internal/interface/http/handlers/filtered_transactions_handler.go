@@ -99,7 +99,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		filterCount++
 	}
 
-	transactions, err := h.query.FindFiltered(
+	transactions, err := h.query.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
 		filters,
@@ -112,16 +112,16 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		return
 	}
 	var hasMore bool
-	if len(transactions) == LIMIT+1 {
+	if len(transactions.Data) == LIMIT+1 {
 		hasMore = true
-		transactions = transactions[0 : len(transactions)-1]
+		transactions.Data = transactions.Data[0 : len(transactions.Data)-1]
 	}
 
 	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		for i, v := range transactions {
+		for i, v := range transactions.Data {
 			t := views.NewTransaction(v)
 			var c templ.Component
-			if i == len(transactions)-1 && hasMore {
+			if i == len(transactions.Data)-1 && hasMore {
 				c = partials.TransactionItem(t, templ.Attributes{
 					"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					"hx-get": fmt.Sprintf(
@@ -145,5 +145,17 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		return nil
 	})
 
-	content.Render(r.Context(), w)
+	obb := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		_, err := io.WriteString(w, "<p id=\"filter-result-count\" hx-swap-oob=\"innerHTML\">")
+		if err != nil {
+			return err
+		}
+		_, err = fmt.Fprintf(w, "%d results", transactions.Total)
+		if err != nil {
+			return err
+		}
+		_, err = io.WriteString(w, "</p>")
+		return err
+	})
+	templ.Join(content, obb).Render(r.Context(), w)
 }

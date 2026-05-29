@@ -13,6 +13,7 @@
 @import "./css/components/navigation.css";
 @import "./css/components/tabs.css";
 @import "./css/components/transaction-card.css";
+@import "./css/components/transaction-details.css";
 @import "./css/components/transaction-filters.css";
 @import "./css/components/toast.css";
 

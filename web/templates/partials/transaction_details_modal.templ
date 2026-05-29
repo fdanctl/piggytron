@@ -1,0 +1,38 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ TransactionDetails(t views.Transaction) {
+	@components.DialogWrapper("", nil) {
+		<h4 class="mb-md">Transaction Details</h4>
+		<p class="tdetails__amount-label">Amount</p>
+		<p class="tdetails__amount">{ t.Amount }</p>
+		<p class="tdetails__desc-label">Description</p>
+		<p class="tdetails__desc">{ t.Description }</p>
+		<li class="flex justify-between">
+			<span class="tdetails__key">Type</span>
+			<span class="tdetails__value">{ t.Type }</span>
+		</li>
+		if t.FromAccount != "" {
+			<li class="flex justify-between">
+				<span class="tdetails__key">Source</span>
+				<span class="tdetails__value">{ t.FromAccount }</span>
+			</li>
+		}
+		if t.ToAccount != "" {
+			<li class="flex justify-between">
+				<span class="tdetails__key">Destination</span>
+				<span class="tdetails__value">{ t.ToAccount }</span>
+			</li>
+		}
+		<li class="flex justify-between">
+			<span class="tdetails__key">Category</span>
+			<span class="tdetails__value">
+				{ t.Category }
+			</span>
+		</li>
+	}
+}

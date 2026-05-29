@@ -18,6 +18,57 @@ func NewTransactionQueryService(db *sql.DB) *TransactionQueryService {
 	}
 }
 
+func (r *TransactionQueryService) FindByID(
+	ctx context.Context,
+	id string,
+) (*query.TransactionDTO, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT
+			t.id,
+			t.user_id,
+			t.type,
+			fa.name,
+			ta.name,
+			ic.name,
+			ec.name,
+			t.amount,
+			t.description,
+			t.date,
+			t.created_at
+		 FROM transactions t
+		 LEFT JOIN accounts fa
+			ON t.from_account_id = fa.id
+		 LEFT JOIN accounts ta
+			ON t.to_account_id = ta.id
+		 LEFT JOIN expense_categories ec
+			ON t.expense_category_id = ec.id
+		 LEFT JOIN income_categories ic
+			ON t.income_category_id = ic.id
+		 WHERE t.id = $1`,
+		id,
+	)
+
+	var dto query.TransactionDTO
+	err := row.Scan(
+		&dto.ID,
+		&dto.UserID,
+		&dto.Type,
+		&dto.FromAccount,
+		&dto.ToAccount,
+		&dto.IncomeCategory,
+		&dto.ExpenseCategory,
+		&dto.Amount,
+		&dto.Description,
+		&dto.Date,
+		&dto.CreatedAt,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &dto, nil
+}
+
 func (r *TransactionQueryService) FindFiltered(
 	ctx context.Context,
 	uid string,

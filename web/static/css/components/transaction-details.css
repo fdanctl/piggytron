@@ -1,0 +1,27 @@
+.tdetails__amount-label {
+  /* font-size: 0.825rem; */
+  color: var(--color-text-secondary);
+}
+
+.tdetails__amount {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.tdetails__desc-label {
+  /* font-size: 0.825rem; */
+  color: var(--color-text-secondary);
+}
+
+.tdetails__desc {
+  font-size: 1.125rem;
+}
+
+.tdetails__key {
+  /* font-size: 0.825rem; */
+  color: var(--color-text-secondary);
+}
+
+.tdetails__value {
+  /* font-size: 0.825rem; */
+}

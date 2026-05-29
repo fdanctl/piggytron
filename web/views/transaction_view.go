@@ -33,12 +33,16 @@ func NewTransaction(
 		cat = *t.IncomeCategory
 	}
 
+	var srcAcc string
 	accs := make([]string, 0, 2)
 	if t.FromAccount != nil {
 		accs = append(accs, *t.FromAccount)
+		srcAcc = *t.FromAccount
 	}
+	var dstAcc string
 	if t.ToAccount != nil {
 		accs = append(accs, *t.ToAccount)
+		srcAcc = *t.ToAccount
 	}
 
 	return Transaction{
@@ -47,6 +51,8 @@ func NewTransaction(
 		Type:        t.Type,
 		Category:    cat,
 		Accounts:    accs,
+		FromAccount: srcAcc,
+		ToAccount:   dstAcc,
 		Amount:      FormatMoney(f, currency.EUR, language.AmericanEnglish),
 		Date:        FormatDate(t.Date),
 	}

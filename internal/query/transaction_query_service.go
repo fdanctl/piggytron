@@ -39,6 +39,7 @@ type CategoryExpenseWithTotal struct {
 }
 
 type TransactionQueryService interface {
+	FindByID(ctx context.Context, id string) (*TransactionDTO, error)
 	FindFiltered(
 		ctx context.Context,
 		uid string,
