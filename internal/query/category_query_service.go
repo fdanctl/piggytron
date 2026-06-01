@@ -25,11 +25,10 @@ type ExpenseCategoryBudgetSpent struct {
 	Spent    int
 }
 
-// if it's income amount will be the money in
 type CategoryBudget struct {
 	Name  string
 	Type  string
-	Value int
+	Value int // if it's income amount will be the money in
 }
 
 type CategoryMonthlyValue struct {

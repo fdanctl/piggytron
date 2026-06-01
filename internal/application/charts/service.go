@@ -20,8 +20,8 @@ type Renderable interface {
 	Render(w io.Writer) error
 }
 
-// cut unnecessary html code from echarts
-// only get what's inside <body></body>
+// ConvertChartToTemplComponent cuts unnecessary html code from echarts
+// (only get what's inside <body></body>) and makes it templ component
 func (s *Service) ConvertChartToTemplComponent(chart Renderable) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		buf := bytes.NewBuffer(nil)
@@ -41,7 +41,8 @@ func (s *Service) ConvertChartToTemplComponent(chart Renderable) templ.Component
 			return err
 		}
 
-		_, err = fmt.Fprintf(w, `<script>
+		_, err = fmt.Fprintf(
+			w, `<script>
 		// block resize when chart is animating
 		let initialized_%s = false;
 		const observer_%s = new ResizeObserver(() => {

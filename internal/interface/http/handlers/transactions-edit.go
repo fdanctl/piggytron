@@ -260,19 +260,12 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var accOptsNoGoals []components.SelectOption
 	var accOpts []components.SelectOption
 	for _, v := range acc {
 		accOpts = append(
 			accOpts,
 			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
 		)
-		if v.IsSaving() != nil && !*v.IsSaving() {
-			accOptsNoGoals = append(
-				accOptsNoGoals,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
 	}
 
 	var form templ.Component

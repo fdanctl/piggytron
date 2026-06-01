@@ -61,7 +61,8 @@ func (s *Service) CreateIncome(
 	}
 
 	t, err := transaction.NewIncome(
-		id, uid, toAccID, cid, amount, description, date)
+		id, uid, toAccID, cid, amount, description, date,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +138,8 @@ func (s *Service) CreateExpense(
 	}
 
 	t, err := transaction.NewExpense(
-		id, uid, fromAccID, cid, amount, description, date)
+		id, uid, fromAccID, cid, amount, description, date,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +224,8 @@ func (s *Service) CreateTransfer(
 	}
 
 	t, err := transaction.NewTransfer(
-		id, uid, fromAccID, toAccID, cid, amount, description, date)
+		id, uid, fromAccID, toAccID, cid, amount, description, date,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -238,6 +241,9 @@ func (s *Service) CreateTransfer(
 	cqtx := postgres.NewCategoryQueryService(tx)
 
 	fromAccount, err := qtx.FindWithSum(ctx, srcID)
+	if err != nil {
+		return nil, err
+	}
 	toAccount, err := qtx.FindWithSum(ctx, dstID)
 	if err != nil {
 		return nil, err

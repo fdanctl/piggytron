@@ -83,19 +83,12 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var accOptsNoGoals []components.SelectOption
 	var accOpts []components.SelectOption
 	for _, v := range accounts {
 		accOpts = append(
 			accOpts,
 			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
 		)
-		if v.IsSaving() != nil && !*v.IsSaving() {
-			accOptsNoGoals = append(
-				accOptsNoGoals,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
 	}
 
 	view := views.NewTransferForm()
@@ -253,6 +246,4 @@ func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 		form,
 		components.SendToast(components.Success, "Transfer transaction added"),
 	).Render(r.Context(), w)
-
-	form = partials.GoalContributionForm(view, catOpts, accOpts)
 }

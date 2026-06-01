@@ -70,7 +70,7 @@ func FormatDate(date time.Time) string {
 	return fmt.Sprintf("%s %d, %d", m, d, y)
 }
 
-// capitalize first letter
+// CapitalizeFirst capitalizes the first letter of a string
 func CapitalizeFirst(s string) string {
 	if len(s) == 0 {
 		return s

@@ -185,6 +185,11 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	g, err := h.accountQueryService.FindWithSum(
 		r.Context(), string(goal.ID()),
 	)
+	if err != nil {
+		logger.Error("error finding accounts", "error", err)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
 
 	w.Header().Set(
 		"HX-Trigger",
