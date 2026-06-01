@@ -71,6 +71,19 @@ func (r *TransactionRepository) Create(ctx context.Context, t *transaction.Trans
 	return nil
 }
 
+func (r *TransactionRepository) Delete(ctx context.Context, id transaction.ID) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`DELETE FROM transactions WHERE id = $1`,
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *TransactionRepository) FindByID(
 	ctx context.Context,
 	id transaction.ID,

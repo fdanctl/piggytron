@@ -57,21 +57,25 @@ templ TransactionForm(
 		</button>
 	</div>
 	<div class="tab-content" id="income-content" data-tab-content="transaction">
-		@IncomeForm(vi, incomeCategories, accountsNoGoals)
+		@IncomeForm(vi, incomeCategories, accountsNoGoals, "")
 	</div>
 	<div class="tab-content hidden" id="expense-content" data-tab-content="transaction">
-		@ExpenseForm(ve, expenseCategories, accountsNoGoals)
+		@ExpenseForm(ve, expenseCategories, accountsNoGoals, "")
 	</div>
 	<div class="tab-content hidden" id="transfer-content" data-tab-content="transaction">
-		@TransferForm(vt, expenseCategories, accounts)
+		@TransferForm(vt, expenseCategories, accounts, "")
 	</div>
 }
 
-templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOption) {
+templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOption, id string) {
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
-		hx-post="/partials/transaction"
+		if id != "" {
+			hx-put={ fmt.Sprintf("/partials/transaction/%s", id) }
+		} else {
+			hx-post="/partials/transaction"
+		}
 		hx-swap="outerHTML"
 		novalidate
 	>
@@ -183,11 +187,15 @@ templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOpt
 	</form>
 }
 
-templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectOption) {
+templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectOption, id string) {
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
-		hx-post="/partials/transaction"
+		if id != "" {
+			hx-put={ fmt.Sprintf("/partials/transaction/%s", id) }
+		} else {
+			hx-post="/partials/transaction"
+		}
 		hx-swap="outerHTML"
 		novalidate
 	>
@@ -299,11 +307,15 @@ templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectO
 	</form>
 }
 
-templ TransferForm(v views.TransferForm, categories, accounts []components.SelectOption) {
+templ TransferForm(v views.TransferForm, categories, accounts []components.SelectOption, id string) {
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
-		hx-post="/partials/transaction"
+		if id != "" {
+			hx-put={ fmt.Sprintf("/partials/transaction/%s", id) }
+		} else {
+			hx-post="/partials/transaction"
+		}
 		hx-swap="outerHTML"
 		novalidate
 	>
@@ -433,7 +445,7 @@ templ GoalContributionForm(v views.TransferForm, categories, accounts []componen
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
-		hx-post={ fmt.Sprintf("/partials/transaction/goal/%s", v.DestinationAcc) }
+		hx-post={ fmt.Sprintf("/partials/goal-contribute/%s", v.DestinationAcc) }
 		hx-swap="outerHTML"
 		novalidate
 	>

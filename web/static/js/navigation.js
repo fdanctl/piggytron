@@ -41,26 +41,26 @@ export function openNavSheet() {
 
 export const closeLastDialog = () => {
   const lc = dialogRoot.lastElementChild;
+  closeDialog(lc);
+};
 
-  if (lc.classList.contains("closing")) {
-    lc.close();
-    lc.classList.remove("closing");
-    // if not nav sheet remove from dom
-    if (!lc.matches("#nav-sheet")) {
-      lc.remove();
-    }
-    return;
+export const closeAllDialog = () => {
+  const children = [...dialogRoot.children];
+  for (let i = children.length - 1; i >= 0; i--) {
+    closeDialog(children[i]);
   }
+};
 
-  lc.classList.add("closing");
-  lc.addEventListener(
+export const closeDialog = (ele) => {
+  ele.classList.add("closing");
+  ele.addEventListener(
     "transitionend",
     () => {
-      lc.close();
-      lc.classList.remove("closing");
+      ele.close();
+      ele.classList.remove("closing");
       // if not nav sheet remove from dom
-      if (!lc.matches("#nav-sheet")) {
-        lc.remove();
+      if (!ele.matches("#nav-sheet")) {
+        ele.remove();
       }
     },
     { once: true },

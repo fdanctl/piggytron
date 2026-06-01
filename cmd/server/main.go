@@ -191,7 +191,22 @@ func main() {
 		accountService,
 	)
 	partialsMux.Handle("/partials/transaction", transactionsHandler)
-	partialsMux.Handle("/partials/transaction/{action}/{id}", transactionsHandler)
+
+	transactionsEditHandler := handlers.NewTransactionEditHandler(
+		transactionService,
+		incomeCatService,
+		expenseCatService,
+		accountService,
+	)
+	partialsMux.Handle("/partials/transaction/{id}", transactionsEditHandler)
+
+	goalContributeHandler := handlers.NewGoalContributeHandler(
+		transactionService,
+		incomeCatService,
+		expenseCatService,
+		accountService,
+	)
+	partialsMux.Handle("/partials/goal-contribute/{id}", goalContributeHandler)
 
 	transactionDetails := handlers.NewTransactionDetailsHandler(transactionQueryService)
 	partialsMux.Handle("/partials/transaction-details/{id}", transactionDetails)

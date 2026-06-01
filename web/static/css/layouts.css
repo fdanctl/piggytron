@@ -63,13 +63,15 @@ html {
   outline: none;
 }
 
-.dialog.float {
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--spacing-xs);
-  margin-left: var(--spacing-xs);
-  margin-right: var(--spacing-xs);
-  max-width: calc(100vw - var(--spacing-xs) - var(--spacing-xs));
-  width: 100%;
+@media (max-width: 600px) {
+  .dialog.float {
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-xs);
+    margin-left: var(--spacing-xs);
+    margin-right: var(--spacing-xs);
+    max-width: calc(100vw - var(--spacing-xs) - var(--spacing-xs));
+    width: 100%;
+  }
 }
 
 .dialog > .dialog__bar {
@@ -136,7 +138,7 @@ html {
   }
 
   .dialog.floating-sheet.top-right {
-    width: 30%;
+    width: 320px;
     position: fixed;
     top: var(--spacing-sm);
     right: var(--spacing-sm);

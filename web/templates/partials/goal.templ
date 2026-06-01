@@ -22,7 +22,7 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 				components.BtnSecondary,
 				components.BtnMedium,
 				templ.Attributes{
-					"hx-get":    fmt.Sprintf("/partials/transaction/goal/%s", g.ID),
+					"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
 					"hx-target": "#dialog-root",
 					"hx-swap":   "beforeend",
 				},

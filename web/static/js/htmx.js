@@ -1,4 +1,4 @@
-import { closeLastDialog } from "./navigation";
+import { closeAllDialog, closeDialog, closeLastDialog } from "./navigation";
 
 function confirmModal({
   title = "Confirm",
@@ -32,12 +32,12 @@ function confirmModal({
     modal.focus();
 
     modal.querySelector(".accept").onclick = () => {
-      modal.remove();
+      closeDialog(modal);
       resolve(true);
     };
 
     modal.querySelector(".refuse").onclick = () => {
-      modal.remove();
+      closeDialog(modal);
       resolve(false);
     };
   });
@@ -115,5 +115,15 @@ document.body.addEventListener("refetch-transactions", function (ev) {
       swap: "innerHTML",
       push: "true",
     });
+  }
+});
+
+document.body.addEventListener("transaction-deleted", function (ev) {
+  closeAllDialog();
+  const countEle = document.getElementById("filter-result-count");
+  const count = countEle.innerText.match(/^\d*/);
+
+  if (count) {
+    countEle.innerText = `${Number(count[0]) - 1} results`;
   }
 });

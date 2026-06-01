@@ -112,38 +112,15 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var form templ.Component
-	action := r.PathValue("action")
-	switch action {
-	case "goal":
-		view := views.NewTransferForm()
-		acc, err := h.accService.FindOneByID(r.Context(), r.PathValue("id"))
-		if err != nil {
-			logger.Error("error finding goal ", "error", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
-		if acc.Type() != "goal" {
-			logger.Error("error finding goal ", "error", err)
-			http.Error(w, "internal error", http.StatusBadRequest)
-			return
-		}
-		view.Description = fmt.Sprintf("%s contribution", acc.Name())
-		view.DestinationAcc = r.PathValue("id")
-		view.Category = string(*acc.CategoryID())
-		form = partials.GoalContributionForm(*view, ecatOpts, accOpts)
-
-	default:
-		form = partials.TransactionForm(
-			*views.NewIncomeForm(),
-			*views.NewExpenseForm(),
-			*views.NewTransferForm(),
-			icatOpts,
-			ecatOpts,
-			accOpts,
-			accOptsNoGoals,
-		)
-	}
+	form := partials.TransactionForm(
+		*views.NewIncomeForm(),
+		*views.NewExpenseForm(),
+		*views.NewTransferForm(),
+		icatOpts,
+		ecatOpts,
+		accOpts,
+		accOptsNoGoals,
+	)
 
 	ctx := templ.WithChildren(r.Context(), form)
 	components.DialogWrapper("", nil).Render(ctx, w)
@@ -236,7 +213,7 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 		logger.Info("invalid form", "error", msgs)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.IncomeForm(view, catOpts, accOpts).Render(r.Context(), w)
+		partials.IncomeForm(view, catOpts, accOpts, "").Render(r.Context(), w)
 		return
 	}
 
@@ -271,7 +248,7 @@ func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
-		partials.IncomeForm(view, catOpts, accOpts),
+		partials.IncomeForm(view, catOpts, accOpts, ""),
 		components.SendToast(components.Success, "Income transaction added"),
 	).Render(r.Context(), w)
 }
@@ -336,7 +313,7 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 		logger.Info("invalid form", "error", msgs)
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.ExpenseForm(view, catOpts, accOpts).Render(r.Context(), w)
+		partials.ExpenseForm(view, catOpts, accOpts, "").Render(r.Context(), w)
 		return
 	}
 
@@ -366,7 +343,7 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
-				partials.ExpenseForm(view, catOpts, accOpts),
+				partials.ExpenseForm(view, catOpts, accOpts, ""),
 				components.SendToast(components.Error, "Negative balance"),
 			).Render(r.Context(), w)
 			return
@@ -379,7 +356,7 @@ func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Reques
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
-		partials.ExpenseForm(view, catOpts, accOpts),
+		partials.ExpenseForm(view, catOpts, accOpts, ""),
 		components.SendToast(components.Success, "Expense transaction added"),
 	).Render(r.Context(), w)
 }
@@ -440,17 +417,7 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		DestinationAcc: destination,
 	}
 
-	var form templ.Component
-	action := r.PathValue("action")
-	logger.Debug(action)
-
-	switch action {
-	case "goal":
-		form = partials.GoalContributionForm(view, catOpts, accOpts)
-
-	default:
-		form = partials.TransferForm(view, catOpts, accOpts)
-	}
+	form := partials.TransferForm(view, catOpts, accOpts, "")
 
 	msgs := view.Validate()
 	if len(msgs) > 0 {
@@ -519,15 +486,9 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+
 	logger.Debug(string(t.ID()))
-
-	switch action {
-	case "goal":
-		form = partials.GoalContributionForm(view, catOpts, accOpts)
-
-	default:
-		form = partials.TransferForm(view, catOpts, accOpts)
-	}
+	form = partials.TransferForm(view, catOpts, accOpts, "")
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(

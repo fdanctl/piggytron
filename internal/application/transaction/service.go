@@ -281,6 +281,51 @@ func (s *Service) CreateTransfer(
 	return t, nil
 }
 
+// Update
+
+func (s *Service) Delete(ctx context.Context, id string) error {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return err
+	}
+
+	ID, err := transaction.NewID(id)
+	if err != nil {
+		return err
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	rtx := postgres.NewTransactionRepository(tx)
+
+	t, err := rtx.FindByID(ctx, ID)
+	if err != nil {
+		return err
+	}
+
+	if t.ToAccountID() != nil {
+		toacc, err := qtx.FindWithSum(ctx, string(*t.ToAccountID()))
+		if err != nil {
+			return err
+		}
+		if toacc.Sum-t.Amount() < 0 {
+			return transaction.ErrNegativeBalance
+		}
+	}
+
+	err = rtx.Delete(ctx, t.ID())
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
 	_, err := uuid.Parse(id)
 	if err != nil {

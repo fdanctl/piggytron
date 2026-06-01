@@ -49,15 +49,20 @@ templ TransactionDetails(t views.Transaction) {
 			@components.ButtonWithIcon(
 				"Delete", "w-full destructive-hover", components.BtnOutline, components.BtnMedium,
 				templ.Attributes{
-					"hx-trigger": "click",
+					"hx-target":  fmt.Sprintf("#t__%s", t.ID),
 					"hx-swap":    "delete",
 					"hx-delete":  fmt.Sprintf("/partials/transaction/%s", t.ID),
-					"hx-confirm": "{\"title\":\"Delete transaction\",\"message\":\"Are you you want to delete this transaction?\"}",
+					"hx-confirm": "{\"title\":\"Delete transaction\",\"message\":\"Are you you want to delete this transaction?\",\"acceptText\":\"Confirm\",\"refuseText\":\"Cancel\"}",
 				},
 				components.IconLeft, components.TrashSvg(0, "", ""),
 			)
 			@components.ButtonWithIcon(
-				"Edit", "w-full", components.BtnOutline, components.BtnMedium, nil,
+				"Edit", "w-full", components.BtnOutline, components.BtnMedium,
+				templ.Attributes{
+					"hx-get":    fmt.Sprintf("/partials/transaction/%s", t.ID),
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
 				components.IconLeft, components.SquarePenSvg(0, "", ""),
 			)
 		</div>

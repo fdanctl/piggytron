@@ -45,6 +45,7 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 
 templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 	<li
+		id={ fmt.Sprintf("t__%s", t.ID) }
 		class="transaction"
 		hx-get={ fmt.Sprintf("/partials/transaction-details/%s", t.ID) }
 		hx-target="#dialog-root"
