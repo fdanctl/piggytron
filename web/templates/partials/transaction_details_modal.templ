@@ -1,38 +1,65 @@
 package partials
 
 import (
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 templ TransactionDetails(t views.Transaction) {
-	@components.DialogWrapper("", nil) {
+	@components.DialogWrapper("floating-sheet top-right", nil) {
 		<h4 class="mb-md">Transaction Details</h4>
-		<p class="tdetails__amount-label">Amount</p>
-		<p class="tdetails__amount">{ t.Amount }</p>
-		<p class="tdetails__desc-label">Description</p>
-		<p class="tdetails__desc">{ t.Description }</p>
-		<li class="flex justify-between">
-			<span class="tdetails__key">Type</span>
-			<span class="tdetails__value">{ t.Type }</span>
-		</li>
-		if t.FromAccount != "" {
+		<div class="mb-sm">
+			<p class="tdetails__amount-label">Amount</p>
+			<p class="tdetails__amount">{ t.Amount }</p>
+			<p class="text-xs text-muted">{ t.Date }</p>
+		</div>
+		<div class="mb-sm">
+			<p class="tdetails__desc-label">Description</p>
+			<p class="tdetails__desc">{ t.Description }</p>
+		</div>
+		<ul class="space-y-xs">
 			<li class="flex justify-between">
-				<span class="tdetails__key">Source</span>
-				<span class="tdetails__value">{ t.FromAccount }</span>
+				<span class="tdetails__key">Type</span>
+				<span class="tdetails__value">{ t.Type }</span>
 			</li>
-		}
-		if t.ToAccount != "" {
-			<li class="flex justify-between">
-				<span class="tdetails__key">Destination</span>
-				<span class="tdetails__value">{ t.ToAccount }</span>
-			</li>
-		}
-		<li class="flex justify-between">
-			<span class="tdetails__key">Category</span>
-			<span class="tdetails__value">
-				{ t.Category }
-			</span>
-		</li>
+			if t.FromAccount != "" {
+				<li class="flex justify-between">
+					<span class="tdetails__key">Source</span>
+					<span class="tdetails__value">{ t.FromAccount }</span>
+				</li>
+			}
+			if t.ToAccount != "" {
+				<li class="flex justify-between">
+					<span class="tdetails__key">Destination</span>
+					<span class="tdetails__value">{ t.ToAccount }</span>
+				</li>
+			}
+			if t.Category != "Transfer" {
+				<li class="flex justify-between">
+					<span class="tdetails__key">Category</span>
+					<span class="tdetails__value">
+						{ t.Category }
+					</span>
+				</li>
+			}
+		</ul>
+		<hr class="w-full"/>
+		<div class="w-full flex justify-between gap-xs">
+			@components.ButtonWithIcon(
+				"Delete", "w-full destructive-hover", components.BtnOutline, components.BtnMedium,
+				templ.Attributes{
+					"hx-trigger": "click",
+					"hx-swap":    "delete",
+					"hx-delete":  fmt.Sprintf("/partials/transaction/%s", t.ID),
+					"hx-confirm": "{\"title\":\"Delete transaction\",\"message\":\"Are you you want to delete this transaction?\"}",
+				},
+				components.IconLeft, components.TrashSvg(0, "", ""),
+			)
+			@components.ButtonWithIcon(
+				"Edit", "w-full", components.BtnOutline, components.BtnMedium, nil,
+				components.IconLeft, components.SquarePenSvg(0, "", ""),
+			)
+		</div>
 	}
 }

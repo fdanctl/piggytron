@@ -40,9 +40,19 @@ export function openNavSheet() {
 }
 
 export const closeLastDialog = () => {
-  const lc = dialogRoot.lastChild;
-  lc.classList.add("closing");
+  const lc = dialogRoot.lastElementChild;
 
+  if (lc.classList.contains("closing")) {
+    lc.close();
+    lc.classList.remove("closing");
+    // if not nav sheet remove from dom
+    if (!lc.matches("#nav-sheet")) {
+      lc.remove();
+    }
+    return;
+  }
+
+  lc.classList.add("closing");
   lc.addEventListener(
     "transitionend",
     () => {
@@ -55,8 +65,6 @@ export const closeLastDialog = () => {
     },
     { once: true },
   );
-
-  setTimeout(() => {}, 200);
 };
 
 dialogRoot?.lastChild.addEventListener("toggle", (e) => {
@@ -116,7 +124,7 @@ document.addEventListener("touchend", (e) => {
   currentDialog.style.transition = "transform 200ms ease";
 
   if (shouldClose) {
-    currentDialog.style.transform = "translateY(100%)";
+    currentDialog.classList.add("closing");
 
     currentDialog.addEventListener(
       "transitionend",

@@ -63,12 +63,22 @@ html {
   outline: none;
 }
 
+.dialog.float {
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-xs);
+  margin-left: var(--spacing-xs);
+  margin-right: var(--spacing-xs);
+  max-width: calc(100vw - var(--spacing-xs) - var(--spacing-xs));
+  width: 100%;
+}
+
 .dialog > .dialog__bar {
   width: 100%;
   height: var(--spacing-md);
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: var(--spacing-sm);
 }
 
 .dialog > .dialog__bar > div {
@@ -125,7 +135,18 @@ html {
     display: none;
   }
 
-  .dialog.sheet {
+  .dialog.floating-sheet.top-right {
+    width: 30%;
+    position: fixed;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    transform: none;
+    margin: 0 0 0 auto;
+    animation: slide-from-right 200ms ease;
+    transition: transform 200ms ease-in;
+  }
+
+  .dialog.right-sheet {
     height: 100dvh;
     width: 30%;
     max-width: 400px;
@@ -142,7 +163,9 @@ html {
     animation: slide-from-right 200ms ease;
     transition: transform 200ms ease-in;
   }
-  .dialog.sheet.closing {
+
+  .dialog.floating-sheet.top-right.closing,
+  .dialog.right-sheet.closing {
     transform: translateX(100%) !important;
     opacity: 1;
   }

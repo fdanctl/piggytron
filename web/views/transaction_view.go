@@ -42,7 +42,7 @@ func NewTransaction(
 	var dstAcc string
 	if t.ToAccount != nil {
 		accs = append(accs, *t.ToAccount)
-		srcAcc = *t.ToAccount
+		dstAcc = *t.ToAccount
 	}
 
 	return Transaction{

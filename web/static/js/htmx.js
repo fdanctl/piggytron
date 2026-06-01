@@ -1,5 +1,74 @@
 import { closeLastDialog } from "./navigation";
 
+function confirmModal({
+  title = "Confirm",
+  message = "Are you sure?",
+  acceptText = "Yes",
+  refuseText = "No",
+} = {}) {
+  return new Promise((resolve) => {
+    const modal = document.createElement("dialog");
+    modal.tabIndex = "-1";
+    modal.classList.add("dialog", "float");
+
+    modal.innerHTML = `
+		<div class="dialog__bar">
+			<div></div>
+		</div>
+		<button class="reset-btn dialog__x" data-action="ui.dialog.close-last">
+      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path></svg>
+		</button>
+    <div>
+      <h4 class="mb-md">${title}</h4>
+      <p class="text-subtitle">${message}</p>
+      <div class="flex gap-xs justify-end items-center mt-sm">
+        <button class="btn btn-outline refuse">${refuseText}</button>
+        <button class="btn btn-outline accept">${acceptText}</button>
+      </div>
+`;
+
+    document.getElementById("dialog-root").appendChild(modal);
+    modal.showModal();
+    modal.focus();
+
+    modal.querySelector(".accept").onclick = () => {
+      modal.remove();
+      resolve(true);
+    };
+
+    modal.querySelector(".refuse").onclick = () => {
+      modal.remove();
+      resolve(false);
+    };
+  });
+}
+
+document.addEventListener("htmx:confirm", (evt) => {
+  if (!evt.detail.question) return;
+
+  // This will prevent the request from being issued to later manually issue it
+  evt.preventDefault();
+
+  let config;
+
+  try {
+    config = JSON.parse(evt.detail.question);
+  } catch {
+    config = {
+      title: "Confirm",
+      message: evt.detail.question,
+      acceptText: "Yes",
+      refuseText: "No",
+    };
+  }
+
+  confirmModal(config).then(function (result) {
+    if (result) {
+      evt.detail.issueRequest(true); // true to skip the built-in window.confirm()
+    }
+  });
+});
+
 document.body.addEventListener("htmx:historyRestore", (ev) => {
   // nav active link
   let title = document.title;

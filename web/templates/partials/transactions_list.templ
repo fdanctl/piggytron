@@ -17,7 +17,7 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 		hx-include="#transactions-filters input"
 		hx-indicator="#infinite-indicator"
 		hx-on::before-request="if (event.target === this) this.innerHTML = '';"
-		hx-disinherit="hx-include"
+		hx-disinherit="hx-include hx-indicator"
 	>
 		if len(transactions) == 0 {
 			<p>no transactions</p>

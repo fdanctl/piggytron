@@ -111,13 +111,17 @@
   border-color: var(--color-error);
 }
 
+.destructive-hover:focus,
 .btn-destructive:focus {
   box-shadow: var(--shadow-focus-error) !important;
 }
 
+.destructive-hover:focus,
+.destructive-hover:hover,
 .btn-destructive:focus,
 .btn-destructive:hover:not(:disabled) {
-  background-color: var(--color-error-hover);
+  color: white;
+  background-color: var(--color-error-hover) !important;
   border-color: var(--color-error-hover);
 }
 
