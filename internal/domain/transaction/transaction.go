@@ -1,6 +1,8 @@
 package transaction
 
-import "time"
+import (
+	"time"
+)
 
 type ID string
 
@@ -94,12 +96,16 @@ func NewExpense(
 	amount int,
 	description string,
 	date time.Time,
+	sourceBalance int,
 ) (*Transaction, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
 	}
 	if amount <= 0 {
 		return nil, ErrInvalidAmount
+	}
+	if sourceBalance-amount < 0 {
+		return nil, ErrNegativeBalance
 	}
 
 	now := time.Now()
@@ -128,12 +134,33 @@ func NewTransfer(
 	amount int,
 	description string,
 	date time.Time,
+
+	sourceBalance int,
+	toAccountCategoryID *ID,
+	toAccountCategoryType string,
+	isToAccSavings bool,
 ) (*Transaction, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
 	}
 	if amount <= 0 {
 		return nil, ErrInvalidAmount
+	}
+	if sourceBalance-amount < 0 {
+		return nil, ErrNegativeBalance
+	}
+	if toAccountCategoryID != nil && // ie. is a goal
+		(expenseCategoryID == nil || *toAccountCategoryID != *expenseCategoryID) {
+		return nil, ErrGoalCategory
+	}
+	if isToAccSavings {
+		if expenseCategoryID != nil {
+			return nil, ErrNotSavingsCategory
+		}
+		if toAccountCategoryType != "savings" {
+			return nil, ErrNotSavingsCategory
+		}
+
 	}
 
 	now := time.Now()
@@ -223,4 +250,12 @@ func (t *Transaction) Date() time.Time {
 
 func (t *Transaction) CreatedAt() time.Time {
 	return t.createdAt
+}
+
+// CanBeDeleted receive the destination account balance or nil if it does not nonexistent
+func (t *Transaction) CanBeDeleted(toAccBalance *int) error {
+	if toAccBalance != nil && *toAccBalance-t.Amount() < 0 {
+		return ErrNegativeBalance
+	}
+	return nil
 }

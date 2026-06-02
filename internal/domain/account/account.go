@@ -1,6 +1,9 @@
 package account
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type ID string
 
@@ -174,4 +177,22 @@ func (b *Account) UpdatedAt() time.Time {
 	return b.updatedAt
 }
 
-// TODO change name and currency
+func (b *Account) CanReceiveIncome() error {
+	if b.aType == goal {
+		return errors.New("goals can't receive from outside")
+	}
+	if b.isSaving != nil && *b.isSaving {
+		return errors.New("savings accounts can't receive from outside")
+	}
+	return nil
+}
+
+func (b *Account) CanMakeExpense() error {
+	if b.aType == goal {
+		return errors.New("goals can't make expenses")
+	}
+	if b.isSaving != nil && *b.isSaving {
+		return errors.New("savings accounts can't make expenses")
+	}
+	return nil
+}

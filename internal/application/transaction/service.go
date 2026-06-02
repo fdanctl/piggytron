@@ -3,9 +3,9 @@ package transaction
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/google/uuid"
@@ -60,13 +60,6 @@ func (s *Service) CreateIncome(
 		return nil, err
 	}
 
-	t, err := transaction.NewIncome(
-		id, uid, toAccID, cid, amount, description, date,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -76,13 +69,47 @@ func (s *Service) CreateIncome(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
 
-	account, err := qtx.FindWithSum(ctx, dstID)
+	acc, err := qtx.FindWithSum(ctx, dstID)
 	if err != nil {
 		return nil, err
 	}
 
-	if account.IsSaving != nil && *account.IsSaving {
-		return nil, transaction.ErrInvalidAccount
+	var accCID *account.ID
+	if acc.Category.ID != "00000000-0000-0000-0000-000000000000" {
+		temp := account.ID(acc.ID)
+		accCID = &temp
+	}
+
+	a := account.Rehydrate(
+		account.ID(acc.ID),
+		account.ID(acc.UserID),
+		account.AccountType(acc.Type),
+		acc.Name,
+		acc.IsSaving,
+		acc.TargetAmount,
+		acc.StartDate,
+		acc.TargetDate,
+		accCID,
+		acc.Currency,
+		acc.CreatedAt,
+		acc.UpdatedAt,
+	)
+
+	if err := a.CanReceiveIncome(); err != nil {
+		return nil, err
+	}
+
+	t, err := transaction.NewIncome(
+		id,
+		uid,
+		toAccID,
+		cid,
+		amount,
+		description,
+		date,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rtx.Create(ctx, t)
@@ -137,13 +164,6 @@ func (s *Service) CreateExpense(
 		return nil, err
 	}
 
-	t, err := transaction.NewExpense(
-		id, uid, fromAccID, cid, amount, description, date,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -153,17 +173,48 @@ func (s *Service) CreateExpense(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
 
-	account, err := qtx.FindWithSum(ctx, srcID)
+	acc, err := qtx.FindWithSum(ctx, srcID)
 	if err != nil {
 		return nil, err
 	}
 
-	if account.Sum-amount < 0 {
-		return nil, transaction.ErrNegativeBalance
+	var accCID *account.ID
+	if acc.Category.ID != "00000000-0000-0000-0000-000000000000" {
+		temp := account.ID(acc.ID)
+		accCID = &temp
 	}
 
-	if account.IsSaving != nil && *account.IsSaving {
-		return nil, transaction.ErrInvalidAccount
+	a := account.Rehydrate(
+		account.ID(acc.ID),
+		account.ID(acc.UserID),
+		account.AccountType(acc.Type),
+		acc.Name,
+		acc.IsSaving,
+		acc.TargetAmount,
+		acc.StartDate,
+		acc.TargetDate,
+		accCID,
+		acc.Currency,
+		acc.CreatedAt,
+		acc.UpdatedAt,
+	)
+
+	if err := a.CanReceiveIncome(); err != nil {
+		return nil, err
+	}
+
+	t, err := transaction.NewExpense(
+		id,
+		uid,
+		fromAccID,
+		cid,
+		amount,
+		description,
+		date,
+		acc.Sum,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rtx.Create(ctx, t)
@@ -223,13 +274,6 @@ func (s *Service) CreateTransfer(
 		cid = &tempID
 	}
 
-	t, err := transaction.NewTransfer(
-		id, uid, fromAccID, toAccID, cid, amount, description, date,
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, err
@@ -238,7 +282,6 @@ func (s *Service) CreateTransfer(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
-	cqtx := postgres.NewCategoryQueryService(tx)
 
 	fromAccount, err := qtx.FindWithSum(ctx, srcID)
 	if err != nil {
@@ -249,30 +292,28 @@ func (s *Service) CreateTransfer(
 		return nil, err
 	}
 
-	if fromAccount.Sum-amount < 0 {
-		return nil, transaction.ErrNegativeBalance
+	var accCID *transaction.ID
+	if toAccount.Category.ID != "00000000-0000-0000-0000-000000000000" {
+		temp := transaction.ID(toAccount.Category.ID)
+		accCID = &temp
 	}
 
-	if toAccount.Type == "goal" && toAccount.Category.ID != catID {
-		return nil, fmt.Errorf(
-			"%w: %s goal must be %s category",
-			transaction.ErrGoalCategory,
-			toAccount.Name,
-			toAccount.Category.Name,
-		)
-	}
-
-	if toAccount.IsSaving != nil && *toAccount.IsSaving {
-		if catID == "" {
-			return nil, transaction.ErrNotSavingsCategory
-		}
-		cat, err := cqtx.FindByID(ctx, catID)
-		if err != nil {
-			return nil, err
-		}
-		if cat.Type != "savings" {
-			return nil, transaction.ErrNotSavingsCategory
-		}
+	t, err := transaction.NewTransfer(
+		id,
+		uid,
+		fromAccID,
+		toAccID,
+		cid,
+		amount,
+		description,
+		date,
+		fromAccount.Sum,
+		accCID,
+		toAccount.Type,
+		toAccount.IsSaving != nil && *toAccount.IsSaving,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	err = rtx.Create(ctx, t)
@@ -314,18 +355,20 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
+	var toAccBalance *int
 	if t.ToAccountID() != nil {
 		toacc, err := qtx.FindWithSum(ctx, string(*t.ToAccountID()))
 		if err != nil {
 			return err
 		}
-		if toacc.Sum-t.Amount() < 0 {
-			return transaction.ErrNegativeBalance
-		}
+		toAccBalance = &toacc.Sum
 	}
 
-	err = rtx.Delete(ctx, t.ID())
-	if err != nil {
+	if err = t.CanBeDeleted(toAccBalance); err != nil {
+		return err
+	}
+
+	if err = rtx.Delete(ctx, t.ID()); err != nil {
 		return err
 	}
 
