@@ -162,7 +162,7 @@ func (s *Service) CreateExpense(
 		return nil, transaction.ErrNegativeBalance
 	}
 
-	if account.IsSaving != nil && !*account.IsSaving {
+	if account.IsSaving != nil && *account.IsSaving {
 		return nil, transaction.ErrInvalidAccount
 	}
 

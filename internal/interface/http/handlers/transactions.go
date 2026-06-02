@@ -128,7 +128,7 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
-	_, err := middleware.SessionInfoFromCtx(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		logger.Error("unexpected error", "error", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -136,240 +136,6 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ttype := r.FormValue("type")
-
-	switch ttype {
-	case "income":
-		h.HandleIncome(w, r)
-
-	case "expense":
-		h.HandleExpense(w, r)
-
-	case "transfer":
-		h.HandleTransfer(w, r)
-
-	default:
-		http.Error(w, "invalid transfer type", http.StatusBadRequest)
-		return
-	}
-}
-
-func (h *TransactionHandler) HandleIncome(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
-	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	amount := r.FormValue("amount")
-	currency := r.FormValue("currency")
-	description := r.FormValue("description")
-	date := r.FormValue("date")
-	category := r.FormValue("category")
-	destination := r.FormValue("destination")
-
-	cats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-	var catOpts []components.SelectOption
-	for _, v := range cats {
-		catOpts = append(
-			catOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-	}
-
-	acc, err := h.accService.ReadAllBanksByUser(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all accounts", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-	var accOpts []components.SelectOption
-	for _, v := range acc {
-		if v.IsSaving() != nil && !*v.IsSaving() {
-			accOpts = append(
-				accOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
-	}
-
-	view := views.IncomeForm{
-		Initial:        false,
-		Amount:         amount,
-		Description:    description,
-		Currency:       currency,
-		Date:           date,
-		Category:       category,
-		DestinationAcc: destination,
-	}
-	msgs := view.Validate()
-	if len(msgs) > 0 {
-		logger.Info("invalid form", "error", msgs)
-
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.IncomeForm(view, catOpts, accOpts, "").Render(r.Context(), w)
-		return
-	}
-
-	cents, err := convertAmountStrToInt(amount)
-	if err != nil {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
-		return
-	}
-
-	d, err := time.Parse("02/01/2006", date)
-	if err != nil {
-		http.Error(w, "Invalid date", http.StatusBadRequest)
-		return
-	}
-
-	t, err := h.service.CreateIncome(
-		r.Context(),
-		sessionInfo.UserID,
-		cents,
-		currency,
-		description,
-		d,
-		category,
-		destination,
-	)
-	if err != nil {
-		logger.Error("error creating transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusBadRequest)
-		return
-	}
-	fmt.Println(t.ID())
-
-	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
-	templ.Join(
-		partials.IncomeForm(view, catOpts, accOpts, ""),
-		components.SendToast(components.Success, "Income transaction added"),
-	).Render(r.Context(), w)
-}
-
-func (h *TransactionHandler) HandleExpense(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
-	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	amount := r.FormValue("amount")
-	currency := r.FormValue("currency")
-	description := r.FormValue("description")
-	date := r.FormValue("date")
-	category := r.FormValue("category")
-	source := r.FormValue("source")
-
-	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-	var catOpts []components.SelectOption
-	for _, v := range cats {
-		catOpts = append(
-			catOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-	}
-
-	acc, err := h.accService.ReadAllBanksByUser(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all accounts", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-	var accOpts []components.SelectOption
-	for _, v := range acc {
-		if v.IsSaving() != nil && !*v.IsSaving() {
-			accOpts = append(
-				accOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
-	}
-
-	view := views.ExpenseForm{
-		Initial:     false,
-		Amount:      amount,
-		Description: description,
-		Currency:    currency,
-		Date:        date,
-		Category:    category,
-		SourceAcc:   source,
-	}
-	msgs := view.Validate()
-	if len(msgs) > 0 {
-		logger.Info("invalid form", "error", msgs)
-
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.ExpenseForm(view, catOpts, accOpts, "").Render(r.Context(), w)
-		return
-	}
-
-	cents, err := convertAmountStrToInt(amount)
-	if err != nil {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
-		return
-	}
-
-	d, err := time.Parse("02/01/2006", date)
-	if err != nil {
-		http.Error(w, "Invalid date", http.StatusBadRequest)
-		return
-	}
-
-	t, err := h.service.CreateExpense(
-		r.Context(),
-		sessionInfo.UserID,
-		cents,
-		currency,
-		description,
-		d,
-		category,
-		source,
-	)
-	if err != nil {
-		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				partials.ExpenseForm(view, catOpts, accOpts, ""),
-				components.SendToast(components.Error, "Negative balance"),
-			).Render(r.Context(), w)
-			return
-		}
-		logger.Error("error creating transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-	logger.Debug(string(t.ID()))
-
-	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
-	templ.Join(
-		partials.ExpenseForm(view, catOpts, accOpts, ""),
-		components.SendToast(components.Success, "Expense transaction added"),
-	).Render(r.Context(), w)
-}
-
-func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
-	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
 	amount := r.FormValue("amount")
 	currency := r.FormValue("currency")
 	description := r.FormValue("description")
@@ -378,16 +144,31 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
 
-	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	ecats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
-	var catOpts []components.SelectOption
-	for _, v := range cats {
-		catOpts = append(
-			catOpts,
+
+	var ecatOpts []components.SelectOption
+	for _, v := range ecats {
+		ecatOpts = append(
+			ecatOpts,
+			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+		)
+	}
+
+	icats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		logger.Error("error reading all expense categories", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+	var icatOpts []components.SelectOption
+	for _, v := range icats {
+		icatOpts = append(
+			icatOpts,
 			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
 		)
 	}
@@ -398,34 +179,84 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
+
+	var accOptsNoGoals []components.SelectOption
 	var accOpts []components.SelectOption
 	for _, v := range acc {
 		accOpts = append(
 			accOpts,
 			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
 		)
+		if v.IsSaving() != nil && !*v.IsSaving() {
+			accOptsNoGoals = append(
+				accOptsNoGoals,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
 	}
 
-	view := views.TransferForm{
-		Initial:        false,
-		Amount:         amount,
-		Description:    description,
-		Currency:       currency,
-		Date:           date,
-		Category:       category,
-		SourceAcc:      source,
-		DestinationAcc: destination,
-	}
+	var form templ.Component
+	switch ttype {
+	case "income":
+		view := views.IncomeForm{
+			Initial:        false,
+			Amount:         amount,
+			Description:    description,
+			Currency:       currency,
+			Date:           date,
+			Category:       category,
+			DestinationAcc: destination,
+		}
+		form = partials.IncomeForm(view, icatOpts, accOptsNoGoals, "")
+		msgs := view.Validate()
+		if len(msgs) > 0 {
+			logger.Info("invalid form", "error", msgs)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			form.Render(r.Context(), w)
+			return
+		}
 
-	form := partials.TransferForm(view, catOpts, accOpts, "")
+	case "expense":
+		view := views.ExpenseForm{
+			Initial:     false,
+			Amount:      amount,
+			Description: description,
+			Currency:    currency,
+			Date:        date,
+			Category:    category,
+			SourceAcc:   source,
+		}
+		form = partials.ExpenseForm(view, ecatOpts, accOptsNoGoals, "")
+		msgs := view.Validate()
+		if len(msgs) > 0 {
+			logger.Info("invalid form", "error", msgs)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			form.Render(r.Context(), w)
+			return
+		}
 
-	msgs := view.Validate()
-	if len(msgs) > 0 {
-		logger.Info("invalid form", "error", msgs)
+	case "transfer":
+		view := views.TransferForm{
+			Initial:        false,
+			Amount:         amount,
+			Description:    description,
+			Currency:       currency,
+			Date:           date,
+			Category:       category,
+			SourceAcc:      source,
+			DestinationAcc: destination,
+		}
+		form = partials.TransferForm(view, ecatOpts, accOpts, "")
+		msgs := view.Validate()
+		if len(msgs) > 0 {
+			logger.Info("invalid form", "error", msgs)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			form.Render(r.Context(), w)
+			return
+		}
 
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		form.Render(r.Context(), w)
-		return
+	default:
+		logger.Debug("DEFAULT")
 	}
 
 	cents, err := convertAmountStrToInt(amount)
@@ -440,59 +271,104 @@ func (h *TransactionHandler) HandleTransfer(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	t, err := h.service.CreateTransfer(
-		r.Context(),
-		sessionInfo.UserID,
-		cents,
-		currency,
-		description,
-		d,
-		category,
-		source,
-		destination,
-	)
-	if err != nil {
-		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				form,
-				components.SendToast(components.Error, err.Error()),
-			).Render(r.Context(), w)
+	switch ttype {
+	case "income":
+		_, err := h.service.CreateIncome(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
+			destination,
+		)
+		if err != nil {
+			logger.Error("error creating transaction", "error", err)
+			http.Error(w, "Internal error", http.StatusBadRequest)
 			return
 		}
 
-		if errors.Is(err, transactionDomain.ErrGoalCategory) {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				form,
-				components.SendToast(components.Error, err.Error()),
-			).Render(r.Context(), w)
+	case "expense":
+		_, err := h.service.CreateExpense(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
+			source,
+		)
+		if err != nil {
+			if errors.Is(err, transactionDomain.ErrNegativeBalance) {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				templ.Join(
+					form,
+					components.SendToast(components.Error, "Negative balance"),
+				).Render(r.Context(), w)
+				return
+			}
+			logger.Error("error creating transaction", "error", err)
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
 
-		if errors.Is(err, transactionDomain.ErrNotSavingsCategory) {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				form,
-				components.SendToast(
-					components.Error,
-					"Category must be savings type to send money to savings account",
-				),
-			).Render(r.Context(), w)
+	case "transfer":
+		_, err := h.service.CreateTransfer(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
+			source,
+			destination,
+		)
+		if err != nil {
+			if errors.Is(err, transactionDomain.ErrNegativeBalance) {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				templ.Join(
+					form,
+					components.SendToast(components.Error, err.Error()),
+				).Render(r.Context(), w)
+				return
+			}
+
+			if errors.Is(err, transactionDomain.ErrGoalCategory) {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				templ.Join(
+					form,
+					components.SendToast(components.Error, err.Error()),
+				).Render(r.Context(), w)
+				return
+			}
+
+			if errors.Is(err, transactionDomain.ErrNotSavingsCategory) {
+				w.WriteHeader(http.StatusUnprocessableEntity)
+				templ.Join(
+					form,
+					components.SendToast(
+						components.Error,
+						"Category must be savings type to send money to savings account",
+					),
+				).Render(r.Context(), w)
+				return
+			}
+
+			logger.Error("error creating transaction", "error", err)
+			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
-
-		logger.Error("error creating transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
 	}
-
-	logger.Debug(string(t.ID()))
-	form = partials.TransferForm(view, catOpts, accOpts, "")
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
 		form,
-		components.SendToast(components.Success, "Transfer transaction added"),
+		components.SendToast(
+			components.Success,
+			fmt.Sprintf("%s transaction added", views.CapitalizeFirst(ttype)),
+		),
 	).Render(r.Context(), w)
 }

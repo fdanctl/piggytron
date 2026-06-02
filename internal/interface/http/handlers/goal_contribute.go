@@ -239,7 +239,6 @@ func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger.Debug(string(t.ID()))
-	form = partials.TransferForm(view, catOpts, accOpts, "")
 
 	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
 	templ.Join(
