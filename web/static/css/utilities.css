@@ -3,6 +3,10 @@
   display: none !important;
 }
 
+.invisible {
+  visibility: hidden;
+}
+
 .flex {
   display: flex;
 }

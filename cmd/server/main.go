@@ -223,6 +223,12 @@ func main() {
 	)
 	partialsMux.Handle("/partials/charts/account-hist/{id}", accountChartHandler)
 
+	bankChartHandler := handlers.NewBankChartHandler(
+		chartsService,
+		accountQueryService,
+	)
+	partialsMux.Handle("/partials/charts/bank-hist/{id}", bankChartHandler)
+
 	banksChartsHandler := handlers.NewBanksChartsHandler(
 		chartsService,
 		transactionQueryService,

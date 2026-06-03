@@ -1,32 +1,31 @@
 package handlers
 
 import (
-	"math"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/charts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 )
 
-type AccountChartHandler struct {
+type BankChartHandler struct {
 	chartsService *charts.Service
 	accountQuery  query.AccountQueryService
 }
 
-func NewAccountChartHandler(
+func NewBankChartHandler(
 	cs *charts.Service,
 	aq query.AccountQueryService,
-) *AccountChartHandler {
-	return &AccountChartHandler{
+) *BankChartHandler {
+	return &BankChartHandler{
 		chartsService: cs,
 		accountQuery:  aq,
 	}
 }
 
-func (h *AccountChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *BankChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		id := r.PathValue("id")
@@ -41,7 +40,7 @@ func (h *AccountChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
 
@@ -53,27 +52,30 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := r.URL.Query()
-	d := q.Get("start")
-	m := q.Get("max")
-	logger.Debug(m)
+	month := q.Get("month")
 
-	qmax, err := strconv.Atoi(m)
-	if err != nil {
-		qmax = 0
-	}
-
-	startDate, err := time.Parse(time.DateOnly, d)
-	if err != nil {
+	var startDate time.Time
+	if month == "" {
 		now := time.Now()
 		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+	} else {
+		y, m, err := parseMonth(month)
+		if err != nil {
+			logger.Error("unexpected error", "error", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		logger.Debug("parseMonth", "year", y, "month", m)
+		startDate = time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
 	}
 
 	histMap, _, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)
 	line := h.chartsService.LineTimeAccount(
 		histMap,
 		0,
-		math.Max(float64(qmax)/100, float64(max)),
+		float64(max),
 		startDate,
 	)
-	h.chartsService.ConvertChartToTemplComponent(line).Render(r.Context(), w)
+	chartComponent := h.chartsService.ConvertChartToTemplComponent(line)
+	partials.BankChartCard(chartComponent).Render(r.Context(), w)
 }

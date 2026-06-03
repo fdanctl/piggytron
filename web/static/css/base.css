@@ -115,6 +115,7 @@ input[type="number"] {
   --color-border: #cce6e6; /* Default borders */
   --color-border-secondary: var(--grey-100); /* Default borders */
 
+  --color-primary-rgb: 75, 196, 196;
   --color-primary: var(--cian-200);
   --color-primary-hover: #55dede;
   --color-primary-muted: #94c6c6; /* Light background version */
@@ -228,6 +229,7 @@ input[type="number"] {
   --color-border: var(--grey-400); /* Default borders */
   --color-border-secondary: var(--grey-500); /* Default borders */
 
+  --color-primary-rgb: 94, 239, 239;
   --color-primary: var(--cian-100);
   --color-primary-hover: var(--cian-200);
   --color-primary-muted: #94c6c6; /* Light background version */

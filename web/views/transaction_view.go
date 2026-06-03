@@ -69,12 +69,12 @@ func NewAccountTransaction(
 		f *= -1
 	}
 
-	// var cat string
-	// if t.ExpenseCategory != nil {
-	// 	cat = *t.ExpenseCategory
-	// } else {
-	// 	cat = *t.IncomeCategory
-	// }
+	cat := "Transfer"
+	if t.ExpenseCategory != nil {
+		cat = *t.ExpenseCategory
+	} else if t.IncomeCategory != nil {
+		cat = *t.IncomeCategory
+	}
 
 	accs := make([]string, 0, 2)
 	if t.FromAccount != nil {
@@ -88,9 +88,9 @@ func NewAccountTransaction(
 		ID:          t.ID,
 		Description: t.Description,
 		Type:        tpe,
-		// Category:    cat,
-		Accounts: accs,
-		Amount:   FormatMoney(f, currency.EUR, language.AmericanEnglish),
-		Date:     FormatDate(t.Date),
+		Category:    cat,
+		Accounts:    accs,
+		Amount:      FormatMoney(f, currency.EUR, language.AmericanEnglish),
+		Date:        FormatDate(t.Date),
 	}
 }

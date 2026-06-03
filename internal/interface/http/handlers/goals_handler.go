@@ -147,7 +147,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	for _, t := range transactions.Data {
 		transactionsViews = append(
 			transactionsViews,
-			views.NewAccountTransaction(t, goal.AccountWithCategory.Name),
+			views.NewAccountTransaction(t, goal.Name),
 		)
 	}
 

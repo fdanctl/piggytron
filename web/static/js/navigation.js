@@ -126,10 +126,18 @@ document.addEventListener("touchend", (e) => {
   if (shouldClose) {
     currentDialog.classList.add("closing");
 
+    let toClose = currentDialog;
+
     currentDialog.addEventListener(
       "transitionend",
       () => {
-        closeLastDialog();
+        toClose.style.transform = "translateY(0)";
+        toClose.close();
+        toClose.classList.remove("closing");
+        // if not nav sheet remove from dom
+        if (!toClose.matches("#nav-sheet")) {
+          toClose.remove();
+        }
       },
       { once: true },
     );

@@ -1,14 +1,27 @@
 package partials
 
-import "github.com/fdanctl/piggytron/web/templates/components"
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+)
 
-templ BankPage() {
+templ BankPage(b query.AccountWithSum, tt []views.Transaction, hasMore bool, ttCount int) {
 	<div>
 		<p class="text-muted mb-sm uppercase text-sm">Current balance</p>
 		<div class="bank-balance">
 			<h2>
-				11 000 000
-				<span class="text-muted text-base uppercase">EUR</span>
+				{{
+					curr, err := currency.ParseISO(b.Currency)
+					if err != nil {
+						curr = currency.EUR
+					}
+				}}
+				{ views.FormatMoney(float64(b.Sum)/100, curr, language.AmericanEnglish) }
+				<span class="text-muted text-base uppercase">{ b.Currency }</span>
 			</h2>
 			<div class="flex gap-xs">
 				@components.Button(
@@ -28,25 +41,20 @@ templ BankPage() {
 			</div>
 		</div>
 	</div>
-	<div class="card relative mt-xl">
-		<div style="position: absolute; top: 0; right: 0;">hello</div>
-		<div class="chart-container" style="margin-top: calc(-1 * var(--spacing-lg));" hx-get="/partials/charts/account-hist/d7158788-5015-43e1-a617-d9e5f2ad1e72?start=2026-05-01&amp;max=50000" hx-trigger="load"></div>
-		<div class="bank-chart__legend">
-			<div class="flex gap-md">
-				<div class="bank-chart__legend-item">
-					<span class="bank-chart__legend-circle in"></span>
-					<span>In</span>
-					<span class="text-positive">+3 500€</span>
-				</div>
-				<div class="bank-chart__legend-item">
-					<span class="bank-chart__legend-circle out"></span>
-					<span>Out</span>
-					<span class="text-negative">–892€</span>
-				</div>
-			</div>
-			<div>
-				24 transactions
-			</div>
+	<div
+		id="bank-chart-card"
+		class="card relative mt-xl"
+		hx-get={ fmt.Sprintf("/partials/charts/bank-hist/%s", b.ID) }
+		hx-trigger="load"
+	>
+		<div
+			class="chart-container"
+			style="margin-top: calc(-1 * var(--spacing-md));"
+		>
+			@components.Loader("htmx-indicator", nil)
+		</div>
+		<div class="bank-chart__legend invisible">
+			24 transactions
 		</div>
 	</div>
 	<div class="mt-lg" id="bank-transactions">
@@ -54,15 +62,55 @@ templ BankPage() {
 			<h4 class="card__title">Transactions</h4>
 			<div class="flex items-start gap-xs">
 				<span class="text-muted text-xs">
-					24 movements
+					{ ttCount } movements
 				</span>
-				// href={ fmt.Sprintf("/transactions/all?accounts=%s", g.ID) }
 				<a
 					class="text-xs"
+					href={ fmt.Sprintf("/transactions/all?accounts=%s", b.ID) }
 				>
 					view all
 				</a>
 			</div>
 		</div>
+		@TransactionsList(tt, "page=2&accounts=%s", hasMore)
+	</div>
+}
+
+templ BankChartCard(chart templ.Component) {
+	@MonthPill("")
+	<div
+		class="chart-container"
+		style="margin-top: calc(-1 * var(--spacing-md));"
+	>
+		@chart
+	</div>
+	<div class="bank-chart__legend">
+		<div class="flex gap-md">
+			<div class="bank-chart__legend-item">
+				<span class="bank-chart__legend-circle in"></span>
+				<span>In</span>
+				<span class="text-positive">+3 500€</span>
+			</div>
+			<div class="bank-chart__legend-item">
+				<span class="bank-chart__legend-circle out"></span>
+				<span>Out</span>
+				<span class="text-negative">–892€</span>
+			</div>
+		</div>
+		<div>
+			24 transactions
+		</div>
+	</div>
+}
+
+templ MonthPill(class string) {
+	<div class={ "month-pill", templ.KV(class != "", class) }>
+		<button class="reset-btn">
+			@components.ChevronLeftSvg(0, "", "")
+		</button>
+		@components.Select("Jun 2026", "", nil, false, nil)
+		<button class="reset-btn">
+			@components.ChevronRightSvg(0, "", "")
+		</button>
 	</div>
 }

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/a-h/templ"
@@ -79,4 +80,23 @@ func convertAmountStrToInt(str string) (int, error) {
 	}
 
 	return tAmount, nil
+}
+
+// parseMonth receive a string of type 042026,
+// and return the correspondent year and month
+func parseMonth(str string) (int, time.Month, error) {
+	if len(str) != 6 {
+		return 0, time.January, errors.New("wrong month")
+	}
+
+	m, err := strconv.Atoi(str[:2])
+	if err != nil {
+		return 0, time.January, errors.New("wrong month")
+	}
+
+	y, err := strconv.Atoi(str[2:])
+	if err != nil {
+		return 0, time.January, errors.New("wrong month")
+	}
+	return y, time.Month(m), nil
 }

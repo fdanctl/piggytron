@@ -102,7 +102,7 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	aid := r.PathValue("id")
-	bank, err := h.service.ReadOneByID(r.Context(), aid)
+	bank, err := h.accountQuery.FindWithSum(r.Context(), aid)
 	if err != nil {
 		logger.Error("error read one bank", "error", err, "account_id", aid)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
@@ -114,6 +114,33 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		logger.Error("error query goals", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
+	}
+
+	filters := query.NewTransactionFilters(nil, []string{aid}, nil, "", "", "", "")
+
+	transactions, err := h.transactionQuery.FindFilteredWithCount(
+		r.Context(),
+		sessionInfo.UserID,
+		filters,
+		LIMIT+1,
+		LIMIT*1-LIMIT,
+	)
+	if err != nil {
+		logger.Error("error find filtered", "error", err, "filters", filters)
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+	var hasMore bool
+	if len(transactions.Data) == LIMIT+1 {
+		hasMore = true
+		transactions.Data = transactions.Data[0 : len(transactions.Data)-1]
+	}
+	var transactionsViews []views.Transaction
+	for _, t := range transactions.Data {
+		transactionsViews = append(
+			transactionsViews,
+			views.NewAccountTransaction(t, bank.Name),
+		)
 	}
 
 	var optionsLinks []components.BreadcrumbsLink
@@ -130,15 +157,15 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 			Name: "Banks",
 		},
 		{
-			Href: "/banks/" + string(bank.ID()),
-			Name: bank.Name(),
+			Href: "/banks/" + string(bank.ID),
+			Name: bank.Name,
 		},
 	}, optionsLinks)
 
 	content := templ.Join(
 		breadcrumbs,
-		partials.BankPage(),
+		partials.BankPage(*bank, transactionsViews, hasMore, transactions.Total),
 	)
 
-	renderWithMainLayout(w, r, bank.Name(), content)
+	renderWithMainLayout(w, r, bank.Name, content)
 }
