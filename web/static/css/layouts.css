@@ -441,7 +441,7 @@ html {
   grid-area: recent-transactions;
 }
 
-@media (min-width: 675px) {
+@container main (min-width: 620px) {
   #banks-container {
     grid-template-columns: repeat(6, 1fr);
 
@@ -452,7 +452,7 @@ html {
   }
 }
 
-@media (min-width: 800px) {
+@container main (min-width: 800px) {
   #banks-container {
     grid-template-areas:
       "summary summary summary summary summary summary"
@@ -465,11 +465,6 @@ html {
   min-width: 0;
 }
 
-@container main (min-width: 675px) {
-  #summary {
-  }
-}
-
 #recent-transactions .transaction {
   border: none;
   padding-left: 0;
@@ -479,6 +474,9 @@ html {
 }
 #recent-transactions .transaction:last-child {
   border-bottom: none;
+}
+#recent-transactions .transaction:hover {
+  background-color: transparent;
 }
 
 .account-card {

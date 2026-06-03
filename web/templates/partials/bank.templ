@@ -1,0 +1,68 @@
+package partials
+
+import "github.com/fdanctl/piggytron/web/templates/components"
+
+templ BankPage() {
+	<div>
+		<p class="text-muted mb-sm uppercase text-sm">Current balance</p>
+		<div class="bank-balance">
+			<h2>
+				11 000 000
+				<span class="text-muted text-base uppercase">EUR</span>
+			</h2>
+			<div class="flex gap-xs">
+				@components.Button(
+					"Add money",
+					"",
+					components.BtnOutline,
+					components.BtnMedium,
+					nil,
+				)
+				@components.Button(
+					"Send money",
+					"",
+					components.BtnOutline,
+					components.BtnMedium,
+					nil,
+				)
+			</div>
+		</div>
+	</div>
+	<div class="card relative mt-xl">
+		<div style="position: absolute; top: 0; right: 0;">hello</div>
+		<div class="chart-container" style="margin-top: calc(-1 * var(--spacing-lg));" hx-get="/partials/charts/account-hist/d7158788-5015-43e1-a617-d9e5f2ad1e72?start=2026-05-01&amp;max=50000" hx-trigger="load"></div>
+		<div class="bank-chart__legend">
+			<div class="flex gap-md">
+				<div class="bank-chart__legend-item">
+					<span class="bank-chart__legend-circle in"></span>
+					<span>In</span>
+					<span class="text-positive">+3 500€</span>
+				</div>
+				<div class="bank-chart__legend-item">
+					<span class="bank-chart__legend-circle out"></span>
+					<span>Out</span>
+					<span class="text-negative">–892€</span>
+				</div>
+			</div>
+			<div>
+				24 transactions
+			</div>
+		</div>
+	</div>
+	<div class="mt-lg" id="bank-transactions">
+		<div class="flex justify-between">
+			<h4 class="card__title">Transactions</h4>
+			<div class="flex items-start gap-xs">
+				<span class="text-muted text-xs">
+					24 movements
+				</span>
+				// href={ fmt.Sprintf("/transactions/all?accounts=%s", g.ID) }
+				<a
+					class="text-xs"
+				>
+					view all
+				</a>
+			</div>
+		</div>
+	</div>
+}

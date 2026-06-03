@@ -92,7 +92,7 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 	>
 		<input type="hidden" name="ctype" value={ eType }/>
 		<div class="budget-table__head">
-			<span>{ views.CapitalizeFirst(string(eType)) } <span id={ fmt.Sprintf("%s-pct", eType) } class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
+			<span class="capitalize">{ string(eType) } <span id={ fmt.Sprintf("%s-pct", eType) } class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
 			<span>Budget</span>
 			<span>Left</span>
 		</div>

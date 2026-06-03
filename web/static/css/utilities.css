@@ -120,6 +120,14 @@
   font-size: 0.75rem;
 }
 
+.uppercase {
+  text-transform: uppercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
 .truncate {
   overflow: hidden;
   text-overflow: ellipsis;

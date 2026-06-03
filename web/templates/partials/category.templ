@@ -6,7 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMore bool) {
+templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMore bool, ttCount int) {
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
@@ -16,7 +16,20 @@ templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMor
 		@components.Loader("htmx-indicator", nil)
 	</div>
 	<section id="transactions">
-		<h4 class="mb-md">Transactions</h4>
+		<div class="flex justify-between">
+			<h4 class="card__title">Transactions</h4>
+			<div class="flex items-start gap-xs">
+				<span class="text-muted text-xs">
+					{ ttCount } movements
+				</span>
+				<a
+					class="text-xs"
+					href={ fmt.Sprintf("/transactions/all?categories=%s", cat.GetID()) }
+				>
+					view all
+				</a>
+			</div>
+		</div>
 		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
 	</section>
 }

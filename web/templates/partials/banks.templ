@@ -52,7 +52,6 @@ templ Banks(view views.BankPage) {
 				</div>
 			</div>
 		</section>
-		// TODO make only one get for all charts
 		<section id="asset-breakdown">
 			<div class="card">
 				<h6 class="card__title">Asset breakdown</h6>
@@ -94,7 +93,13 @@ templ Banks(view views.BankPage) {
 						</button>
 					</h6>
 				</div>
-				<ul id="accounts-list" class="space-y-xs">
+				<ul
+					id="accounts-list"
+					class="space-y-xs"
+					hx-target="#content"
+					hx-boost="true"
+					hx-swap="innerHTML transition:true"
+				>
 					for _, v := range view.Banks {
 						@AccountItem(v.ID, v.Name)
 					}

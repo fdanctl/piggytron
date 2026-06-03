@@ -160,7 +160,7 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 
 	filters := query.NewTransactionFilters(nil, nil, []string{id}, "", "", "", "")
 
-	transactions, err := h.tQueryService.FindFiltered(
+	transactions, err := h.tQueryService.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
 		filters,
@@ -173,13 +173,13 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var hasMore bool
-	if len(transactions) == LIMIT+1 {
+	if len(transactions.Data) == LIMIT+1 {
 		hasMore = true
-		transactions = transactions[0 : len(transactions)-1]
+		transactions.Data = transactions.Data[0 : len(transactions.Data)-1]
 	}
 
 	var transactionsView []views.Transaction
-	for _, t := range transactions {
+	for _, t := range transactions.Data {
 		transactionsView = append(
 			transactionsView,
 			views.NewTransaction(t),
@@ -201,7 +201,7 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
-		c := partials.CategoryStats(category, transactionsView, hasMore)
+		c := partials.CategoryStats(category, transactionsView, hasMore, transactions.Total)
 		if err := c.Render(ctx, w); err != nil {
 			return err
 		}

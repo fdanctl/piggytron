@@ -64,16 +64,16 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 		components.IconLeft,
 		components.PlusSvg(0, "", ""),
 	)
-	<div class="goal-grid mt-xl">
-		<div
-			class="chart-container"
-			style="margin-top: calc(-1 * var(--spacing-lg));"
-			hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount) }
-			hx-trigger="load"
-		>
-			@components.Loader("htmx-indicator", nil)
-		</div>
-		<section class="card" id="goal-details">
+	<div
+		class="chart-container mt-xl"
+		style="margin-top: calc(-1 * var(--spacing-md));"
+		hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount) }
+		hx-trigger="load"
+	>
+		@components.Loader("htmx-indicator", nil)
+	</div>
+	<div class="goal-grid">
+		<div class="card" id="goal-details">
 			<div class="flex justify-between w-full">
 				<h4 class="card__title mb-md">Details</h4>
 				<button
@@ -113,8 +113,8 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 					</li>
 				}
 			</ul>
-		</section>
-		<section id="history">
+		</div>
+		<div id="history">
 			<div class="flex justify-between">
 				<h4 class="card__title">History</h4>
 				<div class="flex items-start gap-xs">
@@ -127,7 +127,7 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 				</div>
 			</div>
 			@contributionsList(g.Name, tt, fmt.Sprintf("page=2&accounts=%sname=%s", g.ID, g.Name), hasMore)
-		</section>
+		</div>
 	</div>
 }
 

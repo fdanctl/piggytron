@@ -124,25 +124,21 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{
-				Href: "/banks",
-				Name: "Banks",
-			},
-			{
-				Href: "/banks/" + string(bank.ID()),
-				Name: bank.Name(),
-			},
-		}, optionsLinks)
-		if err := breadcrumbs.Render(ctx, w); err != nil {
-			return err
-		}
+	breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
+		{
+			Href: "/banks",
+			Name: "Banks",
+		},
+		{
+			Href: "/banks/" + string(bank.ID()),
+			Name: bank.Name(),
+		},
+	}, optionsLinks)
 
-		fmt.Fprintf(w, "<p>%s</p>", bank.Name())
-		fmt.Fprintf(w, "<p>%s</p>", bank.Currency())
-		return nil
-	})
+	content := templ.Join(
+		breadcrumbs,
+		partials.BankPage(),
+	)
 
 	renderWithMainLayout(w, r, bank.Name(), content)
 }

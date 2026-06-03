@@ -9,6 +9,7 @@
   gap: var(--spacing-xs);
 }
 
+.bank-grid,
 .goal-grid {
   display: grid;
   gap: var(--spacing-md);
@@ -41,7 +42,7 @@
   width: 100%;
 }
 
-@media (min-width: 600px) {
+@container main (min-width: 600px) {
   .goal-amount-target {
     display: flex;
   }
@@ -52,8 +53,15 @@
   .goal-actions {
     display: flex;
   }
+}
 
+@container main (min-width: 675px) {
+  .bank-grid,
   .goal-grid {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+
+  .goal-grid > #goal-details {
+    order: 2;
   }
 }
