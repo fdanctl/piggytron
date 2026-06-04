@@ -7,19 +7,6 @@ import (
 	"slices"
 )
 
-templ formWrapper(title, postURL string) {
-	<form
-		class="space-y-sm"
-		hx-on:submit="event.preventDefault()"
-		hx-post="/partials/transaction"
-		hx-swap="outerHTML"
-		novalidate
-	>
-		<h4 class="mb-md">New Account</h4>
-		{ children... }
-	</form>
-}
-
 templ TransactionForm(
 	vi views.IncomeForm,
 	ve views.ExpenseForm,
@@ -29,7 +16,6 @@ templ TransactionForm(
 	accounts []components.SelectOption,
 	accountsNoGoals []components.SelectOption,
 ) {
-	<h4 class="mb-md">New Transaction</h4>
 	<div class="tabs-list">
 		<button
 			class="reset-btn tab-trigger active"
@@ -449,7 +435,6 @@ templ GoalContributionForm(v views.TransferForm, categories, accounts []componen
 		hx-swap="outerHTML"
 		novalidate
 	>
-		<h4 class="mb-md">New Contribution</h4>
 		<input type="hidden" name="type" value="transfer"/>
 		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
 			@components.InputGroup(

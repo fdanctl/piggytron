@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/a-h/templ"
@@ -73,9 +74,31 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	form := partials.GoalForm(*views.NewGoalForm(), catOpts)
+	view := views.NewGoalForm()
+	id := r.PathValue("id")
+	title := "New Goal"
+	if id != "" {
+		g, err := h.accService.FindOneByID(r.Context(), id)
+		if err != nil {
+			logger.Error("error finding goal", "error", err)
+			http.Error(w, "Internal error", http.StatusInternalServerError)
+			return
+		}
+		view.Name = g.Name()
+		view.Currency = g.Currency()
+		view.TargetAmount = strconv.Itoa(*g.TargetAmount())
+		view.StartDate = g.StartDate().Format("02/01/2006")
+		view.TargetAmount = views.FormatAmount((float64(*g.TargetAmount()) / float64(100)))
+		view.Category = string(*g.CategoryID())
+		if g.TargetDate() != nil {
+			view.TargetDate = g.TargetDate().Format("02/01/2006")
+		}
+		title = "Edit Goal"
+	}
+
+	form := partials.GoalForm(*view, catOpts, id)
 	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", nil).Render(ctx, w)
+	components.DialogWrapper("", title, nil).Render(ctx, w)
 }
 
 func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
@@ -122,7 +145,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view, catOpts).Render(r.Context(), w)
+		partials.GoalForm(view, catOpts, "").Render(r.Context(), w)
 		return
 	}
 
@@ -162,23 +185,8 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 			logger.Error("error creating goal", "error", err)
 		}
 
-		cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-		if err != nil {
-			logger.Error("error reading all expense categories", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
-			return
-		}
-
-		var catOpts []components.SelectOption
-		for _, v := range cats {
-			catOpts = append(
-				catOpts,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
-
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view, catOpts).Render(r.Context(), w)
+		partials.GoalForm(view, catOpts, "").Render(r.Context(), w)
 		return
 	}
 
@@ -202,7 +210,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	)
 
 	templ.Join(
-		partials.GoalForm(view, catOpts),
+		partials.GoalForm(view, catOpts, ""),
 		layouts.OOBWraper(
 			"active-goals-list",
 			"beforeend",

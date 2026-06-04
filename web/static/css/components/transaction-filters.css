@@ -1,3 +1,17 @@
+#transactions-filters {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--spacing-md);
+}
+
+.transactions-filters__body {
+  height: 100%;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
 #curr-filters a {
   display: block;
   width: 100%;

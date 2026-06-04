@@ -123,7 +123,7 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 	)
 
 	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", nil).Render(ctx, w)
+	components.DialogWrapper("", "New Transaction", nil).Render(ctx, w)
 }
 
 func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {

@@ -157,8 +157,8 @@ func main() {
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
 	webMux.Handle("/categories/{id}", middleware.AuthProtectedRoute(categoriesHandler))
 
-	lh := handlers.LoginHandler{}
-	webMux.Handle("/login", middleware.AuthenticatedRedirect(&lh))
+	lh := handlers.NewLoginHandler(cfg.IsDev)
+	webMux.Handle("/login", middleware.AuthenticatedRedirect(lh))
 
 	sh := handlers.SignupHandler{}
 	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
@@ -257,6 +257,7 @@ func main() {
 		accountService, accountQueryService, expenseCatService,
 	)
 	partialsMux.Handle("/partials/goal", goalHandler)
+	partialsMux.Handle("/partials/goal/{id}", goalHandler)
 
 	// TODO remove
 	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {

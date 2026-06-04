@@ -1,19 +1,23 @@
 package partials
 
 import (
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ GoalForm(v views.GoalForm, categories []components.SelectOption) {
+templ GoalForm(v views.GoalForm, categories []components.SelectOption, id string) {
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
-		hx-post="/partials/goal"
+		if id != "" {
+			hx-put={ fmt.Sprintf("/partials/goal/%s", id) }
+		} else {
+			hx-post="/partials/goal"
+		}
 		hx-swap="outerHTML"
 		novalidate
 	>
-		<h4 class="mb-md">New Goal</h4>
 		@components.InputGroup(
 			"",
 			"Name",

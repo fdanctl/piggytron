@@ -7,8 +7,7 @@ import (
 )
 
 templ TransactionDetails(t views.Transaction) {
-	@components.DialogWrapper("floating-sheet top-right", nil) {
-		<h4 class="mb-md">Transaction Details</h4>
+	@components.DialogWrapper("floating-sheet top-right", "Transaction Details", nil) {
 		<div class="mb-sm">
 			<p class="tdetails__amount-label">Amount</p>
 			<p class="tdetails__amount">{ t.Amount }</p>

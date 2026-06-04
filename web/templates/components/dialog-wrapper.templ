@@ -1,6 +1,6 @@
 package components
 
-templ DialogWrapper(class string, attrs templ.Attributes) {
+templ DialogWrapper(class string, title string, attrs templ.Attributes) {
 	<dialog class={ "dialog", templ.KV(class, class != "") } tabindex="-1" hx-on::load="this.showModal(); this.focus()" { attrs... }>
 		<div class="dialog__bar">
 			<div></div>
@@ -8,6 +8,7 @@ templ DialogWrapper(class string, attrs templ.Attributes) {
 		<button class="reset-btn dialog__x" data-action="ui.dialog.close-last">
 			@XSvg(16, "", "")
 		</button>
+		<h4 class="mb-md">{ title }</h4>
 		{ children... }
 	</dialog>
 }

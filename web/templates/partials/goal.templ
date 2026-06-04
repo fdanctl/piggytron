@@ -34,7 +34,11 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 				"",
 				components.BtnSecondary,
 				components.BtnMedium,
-				nil,
+				templ.Attributes{
+					"hx-get":    fmt.Sprintf("/partials/goal/%s", g.ID),
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
 				components.IconLeft,
 				components.SquarePenSvg(0, "", ""),
 			)
@@ -77,8 +81,10 @@ templ Goal(g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
 			<div class="flex justify-between w-full">
 				<h4 class="card__title mb-md">Details</h4>
 				<button
-					class="reset-btn w-fit h-fit flex cursor-pointer"
-					style="color: var(--color-text-secondary);"
+					class="reset-btn goal-details__pen-btn"
+					hx-get={ fmt.Sprintf("/partials/goal/%s", g.ID) }
+					hx-target="#dialog-root"
+					hx-swap="beforeend"
 				>
 					@components.PenSvg(14, "", "")
 				</button>

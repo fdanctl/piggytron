@@ -236,7 +236,15 @@ func (h *HomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	renderWithMainLayout(w, r, "Dashboard", contents)
 }
 
-type LoginHandler struct{}
+type LoginHandler struct {
+	isDev bool
+}
+
+func NewLoginHandler(isDev bool) *LoginHandler {
+	return &LoginHandler{
+		isDev: isDev,
+	}
+}
 
 func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -249,7 +257,13 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
 	redirect := r.URL.Query().Get("redirect")
-	form := partials.LoginForm(*views.NewLoginView(redirect))
+	v := views.NewLoginView(redirect)
+	if h.isDev {
+		v.Name = "gopher"
+		v.Password = "123"
+	}
+	form := partials.LoginForm(*v)
+
 	if r.Header.Get("Hx-Request") == "true" {
 		form.Render(r.Context(), w)
 		io.WriteString(w, "<title>Login</title>")

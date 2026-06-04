@@ -41,7 +41,7 @@ func (h *ExpenseCategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 func (h *ExpenseCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.ExpenseCategoryForm(*views.NewExpenseCategoryForm())
 	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", nil).Render(ctx, w)
+	components.DialogWrapper("", "New expense category", nil).Render(ctx, w)
 }
 
 func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {

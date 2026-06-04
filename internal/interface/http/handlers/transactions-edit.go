@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"context"
 	"errors"
-	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -126,6 +124,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var title string
 	var content templ.Component
 	switch string(t.Type()) {
 	case "income":
@@ -135,20 +134,8 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())
 		v.DestinationAcc = string(*t.ToAccountID())
-		title := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-			if _, err := io.WriteString(w, "<h4 class=\"mb-md\">"); err != nil {
-				return err
-			}
-			if _, err := io.WriteString(w, "Edit Income"); err != nil {
-				return err
-			}
-			_, err := io.WriteString(w, "</h4>")
-			return err
-		})
-		content = templ.Join(
-			title,
-			partials.IncomeForm(*v, icatOpts, accOptsNoGoals, string(t.ID())),
-		)
+		title = "Edit Income"
+		content = partials.IncomeForm(*v, icatOpts, accOptsNoGoals, string(t.ID()))
 
 	case "expense":
 		v := views.NewExpenseForm()
@@ -157,20 +144,8 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.ExpenseCategoryID())
 		v.SourceAcc = string(*t.FromAccountID())
-		title := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-			if _, err := io.WriteString(w, "<h4 class=\"mb-md\">"); err != nil {
-				return err
-			}
-			if _, err := io.WriteString(w, "Edit Expense"); err != nil {
-				return err
-			}
-			_, err := io.WriteString(w, "</h4>")
-			return err
-		})
-		content = templ.Join(
-			title,
-			partials.ExpenseForm(*v, ecatOpts, accOptsNoGoals, string(t.ID())),
-		)
+		title = "Edit Expense"
+		content = partials.ExpenseForm(*v, ecatOpts, accOptsNoGoals, string(t.ID()))
 
 	case "transfer":
 		v := views.NewTransferForm()
@@ -182,27 +157,15 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		v.DestinationAcc = string(*t.ToAccountID())
 		v.SourceAcc = string(*t.FromAccountID())
-		title := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-			if _, err := io.WriteString(w, "<h4 class=\"mb-md\">"); err != nil {
-				return err
-			}
-			if _, err := io.WriteString(w, "Edit Transfer"); err != nil {
-				return err
-			}
-			_, err := io.WriteString(w, "</h4>")
-			return err
-		})
-		content = templ.Join(
-			title,
-			partials.TransferForm(*v, ecatOpts, accOpts, string(t.ID())),
-		)
+		title = "Edit Transfer"
+		content = partials.TransferForm(*v, ecatOpts, accOpts, string(t.ID()))
 
 	default:
 		logger.Debug("DEFAULT")
 	}
 
 	ctx := templ.WithChildren(r.Context(), content)
-	components.DialogWrapper("", nil).Render(ctx, w)
+	components.DialogWrapper("", title, nil).Render(ctx, w)
 }
 
 func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
@@ -349,8 +312,7 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 	logger.Debug(strconv.Itoa(cents))
 	logger.Debug(d.Format(time.DateOnly))
 
-	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", nil).Render(ctx, w)
+	form.Render(r.Context(), w)
 }
 
 func (h *TransactionEditHandler) Delete(w http.ResponseWriter, r *http.Request) {

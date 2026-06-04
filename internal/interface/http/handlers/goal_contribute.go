@@ -109,7 +109,7 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.GoalContributionForm(*view, ecatOpts, accOpts)
 
 	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", nil).Render(ctx, w)
+	components.DialogWrapper("", "New Contribution", nil).Render(ctx, w)
 }
 
 func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {

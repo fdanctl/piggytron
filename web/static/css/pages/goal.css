@@ -21,6 +21,18 @@
   top: 0;
 }
 
+.goal-details__pen-btn {
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.goal-details__pen-btn:hover {
+  color: var(--color-text);
+}
+
 .goal-details__item {
   display: flex;
   justify-content: space-between;

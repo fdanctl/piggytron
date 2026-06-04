@@ -34,17 +34,8 @@ templ TransactionsFilters(
 	q url.Values,
 	count int,
 ) {
-	<form id="transactions-filters" style="height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap:var(--spacing-md)">
+	<form id="transactions-filters">
 		<div>
-			<div class="flex justify-between items-center mb-xs">
-				<h4>Filters</h4>
-				// <div
-				// 	class="flex justify-center items-center cursor-pointer"
-				// 	data-action="ui.dialog.close-last"
-				// >
-				// 	@components.XSvg(16, "", "")
-				// </div>
-			</div>
 			<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
 				for _, v := range currAcc {
 					@Pill(
@@ -67,8 +58,8 @@ templ TransactionsFilters(
 			</ul>
 		</div>
 		<div
+			class="transactions-filters__body"
 			hx-include="input"
-			style="overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--color-border) transparent;"
 		>
 			<div>
 				<div class="flex justify-between items-center mb-sm">
