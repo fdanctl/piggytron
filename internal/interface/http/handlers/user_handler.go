@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"net/url"
 
 	userapp "github.com/fdanctl/piggytron/internal/application/user"
 	"github.com/fdanctl/piggytron/internal/domain/user"
@@ -105,9 +106,11 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if redirect == "" || redirect[0] != '/' {
+	u, err := url.Parse(redirect)
+	if err != nil || u.IsAbs() || u.Host != "" {
 		redirect = "/"
 	}
+
 	http.SetCookie(w, h.cookieMaker.NewCookie(sid))
 	w.Header().Set("HX-Redirect", redirect)
 	w.WriteHeader(http.StatusSeeOther)
@@ -154,14 +157,9 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
-	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
-	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	cookie, _ := r.Cookie("session_id")
 
-	err = h.service.LogoutUser(r.Context(), sessionInfo.UserID)
+	err := h.service.LogoutUser(r.Context(), cookie.Value)
 	if err != nil {
 		logger.Error("error on logout", "error", err)
 		http.Error(w, "", http.StatusInternalServerError)

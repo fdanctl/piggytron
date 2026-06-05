@@ -12,11 +12,11 @@ func NewID(str string) (ID, error) {
 }
 
 type User struct {
-	id          ID
-	name        string
-	paswordHash string
-	createdAt   time.Time
-	updatedAt   time.Time
+	id           ID
+	name         string
+	passwordHash string
+	createdAt    time.Time
+	updatedAt    time.Time
 }
 
 func New(id ID, name, paswordHash string) (*User, error) {
@@ -30,21 +30,21 @@ func New(id ID, name, paswordHash string) (*User, error) {
 	now := time.Now()
 
 	return &User{
-		id:          id,
-		name:        name,
-		paswordHash: paswordHash,
-		createdAt:   now,
-		updatedAt:   now,
+		id:           id,
+		name:         name,
+		passwordHash: paswordHash,
+		createdAt:    now,
+		updatedAt:    now,
 	}, nil
 }
 
 func Rehydrate(id ID, name, paswordHash string, createdAt, updatedAt time.Time) *User {
 	return &User{
-		id:          id,
-		name:        name,
-		paswordHash: paswordHash,
-		createdAt:   createdAt,
-		updatedAt:   updatedAt,
+		id:           id,
+		name:         name,
+		passwordHash: paswordHash,
+		createdAt:    createdAt,
+		updatedAt:    updatedAt,
 	}
 }
 
@@ -57,7 +57,7 @@ func (u *User) Name() string {
 }
 
 func (u *User) PasswordHash() string {
-	return u.paswordHash
+	return u.passwordHash
 }
 
 func (u *User) CreatedAt() time.Time {

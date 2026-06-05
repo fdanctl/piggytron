@@ -62,6 +62,6 @@ func (ss *SessionStore) Get(ctx context.Context, sessionID string) *SessionInfo 
 }
 
 func (ss *SessionStore) Remove(ctx context.Context, sessionID string) error {
-	_, err := ss.client.Del(ctx, sessionID).Result()
+	_, err := ss.client.Del(ctx, fmt.Sprint(sessionPrefix, sessionID)).Result()
 	return err
 }

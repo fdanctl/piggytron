@@ -143,7 +143,7 @@ func (r *BudgetRepository) FindByID(
 		c.Month,
 		c.Amount,
 		c.CreatedAt,
-		c.CreatedAt,
+		c.UpdatedAt,
 	)
 	return category, err
 }

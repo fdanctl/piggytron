@@ -90,7 +90,7 @@ func (r *ExpenseCategoryRepository) FindByID(
 		c.Name,
 		c.ExpenseType,
 		c.CreatedAt,
-		c.CreatedAt,
+		c.UpdatedAt,
 	)
 	return category, err
 }

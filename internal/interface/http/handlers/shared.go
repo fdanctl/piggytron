@@ -57,12 +57,11 @@ func convertAmountStrToInt(str string) (int, error) {
 	}
 
 	if i == -1 {
-		tAmount, err := strconv.Atoi(str)
+		parsed, err := strconv.Atoi(str)
 		if err != nil {
 			return 0, ErrInvalidAmount
 		}
-		tAmount *= 100
-		return tAmount, nil
+		return parsed * 100, nil
 	}
 
 	if length-1-i > 2 {

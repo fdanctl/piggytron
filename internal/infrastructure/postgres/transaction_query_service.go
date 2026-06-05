@@ -295,10 +295,12 @@ func (r *TransactionQueryService) GetExpensesByCategoryBetweenDates(
   			type = 'expense'
   			AND date >= $1
   			AND date < $2
+			AND user_id = $3
 		 GROUP BY
   		 ROLLUP (expense_category_id)`,
 		minDate,
 		maxDate,
+		uid,
 	)
 	if err != nil {
 		return nil, err

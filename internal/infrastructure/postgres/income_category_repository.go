@@ -86,7 +86,7 @@ func (r *IncomeCategoryRepository) FindByID(
 		c.UserID,
 		c.Name,
 		c.CreatedAt,
-		c.CreatedAt,
+		c.UpdatedAt,
 	)
 	return category, err
 }
