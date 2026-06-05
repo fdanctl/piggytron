@@ -143,7 +143,7 @@ func (v *ExpenseForm) ValidateSourceAcc() (msgs []string) {
 	}
 
 	if _, err := uuid.Parse(v.SourceAcc); err != nil {
-		msgs = append(msgs, "Invalid destination account")
+		msgs = append(msgs, "Invalid source account")
 	}
 
 	return msgs

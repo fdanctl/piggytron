@@ -13,11 +13,11 @@ type BankPage struct {
 	// available last month comparition
 	Goals int
 	// last month comparition
-	Banks              []Banks
+	Banks              []Bank
 	RecentTransactions []Transaction
 }
 
-type Banks struct {
+type Bank struct {
 	ID   string
 	Name string
 	Type string
@@ -29,7 +29,7 @@ func NewBankPage(a []query.AccountWithSum, t []query.TransactionDTO) BankPage {
 	var available int
 	var goals int
 
-	var banks []Banks
+	var banks []Bank
 	for _, v := range a {
 		if v.Type == "bank" {
 			if *v.IsSaving {
@@ -38,7 +38,7 @@ func NewBankPage(a []query.AccountWithSum, t []query.TransactionDTO) BankPage {
 				available += v.Sum
 			}
 
-			banks = append(banks, Banks{ID: v.ID, Name: v.Name, Type: v.Type})
+			banks = append(banks, Bank{ID: v.ID, Name: v.Name, Type: v.Type})
 		}
 
 		if v.Type == "goal" {

@@ -79,25 +79,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		maxDate,
 	)
 
-	filterCount := len(types) + len(accounts) + len(cats)
-	queries := []string{fmt.Sprintf("page=%d", page+1)}
-	if len(types) > 0 {
-		queries = append(queries, "types="+strings.Join(types, "&types="))
-	}
-	if len(accounts) > 0 {
-		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
-	}
-	if len(cats) > 0 {
-		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
-	}
-	if minAmount != "" {
-		queries = append(queries, "minamount="+minAmount)
-		filterCount++
-	}
-	if maxAmount != "" {
-		queries = append(queries, "maxmount="+minAmount)
-		filterCount++
-	}
+	_, queries := queryStrFromFiltersWithCount(page+1, types, accounts, cats, minAmount, maxAmount)
 
 	transactions, err := h.query.FindFilteredWithCount(
 		r.Context(),

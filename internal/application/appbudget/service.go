@@ -1,11 +1,11 @@
-package budget
+package appbudget
 
 import (
 	"context"
 	"errors"
 	"time"
 
-	budget "github.com/fdanctl/piggytron/internal/domain/monthly_budget"
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/google/uuid"
 )
 
@@ -93,7 +93,7 @@ func (s *Service) UpdateBudgetAmount(
 	return s.repo.UpdateAmount(ctx, id, amount)
 }
 
-func (s *Service) ReadBudget(
+func (s *Service) FindBudget(
 	ctx context.Context,
 	id string,
 ) (*budget.Budget, error) {

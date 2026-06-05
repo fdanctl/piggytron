@@ -12,6 +12,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/a-h/templ"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 )
 
@@ -98,4 +101,84 @@ func parseMonth(str string) (int, time.Month, error) {
 		return 0, time.January, errors.New("wrong month")
 	}
 	return y, time.Month(m), nil
+}
+
+func queryStrFromFiltersWithCount(
+	page int,
+	types, accounts, cats []string,
+	minAmount, maxAmount string, // make it a range ex. [0, 420]
+) (int, []string) {
+	filterCount := len(types) + len(accounts) + len(cats)
+	queries := []string{fmt.Sprintf("page=%d", page)}
+	if len(types) > 0 {
+		queries = append(queries, "types="+strings.Join(types, "&types="))
+	}
+	if len(accounts) > 0 {
+		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
+	}
+	if len(cats) > 0 {
+		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
+	}
+	if minAmount != "" {
+		queries = append(queries, "minamount="+minAmount)
+		filterCount++
+	}
+	if maxAmount != "" {
+		queries = append(queries, "maxamount="+maxAmount)
+		filterCount++
+	}
+	return filterCount, queries
+}
+
+func getCategorySelectOptions(
+	qs query.CategoryQueryService,
+	ctx context.Context,
+	userID string,
+) (iCatOpts, eCatOpts []components.SelectOption, err error) {
+	cats, err := qs.FindAllCategories(ctx, userID)
+	if err != nil {
+		return
+	}
+	for _, v := range cats {
+		if v.Type == "income" {
+			iCatOpts = append(
+				iCatOpts,
+				components.SelectOption{Label: v.Name, Value: v.ID},
+			)
+		} else {
+			eCatOpts = append(
+				eCatOpts,
+				components.SelectOption{Label: v.Name, Value: v.ID},
+			)
+		}
+	}
+
+	return
+}
+
+func getAccSelectOptions(
+	as *appaccount.Service,
+	ctx context.Context,
+	userID string,
+) (noSavingsBanksOpts, goalsSavingsOpts []components.SelectOption, err error) {
+	acc, err := as.FindAllByUser(ctx, userID)
+	if err != nil {
+		return
+	}
+
+	for _, v := range acc {
+		// not a goal and not is savings
+		if v.IsSaving() != nil && !*v.IsSaving() {
+			noSavingsBanksOpts = append(
+				noSavingsBanksOpts,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		} else {
+			goalsSavingsOpts = append(
+				goalsSavingsOpts,
+				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
+			)
+		}
+	}
+	return
 }

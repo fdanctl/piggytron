@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	accountapp "github.com/fdanctl/piggytron/internal/application/account"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -18,13 +18,13 @@ import (
 )
 
 type GoalsHandler struct {
-	accountService      *accountapp.Service
+	accountService      *appaccount.Service
 	tQueryService       query.TransactionQueryService
 	accountQueryService query.AccountQueryService
 }
 
 func NewGoalsHandler(
-	ac *accountapp.Service,
+	ac *appaccount.Service,
 	tq query.TransactionQueryService,
 	aq query.AccountQueryService,
 ) *GoalsHandler {

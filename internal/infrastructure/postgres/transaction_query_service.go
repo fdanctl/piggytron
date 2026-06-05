@@ -18,11 +18,11 @@ func NewTransactionQueryService(db *sql.DB) *TransactionQueryService {
 	}
 }
 
-func (r *TransactionQueryService) FindByID(
+func (s *TransactionQueryService) FindByID(
 	ctx context.Context,
 	id string,
 ) (*query.TransactionDTO, error) {
-	row := r.db.QueryRowContext(
+	row := s.db.QueryRowContext(
 		ctx,
 		`SELECT
 			t.id,
@@ -69,13 +69,13 @@ func (r *TransactionQueryService) FindByID(
 	return &dto, nil
 }
 
-func (r *TransactionQueryService) FindFiltered(
+func (s *TransactionQueryService) FindFiltered(
 	ctx context.Context,
 	uid string,
 	filters *query.TransactionFilters,
 	limit, offset uint,
 ) ([]query.TransactionDTO, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
 			t.id,
@@ -154,13 +154,13 @@ func (r *TransactionQueryService) FindFiltered(
 	return transactions, nil
 }
 
-func (r *TransactionQueryService) FindFilteredWithCount(
+func (s *TransactionQueryService) FindFilteredWithCount(
 	ctx context.Context,
 	uid string,
 	filters *query.TransactionFilters,
 	limit, offset uint,
 ) (*query.TransactionsWithTotalCount, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
 			t.id,
@@ -247,12 +247,12 @@ func (r *TransactionQueryService) FindFilteredWithCount(
 	}, nil
 }
 
-func (r *TransactionQueryService) CountFilteredResults(
+func (s *TransactionQueryService) CountFilteredResults(
 	ctx context.Context,
 	uid string,
 	filters *query.TransactionFilters,
 ) (int, error) {
-	row := r.db.QueryRowContext(
+	row := s.db.QueryRowContext(
 		ctx,
 		`SELECT COUNT(*)
 		 FROM transactions
@@ -279,12 +279,12 @@ func (r *TransactionQueryService) CountFilteredResults(
 	return count, nil
 }
 
-func (r *TransactionQueryService) GetExpensesByCategoryBetweenDates(
+func (s *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 	ctx context.Context,
 	uid string,
 	minDate, maxDate time.Time,
 ) (*query.CategoryExpenseWithTotal, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
 			COALESCE(expense_category_id, '00000000-0000-0000-0000-000000000000') AS expense_category_id,
@@ -334,10 +334,10 @@ func (r *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 	}, nil
 }
 
-func (r *TransactionQueryService) GetRecentTransactions(
+func (s *TransactionQueryService) GetRecentTransactions(
 	ctx context.Context, uid string, limit uint,
 ) ([]query.TransactionDTO, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
 			t.id,

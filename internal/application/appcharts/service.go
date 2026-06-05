@@ -1,4 +1,4 @@
-package charts
+package appcharts
 
 import (
 	"bytes"

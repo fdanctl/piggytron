@@ -7,9 +7,9 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
-	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
-	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
+	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
+	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -18,14 +18,14 @@ import (
 )
 
 type CategoriesHandler struct {
-	incomeCatService  *incomecategoryapp.Service
-	expenseCatService *expensecategoryapp.Service
+	incomeCatService  *appincomecategory.Service
+	expenseCatService *appexpensecategory.Service
 	tQueryService     query.TransactionQueryService
 }
 
 func NewCategoriesHandler(
-	es *expensecategoryapp.Service,
-	is *incomecategoryapp.Service,
+	es *appexpensecategory.Service,
+	is *appincomecategory.Service,
 	tq query.TransactionQueryService,
 ) *CategoriesHandler {
 	return &CategoriesHandler{
@@ -59,7 +59,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ec, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	ec, err := h.expenseCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
@@ -70,7 +70,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		ecView = append(ecView, views.NewExpenseCategory(v))
 	}
 
-	ic, err := h.incomeCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	ic, err := h.incomeCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all income categories", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
@@ -112,10 +112,10 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.PathValue("id")
-	ecat, err := h.expenseCatService.ReadCategory(r.Context(), id)
+	ecat, err := h.expenseCatService.FindCategory(r.Context(), id)
 	var icat *incomecategory.IncomeCategory
 	if err != nil {
-		icat, err = h.incomeCatService.ReadCategory(r.Context(), id)
+		icat, err = h.incomeCatService.FindCategory(r.Context(), id)
 		if err != nil {
 			logger.Error("error finding category", "error", err, "cid", id)
 			http.Error(w, "Not found", http.StatusNotFound)
@@ -123,13 +123,13 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	icats, err := h.incomeCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	icats, err := h.incomeCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all income categories", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	ecats, err := h.expenseCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	ecats, err := h.expenseCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error reading all expense categories", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)

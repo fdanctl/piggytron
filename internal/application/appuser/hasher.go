@@ -1,4 +1,4 @@
-package user
+package appuser
 
 import (
 	"crypto/rand"
@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
+// PasswordHasher hashes string in '$argon2id$v=<version>$m=<memory>,t=<time>,p=<threads>$<salt>$<hash>' format
 type PasswordHasher struct {
 	time    uint32
 	memory  uint32

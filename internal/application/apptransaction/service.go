@@ -1,4 +1,4 @@
-package transaction
+package apptransaction
 
 import (
 	"context"
@@ -375,7 +375,7 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	return tx.Commit()
 }
 
-func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
+func (s *Service) FindOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
 	_, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
@@ -388,7 +388,7 @@ func (s *Service) ReadOneByID(ctx context.Context, id string) (*transaction.Tran
 	return s.repo.FindByID(ctx, newID)
 }
 
-func (s *Service) ReadAllByUser(
+func (s *Service) FindAllByUser(
 	ctx context.Context,
 	userID string,
 	page uint,
@@ -410,7 +410,7 @@ func (s *Service) ReadAllByUser(
 	return transactions, nil
 }
 
-func (s *Service) ReadAllByAccount(
+func (s *Service) FindAllByAccount(
 	ctx context.Context,
 	aid string,
 ) ([]*transaction.Transaction, error) {
@@ -426,7 +426,7 @@ func (s *Service) ReadAllByAccount(
 	return s.repo.FindAllByAccount(ctx, newID)
 }
 
-func (s *Service) ReadAllByCategory(
+func (s *Service) FindAllByCategory(
 	ctx context.Context,
 	cid string,
 ) ([]*transaction.Transaction, error) {

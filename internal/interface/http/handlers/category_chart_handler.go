@@ -4,27 +4,27 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/application/charts"
+	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
-type CatHistChartHandler struct {
-	chartsService *charts.Service
+type CategoryChartHandler struct {
+	chartsService *appcharts.Service
 	categoryQuery query.CategoryQueryService
 }
 
-func NewCatHistChartHandler(
-	cs *charts.Service,
+func NewCategoryChartHandler(
+	cs *appcharts.Service,
 	cq query.CategoryQueryService,
-) *CatHistChartHandler {
-	return &CatHistChartHandler{
+) *CategoryChartHandler {
+	return &CategoryChartHandler{
 		chartsService: cs,
 		categoryQuery: cq,
 	}
 }
 
-func (h *CatHistChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *CategoryChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -34,7 +34,7 @@ func (h *CatHistChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-func (h *CatHistChartHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
 	logger.Debug(id)

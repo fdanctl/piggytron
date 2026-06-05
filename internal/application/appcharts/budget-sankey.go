@@ -1,4 +1,4 @@
-package charts
+package appcharts
 
 import (
 	"github.com/go-echarts/go-echarts/v2/charts"

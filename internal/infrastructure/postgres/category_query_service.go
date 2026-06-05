@@ -51,14 +51,14 @@ func (s *CategoryQueryService) FindByID(
 func (s *CategoryQueryService) FindAllCategories(
 	ctx context.Context,
 	uid string,
-) ([]query.CategoryNameDTO, error) {
+) ([]query.CategoryDTO, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
-		`SELECT id, name
+		`SELECT id, name, 'income' AS type
 		 FROM income_categories
 		 WHERE user_id = $1
 		 UNION
-		 SELECT id, name
+		 SELECT id, name, type
 		 FROM expense_categories
 		 WHERE user_id = $1`,
 		uid,
@@ -68,13 +68,14 @@ func (s *CategoryQueryService) FindAllCategories(
 	}
 	defer rows.Close()
 
-	var results []query.CategoryNameDTO
+	var results []query.CategoryDTO
 
 	for rows.Next() {
-		var c query.CategoryNameDTO
+		var c query.CategoryDTO
 		if err := rows.Scan(
 			&c.ID,
 			&c.Name,
+			&c.Type,
 		); err != nil {
 			return nil, err
 		}
@@ -185,8 +186,8 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 	for rows.Next() {
 		var dto query.ExpenseCategoryBudgetSpent
 		if err := rows.Scan(
-			&dto.CID,
-			&dto.BID,
+			&dto.CategoryID,
+			&dto.BudgetID,
 			&dto.Type,
 			&dto.Name,
 			&dto.Budgeted,

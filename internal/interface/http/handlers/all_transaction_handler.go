@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -65,33 +64,22 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		qmaxDate,
 	)
 
-	filterCount := len(qtypes) + len(qaccounts) + len(qcats)
-	var page uint = 1
-	queries := []string{fmt.Sprintf("page=%d", page+1)}
-	if len(qtypes) > 0 {
-		queries = append(queries, "types="+strings.Join(qtypes, "&types="))
-	}
-	if len(qaccounts) > 0 {
-		queries = append(queries, "accounts="+strings.Join(qaccounts, "&accounts="))
-	}
-	if len(qcats) > 0 {
-		queries = append(queries, "categories="+strings.Join(qcats, "&categories="))
-	}
-	if qminAmount != "" {
-		queries = append(queries, "minamount="+qminAmount)
-		filterCount++
-	}
-	if qmaxAmount != "" {
-		queries = append(queries, "maxmount="+qminAmount)
-		filterCount++
-	}
+	page := 1
+	filterCount, queries := queryStrFromFiltersWithCount(
+		page+1,
+		qtypes,
+		qaccounts,
+		qcats,
+		qminAmount,
+		qmaxAmount,
+	)
 
 	tWithCount, err := h.query.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
 		filters,
 		LIMIT+1,
-		LIMIT*page-LIMIT,
+		LIMIT*uint(page)-LIMIT,
 	)
 	if err != nil {
 		logger.Error("error finding filtered transactions", "error", err, "filters", filters)

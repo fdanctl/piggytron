@@ -28,11 +28,11 @@ type BudgetPageView struct {
 }
 
 type BudgetRowView struct {
-	CID      string
-	BID      string
-	Name     string
-	Budgeted int
-	Left     int
+	CategoryID string
+	BudgetID   string
+	Name       string
+	Budgeted   int
+	Left       int
 }
 
 func NewBudgetPageView(
@@ -62,11 +62,11 @@ func NewBudgetPageView(
 		}
 
 		row := BudgetRowView{
-			CID:      v.CID,
-			BID:      v.BID,
-			Name:     v.Name,
-			Budgeted: v.Budgeted,
-			Left:     left,
+			CategoryID: v.CategoryID,
+			BudgetID:   v.BudgetID,
+			Name:       v.Name,
+			Budgeted:   v.Budgeted,
+			Left:       left,
 		}
 
 		switch v.Type {

@@ -21,7 +21,7 @@ func NewAccountQueryService(db DBTX) *AccountQueryService {
 	}
 }
 
-func (r *AccountQueryService) FindIDNamesIncludes(
+func (s *AccountQueryService) FindIDNamesIncludes(
 	ctx context.Context,
 	ids []string,
 ) ([]query.AccountIDName, error) {
@@ -43,7 +43,7 @@ func (r *AccountQueryService) FindIDNamesIncludes(
 		strings.Join(placeholders, ","),
 	)
 
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		qquery,
 		args...,
@@ -70,11 +70,11 @@ func (r *AccountQueryService) FindIDNamesIncludes(
 	return results, nil
 }
 
-func (r *AccountQueryService) FindBanksIDNames(
+func (s *AccountQueryService) FindBanksIDNames(
 	ctx context.Context,
 	uid string,
 ) ([]query.AccountIDName, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT id, name
 		 FROM accounts
@@ -101,11 +101,11 @@ func (r *AccountQueryService) FindBanksIDNames(
 	return results, nil
 }
 
-func (r *AccountQueryService) FindGoalsIDNames(
+func (s *AccountQueryService) FindGoalsIDNames(
 	ctx context.Context,
 	uid string,
 ) ([]query.AccountIDName, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT id, name
 		 FROM accounts
@@ -132,11 +132,11 @@ func (r *AccountQueryService) FindGoalsIDNames(
 	return results, nil
 }
 
-func (r *AccountQueryService) FindWithSum(
+func (s *AccountQueryService) FindWithSum(
 	ctx context.Context,
 	id string,
 ) (*query.AccountWithSum, error) {
-	row := r.db.QueryRowContext(
+	row := s.db.QueryRowContext(
 		ctx,
 		`SELECT 
 			a.id, 
@@ -198,11 +198,11 @@ func (r *AccountQueryService) FindWithSum(
 	return &g, nil
 }
 
-func (r *AccountQueryService) FindAllWithSum(
+func (s *AccountQueryService) FindAllWithSum(
 	ctx context.Context,
 	uid string,
 ) ([]query.AccountWithSum, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT 
 			a.id, 
@@ -274,11 +274,11 @@ func (r *AccountQueryService) FindAllWithSum(
 	return results, nil
 }
 
-func (r *AccountQueryService) FindAllGoalsWithSum(
+func (s *AccountQueryService) FindAllGoalsWithSum(
 	ctx context.Context,
 	uid string,
 ) ([]query.AccountWithSum, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT 
 			a.id, 
@@ -350,11 +350,11 @@ func (r *AccountQueryService) FindAllGoalsWithSum(
 	return results, nil
 }
 
-func (r *AccountQueryService) GetBanksDailyChange(
+func (s *AccountQueryService) GetBanksDailyChange(
 	ctx context.Context,
 	uid string,
 ) ([]query.AccountDailyChange, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
 			a.id,
@@ -409,11 +409,11 @@ func (r *AccountQueryService) GetBanksDailyChange(
 	return results, nil
 }
 
-func (r *AccountQueryService) GetAccountDailyChange(
+func (s *AccountQueryService) GetAccountDailyChange(
 	ctx context.Context,
 	id string,
 ) ([]query.AccountDailyChange, error) {
-	rows, err := r.db.QueryContext(
+	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
 			a.id,

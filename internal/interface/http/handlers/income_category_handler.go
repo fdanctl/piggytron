@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	incomecategoryapp "github.com/fdanctl/piggytron/internal/application/income_category"
-	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
+	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -16,10 +16,10 @@ import (
 )
 
 type IncomeCategoriesHandler struct {
-	service *incomecategoryapp.Service
+	service *appincomecategory.Service
 }
 
-func NewIncomeCategoriesHandler(s *incomecategoryapp.Service) *IncomeCategoriesHandler {
+func NewIncomeCategoriesHandler(s *appincomecategory.Service) *IncomeCategoriesHandler {
 	return &IncomeCategoriesHandler{
 		service: s,
 	}

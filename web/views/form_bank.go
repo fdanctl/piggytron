@@ -75,7 +75,7 @@ func (v *BankForm) ValidateIsSavings() (msgs []string) {
 }
 
 func (v *BankForm) IsSavingsHasError() bool {
-	return len(v.ValidateName()) > 0
+	return len(v.ValidateIsSavings()) > 0
 }
 
 func (v *BankForm) Validate() (msgs []string) {

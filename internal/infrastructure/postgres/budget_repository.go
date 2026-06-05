@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	budget "github.com/fdanctl/piggytron/internal/domain/monthly_budget"
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/lib/pq"
 )
 

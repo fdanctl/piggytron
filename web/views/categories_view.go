@@ -1,8 +1,8 @@
 package views
 
 import (
-	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
-	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
+	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 )
 
 type Category interface {

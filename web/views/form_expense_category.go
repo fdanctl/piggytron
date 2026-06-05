@@ -3,7 +3,7 @@ package views
 import (
 	"errors"
 
-	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
+	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
 )
 
 type ExpenseCategoryForm struct {

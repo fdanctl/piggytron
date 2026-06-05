@@ -1,4 +1,4 @@
-package charts
+package appcharts
 
 import (
 	"github.com/fdanctl/piggytron/internal/query"

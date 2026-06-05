@@ -4,19 +4,19 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/application/charts"
+	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
 type BudgetChartHandler struct {
-	chartsService *charts.Service
+	chartsService *appcharts.Service
 	categoryQuery query.CategoryQueryService
 }
 
 func NewBudgetChartHandler(
-	cs *charts.Service,
+	cs *appcharts.Service,
 	cq query.CategoryQueryService,
 ) *BudgetChartHandler {
 	return &BudgetChartHandler{

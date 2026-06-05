@@ -8,8 +8,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	accountapp "github.com/fdanctl/piggytron/internal/application/account"
-	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -20,20 +19,20 @@ import (
 )
 
 type GoalHandler struct {
-	accService          *accountapp.Service
+	accService          *appaccount.Service
 	accountQueryService query.AccountQueryService
-	exCatService        *expensecategoryapp.Service
+	categoryQuery       query.CategoryQueryService
 }
 
 func NewGoalHandler(
-	as *accountapp.Service,
+	as *appaccount.Service,
 	aq query.AccountQueryService,
-	es *expensecategoryapp.Service,
+	cq query.CategoryQueryService,
 ) *GoalHandler {
 	return &GoalHandler{
 		accService:          as,
 		accountQueryService: aq,
-		exCatService:        es,
+		categoryQuery:       cq,
 	}
 }
 
@@ -59,19 +58,15 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	_, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
+		logger.Error("error reading all categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
-	}
-
-	var catOpts []components.SelectOption
-	for _, v := range cats {
-		catOpts = append(
-			catOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
 	}
 
 	view := views.NewGoalForm()
@@ -96,7 +91,7 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		title = "Edit Goal"
 	}
 
-	form := partials.GoalForm(*view, catOpts, id)
+	form := partials.GoalForm(*view, ecatOpts, id)
 	ctx := templ.WithChildren(r.Context(), form)
 	components.DialogWrapper("", title, nil).Render(ctx, w)
 }
@@ -117,19 +112,15 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	tdate := r.FormValue("target-date")
 	cat := r.FormValue("category")
 
-	cats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	_, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
+		logger.Error("error reading all categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
-	}
-
-	var catOpts []components.SelectOption
-	for _, v := range cats {
-		catOpts = append(
-			catOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
 	}
 
 	view := views.GoalForm{
@@ -145,7 +136,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view, catOpts, "").Render(r.Context(), w)
+		partials.GoalForm(view, ecatOpts, "").Render(r.Context(), w)
 		return
 	}
 
@@ -186,7 +177,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view, catOpts, "").Render(r.Context(), w)
+		partials.GoalForm(view, ecatOpts, "").Render(r.Context(), w)
 		return
 	}
 
@@ -210,7 +201,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	)
 
 	templ.Join(
-		partials.GoalForm(view, catOpts, ""),
+		partials.GoalForm(view, ecatOpts, ""),
 		layouts.OOBWraper(
 			"active-goals-list",
 			"beforeend",

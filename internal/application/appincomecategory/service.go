@@ -1,9 +1,9 @@
-package incomecategory
+package appincomecategory
 
 import (
 	"context"
 
-	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/google/uuid"
 )
 
@@ -47,7 +47,7 @@ func (s *Service) CreateCategory(
 	return category, nil
 }
 
-func (s *Service) ReadCategory(
+func (s *Service) FindCategory(
 	ctx context.Context,
 	id string,
 ) (*incomecategory.IncomeCategory, error) {
@@ -59,7 +59,7 @@ func (s *Service) ReadCategory(
 	return s.repo.FindByID(ctx, incomecategory.ID(id))
 }
 
-func (s *Service) ReadAllUserCategories(
+func (s *Service) FindAllUserCategories(
 	ctx context.Context,
 	userID string,
 ) ([]*incomecategory.IncomeCategory, error) {

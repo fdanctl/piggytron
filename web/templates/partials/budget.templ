@@ -119,9 +119,9 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 							"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
 							"hx-include":         "inherit, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='bid'], next [name='cid']",
 						})
-					@BudgetInfoInputs(c.Budgeted, c.BID, c.CID)
+					@BudgetInfoInputs(c.Budgeted, c.BudgetID, c.CategoryID)
 				</div>
-				@CatRowLeftCell(c.CID, c.Left, nil)
+				@CatRowLeftCell(c.CategoryID, c.Left, nil)
 			</div>
 		}
 		@TotalRow(eType, totalBudget, totalLeft, nil)

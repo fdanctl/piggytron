@@ -7,8 +7,8 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	expensecategoryapp "github.com/fdanctl/piggytron/internal/application/expense_category"
-	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
+	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
+	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -16,10 +16,10 @@ import (
 )
 
 type ExpenseCategoriesHandler struct {
-	service *expensecategoryapp.Service
+	service *appexpensecategory.Service
 }
 
-func NewExpenseCategoriesHandler(s *expensecategoryapp.Service) *ExpenseCategoriesHandler {
+func NewExpenseCategoriesHandler(s *appexpensecategory.Service) *ExpenseCategoriesHandler {
 	return &ExpenseCategoriesHandler{
 		service: s,
 	}

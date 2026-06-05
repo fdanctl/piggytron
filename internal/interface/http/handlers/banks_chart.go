@@ -4,20 +4,20 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	"github.com/fdanctl/piggytron/internal/application/charts"
+	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 )
 
 type BanksChartsHandler struct {
-	chartsService    *charts.Service
+	chartsService    *appcharts.Service
 	transactionQuery query.TransactionQueryService
 	accountQuery     query.AccountQueryService
 }
 
 func NewBanksChartsHandler(
-	cs *charts.Service,
+	cs *appcharts.Service,
 	tq query.TransactionQueryService,
 	aq query.AccountQueryService,
 ) *BanksChartsHandler {

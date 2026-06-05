@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	"github.com/fdanctl/piggytron/internal/application/budget"
-	"github.com/fdanctl/piggytron/internal/application/charts"
+	"github.com/fdanctl/piggytron/internal/application/appbudget"
+	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -18,14 +18,14 @@ import (
 )
 
 type BudgetHandler struct {
-	service       *budget.Service
-	chartsService *charts.Service
+	service       *appbudget.Service
+	chartsService *appcharts.Service
 	categoryQuery query.CategoryQueryService
 }
 
 func NewBudgetHandler(
-	s *budget.Service,
-	cs *charts.Service,
+	s *appbudget.Service,
+	cs *appcharts.Service,
 	cq query.CategoryQueryService,
 ) *BudgetHandler {
 	return &BudgetHandler{

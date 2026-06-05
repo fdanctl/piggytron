@@ -7,35 +7,31 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	accountapp "github.com/fdanctl/piggytron/internal/application/account"
-	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
-	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
-	"github.com/fdanctl/piggytron/internal/application/transaction"
-	transactionDomain "github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/application/apptransaction"
+	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 type TransactionEditHandler struct {
-	service      *transaction.Service
-	inCatService *incomecategory.Service
-	exCatService *expensecategory.Service
-	accService   *accountapp.Service
+	service       *apptransaction.Service
+	categoryQuery query.CategoryQueryService
+	accService    *appaccount.Service
 }
 
 func NewTransactionEditHandler(
-	ts *transaction.Service,
-	is *incomecategory.Service,
-	es *expensecategory.Service,
-	as *accountapp.Service,
+	ts *apptransaction.Service,
+	cq query.CategoryQueryService,
+	as *appaccount.Service,
 ) *TransactionEditHandler {
 	return &TransactionEditHandler{
-		service:      ts,
-		inCatService: is,
-		exCatService: es,
-		accService:   as,
+		service:       ts,
+		categoryQuery: cq,
+		accService:    as,
 	}
 }
 
@@ -66,62 +62,33 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	id := r.PathValue("id")
 
-	t, err := h.service.ReadOneByID(r.Context(), id)
+	t, err := h.service.FindOneByID(r.Context(), id)
 	if err != nil {
 		logger.Error("error finding transaction", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
 
-	ecats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-
-	var ecatOpts []components.SelectOption
-	for _, v := range ecats {
-		ecatOpts = append(
-			ecatOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-	}
-
-	icats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	icatOpts, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
 		logger.Error("error reading all income categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
-	var icatOpts []components.SelectOption
-	for _, v := range icats {
-		icatOpts = append(
-			icatOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-	}
 
-	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	noSavingsBanksOpts, goalSavingsOpts, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
 		logger.Error("error reading all accounts", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
-	}
-
-	var accOptsNoGoals []components.SelectOption
-	var accOpts []components.SelectOption
-	for _, v := range acc {
-		accOpts = append(
-			accOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-		if v.IsSaving() != nil && !*v.IsSaving() {
-			accOptsNoGoals = append(
-				accOptsNoGoals,
-				components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-			)
-		}
 	}
 
 	var title string
@@ -135,7 +102,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Category = string(*t.IncomeCategoryID())
 		v.DestinationAcc = string(*t.ToAccountID())
 		title = "Edit Income"
-		content = partials.IncomeForm(*v, icatOpts, accOptsNoGoals, string(t.ID()))
+		content = partials.IncomeForm(*v, icatOpts, noSavingsBanksOpts, string(t.ID()))
 
 	case "expense":
 		v := views.NewExpenseForm()
@@ -145,7 +112,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Category = string(*t.ExpenseCategoryID())
 		v.SourceAcc = string(*t.FromAccountID())
 		title = "Edit Expense"
-		content = partials.ExpenseForm(*v, ecatOpts, accOptsNoGoals, string(t.ID()))
+		content = partials.ExpenseForm(*v, ecatOpts, noSavingsBanksOpts, string(t.ID()))
 
 	case "transfer":
 		v := views.NewTransferForm()
@@ -158,7 +125,12 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.DestinationAcc = string(*t.ToAccountID())
 		v.SourceAcc = string(*t.FromAccountID())
 		title = "Edit Transfer"
-		content = partials.TransferForm(*v, ecatOpts, accOpts, string(t.ID()))
+		content = partials.TransferForm(
+			*v,
+			ecatOpts,
+			append(noSavingsBanksOpts, goalSavingsOpts...),
+			string(t.ID()),
+		)
 
 	default:
 		logger.Debug("DEFAULT")
@@ -187,48 +159,26 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
 
-	ecats, err := h.exCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
-		return
-	}
-
-	var ecatOpts []components.SelectOption
-	for _, v := range ecats {
-		ecatOpts = append(
-			ecatOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-	}
-
-	icats, err := h.inCatService.ReadAllUserCategories(r.Context(), sessionInfo.UserID)
+	icatOpts, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
 		logger.Error("error reading all income categories", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
-	var icatOpts []components.SelectOption
-	for _, v := range icats {
-		icatOpts = append(
-			icatOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
-	}
 
-	acc, err := h.accService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	noSavingsBanksOpts, goalSavingsOpts, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
 		logger.Error("error reading all accounts", "error", err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
-	}
-
-	var accOpts []components.SelectOption
-	for _, v := range acc {
-		accOpts = append(
-			accOpts,
-			components.SelectOption{Label: v.Name(), Value: string(v.ID())},
-		)
 	}
 
 	var form templ.Component
@@ -243,7 +193,7 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Category:       category,
 			DestinationAcc: destination,
 		}
-		form = partials.IncomeForm(view, icatOpts, accOpts, "")
+		form = partials.IncomeForm(view, icatOpts, noSavingsBanksOpts, "")
 		msgs := view.Validate()
 		if len(msgs) > 0 {
 			logger.Info("invalid form", "error", msgs)
@@ -262,7 +212,7 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Category:    category,
 			SourceAcc:   source,
 		}
-		form = partials.ExpenseForm(view, ecatOpts, accOpts, "")
+		form = partials.ExpenseForm(view, ecatOpts, noSavingsBanksOpts, "")
 		msgs := view.Validate()
 		if len(msgs) > 0 {
 			logger.Info("invalid form", "error", msgs)
@@ -282,7 +232,12 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 			SourceAcc:      source,
 			DestinationAcc: destination,
 		}
-		form = partials.TransferForm(view, ecatOpts, accOpts, "")
+		form = partials.TransferForm(
+			view,
+			ecatOpts,
+			append(noSavingsBanksOpts, goalSavingsOpts...),
+			"",
+		)
 		msgs := view.Validate()
 		if len(msgs) > 0 {
 			logger.Info("invalid form", "error", msgs)
@@ -322,7 +277,7 @@ func (h *TransactionEditHandler) Delete(w http.ResponseWriter, r *http.Request) 
 
 	err := h.service.Delete(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, transactionDomain.ErrNegativeBalance) {
+		if errors.Is(err, transaction.ErrNegativeBalance) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			templ.Join(
 				components.SendToast(components.Error, "Negative balance"),

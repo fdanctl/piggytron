@@ -19,11 +19,11 @@ type User struct {
 	updatedAt    time.Time
 }
 
-func New(id ID, name, paswordHash string) (*User, error) {
+func New(id ID, name, passwordHash string) (*User, error) {
 	if name == "" || len(name) > 50 {
 		return nil, ErrInvalidName
 	}
-	if paswordHash == "" {
+	if passwordHash == "" {
 		return nil, ErrInvalidPassword
 	}
 
@@ -32,17 +32,17 @@ func New(id ID, name, paswordHash string) (*User, error) {
 	return &User{
 		id:           id,
 		name:         name,
-		passwordHash: paswordHash,
+		passwordHash: passwordHash,
 		createdAt:    now,
 		updatedAt:    now,
 	}, nil
 }
 
-func Rehydrate(id ID, name, paswordHash string, createdAt, updatedAt time.Time) *User {
+func Rehydrate(id ID, name, passwordHash string, createdAt, updatedAt time.Time) *User {
 	return &User{
 		id:           id,
 		name:         name,
-		passwordHash: paswordHash,
+		passwordHash: passwordHash,
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
 	}

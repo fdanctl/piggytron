@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/config"
-	"github.com/fdanctl/piggytron/internal/application/account"
-	"github.com/fdanctl/piggytron/internal/application/budget"
-	"github.com/fdanctl/piggytron/internal/application/charts"
-	expensecategory "github.com/fdanctl/piggytron/internal/application/expense_category"
-	incomecategory "github.com/fdanctl/piggytron/internal/application/income_category"
-	"github.com/fdanctl/piggytron/internal/application/transaction"
-	"github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/application/appbudget"
+	"github.com/fdanctl/piggytron/internal/application/appcharts"
+	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
+	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
+	"github.com/fdanctl/piggytron/internal/application/apptransaction"
+	"github.com/fdanctl/piggytron/internal/application/appuser"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
@@ -66,7 +66,7 @@ func main() {
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	}
 
-	hasher := user.NewPasswordHasher(
+	hasher := appuser.NewPasswordHasher(
 		cfg.HashConfig.Time,
 		cfg.HashConfig.Memory,
 		cfg.HashConfig.Threads,
@@ -98,13 +98,13 @@ func main() {
 	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
 
 	// services
-	accountService := account.NewService(accountRepo)
-	transactionService := transaction.NewService(transactionRepo, db)
-	expenseCatService := expensecategory.NewService(expenseCatRepo)
-	incomeCatService := incomecategory.NewService(incomeCatRepo)
-	userService := user.NewService(userRepo, hasher, sessionStore)
-	budgetService := budget.NewService(budgetRepo)
-	chartsService := charts.NewService()
+	accountService := appaccount.NewService(accountRepo)
+	transactionService := apptransaction.NewService(transactionRepo, db)
+	expenseCatService := appexpensecategory.NewService(expenseCatRepo)
+	incomeCatService := appincomecategory.NewService(incomeCatRepo)
+	userService := appuser.NewService(userRepo, hasher, sessionStore)
+	budgetService := appbudget.NewService(budgetRepo)
+	chartsService := appcharts.NewService()
 
 	webMux := http.NewServeMux() // returns full HTML page
 	webMux.Handle(
@@ -186,24 +186,21 @@ func main() {
 
 	transactionsHandler := handlers.NewTransactionHandler(
 		transactionService,
-		incomeCatService,
-		expenseCatService,
+		catQueryService,
 		accountService,
 	)
 	partialsMux.Handle("/partials/transaction", transactionsHandler)
 
 	transactionsEditHandler := handlers.NewTransactionEditHandler(
 		transactionService,
-		incomeCatService,
-		expenseCatService,
+		catQueryService,
 		accountService,
 	)
 	partialsMux.Handle("/partials/transaction/{id}", transactionsEditHandler)
 
 	goalContributeHandler := handlers.NewGoalContributeHandler(
 		transactionService,
-		incomeCatService,
-		expenseCatService,
+		catQueryService,
 		accountService,
 	)
 	partialsMux.Handle("/partials/goal-contribute/{id}", goalContributeHandler)
@@ -214,7 +211,7 @@ func main() {
 	goalContributions := handlers.NewGoalContributionsHandler(transactionQueryService)
 	partialsMux.Handle("/partials/contributions", goalContributions)
 
-	catHistChartHandler := handlers.NewCatHistChartHandler(chartsService, catQueryService)
+	catHistChartHandler := handlers.NewCategoryChartHandler(chartsService, catQueryService)
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
 	accountChartHandler := handlers.NewAccountChartHandler(
@@ -254,7 +251,7 @@ func main() {
 	partialsMux.Handle("/partials/bank", bankHandler)
 
 	goalHandler := handlers.NewGoalHandler(
-		accountService, accountQueryService, expenseCatService,
+		accountService, accountQueryService, catQueryService,
 	)
 	partialsMux.Handle("/partials/goal", goalHandler)
 	partialsMux.Handle("/partials/goal/{id}", goalHandler)

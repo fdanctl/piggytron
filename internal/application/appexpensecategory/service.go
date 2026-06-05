@@ -1,9 +1,9 @@
-package expensecategory
+package appexpensecategory
 
 import (
 	"context"
 
-	expensecategory "github.com/fdanctl/piggytron/internal/domain/expense_category"
+	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
 	"github.com/google/uuid"
 )
 
@@ -58,7 +58,7 @@ func (s *Service) CreateCategory(
 	return category, nil
 }
 
-func (s *Service) ReadCategory(
+func (s *Service) FindCategory(
 	ctx context.Context,
 	id string,
 ) (*expensecategory.ExpenseCategory, error) {
@@ -70,7 +70,7 @@ func (s *Service) ReadCategory(
 	return s.repo.FindByID(ctx, expensecategory.ID(id))
 }
 
-func (s *Service) ReadAllUserCategories(
+func (s *Service) FindAllUserCategories(
 	ctx context.Context,
 	userID string,
 ) ([]*expensecategory.ExpenseCategory, error) {

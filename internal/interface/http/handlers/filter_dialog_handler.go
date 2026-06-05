@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/a-h/templ"
-	accountapp "github.com/fdanctl/piggytron/internal/application/account"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -17,14 +17,14 @@ import (
 
 type FilterDialogHandler struct {
 	categoryQueryService query.CategoryQueryService
-	accountService       *accountapp.Service
+	accountService       *appaccount.Service
 	tQueryService        query.TransactionQueryService
 	accQueryService      query.AccountQueryService
 }
 
 func NewFilterDialogHandler(
 	cs query.CategoryQueryService,
-	as *accountapp.Service,
+	as *appaccount.Service,
 	tq query.TransactionQueryService,
 	aq query.AccountQueryService,
 ) *FilterDialogHandler {
@@ -73,7 +73,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	account, err := h.accountService.ReadAllByUser(r.Context(), sessionInfo.UserID)
+	account, err := h.accountService.FindAllByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error finding all accounts", "error", err)
 		http.Error(w, "Internal Error", http.StatusInternalServerError)
@@ -170,25 +170,14 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		maxDate,
 	)
 
-	filterCount := len(types) + len(accounts) + len(cats)
-	queries := []string{fmt.Sprintf("page=%d", 2)}
-	if len(types) > 0 {
-		queries = append(queries, "types="+strings.Join(types, "&types="))
-	}
-	if len(accounts) > 0 {
-		queries = append(queries, "accounts="+strings.Join(accounts, "&accounts="))
-	}
-	if len(cats) > 0 {
-		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
-	}
-	if minAmount != "" {
-		queries = append(queries, "minamount="+minAmount)
-		filterCount++
-	}
-	if maxAmount != "" {
-		queries = append(queries, "maxmount="+minAmount)
-		filterCount++
-	}
+	filterCount, queries := queryStrFromFiltersWithCount(
+		2,
+		types,
+		accounts,
+		cats,
+		minAmount,
+		maxAmount,
+	)
 
 	resCount, err := h.tQueryService.CountFilteredResults(
 		r.Context(), sessionInfo.UserID, filters,

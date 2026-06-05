@@ -6,18 +6,18 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/application/charts"
+	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
 type AccountChartHandler struct {
-	chartsService *charts.Service
+	chartsService *appcharts.Service
 	accountQuery  query.AccountQueryService
 }
 
 func NewAccountChartHandler(
-	cs *charts.Service,
+	cs *appcharts.Service,
 	aq query.AccountQueryService,
 ) *AccountChartHandler {
 	return &AccountChartHandler{

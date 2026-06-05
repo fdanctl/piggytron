@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/url"
 
-	userapp "github.com/fdanctl/piggytron/internal/application/user"
+	"github.com/fdanctl/piggytron/internal/application/appuser"
 	"github.com/fdanctl/piggytron/internal/domain/user"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
@@ -15,11 +15,11 @@ import (
 )
 
 type UserHandler struct {
-	service     *userapp.Service
+	service     *appuser.Service
 	cookieMaker *shared.CookieMaker
 }
 
-func NewUserHandler(s *userapp.Service, cm *shared.CookieMaker) *UserHandler {
+func NewUserHandler(s *appuser.Service, cm *shared.CookieMaker) *UserHandler {
 	return &UserHandler{
 		service:     s,
 		cookieMaker: cm,
@@ -94,7 +94,7 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	sid, err := h.service.LoginUser(r.Context(), name, pwd)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, userapp.ErrWrongPassword) {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, appuser.ErrWrongPassword) {
 			logger.Info("error on login", "error", err)
 			view.ErrorMsg = "Name or password are invalid"
 			w.WriteHeader(http.StatusUnprocessableEntity)

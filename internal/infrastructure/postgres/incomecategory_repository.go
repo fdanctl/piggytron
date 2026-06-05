@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	incomecategory "github.com/fdanctl/piggytron/internal/domain/income_category"
+	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/lib/pq"
 )
 
@@ -117,14 +117,14 @@ func (r *IncomeCategoryRepository) FindByNameAndUser(
 		return nil, err
 	}
 	category := incomecategory.Rehydrate(
-		c.ID,
-		c.UserID,
-		c.Name,
-		c.CreatedAt,
-		c.CreatedAt,
-	)
-	return category, err
-}
+			c.ID,
+			c.UserID,
+			c.Name,
+			c.CreatedAt,
+			c.UpdatedAt,
+		)
+		return category, err
+	}
 
 func (r *IncomeCategoryRepository) FindAllByUser(
 	ctx context.Context,

@@ -1,4 +1,4 @@
-package account
+package appaccount
 
 import (
 	"context"
@@ -125,20 +125,7 @@ func (s *Service) CreateGoal(
 	return account, nil
 }
 
-func (s *Service) ReadOneByID(ctx context.Context, id string) (*account.Account, error) {
-	_, err := uuid.Parse(id)
-	if err != nil {
-		return nil, err
-	}
-
-	newID, err := account.NewID(id)
-	if err != nil {
-		return nil, err
-	}
-	return s.repo.FindByID(ctx, newID)
-}
-
-func (s *Service) ReadAllByUser(
+func (s *Service) FindAllByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
@@ -160,7 +147,7 @@ func (s *Service) ReadAllByUser(
 	return accounts, nil
 }
 
-func (s *Service) ReadAllBanksByUser(
+func (s *Service) FindAllBanksByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
@@ -182,7 +169,7 @@ func (s *Service) ReadAllBanksByUser(
 	return accounts, nil
 }
 
-func (s *Service) ReadAllGoalsByUser(
+func (s *Service) FindAllGoalsByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {

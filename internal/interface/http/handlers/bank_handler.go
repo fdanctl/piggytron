@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	accountapp "github.com/fdanctl/piggytron/internal/application/account"
+	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -16,10 +16,10 @@ import (
 )
 
 type BankHandler struct {
-	service *accountapp.Service
+	service *appaccount.Service
 }
 
-func NewBankHandler(as *accountapp.Service) *BankHandler {
+func NewBankHandler(as *appaccount.Service) *BankHandler {
 	return &BankHandler{
 		service: as,
 	}
