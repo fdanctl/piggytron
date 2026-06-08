@@ -1,0 +1,13 @@
+package components
+
+templ MonthPill(class string) {
+	<div class={ "month-pill", templ.KV(class != "", class) }>
+		<button class="reset-btn">
+			@ChevronLeftSvg(0, "", "")
+		</button>
+		@Select("Jun 2026", "", nil, false, nil)
+		<button class="reset-btn">
+			@ChevronRightSvg(0, "", "")
+		</button>
+	</div>
+}

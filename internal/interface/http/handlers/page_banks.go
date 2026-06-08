@@ -1,17 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"net/http"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
@@ -77,17 +73,15 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	pageView := views.NewBankPage(accounts, transactions)
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		err := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{Href: "", Name: "Banks"},
-		}, nil).Render(ctx, w)
-		if err != nil {
-			return err
-		}
-
-		err = partials.Banks(pageView).Render(ctx, w)
-		return err
-	})
+	content := pages.Banks(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{Href: "", Name: "Banks"},
+			},
+			Options: nil,
+		},
+		pageView,
+	)
 
 	renderWithMainLayout(w, r, "Banks", content)
 }
@@ -143,28 +137,22 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	var optionsLinks []components.BreadcrumbsLink
+	var optionsLinks []views.BreadcrumbsLink
 	for _, g := range banks {
-		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+		optionsLinks = append(optionsLinks, views.BreadcrumbsLink{
 			Href: fmt.Sprintf("/banks/%s", g.ID),
 			Name: g.Name,
 		})
 	}
 
-	breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
-		{
-			Href: "/banks",
-			Name: "Banks",
-		},
-		{
-			Href: "/banks/" + string(bank.ID),
-			Name: bank.Name,
-		},
-	}, optionsLinks)
-
-	content := templ.Join(
-		breadcrumbs,
-		partials.BankPage(*bank, transactionsViews, hasMore, transactions.Total),
+	content := pages.Bank(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{Href: "", Name: "Transactions"},
+				{Href: "", Name: "All"},
+			},
+			Options: optionsLinks,
+		}, *bank, transactionsViews, hasMore, transactions.Total,
 	)
 
 	renderWithMainLayout(w, r, bank.Name, content)

@@ -81,3 +81,31 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 		</div>
 	</li>
 }
+
+templ ContributionItem(t views.Transaction, attrs templ.Attributes) {
+	<li class="transaction" { attrs... }>
+		<div>
+			<div class="transaction__icon">
+				switch t.Type {
+					case "expense":
+						@components.ArrowLeftSvg(0, "", "")
+					case "income":
+						@components.ArrowRightSvg(0, "", "")
+					case "transfer":
+						@components.ArrowRightLeftSvg(0, "", "")
+				}
+			</div>
+			<div>
+				<p class="transaction__description">{ t.Date }</p>
+			</div>
+		</div>
+		<div class="text-right">
+			<p
+				class="transaction__amount"
+				style={ templ.KV("color: var(--color-positive)", t.Type == "income"), templ.KV("color: var(--color-negative)", t.Type == "expense") }
+			>
+				{ t.Amount }
+			</p>
+		</div>
+	</li>
+}

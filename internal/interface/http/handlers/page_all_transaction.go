@@ -1,16 +1,12 @@
 package handlers
 
 import (
-	"context"
-	"io"
 	"net/http"
 	"strings"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
@@ -100,23 +96,19 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		header := partials.AllTransactionsHeader([]components.BreadcrumbsLink{
-			{Href: "", Name: "Transactions"},
-			{Href: "", Name: "All"},
+	content := pages.AllTransactions(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{Href: "", Name: "Transactions"},
+				{Href: "", Name: "All"},
+			},
+			Options: nil,
 		},
-			nil,
-			uint8(filterCount),
-			r.URL.RawQuery,
-			tWithCount.Total,
-		)
-		if header.Render(ctx, w); err != nil {
-			return err
-		}
-
-		return partials.TransactionsList(transactionsView, strings.Join(queries, "&"), hasMore).
-			Render(ctx, w)
-	})
+		uint8(filterCount),
+		r.URL.RawQuery,
+		tWithCount.Total,
+		transactionsView, strings.Join(queries, "&"), hasMore,
+	)
 
 	renderWithMainLayout(w, r, "Transactions", content)
 }

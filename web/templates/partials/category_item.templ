@@ -1,0 +1,24 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ CategoryItem(cat views.Category, attrs templ.Attributes) {
+	<li { attrs... }>
+		<a class="flex justify-between items-center" href={ "/categories/" + cat.GetID() }>
+			<div>
+				{ cat.GetName() }
+			</div>
+			switch cat.GetExpenseType() {
+				case "needs":
+					@components.Badge("Needs", "", components.BadgeNeeds)
+				case "wants":
+					@components.Badge("Wants", "", components.BadgeWants)
+				case "savings":
+					@components.Badge("Savings", "", components.BadgeSavings)
+			}
+		</a>
+	</li>
+}

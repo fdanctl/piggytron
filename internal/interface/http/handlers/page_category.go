@@ -1,19 +1,15 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"net/http"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
 	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
@@ -82,22 +78,18 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		icView = append(icView, views.NewIncomeCategory(v))
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		err := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{Href: "", Name: "Categories"},
-		}, nil).Render(ctx, w)
-		if err != nil {
-			return err
-		}
-
-		err = partials.Categories(
-			views.CategoriesView{
-				IncomeCategories:  icView,
-				ExpenseCategories: ecView,
+	content := pages.Categories(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{Href: "", Name: "Categories"},
 			},
-		).Render(ctx, w)
-		return err
-	})
+			Options: nil,
+		},
+		views.CategoriesView{
+			IncomeCategories:  icView,
+			ExpenseCategories: ecView,
+		},
+	)
 
 	renderWithMainLayout(w, r, "Categories", content)
 }
@@ -143,16 +135,16 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		category = views.NewIncomeCategory(icat)
 	}
 
-	var optionsLinks []components.BreadcrumbsLink
+	var optionsLinks []views.BreadcrumbsLink
 
 	for _, v := range icats {
-		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+		optionsLinks = append(optionsLinks, views.BreadcrumbsLink{
 			Href: fmt.Sprintf("/categories/%s", v.ID()),
 			Name: v.Name(),
 		})
 	}
 	for _, v := range ecats {
-		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+		optionsLinks = append(optionsLinks, views.BreadcrumbsLink{
 			Href: fmt.Sprintf("/categories/%s", v.ID()),
 			Name: v.Name(),
 		})
@@ -186,27 +178,21 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{
-				Href: "/categories",
-				Name: "Categories",
+	content := pages.Category(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{
+					Href: "/categories",
+					Name: "Categories",
+				},
+				{
+					Href: "/categories/" + category.GetID(),
+					Name: category.GetName(),
+				},
 			},
-			{
-				Href: "/categories/" + category.GetID(),
-				Name: category.GetName(),
-			},
-		}, optionsLinks)
-		if err := breadcrumbs.Render(ctx, w); err != nil {
-			return err
-		}
-
-		c := partials.CategoryStats(category, transactionsView, hasMore, transactions.Total)
-		if err := c.Render(ctx, w); err != nil {
-			return err
-		}
-		return nil
-	})
+			Options: optionsLinks,
+		}, category, transactionsView, hasMore, transactions.Total,
+	)
 
 	renderWithMainLayout(w, r, category.GetName(), content)
 }

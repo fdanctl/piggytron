@@ -1,0 +1,170 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"time"
+)
+
+templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
+	@components.Breadcrumbs(bview)
+	<div class="flex justify-between">
+		<div class="goal-amount-target">
+			<h2>{ g.Amount }</h2>
+			<span class="text-base">/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</span>
+		</div>
+		<div class="goal-actions">
+			@components.ButtonWithIcon(
+				"Contribute",
+				"",
+				components.BtnSecondary,
+				components.BtnMedium,
+				templ.Attributes{
+					"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
+				components.IconLeft,
+				components.PlusSvg(0, "", ""),
+			)
+			@components.ButtonWithIcon(
+				"Edit goal",
+				"",
+				components.BtnSecondary,
+				components.BtnMedium,
+				templ.Attributes{
+					"hx-get":    fmt.Sprintf("/partials/goal/%s", g.ID),
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
+				components.IconLeft,
+				components.SquarePenSvg(0, "", ""),
+			)
+		</div>
+	</div>
+	@components.ProgressBar("mt-md", g.CompletePercentage)
+	<div class="flex justify-between text-subtitle text-xs mt-xs">
+		<span>
+			{ views.FormatMoney(0.00, currency.EUR, language.AmericanEnglish) }
+		</span>
+		<span>
+			{ views.FormatFloat(g.CompletePercentage) }% 
+			if g.TargetDate != nil {
+				· on track for { views.FormatDate(*g.TargetDate) }
+			}
+		</span>
+		<span>
+			{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+		</span>
+	</div>
+	@components.ButtonWithIcon(
+		"Contribute",
+		"mobile-contribute-btn mt-xl",
+		components.BtnSecondary,
+		components.BtnMedium,
+		nil,
+		components.IconLeft,
+		components.PlusSvg(0, "", ""),
+	)
+	<div
+		class="chart-container mt-xl"
+		style="margin-top: calc(-1 * var(--spacing-md));"
+		hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount) }
+		hx-trigger="load"
+	>
+		@components.Loader("htmx-indicator", nil)
+	</div>
+	<div class="goal-grid">
+		<div class="card" id="goal-details">
+			<div class="flex justify-between w-full">
+				<h4 class="card__title mb-md">Details</h4>
+				<button
+					class="reset-btn goal-details__pen-btn"
+					hx-get={ fmt.Sprintf("/partials/goal/%s", g.ID) }
+					hx-target="#dialog-root"
+					hx-swap="beforeend"
+				>
+					@components.PenSvg(14, "", "")
+				</button>
+			</div>
+			<ul class="goal-details__list">
+				<li class="goal-details__item">
+					<span class="goal-details__key">Status</span>
+					<span class="goal-details__value">status</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Category</span>
+					<span class="goal-details__value">{ g.Category }</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Target amount</span>
+					<span class="goal-details__value">
+						{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+					</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Left</span>
+					<span class="goal-details__value">{ g.AmountLeft }</span>
+				</li>
+				<li class="goal-details__item">
+					<span class="goal-details__key">Start date</span>
+					<span class="goal-details__value">{ views.FormatDate(g.StartDate) }</span>
+				</li>
+				if g.TargetDate != nil {
+					<li class="goal-details__item">
+						<span class="goal-details__key">Target date</span>
+						<span class="goal-details__value">{ views.FormatDate(*g.TargetDate) }</span>
+					</li>
+				}
+			</ul>
+		</div>
+		<div id="history">
+			<div class="flex justify-between">
+				<h4 class="card__title">History</h4>
+				<div class="flex items-start gap-xs">
+					<span class="text-muted text-xs">
+						{ ttCount } movements
+					</span>
+					<a class="text-xs" href={ fmt.Sprintf("/transactions/all?accounts=%s", g.ID) }>
+						view all
+					</a>
+				</div>
+			</div>
+			@contributionsList(g.Name, tt, fmt.Sprintf("page=2&accounts=%sname=%s", g.ID, g.Name), hasMore)
+		</div>
+	</div>
+}
+
+templ contributionsList(goalName string, transactions []views.Transaction, queryStr string, hasMore bool) {
+	<ul
+		id="icontributions"
+		class="space-y-sm"
+		hx-indicator="#infinite-indicator"
+	>
+		if len(transactions) == 0 {
+			<p>no transactions</p>
+		}
+		for i, t := range transactions {
+			if i == len(transactions) - 1 && hasMore {
+				@partials.ContributionItem(t, templ.Attributes{
+					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
+					"hx-get":       fmt.Sprintf("/partials/contributions?%s", queryStr),
+					"hx-trigger":   "intersect once",
+					"hx-swap":      "afterend",
+					"hx-indicator": "#infinite-indicator",
+				})
+			} else {
+				@partials.ContributionItem(t, templ.Attributes{
+					"style": fmt.Sprintf("animation-delay: %dms", i*30),
+				})
+			}
+		}
+	</ul>
+	<div id="infinite-indicator" class="indicator">
+		@components.Loader("", nil)
+	</div>
+}

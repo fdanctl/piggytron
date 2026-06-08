@@ -1,19 +1,15 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
@@ -73,17 +69,15 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		gView = append(gView, views.NewGoal(g))
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		err := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{Href: "", Name: "Goals"},
-		}, nil).Render(ctx, w)
-		if err != nil {
-			return err
-		}
-
-		err = partials.Goals(gView).Render(ctx, w)
-		return err
-	})
+	content := pages.Goals(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{Href: "", Name: "Goals"},
+			},
+			Options: nil,
+		},
+		gView,
+	)
 
 	renderWithMainLayout(w, r, "Goals", content)
 }
@@ -115,9 +109,9 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var optionsLinks []components.BreadcrumbsLink
+	var optionsLinks []views.BreadcrumbsLink
 	for _, g := range goals {
-		optionsLinks = append(optionsLinks, components.BreadcrumbsLink{
+		optionsLinks = append(optionsLinks, views.BreadcrumbsLink{
 			Href: fmt.Sprintf("/goals/%s", g.ID),
 			Name: g.Name,
 		})
@@ -151,24 +145,22 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		breadcrumbs := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{
-				Href: "/goals",
-				Name: "Goals",
+	content := pages.Goal(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{
+					Href: "/goals",
+					Name: "Goals",
+				},
+				{
+					Href: "/goals/" + string(goal.ID),
+					Name: goal.Name,
+				},
 			},
-			{
-				Href: "/goals/" + string(goal.ID),
-				Name: goal.Name,
-			},
-		}, optionsLinks)
-		if err := breadcrumbs.Render(ctx, w); err != nil {
-			return err
-		}
-
-		return partials.Goal(views.NewGoal(*goal), transactionsViews, hasMore, transactions.Total).
-			Render(ctx, w)
-	})
+			Options: optionsLinks,
+		},
+		views.NewGoal(*goal), transactionsViews, hasMore, transactions.Total,
+	)
 
 	renderWithMainLayout(w, r, goal.Name, content)
 }

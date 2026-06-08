@@ -1,12 +1,14 @@
-package partials
+package pages
 
 import (
 	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMore bool, ttCount int) {
+templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []views.Transaction, hasMore bool, ttCount int) {
+	@components.Breadcrumbs(bview)
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
@@ -30,6 +32,6 @@ templ CategoryStats(cat views.Category, transactions []views.Transaction, hasMor
 				</a>
 			</div>
 		</div>
-		@TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
+		@partials.TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
 	</section>
 }

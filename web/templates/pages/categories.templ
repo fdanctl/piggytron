@@ -1,13 +1,15 @@
-package partials
+package pages
 
 import (
 	"fmt"
 
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ Categories(cv views.CategoriesView) {
+templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
+	@components.Breadcrumbs(bview)
 	<div id="categories-container">
 		<section id="income-cat">
 			<div>
@@ -32,7 +34,7 @@ templ Categories(cv views.CategoriesView) {
 				hx-swap="innerHTML transition:true"
 			>
 				for i, cat := range cv.IncomeCategories {
-					@CategoryItem(cat, templ.Attributes{
+					@partials.CategoryItem(cat, templ.Attributes{
 						"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					})
 				}
@@ -61,29 +63,11 @@ templ Categories(cv views.CategoriesView) {
 				hx-swap="innerHTML transition:true"
 			>
 				for i, cat := range cv.ExpenseCategories {
-					@CategoryItem(cat, templ.Attributes{
+					@partials.CategoryItem(cat, templ.Attributes{
 						"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					})
 				}
 			</ul>
 		</section>
 	</div>
-}
-
-templ CategoryItem(cat views.Category, attrs templ.Attributes) {
-	<li { attrs... }>
-		<a class="flex justify-between items-center" href={ "/categories/" + cat.GetID() }>
-			<div>
-				{ cat.GetName() }
-			</div>
-			switch cat.GetExpenseType() {
-				case "needs":
-					@components.Badge("Needs", "", components.BadgeNeeds)
-				case "wants":
-					@components.Badge("Wants", "", components.BadgeWants)
-				case "savings":
-					@components.Badge("Savings", "", components.BadgeSavings)
-			}
-		</a>
-	</li>
 }

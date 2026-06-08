@@ -1,0 +1,40 @@
+package pages
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ Goals(bview views.BreadcrumbsView, goals []views.Goal) {
+	@components.Breadcrumbs(bview)
+	<section id="active-goals">
+		<div class="flex justify-between items-center">
+			<h4>Active</h4>
+			@components.ButtonWithIcon(
+				"Add",
+				"",
+				components.BtnOutline,
+				components.BtnSmall,
+				templ.Attributes{
+					"hx-get":    "/partials/goal",
+					"hx-target": "#dialog-root",
+					"hx-swap":   "beforeend",
+				},
+				components.IconLeft,
+				components.PlusSvg(0, "", ""),
+			)
+		</div>
+		<ul
+			id="active-goals-list"
+			class="goal-list"
+			hx-target="#content"
+			hx-boost="true"
+			hx-swap="innerHTML transition:true"
+		>
+			for _, g := range goals {
+				@partials.GoalItem(g, nil)
+			}
+		</ul>
+	</section>
+}

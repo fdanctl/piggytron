@@ -8,6 +8,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -308,6 +309,6 @@ func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
-	content := partials.Test()
+	content := pages.Test()
 	renderWithMainLayout(w, r, "Signup", content)
 }

@@ -1,0 +1,30 @@
+package partials
+
+import "github.com/fdanctl/piggytron/web/templates/components"
+
+templ BankChartCard(chart templ.Component) {
+	@components.MonthPill("")
+	<div
+		class="chart-container"
+		style="margin-top: calc(-1 * var(--spacing-md));"
+	>
+		@chart
+	</div>
+	<div class="bank-chart__legend">
+		<div class="flex gap-md">
+			<div class="bank-chart__legend-item">
+				<span class="bank-chart__legend-circle in"></span>
+				<span>In</span>
+				<span class="text-positive">+3 500€</span>
+			</div>
+			<div class="bank-chart__legend-item">
+				<span class="bank-chart__legend-circle out"></span>
+				<span>Out</span>
+				<span class="text-negative">–892€</span>
+			</div>
+		</div>
+		<div>
+			24 transactions
+		</div>
+	</div>
+}

@@ -1,18 +1,15 @@
 package components
 
-type BreadcrumbsLink struct {
-	Href string
-	Name string
-}
+import "github.com/fdanctl/piggytron/web/views"
 
-templ Breadcrumbs(items []BreadcrumbsLink, options []BreadcrumbsLink) {
+templ Breadcrumbs(view views.BreadcrumbsView) {
 	<div
 		class="breadcrumbs"
 		hx-target="#content"
 		hx-boost="true"
 	>
-		for i, v := range items {
-			if i < len(items) - 1 {
+		for i, v := range view.Items {
+			if i < len(view.Items) - 1 {
 				<a
 					if v.Href != "" {
 						href={ v.Href }
@@ -23,10 +20,10 @@ templ Breadcrumbs(items []BreadcrumbsLink, options []BreadcrumbsLink) {
 				<i>
 					@ChevronRightSvg(20, "", "")
 				</i>
-			} else if len(options) > 0 {
+			} else if len(view.Options) > 0 {
 				@Dropdown("w-fit font-semibold", v.Name, false) {
 					<ul class="breadcrumbs-selection">
-						for _, o := range options {
+						for _, o := range view.Options {
 							<li>
 								<a href={ o.Href }>
 									{ o.Name }

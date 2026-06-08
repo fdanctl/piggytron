@@ -1,4 +1,4 @@
-package partials
+package pages
 
 import (
 	"fmt"
@@ -8,7 +8,8 @@ import (
 	"golang.org/x/text/language"
 )
 
-templ Budget(view views.BudgetPageView) {
+templ Budget(bview views.BreadcrumbsView, view views.BudgetPageView) {
+	@components.Breadcrumbs(bview)
 	// if view.TotalBudgeted == 0 {
 	@lastMonthImport()
 	// }

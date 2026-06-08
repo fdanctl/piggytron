@@ -1,14 +1,16 @@
-package partials
+package pages
 
 import (
 	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
 
-templ Banks(view views.BankPage) {
+templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
+	@components.Breadcrumbs(bview)
 	<div id="banks-container">
 		<section id="summary">
 			<div class="card">
@@ -101,7 +103,7 @@ templ Banks(view views.BankPage) {
 					hx-swap="innerHTML transition:true"
 				>
 					for _, v := range view.Banks {
-						@AccountItem(v.ID, v.Name)
+						@partials.AccountItem(v.ID, v.Name)
 					}
 				</ul>
 			</div>
@@ -112,7 +114,7 @@ templ Banks(view views.BankPage) {
 				<div>
 					<ul>
 						for i, t := range view.RecentTransactions {
-							@TransactionItem(t, templ.Attributes{
+							@partials.TransactionItem(t, templ.Attributes{
 								"style": fmt.Sprintf("animation-delay: %dms", i*30),
 							})
 						}
@@ -122,13 +124,4 @@ templ Banks(view views.BankPage) {
 			</div>
 		</section>
 	</div>
-}
-
-templ AccountItem(id, name string) {
-	<li>
-		<a class="account-card" href={ fmt.Sprint("/banks/", id) }>
-			{ name }
-			@components.ChevronRightSvg(0, "", "")
-		</a>
-	</li>
 }

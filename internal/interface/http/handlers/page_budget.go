@@ -1,17 +1,13 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
@@ -90,17 +86,15 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	pageView := views.NewBudgetPageView(totalIncome, categoryBudgetSpent)
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		err := components.Breadcrumbs([]components.BreadcrumbsLink{
-			{Href: "", Name: "Budget"},
-		}, nil).Render(ctx, w)
-		if err != nil {
-			return err
-		}
-
-		err = partials.Budget(pageView).Render(ctx, w)
-		return err
-	})
+	content := pages.Budget(
+		views.BreadcrumbsView{
+			Items: []views.BreadcrumbsLink{
+				{Href: "", Name: "Budget"},
+			},
+			Options: nil,
+		},
+		pageView,
+	)
 
 	renderWithMainLayout(w, r, "Budget", content)
 }

@@ -1,0 +1,15 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+)
+
+templ AccountItem(id, name string) {
+	<li>
+		<a class="account-card" href={ fmt.Sprint("/banks/", id) }>
+			{ name }
+			@components.ChevronRightSvg(0, "", "")
+		</a>
+	</li>
+}

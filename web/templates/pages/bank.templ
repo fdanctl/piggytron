@@ -1,15 +1,17 @@
-package partials
+package pages
 
 import (
 	"fmt"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 )
 
-templ BankPage(b query.AccountWithSum, tt []views.Transaction, hasMore bool, ttCount int) {
+templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Transaction, hasMore bool, ttCount int) {
+	@components.Breadcrumbs(bview)
 	<div>
 		<p class="text-muted mb-sm uppercase text-sm">Current balance</p>
 		<div class="bank-balance">
@@ -72,45 +74,6 @@ templ BankPage(b query.AccountWithSum, tt []views.Transaction, hasMore bool, ttC
 				</a>
 			</div>
 		</div>
-		@TransactionsList(tt, "page=2&accounts=%s", hasMore)
-	</div>
-}
-
-templ BankChartCard(chart templ.Component) {
-	@MonthPill("")
-	<div
-		class="chart-container"
-		style="margin-top: calc(-1 * var(--spacing-md));"
-	>
-		@chart
-	</div>
-	<div class="bank-chart__legend">
-		<div class="flex gap-md">
-			<div class="bank-chart__legend-item">
-				<span class="bank-chart__legend-circle in"></span>
-				<span>In</span>
-				<span class="text-positive">+3 500€</span>
-			</div>
-			<div class="bank-chart__legend-item">
-				<span class="bank-chart__legend-circle out"></span>
-				<span>Out</span>
-				<span class="text-negative">–892€</span>
-			</div>
-		</div>
-		<div>
-			24 transactions
-		</div>
-	</div>
-}
-
-templ MonthPill(class string) {
-	<div class={ "month-pill", templ.KV(class != "", class) }>
-		<button class="reset-btn">
-			@components.ChevronLeftSvg(0, "", "")
-		</button>
-		@components.Select("Jun 2026", "", nil, false, nil)
-		<button class="reset-btn">
-			@components.ChevronRightSvg(0, "", "")
-		</button>
+		@partials.TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", b.ID), hasMore)
 	</div>
 }
