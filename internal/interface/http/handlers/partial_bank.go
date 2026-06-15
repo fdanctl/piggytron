@@ -96,7 +96,8 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		fmt.Sprintf(`{
 		"closeModal": true,
 		"contentPush": {
-			"url": "/banks/%s"
+			"url": "/banks/%s",
+			"transition": "true"
 		}
 		}`, bank.ID()),
 	)

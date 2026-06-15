@@ -83,7 +83,16 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 }
 
 templ ContributionItem(t views.Transaction, attrs templ.Attributes) {
-	<li class="transaction" { attrs... }>
+	<li
+		class="transaction"
+		id={ fmt.Sprintf("t__%s", t.ID) }
+		class="transaction"
+		hx-get={ fmt.Sprintf("/partials/transaction-details/%s", t.ID) }
+		hx-target="#dialog-root"
+		hx-swap="beforeend"
+		onclick=""
+		{ attrs... }
+	>
 		<div>
 			<div class="transaction__icon">
 				switch t.Type {

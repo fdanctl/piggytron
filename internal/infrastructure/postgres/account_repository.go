@@ -71,6 +71,46 @@ func (r *AccountRepository) Create(ctx context.Context, a *account.Account) erro
 	return nil
 }
 
+func (r *AccountRepository) Update(ctx context.Context, a *account.Account) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`UPDATE accounts
+		SET
+			name = $2,
+			is_saving = $3,
+			currency = $4,
+			target_amount = $5,
+			start_date = $6,
+			target_date = $7,
+			category_id = $8,
+			updated_at = $9
+		WHERE id = $1`,
+		a.ID(),
+		a.Name(),
+		a.IsSaving(),
+		a.Currency(),
+		a.TargetAmount(),
+		a.StartDate(),
+		a.TargetDate(),
+		a.CategoryID(),
+		a.UpdatedAt(),
+	)
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return account.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
+}
+
 func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*account.Account, error) {
 	row := r.db.QueryRowContext(
 		ctx,

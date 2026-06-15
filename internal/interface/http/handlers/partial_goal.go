@@ -44,6 +44,9 @@ func (h *GoalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case http.MethodPost:
 		h.Post(w, r)
 
+	case http.MethodPut:
+		h.Put(w, r)
+
 	default:
 		http.NotFound(w, r)
 	}
@@ -136,7 +139,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	if len(msgs) > 0 {
 		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view, ecatOpts, "").Render(r.Context(), w)
+		partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
 		return
 	}
 
@@ -195,13 +198,14 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		fmt.Sprintf(`{
 		"closeModal": true,
 		"contentPush": {
-			"url": "/goals/%s"
+			"url": "/goals/%s",
+			"transition": "true"
 		}
 		}`, goal.ID()),
 	)
 
 	templ.Join(
-		partials.GoalForm(view, ecatOpts, ""),
+		partials.GoalFormContent(view, ecatOpts),
 		layouts.OOBWraper(
 			"active-goals-list",
 			"beforeend",
@@ -209,4 +213,104 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 			partials.GoalItem(views.NewGoal(*g), nil),
 		),
 	).Render(r.Context(), w)
+}
+
+func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		logger.Error("unexpected error", "error", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id := r.PathValue("id")
+	name := r.FormValue("name")
+	currency := r.FormValue("currency")
+	tamount := r.FormValue("target-amount")
+	sdate := r.FormValue("start-date")
+	tdate := r.FormValue("target-date")
+	cat := r.FormValue("category")
+
+	_, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+	)
+	if err != nil {
+		logger.Error("error reading all categories", "error", err)
+		http.Error(w, "Internal error", http.StatusInternalServerError)
+		return
+	}
+
+	view := views.GoalForm{
+		Initial:      false,
+		Name:         name,
+		Currency:     currency,
+		TargetAmount: tamount,
+		StartDate:    sdate,
+		TargetDate:   tdate,
+		Category:     cat,
+	}
+	msgs := view.Validate()
+	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
+		return
+	}
+
+	amount, err := convertAmountStrToInt(tamount)
+	if err != nil {
+		http.Error(w, "Invalid amount", http.StatusBadRequest)
+		return
+	}
+
+	startDate, err := time.Parse("02/01/2006", sdate)
+	if err != nil {
+		http.Error(w, "Invalid date", http.StatusBadRequest)
+		return
+	}
+
+	targetDate, err := time.Parse("02/01/2006", tdate)
+	var pDate *time.Time
+	if err == nil {
+		pDate = &targetDate
+	}
+
+	goal, err := h.accService.UpdateGoal(
+		r.Context(),
+		id,
+		sessionInfo.UserID,
+		name,
+		currency,
+		amount,
+		startDate,
+		pDate,
+		cat,
+	)
+	if err != nil {
+		if errors.Is(err, account.ErrDuplicate) {
+			logger.Info("invalid form - duplicated", "error", err)
+			view.CustomError = err
+		} else {
+			logger.Error("error creating goal", "error", err)
+		}
+
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
+		return
+	}
+
+	w.Header().Set(
+		"HX-Trigger",
+		fmt.Sprintf(`{
+		"closeModal": true,
+		"contentPush": {
+			"url": "/goals/%s"
+		}
+		}`, goal.ID()),
+	)
+
+	partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
 }

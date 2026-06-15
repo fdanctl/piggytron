@@ -1,6 +1,6 @@
 import { closeAllDialog, closeDialog, closeLastDialog } from "./navigation";
 
-function confirmModal({
+export function confirmModal({
   title = "Confirm",
   message = "Are you sure?",
   acceptText = "Yes",
@@ -102,7 +102,7 @@ document.body.addEventListener("closeModal", function (ev) {
 document.body.addEventListener("contentPush", function (ev) {
   htmx.ajax("GET", ev.detail.url, {
     target: "#content",
-    swap: "innerHTML transition:true",
+    swap: `innerHTML transition:${ev.detail.transition ?? "false"}`,
     push: "true",
   });
 });

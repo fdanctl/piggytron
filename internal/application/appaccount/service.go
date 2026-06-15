@@ -125,6 +125,65 @@ func (s *Service) CreateGoal(
 	return account, nil
 }
 
+func (s *Service) UpdateGoal(
+	ctx context.Context,
+	id string,
+	userID string,
+	name string,
+	currency string,
+	targetAmount int,
+	startDate time.Time,
+	targetDate *time.Time,
+	categoryID string,
+) (*account.Account, error) {
+	_, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = uuid.Parse(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = uuid.Parse(categoryID)
+	if err != nil {
+		return nil, err
+	}
+
+	uid, err := account.NewID(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	cid, err := account.NewID(categoryID)
+	if err != nil {
+		return nil, err
+	}
+
+	goal, err := s.repo.FindByID(ctx, account.ID(id))
+	if err != nil {
+		return nil, err
+	}
+	if goal.UserID() != uid {
+		return nil, errors.New("not found")
+	}
+
+	// update
+	goal.ChangeName(name)
+	goal.ChangeTargetAmount(targetAmount)
+	goal.ChangeStartDate(startDate)
+	goal.ChangeTargetDate(targetDate)
+	goal.ChangeCategory(cid)
+
+	err = s.repo.Update(ctx, goal)
+	if err != nil {
+		return nil, err
+	}
+
+	return goal, nil
+}
+
 func (s *Service) FindAllByUser(
 	ctx context.Context,
 	userID string,

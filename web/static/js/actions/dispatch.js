@@ -1,8 +1,10 @@
 import { handleInputOnBlur } from "../input";
+import { goalActions } from "./goal";
 import { uiActions } from "./ui";
 
 const actions = {
   ...uiActions,
+  ...goalActions,
 };
 const eventAttributes = {
   click: "action",
@@ -14,6 +16,7 @@ const eventAttributes = {
   "htmx:beforeRequest": "beforerequest",
   "htmx:afterRequest": "afterrequest",
   animationend: "animationend",
+  submit: "submit",
 };
 
 document.addEventListener("focusout", (evt) => {

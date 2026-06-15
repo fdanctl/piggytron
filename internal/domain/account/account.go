@@ -26,7 +26,7 @@ type Account struct {
 	userID   ID
 	aType    AccountType
 	name     string
-	isSaving *bool
+	isSaving *bool // bank-specific
 	currency string
 	// goal-specific
 	targetAmount *int
@@ -194,5 +194,58 @@ func (b *Account) CanMakeExpense() error {
 	if b.isSaving != nil && *b.isSaving {
 		return errors.New("savings accounts can't make expenses")
 	}
+	return nil
+}
+
+// updates
+
+func (b *Account) ChangeName(name string) error {
+	if name == "" || len(name) > 50 {
+		return ErrInvalidName
+	}
+	b.name = name
+	b.updatedAt = time.Now()
+	return nil
+}
+
+func (b *Account) ChangeTargetAmount(amount int) error {
+	if b.aType != goal {
+		return ErrAccountWrongType
+	}
+	if amount <= 0 {
+		return ErrNegativeNumber
+	}
+	b.targetAmount = &amount
+	b.updatedAt = time.Now()
+	return nil
+}
+
+func (b *Account) ChangeStartDate(date time.Time) error {
+	if b.aType != goal {
+		return ErrAccountWrongType
+	}
+	// TODO avoid startDate after a contribution
+	b.startDate = &date
+	b.updatedAt = time.Now()
+	return nil
+}
+
+func (b *Account) ChangeTargetDate(date *time.Time) error {
+	if b.aType != goal {
+		return ErrAccountWrongType
+	}
+	b.targetDate = date
+	b.updatedAt = time.Now()
+	return nil
+}
+
+func (b *Account) ChangeCategory(cid ID) error {
+	if b.aType != goal {
+		return ErrAccountWrongType
+	}
+	b.categoryID = &cid
+	b.updatedAt = time.Now()
+	// contributions transaction.Transaction
+	// change contributions
 	return nil
 }

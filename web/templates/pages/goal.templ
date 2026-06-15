@@ -127,23 +127,24 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 				<h4 class="card__title">History</h4>
 				<div class="flex items-start gap-xs">
 					<span class="text-muted text-xs">
-						{ ttCount } movements
+						<span id="contribution-count">{ ttCount }</span> movements
 					</span>
 					<a class="text-xs" href={ fmt.Sprintf("/transactions/all?accounts=%s", g.ID) }>
 						view all
 					</a>
 				</div>
 			</div>
-			@contributionsList(g.Name, tt, fmt.Sprintf("page=2&accounts=%sname=%s", g.ID, g.Name), hasMore)
+			@contributionsList(tt, fmt.Sprintf("page=2&accounts=%s&name=%s", g.ID, g.Name), hasMore)
 		</div>
 	</div>
 }
 
-templ contributionsList(goalName string, transactions []views.Transaction, queryStr string, hasMore bool) {
+templ contributionsList(transactions []views.Transaction, queryStr string, hasMore bool) {
 	<ul
 		id="icontributions"
 		class="space-y-sm"
 		hx-indicator="#infinite-indicator"
+		hx-disinherit="hx-indicator"
 	>
 		if len(transactions) == 0 {
 			<p>no transactions</p>
