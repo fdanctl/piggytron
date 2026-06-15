@@ -3,7 +3,8 @@ package transaction
 import "context"
 
 type Repository interface {
-	Create(ctx context.Context, category *Transaction) error
+	Create(ctx context.Context, transaction *Transaction) error
+	UpdateMany(ctx context.Context, transactions []*Transaction) error
 	Delete(ctx context.Context, id ID) error
 	FindByID(ctx context.Context, id ID) (*Transaction, error)
 	FindAllByUser(ctx context.Context, uid ID) ([]*Transaction, error)

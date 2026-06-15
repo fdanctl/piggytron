@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"errors"
 	"time"
 )
 
@@ -257,5 +258,16 @@ func (t *Transaction) CanBeDeleted(toAccBalance *int) error {
 	if toAccBalance != nil && *toAccBalance-t.Amount() < 0 {
 		return ErrNegativeBalance
 	}
+	return nil
+}
+
+// updates
+
+func (t *Transaction) ChangeExpenseCategory(cid ID) error {
+	if t.fromAccountID == nil {
+		return errors.New("can't update")
+	}
+
+	t.expenseCategoryID = &cid
 	return nil
 }

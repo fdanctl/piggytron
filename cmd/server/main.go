@@ -98,7 +98,7 @@ func main() {
 	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
 
 	// services
-	accountService := appaccount.NewService(accountRepo)
+	accountService := appaccount.NewService(accountRepo, db)
 	transactionService := apptransaction.NewService(transactionRepo, db)
 	expenseCatService := appexpensecategory.NewService(expenseCatRepo)
 	incomeCatService := appincomecategory.NewService(incomeCatRepo)

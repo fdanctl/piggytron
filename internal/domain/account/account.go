@@ -220,11 +220,13 @@ func (b *Account) ChangeTargetAmount(amount int) error {
 	return nil
 }
 
-func (b *Account) ChangeStartDate(date time.Time) error {
+func (b *Account) ChangeStartDate(date time.Time, minPossible *time.Time) error {
 	if b.aType != goal {
 		return ErrAccountWrongType
 	}
-	// TODO avoid startDate after a contribution
+	if minPossible != nil && date.Compare(*minPossible) == 1 {
+		return ErrContributionBeforeStartDate
+	}
 	b.startDate = &date
 	b.updatedAt = time.Now()
 	return nil
@@ -245,7 +247,5 @@ func (b *Account) ChangeCategory(cid ID) error {
 	}
 	b.categoryID = &cid
 	b.updatedAt = time.Now()
-	// contributions transaction.Transaction
-	// change contributions
 	return nil
 }

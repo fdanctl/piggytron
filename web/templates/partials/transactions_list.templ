@@ -84,7 +84,6 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 
 templ ContributionItem(t views.Transaction, attrs templ.Attributes) {
 	<li
-		class="transaction"
 		id={ fmt.Sprintf("t__%s", t.ID) }
 		class="transaction"
 		hx-get={ fmt.Sprintf("/partials/transaction-details/%s", t.ID) }

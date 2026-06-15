@@ -2,15 +2,20 @@ package appaccount
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/google/uuid"
 )
 
 type Service struct {
 	repo account.Repository
+	db   *sql.DB
 }
 
 var (
@@ -18,8 +23,8 @@ var (
 	ErrInvalidDate   = errors.New("invalid date")
 )
 
-func NewService(repo account.Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo account.Repository, db *sql.DB) *Service {
+	return &Service{repo: repo, db: db}
 }
 
 func (s *Service) FindOneByID(ctx context.Context, id string) (*account.Account, error) {
@@ -161,7 +166,14 @@ func (s *Service) UpdateGoal(
 		return nil, err
 	}
 
-	goal, err := s.repo.FindByID(ctx, account.ID(id))
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	atx := postgres.NewAccountRepository(tx)
+	goal, err := atx.FindByID(ctx, account.ID(id))
 	if err != nil {
 		return nil, err
 	}
@@ -169,15 +181,55 @@ func (s *Service) UpdateGoal(
 		return nil, errors.New("not found")
 	}
 
-	// update
-	goal.ChangeName(name)
-	goal.ChangeTargetAmount(targetAmount)
-	goal.ChangeStartDate(startDate)
-	goal.ChangeTargetDate(targetDate)
-	goal.ChangeCategory(cid)
-
-	err = s.repo.Update(ctx, goal)
+	rtx := postgres.NewTransactionRepository(tx)
+	tt, err := rtx.FindAllByAccount(ctx, transaction.ID(goal.ID()))
 	if err != nil {
+		return nil, err
+	}
+	slices.SortFunc(tt, func(a, b *transaction.Transaction) int {
+		return a.Date().Compare(b.Date())
+	})
+
+	var minDate *time.Time
+	if len(tt) > 0 {
+		d := tt[0].Date()
+		minDate = &d
+	}
+
+	err = goal.ChangeName(name)
+	if err != nil {
+		return nil, err
+	}
+	err = goal.ChangeTargetAmount(targetAmount)
+	if err != nil {
+		return nil, err
+	}
+	err = goal.ChangeStartDate(startDate, minDate)
+	if err != nil {
+		return nil, err
+	}
+	err = goal.ChangeTargetDate(targetDate)
+	if err != nil {
+		return nil, err
+	}
+
+	if goal.CategoryID() != nil && *goal.CategoryID() != cid {
+		goal.ChangeCategory(cid)
+
+		for _, t := range tt {
+			if t.ToAccountID() != nil && *t.ToAccountID() == transaction.ID(goal.ID()) {
+				t.ChangeExpenseCategory(transaction.ID(cid))
+			}
+		}
+		rtx.UpdateMany(ctx, tt)
+	}
+
+	err = atx.Update(ctx, goal)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return nil, err
 	}
 

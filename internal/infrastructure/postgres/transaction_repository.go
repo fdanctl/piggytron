@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
@@ -69,6 +71,99 @@ func (r *TransactionRepository) Create(ctx context.Context, t *transaction.Trans
 	}
 
 	return nil
+}
+
+func (r *TransactionRepository) UpdateMany(
+	ctx context.Context,
+	tt []*transaction.Transaction,
+) error {
+	if len(tt) == 0 {
+		return nil
+	}
+	var (
+		args         []any
+		valueStrings []string
+	)
+
+	const vn = 10 // number of field in VALUES
+	for i, t := range tt {
+		n := i*vn + 1
+
+		valueStrings = append(
+			valueStrings,
+			fmt.Sprintf(
+				`(
+				$%d::uuid,
+				$%d,
+				$%d::uuid,
+				$%d::uuid,
+				$%d::uuid,
+				$%d::uuid,
+				$%d::bigint,
+				$%d,
+				$%d::timestamp,
+				$%d::timestamp
+				)`,
+				n,
+				n+1,
+				n+2,
+				n+3,
+				n+4,
+				n+5,
+				n+6,
+				n+7,
+				n+8,
+				n+9,
+			),
+		)
+
+		args = append(
+			args,
+			t.ID(),
+			t.Type(),
+			t.FromAccountID(),
+			t.ToAccountID(),
+			t.IncomeCategoryID(),
+			t.ExpenseCategoryID(),
+			t.Amount(),
+			t.Description(),
+			t.Date(),
+			t.CreatedAt(),
+		)
+	}
+
+	query := fmt.Sprintf(`
+		UPDATE transactions AS t
+		SET
+			type = v.type,
+			from_account_id = v.from_account_id,
+			to_account_id = v.to_account_id,
+			income_category_id = v.income_category_id,
+			expense_category_id = v.expense_category_id,
+			amount = v.amount,
+			description = v.description,
+			date = v.date,
+			created_at = v.created_at
+		FROM (
+			VALUES %s
+		) AS v(
+			id,
+			type,
+		    from_account_id,
+		    to_account_id,
+		    income_category_id,
+		    expense_category_id,
+		    amount,
+		    description,
+		    date,
+		    created_at
+		)
+		WHERE t.id = v.id
+	`, strings.Join(valueStrings, ","))
+
+	_, err := r.db.ExecContext(ctx, query, args...)
+
+	return err
 }
 
 func (r *TransactionRepository) Delete(ctx context.Context, id transaction.ID) error {

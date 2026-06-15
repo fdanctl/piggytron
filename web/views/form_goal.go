@@ -115,6 +115,10 @@ func (v *GoalForm) ValidateStartDate() (msgs []string) {
 		return
 	}
 
+	if errors.Is(v.CustomError, account.ErrContributionBeforeStartDate) {
+		msgs = append(msgs, v.CustomError.Error())
+	}
+
 	tdate, _ := time.Parse("02/01/2006", v.TargetDate)
 
 	duration := tdate.Sub(sdate)

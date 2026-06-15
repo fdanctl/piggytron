@@ -99,6 +99,10 @@ document.body.addEventListener("closeModal", function (ev) {
   closeLastDialog();
 });
 
+document.body.addEventListener("closeAllModal", function (ev) {
+  closeAllDialog();
+});
+
 document.body.addEventListener("contentPush", function (ev) {
   htmx.ajax("GET", ev.detail.url, {
     target: "#content",

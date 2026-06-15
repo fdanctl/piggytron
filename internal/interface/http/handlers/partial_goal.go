@@ -290,11 +290,10 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		cat,
 	)
 	if err != nil {
-		if errors.Is(err, account.ErrDuplicate) {
-			logger.Info("invalid form - duplicated", "error", err)
+		if errors.Is(err, account.ErrContributionBeforeStartDate) {
 			view.CustomError = err
 		} else {
-			logger.Error("error creating goal", "error", err)
+			logger.Error("error updating goal", "error", err)
 		}
 
 		w.WriteHeader(http.StatusUnprocessableEntity)
@@ -305,7 +304,7 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set(
 		"HX-Trigger",
 		fmt.Sprintf(`{
-		"closeModal": true,
+		"closeAllModal": true,
 		"contentPush": {
 			"url": "/goals/%s"
 		}

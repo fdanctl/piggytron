@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"time"
 
@@ -11,10 +10,10 @@ import (
 )
 
 type AccountRepository struct {
-	db *sql.DB
+	db DBTX
 }
 
-func NewAccountRepository(db *sql.DB) *AccountRepository {
+func NewAccountRepository(db DBTX) *AccountRepository {
 	return &AccountRepository{
 		db: db,
 	}
