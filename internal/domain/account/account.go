@@ -17,8 +17,8 @@ func NewID(str string) (ID, error) {
 type AccountType string
 
 const (
-	bank AccountType = "bank"
-	goal AccountType = "goal"
+	BankType AccountType = "bank"
+	GoalType AccountType = "goal"
 )
 
 type Account struct {
@@ -57,7 +57,7 @@ func NewBank(
 		id:        id,
 		userID:    userID,
 		name:      name,
-		aType:     bank,
+		aType:     BankType,
 		isSaving:  &isSaving,
 		currency:  currency,
 		createdAt: now,
@@ -90,7 +90,7 @@ func NewGoal(
 		id:           id,
 		userID:       userID,
 		name:         name,
-		aType:        goal,
+		aType:        GoalType,
 		targetAmount: &targetAmount,
 		startDate:    &startDate,
 		targetDate:   targetDate,
@@ -178,7 +178,7 @@ func (b *Account) UpdatedAt() time.Time {
 }
 
 func (b *Account) CanReceiveIncome() error {
-	if b.aType == goal {
+	if b.aType == GoalType {
 		return errors.New("goals can't receive from outside")
 	}
 	if b.isSaving != nil && *b.isSaving {
@@ -188,7 +188,7 @@ func (b *Account) CanReceiveIncome() error {
 }
 
 func (b *Account) CanMakeExpense() error {
-	if b.aType == goal {
+	if b.aType == GoalType {
 		return errors.New("goals can't make expenses")
 	}
 	if b.isSaving != nil && *b.isSaving {
@@ -209,7 +209,7 @@ func (b *Account) ChangeName(name string) error {
 }
 
 func (b *Account) ChangeTargetAmount(amount int) error {
-	if b.aType != goal {
+	if b.aType != GoalType {
 		return ErrAccountWrongType
 	}
 	if amount <= 0 {
@@ -221,7 +221,7 @@ func (b *Account) ChangeTargetAmount(amount int) error {
 }
 
 func (b *Account) ChangeStartDate(date time.Time, minPossible *time.Time) error {
-	if b.aType != goal {
+	if b.aType != GoalType {
 		return ErrAccountWrongType
 	}
 	if minPossible != nil && date.Compare(*minPossible) == 1 {
@@ -233,7 +233,7 @@ func (b *Account) ChangeStartDate(date time.Time, minPossible *time.Time) error 
 }
 
 func (b *Account) ChangeTargetDate(date *time.Time) error {
-	if b.aType != goal {
+	if b.aType != GoalType {
 		return ErrAccountWrongType
 	}
 	b.targetDate = date
@@ -242,7 +242,7 @@ func (b *Account) ChangeTargetDate(date *time.Time) error {
 }
 
 func (b *Account) ChangeCategory(cid ID) error {
-	if b.aType != goal {
+	if b.aType != GoalType {
 		return ErrAccountWrongType
 	}
 	b.categoryID = &cid

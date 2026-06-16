@@ -9,6 +9,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/application/apptransaction"
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -80,13 +81,13 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view := views.NewTransferForm()
-	acc, err := h.accService.FindOneByID(r.Context(), r.PathValue("id"))
+	acc, err := h.accService.FindOneByID(r.Context(), r.PathValue("id"), sessionInfo.UserID)
 	if err != nil {
 		logger.Error("error finding goal ", "error", err)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	if acc.Type() != "goal" {
+	if acc.Type() != account.GoalType {
 		logger.Error("error finding goal ", "error", err)
 		http.Error(w, "internal error", http.StatusBadRequest)
 		return

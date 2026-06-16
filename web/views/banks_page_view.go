@@ -1,6 +1,7 @@
 package views
 
 import (
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
@@ -41,7 +42,7 @@ func NewBankPage(a []query.AccountWithSum, t []query.TransactionDTO) BankPage {
 			banks = append(banks, Bank{ID: v.ID, Name: v.Name, Type: v.Type})
 		}
 
-		if v.Type == "goal" {
+		if v.Type == string(account.GoalType) {
 			goals += v.Sum
 		}
 	}

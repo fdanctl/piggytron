@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/a-h/templ"
@@ -76,15 +75,18 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	title := "New Goal"
 	if id != "" {
-		g, err := h.accService.FindOneByID(r.Context(), id)
+		g, err := h.accService.FindOneByID(r.Context(), id, sessionInfo.UserID)
 		if err != nil {
 			logger.Error("error finding goal", "error", err)
 			http.Error(w, "Internal error", http.StatusInternalServerError)
 			return
 		}
+		if g.Type() != account.GoalType {
+			http.Error(w, "Not a goal", http.StatusUnprocessableEntity)
+			return
+		}
 		view.Name = g.Name()
 		view.Currency = g.Currency()
-		view.TargetAmount = strconv.Itoa(*g.TargetAmount())
 		view.StartDate = g.StartDate().Format("02/01/2006")
 		view.TargetAmount = views.FormatAmount((float64(*g.TargetAmount()) / float64(100)))
 		view.Category = string(*g.CategoryID())
@@ -108,12 +110,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := r.FormValue("name")
-	currency := r.FormValue("currency")
-	tamount := r.FormValue("target-amount")
-	sdate := r.FormValue("start-date")
-	tdate := r.FormValue("target-date")
-	cat := r.FormValue("category")
+	formData := h.parseGoalForm(r)
 
 	_, ecatOpts, err := getCategorySelectOptions(
 		h.categoryQuery,
@@ -128,12 +125,12 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	view := views.GoalForm{
 		Initial:      false,
-		Name:         name,
-		Currency:     currency,
-		TargetAmount: tamount,
-		StartDate:    sdate,
-		TargetDate:   tdate,
-		Category:     cat,
+		Name:         formData.name,
+		Currency:     formData.currency,
+		TargetAmount: formData.tamount,
+		StartDate:    formData.sdate,
+		TargetDate:   formData.tdate,
+		Category:     formData.cat,
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
@@ -142,34 +139,21 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
 		return
 	}
-
-	amount, err := convertAmountStrToInt(tamount)
+	amount, startDate, pDate, err := h.parseGoalFormValues(view)
 	if err != nil {
-		http.Error(w, "Invalid amount", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-
-	startDate, err := time.Parse("02/01/2006", sdate)
-	if err != nil {
-		http.Error(w, "Invalid date", http.StatusBadRequest)
-		return
-	}
-
-	targetDate, err := time.Parse("02/01/2006", tdate)
-	var pDate *time.Time
-	if err == nil {
-		pDate = &targetDate
 	}
 
 	goal, err := h.accService.CreateGoal(
 		r.Context(),
 		sessionInfo.UserID,
-		name,
-		currency,
+		formData.name,
+		formData.currency,
 		amount,
 		startDate,
 		pDate,
-		cat,
+		formData.cat,
 	)
 	if err != nil {
 		if errors.Is(err, account.ErrDuplicate) {
@@ -225,12 +209,11 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.PathValue("id")
-	name := r.FormValue("name")
-	currency := r.FormValue("currency")
-	tamount := r.FormValue("target-amount")
-	sdate := r.FormValue("start-date")
-	tdate := r.FormValue("target-date")
-	cat := r.FormValue("category")
+	if id == "" {
+		http.Error(w, "Goal ID is required", http.StatusBadRequest)
+		return
+	}
+	formData := h.parseGoalForm(r)
 
 	_, ecatOpts, err := getCategorySelectOptions(
 		h.categoryQuery,
@@ -245,12 +228,12 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	view := views.GoalForm{
 		Initial:      false,
-		Name:         name,
-		Currency:     currency,
-		TargetAmount: tamount,
-		StartDate:    sdate,
-		TargetDate:   tdate,
-		Category:     cat,
+		Name:         formData.name,
+		Currency:     formData.currency,
+		TargetAmount: formData.tamount,
+		StartDate:    formData.sdate,
+		TargetDate:   formData.tdate,
+		Category:     formData.cat,
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
@@ -260,34 +243,22 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	amount, err := convertAmountStrToInt(tamount)
+	amount, startDate, pDate, err := h.parseGoalFormValues(view)
 	if err != nil {
-		http.Error(w, "Invalid amount", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
-	}
-
-	startDate, err := time.Parse("02/01/2006", sdate)
-	if err != nil {
-		http.Error(w, "Invalid date", http.StatusBadRequest)
-		return
-	}
-
-	targetDate, err := time.Parse("02/01/2006", tdate)
-	var pDate *time.Time
-	if err == nil {
-		pDate = &targetDate
 	}
 
 	goal, err := h.accService.UpdateGoal(
 		r.Context(),
 		id,
 		sessionInfo.UserID,
-		name,
-		currency,
+		formData.name,
+		formData.currency,
 		amount,
 		startDate,
 		pDate,
-		cat,
+		formData.cat,
 	)
 	if err != nil {
 		if errors.Is(err, account.ErrContributionBeforeStartDate) {
@@ -312,4 +283,42 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 	)
 
 	partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
+}
+
+type goalFormData struct {
+	name, currency, tamount, sdate, tdate, cat string
+}
+
+func (h *GoalHandler) parseGoalForm(r *http.Request) goalFormData {
+	return goalFormData{
+		name:     r.FormValue("name"),
+		currency: r.FormValue("currency"),
+		tamount:  r.FormValue("target-amount"),
+		sdate:    r.FormValue("start-date"),
+		tdate:    r.FormValue("target-date"),
+		cat:      r.FormValue("category"),
+	}
+}
+
+func (h *GoalHandler) parseGoalFormValues(
+	view views.GoalForm,
+) (amount int, startDate time.Time, pTargetDate *time.Time, err error) {
+	amount, err = convertAmountStrToInt(view.TargetAmount)
+	if err != nil {
+		err = errors.New("Invalid amount")
+		return
+	}
+
+	startDate, err = time.Parse("02/01/2006", view.StartDate)
+	if err != nil {
+		err = errors.New("Invalid date")
+		return
+	}
+
+	targetDate, err := time.Parse("02/01/2006", view.TargetDate)
+	if err == nil {
+		pTargetDate = &targetDate
+	}
+	err = nil
+	return
 }

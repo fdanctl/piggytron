@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"slices"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
@@ -27,7 +26,11 @@ func NewService(repo account.Repository, db *sql.DB) *Service {
 	return &Service{repo: repo, db: db}
 }
 
-func (s *Service) FindOneByID(ctx context.Context, id string) (*account.Account, error) {
+func (s *Service) FindOneByID(
+	ctx context.Context,
+	id string,
+	uid string,
+) (*account.Account, error) {
 	_, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
@@ -38,7 +41,11 @@ func (s *Service) FindOneByID(ctx context.Context, id string) (*account.Account,
 		return nil, err
 	}
 
-	return s.repo.FindByID(ctx, accID)
+	goal, err := s.repo.FindByID(ctx, accID)
+	if goal.UserID() != account.ID(uid) {
+		return nil, errors.New("not found")
+	}
+	return goal, nil
 }
 
 func (s *Service) CreateBank(
@@ -182,17 +189,13 @@ func (s *Service) UpdateGoal(
 	}
 
 	rtx := postgres.NewTransactionRepository(tx)
-	tt, err := rtx.FindAllByAccount(ctx, transaction.ID(goal.ID()))
+	tt, err := rtx.FindAllByAccount(ctx, transaction.ID(goal.ID())) // date DESC
 	if err != nil {
 		return nil, err
 	}
-	slices.SortFunc(tt, func(a, b *transaction.Transaction) int {
-		return a.Date().Compare(b.Date())
-	})
-
 	var minDate *time.Time
 	if len(tt) > 0 {
-		d := tt[0].Date()
+		d := tt[len(tt)-1].Date()
 		minDate = &d
 	}
 
@@ -221,7 +224,10 @@ func (s *Service) UpdateGoal(
 				t.ChangeExpenseCategory(transaction.ID(cid))
 			}
 		}
-		rtx.UpdateMany(ctx, tt)
+		err := rtx.UpdateMany(ctx, tt)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	err = atx.Update(ctx, goal)

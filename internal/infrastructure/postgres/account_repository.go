@@ -167,7 +167,7 @@ func (r *AccountRepository) FindBankByNameAndUser(
 		 WHERE user_id = $1 AND name = $2 and type = $3`,
 		uid,
 		name,
-		"bank",
+		account.BankType,
 	)
 
 	var b AccountDto
@@ -187,7 +187,7 @@ func (r *AccountRepository) FindBankByNameAndUser(
 	account := account.Rehydrate(
 		b.ID,
 		b.UserID,
-		"bank",
+		account.BankType,
 		b.Name,
 		b.IsSaving,
 		nil,
@@ -213,7 +213,7 @@ func (r *AccountRepository) FindGoalByNameAndUser(
 		 WHERE user_id = $1 AND name = $2 and type = $3`,
 		uid,
 		name,
-		"goal",
+		account.GoalType,
 	)
 
 	var b AccountDto
@@ -345,7 +345,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 		b := account.Rehydrate(
 			dto.ID,
 			dto.UserID,
-			"bank",
+			account.BankType,
 			dto.Name,
 			dto.IsSaving,
 			nil,

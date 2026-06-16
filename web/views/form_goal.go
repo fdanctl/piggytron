@@ -111,12 +111,12 @@ func (v *GoalForm) ValidateStartDate() (msgs []string) {
 		return append(msgs, "Invalid date")
 	}
 
-	if v.TargetDate == "" {
-		return
-	}
-
 	if errors.Is(v.CustomError, account.ErrContributionBeforeStartDate) {
 		msgs = append(msgs, v.CustomError.Error())
+	}
+
+	if v.TargetDate == "" {
+		return
 	}
 
 	tdate, _ := time.Parse("02/01/2006", v.TargetDate)
