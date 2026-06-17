@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type TransactionQueryService struct {
@@ -287,17 +288,18 @@ func (s *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
-			COALESCE(expense_category_id, '00000000-0000-0000-0000-000000000000') AS expense_category_id,
+			COALESCE(expense_category_id, $1) AS expense_category_id,
 			COALESCE(SUM(amount), 0) AS total
 		 FROM
   			transactions
 		 WHERE
   			type = 'expense'
-  			AND date >= $1
-  			AND date < $2
-			AND user_id = $3
+  			AND date >= $2
+  			AND date < $3
+			AND user_id = $4
 		 GROUP BY
   		 ROLLUP (expense_category_id)`,
+		util.ZeroUUID,
 		minDate,
 		maxDate,
 		uid,
@@ -319,7 +321,7 @@ func (s *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 		if err != nil {
 			return nil, err
 		}
-		if dto.ID == "00000000-0000-0000-0000-000000000000" {
+		if dto.ID == util.ZeroUUID {
 			totalExpense = dto.Amount
 		} else {
 			catExpenses = append(catExpenses, dto)

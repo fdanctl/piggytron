@@ -9,7 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
-	"github.com/google/uuid"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type Service struct {
@@ -29,20 +29,19 @@ func NewService(repo account.Repository, db *sql.DB) *Service {
 func (s *Service) FindOneByID(
 	ctx context.Context,
 	id string,
-	uid string,
+	userID string,
 ) (*account.Account, error) {
-	_, err := uuid.Parse(id)
+	aid, err := util.ParseID[account.ID](id)
+	if err != nil {
+		return nil, err
+	}
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	accID, err := account.NewID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	goal, err := s.repo.FindByID(ctx, accID)
-	if goal.UserID() != account.ID(uid) {
+	goal, err := s.repo.FindByID(ctx, aid)
+	if goal.UserID() != uid {
 		return nil, errors.New("not found")
 	}
 	return goal, nil
@@ -55,17 +54,12 @@ func (s *Service) CreateBank(
 	currency string,
 	isSaving bool,
 ) (*account.Account, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := account.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := account.NewID(uuid.New().String())
+	id, err := util.NewID[account.ID]()
 	if err != nil {
 		return nil, err
 	}
@@ -92,26 +86,17 @@ func (s *Service) CreateGoal(
 	targetDate *time.Time,
 	categoryID string,
 ) (*account.Account, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = uuid.Parse(categoryID)
+	cid, err := util.ParseID[account.ID](categoryID)
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := account.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := account.NewID(uuid.New().String())
-	if err != nil {
-		return nil, err
-	}
-	cid, err := account.NewID(categoryID)
+	id, err := util.NewID[account.ID]()
 	if err != nil {
 		return nil, err
 	}
@@ -148,27 +133,17 @@ func (s *Service) UpdateGoal(
 	targetDate *time.Time,
 	categoryID string,
 ) (*account.Account, error) {
-	_, err := uuid.Parse(id)
+	aid, err := util.ParseID[account.ID](id)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = uuid.Parse(userID)
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = uuid.Parse(categoryID)
-	if err != nil {
-		return nil, err
-	}
-
-	uid, err := account.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	cid, err := account.NewID(categoryID)
+	cid, err := util.ParseID[account.ID](categoryID)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +155,7 @@ func (s *Service) UpdateGoal(
 	defer tx.Rollback()
 
 	atx := postgres.NewAccountRepository(tx)
-	goal, err := atx.FindByID(ctx, account.ID(id))
+	goal, err := atx.FindByID(ctx, aid)
 	if err != nil {
 		return nil, err
 	}
@@ -246,17 +221,12 @@ func (s *Service) FindAllByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := account.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	accounts, err := s.repo.FindAllByUser(ctx, id)
+	accounts, err := s.repo.FindAllByUser(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -268,17 +238,12 @@ func (s *Service) FindAllBanksByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := account.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	accounts, err := s.repo.FindAllBanksByUser(ctx, id)
+	accounts, err := s.repo.FindAllBanksByUser(ctx, uid)
 	if err != nil {
 		return nil, err
 	}
@@ -290,17 +255,12 @@ func (s *Service) FindAllGoalsByUser(
 	ctx context.Context,
 	userID string,
 ) ([]*account.Account, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := account.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	accounts, err := s.repo.FindAllGoalsByUser(ctx, id)
+	accounts, err := s.repo.FindAllGoalsByUser(ctx, uid)
 	if err != nil {
 		return nil, err
 	}

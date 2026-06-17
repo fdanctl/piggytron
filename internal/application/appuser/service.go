@@ -6,7 +6,7 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/domain/user"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
-	"github.com/google/uuid"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 var ErrWrongPassword = errors.New("password not match")
@@ -29,7 +29,12 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 		return "", err
 	}
 
-	u, err := user.New(user.ID(uuid.New().String()), name, hash)
+	id, err := util.NewID[user.ID]()
+	if err != nil {
+		return "", err
+	}
+
+	u, err := user.New(id, name, hash)
 	if err != nil {
 		return "", err
 	}

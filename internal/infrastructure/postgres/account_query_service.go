@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type AccountQueryService struct {
@@ -148,7 +149,7 @@ func (s *AccountQueryService) FindWithSum(
 			a.target_amount, 
 			a.start_date, 
 			a.target_date, 
-			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
+			COALESCE(c.id, $2),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
 			a.created_at, 
@@ -168,9 +169,10 @@ func (s *AccountQueryService) FindWithSum(
 		 LEFT JOIN transactions t 
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
-			a.id = $1
+			a.id = $2
 		 GROUP BY
 			a.id, c.id`,
+		util.ZeroUUID,
 		id,
 	)
 	var g query.AccountWithSum
@@ -214,7 +216,7 @@ func (s *AccountQueryService) FindAllWithSum(
 			a.target_amount, 
 			a.start_date, 
 			a.target_date, 
-			COALESCE(c.id, '00000000-0000-0000-0000-000000000000'),
+			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
 			a.created_at, 
@@ -234,9 +236,10 @@ func (s *AccountQueryService) FindAllWithSum(
 		 LEFT JOIN transactions t 
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
-			a.user_id = $1
+			a.user_id = $2
 		 GROUP BY
 			a.id, c.id`,
+		util.ZeroUUID,
 		uid,
 	)
 	if err != nil {

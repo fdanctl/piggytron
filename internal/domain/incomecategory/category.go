@@ -4,13 +4,6 @@ import "time"
 
 type ID string
 
-func NewID(str string) (ID, error) {
-	if str == "" {
-		return "", ErrInvalidID
-	}
-	return ID(str), nil
-}
-
 type IncomeCategory struct {
 	id        ID
 	userID    ID

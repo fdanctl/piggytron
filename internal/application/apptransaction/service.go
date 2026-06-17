@@ -8,7 +8,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
-	"github.com/google/uuid"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type Service struct {
@@ -27,35 +27,25 @@ func (s *Service) CreateIncome(
 	currency string,
 	description string,
 	date time.Time,
-	catID string,
-	dstID string,
+	categoryID string,
+	dstAccID string,
 ) (*transaction.Transaction, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[transaction.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = uuid.Parse(catID)
+	cid, err := util.ParseID[transaction.ID](categoryID)
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := transaction.NewID(userID)
+	id, err := util.NewID[transaction.ID]()
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := transaction.NewID(uuid.New().String())
-	if err != nil {
-		return nil, err
-	}
-
-	toAccID, err := transaction.NewID(dstID)
-	if err != nil {
-		return nil, err
-	}
-
-	cid, err := transaction.NewID(catID)
+	toAccID, err := util.ParseID[transaction.ID](dstAccID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,13 +59,13 @@ func (s *Service) CreateIncome(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
 
-	acc, err := qtx.FindWithSum(ctx, dstID)
+	acc, err := qtx.FindWithSum(ctx, dstAccID)
 	if err != nil {
 		return nil, err
 	}
 
 	var accCID *account.ID
-	if acc.Category.ID != "00000000-0000-0000-0000-000000000000" {
+	if acc.Category.ID != util.ZeroUUID {
 		temp := account.ID(acc.ID)
 		accCID = &temp
 	}
@@ -132,34 +122,24 @@ func (s *Service) CreateExpense(
 	description string,
 	date time.Time,
 	catID string,
-	srcID string,
+	srcAccID string,
 ) (*transaction.Transaction, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[transaction.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = uuid.Parse(catID)
+	cid, err := util.ParseID[transaction.ID](catID)
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := transaction.NewID(userID)
+	fromAccID, err := util.ParseID[transaction.ID](srcAccID)
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := transaction.NewID(uuid.New().String())
-	if err != nil {
-		return nil, err
-	}
-
-	fromAccID, err := transaction.NewID(srcID)
-	if err != nil {
-		return nil, err
-	}
-
-	cid, err := transaction.NewID(catID)
+	id, err := util.NewID[transaction.ID]()
 	if err != nil {
 		return nil, err
 	}
@@ -173,13 +153,13 @@ func (s *Service) CreateExpense(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
 
-	acc, err := qtx.FindWithSum(ctx, srcID)
+	acc, err := qtx.FindWithSum(ctx, srcAccID)
 	if err != nil {
 		return nil, err
 	}
 
 	var accCID *account.ID
-	if acc.Category.ID != "00000000-0000-0000-0000-000000000000" {
+	if acc.Category.ID != util.ZeroUUID {
 		temp := account.ID(acc.ID)
 		accCID = &temp
 	}
@@ -236,38 +216,33 @@ func (s *Service) CreateTransfer(
 	currency string,
 	description string,
 	date time.Time,
-	catID string,
-	srcID string,
-	dstID string,
+	categoryID string,
+	srcAccID string,
+	dstAccID string,
 ) (*transaction.Transaction, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[transaction.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := transaction.NewID(userID)
+	id, err := util.NewID[transaction.ID]()
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := transaction.NewID(uuid.New().String())
+	fromAccID, err := util.ParseID[transaction.ID](srcAccID)
 	if err != nil {
 		return nil, err
 	}
 
-	fromAccID, err := transaction.NewID(srcID)
-	if err != nil {
-		return nil, err
-	}
-
-	toAccID, err := transaction.NewID(dstID)
+	toAccID, err := util.ParseID[transaction.ID](dstAccID)
 	if err != nil {
 		return nil, err
 	}
 
 	var cid *transaction.ID
-	if catID != "" {
-		tempID, err := transaction.NewID(catID)
+	if categoryID != "" {
+		tempID, err := util.ParseID[transaction.ID](categoryID)
 		if err != nil {
 			return nil, err
 		}
@@ -283,17 +258,17 @@ func (s *Service) CreateTransfer(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
 
-	fromAccount, err := qtx.FindWithSum(ctx, srcID)
+	fromAccount, err := qtx.FindWithSum(ctx, srcAccID)
 	if err != nil {
 		return nil, err
 	}
-	toAccount, err := qtx.FindWithSum(ctx, dstID)
+	toAccount, err := qtx.FindWithSum(ctx, dstAccID)
 	if err != nil {
 		return nil, err
 	}
 
 	var accCID *transaction.ID
-	if toAccount.Category.ID != "00000000-0000-0000-0000-000000000000" {
+	if toAccount.Category.ID != util.ZeroUUID {
 		temp := transaction.ID(toAccount.Category.ID)
 		accCID = &temp
 	}
@@ -331,12 +306,7 @@ func (s *Service) CreateTransfer(
 // Update
 
 func (s *Service) Delete(ctx context.Context, id string) error {
-	_, err := uuid.Parse(id)
-	if err != nil {
-		return err
-	}
-
-	ID, err := transaction.NewID(id)
+	tid, err := util.ParseID[transaction.ID](id)
 	if err != nil {
 		return err
 	}
@@ -350,7 +320,7 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewTransactionRepository(tx)
 
-	t, err := rtx.FindByID(ctx, ID)
+	t, err := rtx.FindByID(ctx, tid)
 	if err != nil {
 		return err
 	}
@@ -376,16 +346,12 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 }
 
 func (s *Service) FindOneByID(ctx context.Context, id string) (*transaction.Transaction, error) {
-	_, err := uuid.Parse(id)
+	tid, err := util.ParseID[transaction.ID](id)
 	if err != nil {
 		return nil, err
 	}
 
-	newID, err := transaction.NewID(id)
-	if err != nil {
-		return nil, err
-	}
-	return s.repo.FindByID(ctx, newID)
+	return s.repo.FindByID(ctx, tid)
 }
 
 func (s *Service) FindAllByUser(
@@ -393,12 +359,7 @@ func (s *Service) FindAllByUser(
 	userID string,
 	page uint,
 ) ([]*transaction.Transaction, error) {
-	_, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	uid, err := transaction.NewID(userID)
+	uid, err := util.ParseID[transaction.ID](userID)
 	if err != nil {
 		return nil, err
 	}
@@ -412,32 +373,24 @@ func (s *Service) FindAllByUser(
 
 func (s *Service) FindAllByAccount(
 	ctx context.Context,
-	aid string,
+	accountID string,
 ) ([]*transaction.Transaction, error) {
-	_, err := uuid.Parse(aid)
+	aid, err := util.ParseID[transaction.ID](accountID)
 	if err != nil {
 		return nil, err
 	}
 
-	newID, err := transaction.NewID(aid)
-	if err != nil {
-		return nil, err
-	}
-	return s.repo.FindAllByAccount(ctx, newID)
+	return s.repo.FindAllByAccount(ctx, aid)
 }
 
 func (s *Service) FindAllByCategory(
 	ctx context.Context,
-	cid string,
+	categoryID string,
 ) ([]*transaction.Transaction, error) {
-	_, err := uuid.Parse(cid)
+	cid, err := util.ParseID[transaction.ID](categoryID)
 	if err != nil {
 		return nil, err
 	}
 
-	newID, err := transaction.NewID(cid)
-	if err != nil {
-		return nil, err
-	}
-	return s.repo.FindAllByCategory(ctx, newID)
+	return s.repo.FindAllByCategory(ctx, cid)
 }

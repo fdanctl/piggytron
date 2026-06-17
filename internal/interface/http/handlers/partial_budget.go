@@ -11,6 +11,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/internal/util"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -100,7 +101,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if bid == "" || bid == "00000000-0000-0000-0000-000000000000" {
+	if bid == "" || bid == util.ZeroUUID {
 		b, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
 		if err != nil {
 			msg := "Error creating budget"

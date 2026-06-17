@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
-	"github.com/google/uuid"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type Service struct {
@@ -20,17 +20,12 @@ func (s *Service) CreateCategory(
 	userID string,
 	name string,
 ) (*incomecategory.IncomeCategory, error) {
-	_, err := uuid.Parse(userID)
+	uid, err := util.ParseID[incomecategory.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	uid, err := incomecategory.NewID(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := incomecategory.NewID(uuid.New().String())
+	id, err := util.NewID[incomecategory.ID]()
 	if err != nil {
 		return nil, err
 	}
@@ -51,24 +46,19 @@ func (s *Service) FindCategory(
 	ctx context.Context,
 	id string,
 ) (*incomecategory.IncomeCategory, error) {
-	_, err := uuid.Parse(id)
+	cid, err := util.ParseID[incomecategory.ID](id)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.repo.FindByID(ctx, incomecategory.ID(id))
+	return s.repo.FindByID(ctx, cid)
 }
 
 func (s *Service) FindAllUserCategories(
 	ctx context.Context,
 	userID string,
 ) ([]*incomecategory.IncomeCategory, error) {
-	_, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	uid, err := incomecategory.NewID(userID)
+	uid, err := util.ParseID[incomecategory.ID](userID)
 	if err != nil {
 		return nil, err
 	}

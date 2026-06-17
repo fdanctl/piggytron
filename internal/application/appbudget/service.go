@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/budget"
-	"github.com/google/uuid"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type Service struct {
@@ -29,27 +29,19 @@ func (s *Service) CreateBudget(
 	month time.Time,
 	amount int,
 ) (*budget.Budget, error) {
-	_, err := uuid.Parse(userID)
-	if err != nil {
-		return nil, err
-	}
-	uid, err := budget.NewID(userID)
+	uid, err := util.ParseID[budget.ID](userID)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = uuid.Parse(categoryID)
-	if err != nil {
-		return nil, err
-	}
-	cid, err := budget.NewID(categoryID)
+	cid, err := util.ParseID[budget.ID](categoryID)
 	if err != nil {
 		return nil, err
 	}
 
 	// TODO handle duplicate error
 
-	id, err := budget.NewID(uuid.New().String())
+	id, err := util.NewID[budget.ID]()
 	if err != nil {
 		return nil, err
 	}
@@ -74,14 +66,10 @@ func (s *Service) CreateBudget(
 
 func (s *Service) UpdateBudgetAmount(
 	ctx context.Context,
-	targetID string,
+	id string,
 	amount int,
 ) error {
-	_, err := uuid.Parse(targetID)
-	if err != nil {
-		return err
-	}
-	id, err := budget.NewID(targetID)
+	bid, err := util.ParseID[budget.ID](id)
 	if err != nil {
 		return err
 	}
@@ -90,17 +78,17 @@ func (s *Service) UpdateBudgetAmount(
 		return ErrNegativeNumber
 	}
 
-	return s.repo.UpdateAmount(ctx, id, amount)
+	return s.repo.UpdateAmount(ctx, bid, amount)
 }
 
 func (s *Service) FindBudget(
 	ctx context.Context,
 	id string,
 ) (*budget.Budget, error) {
-	_, err := uuid.Parse(id)
+	bid, err := util.ParseID[budget.ID](id)
 	if err != nil {
 		return nil, err
 	}
 
-	return s.repo.FindByID(ctx, budget.ID(id))
+	return s.repo.FindByID(ctx, bid)
 }
