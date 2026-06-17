@@ -149,7 +149,7 @@ func (s *AccountQueryService) FindWithSum(
 			a.target_amount, 
 			a.start_date, 
 			a.target_date, 
-			COALESCE(c.id, $2),
+			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
 			a.created_at, 
