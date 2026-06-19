@@ -10,7 +10,7 @@ import (
 )
 
 type TransferForm struct {
-	Initial bool
+	Form
 
 	Amount         string
 	Description    string
@@ -19,17 +19,15 @@ type TransferForm struct {
 	Category       string
 	SourceAcc      string
 	DestinationAcc string
-
-	ErrorMsg    string
-	CustomError error
 }
 
 func NewTransferForm() *TransferForm {
-	return &TransferForm{
-		Initial:  true,
+	f := TransferForm{
 		Date:     time.Now().Format("02/01/2006"),
 		Currency: currency.EUR.String(),
 	}
+	f.Initial = true
+	return &f
 }
 
 func (v *TransferForm) ValidateAmount() (msgs []string) {

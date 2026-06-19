@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 )
@@ -47,8 +49,7 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	changeHist, err := h.accountQuery.GetAccountDailyChange(r.Context(), id)
 	if err != nil {
-		logger.Error("error finding accounts history", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
 

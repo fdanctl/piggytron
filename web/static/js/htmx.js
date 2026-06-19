@@ -1,4 +1,5 @@
 import { closeAllDialog, closeDialog, closeLastDialog } from "./navigation";
+import { showToast } from "./toast";
 
 export function confirmModal({
   title = "Confirm",
@@ -81,6 +82,11 @@ document.body.addEventListener("htmx:historyRestore", (ev) => {
 });
 
 // htmx custom events
+document.body.addEventListener("show-toast", function (ev) {
+  console.log("HELLO");
+  showToast(ev.detail.level, ev.detail.message);
+});
+
 document.body.addEventListener("incomeCategoryAdded", function (ev) {
   closeLastDialog();
   const li = document.querySelectorAll("#income-cat li");

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,7 +8,8 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/application/apptransaction"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -49,11 +49,9 @@ func (h *TransactionHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -63,8 +61,7 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all income categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
 		return
 	}
 
@@ -74,8 +71,7 @@ func (h *TransactionHandler) Get(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all accounts", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
 		return
 	}
 
@@ -97,8 +93,7 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -117,8 +112,7 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
 		return
 	}
 
@@ -128,8 +122,7 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all accounts", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
 		return
 	}
 
@@ -137,7 +130,6 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 	switch ttype {
 	case "income":
 		view := views.IncomeForm{
-			Initial:        false,
 			Amount:         amount,
 			Description:    description,
 			Currency:       currency,
@@ -156,7 +148,6 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	case "expense":
 		view := views.ExpenseForm{
-			Initial:     false,
 			Amount:      amount,
 			Description: description,
 			Currency:    currency,
@@ -175,7 +166,6 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	case "transfer":
 		view := views.TransferForm{
-			Initial:        false,
 			Amount:         amount,
 			Description:    description,
 			Currency:       currency,
@@ -204,13 +194,25 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	cents, err := convertAmountStrToInt(amount)
 	if err != nil {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
+		err := errs.NewAppError(
+			errs.KindBadRequest,
+			fmt.Sprintf("%s is not a valid amount", amount),
+			fmt.Errorf("failed to convert amount '%s' to cents: %w", amount, err),
+			"BudgetHandler.Post",
+		)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	d, err := time.Parse("02/01/2006", date)
 	if err != nil {
-		http.Error(w, "Invalid date", http.StatusBadRequest)
+		err := errs.NewAppError(
+			errs.KindBadRequest,
+			fmt.Sprintf("%s is not a valid date", date),
+			fmt.Errorf("failed to parse date '%s': %w", date, err),
+			"BudgetHandler.Post",
+		)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -227,8 +229,7 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 			destination,
 		)
 		if err != nil {
-			logger.Error("error creating transaction", "error", err)
-			http.Error(w, "Internal error", http.StatusBadRequest)
+			httperror.SendError(w, r, err)
 			return
 		}
 
@@ -244,16 +245,7 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 			source,
 		)
 		if err != nil {
-			if errors.Is(err, transaction.ErrNegativeBalance) {
-				w.WriteHeader(http.StatusUnprocessableEntity)
-				templ.Join(
-					form,
-					components.SendToast(components.Error, "Negative balance"),
-				).Render(r.Context(), w)
-				return
-			}
-			logger.Error("error creating transaction", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
+			httperror.SendError(w, r, err)
 			return
 		}
 
@@ -270,38 +262,7 @@ func (h *TransactionHandler) Post(w http.ResponseWriter, r *http.Request) {
 			destination,
 		)
 		if err != nil {
-			if errors.Is(err, transaction.ErrNegativeBalance) {
-				w.WriteHeader(http.StatusUnprocessableEntity)
-				templ.Join(
-					form,
-					components.SendToast(components.Error, err.Error()),
-				).Render(r.Context(), w)
-				return
-			}
-
-			if errors.Is(err, transaction.ErrGoalCategory) {
-				w.WriteHeader(http.StatusUnprocessableEntity)
-				templ.Join(
-					form,
-					components.SendToast(components.Error, err.Error()),
-				).Render(r.Context(), w)
-				return
-			}
-
-			if errors.Is(err, transaction.ErrNotSavingsCategory) {
-				w.WriteHeader(http.StatusUnprocessableEntity)
-				templ.Join(
-					form,
-					components.SendToast(
-						components.Error,
-						"Category must be savings type to send money to savings account",
-					),
-				).Render(r.Context(), w)
-				return
-			}
-
-			logger.Error("error creating transaction", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
+			httperror.SendError(w, r, err)
 			return
 		}
 	}

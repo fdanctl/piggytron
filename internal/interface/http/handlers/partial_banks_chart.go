@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -39,18 +41,15 @@ func (h *BanksChartsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error finding accounts", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", w))
 		return
 	}
 
@@ -59,8 +58,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error finding accounts history", "error", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history", w))
 		return
 	}
 	histMap, min, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)

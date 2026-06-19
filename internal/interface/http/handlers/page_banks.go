@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -45,11 +46,9 @@ func (h *BanksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -59,15 +58,13 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		5,
 	)
 	if err != nil {
-		logger.Error("error finding transactions", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find transactions: %w", err))
 		return
 	}
 
 	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error finding accounts", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", err))
 		return
 	}
 
@@ -87,26 +84,22 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	aid := r.PathValue("id")
 	bank, err := h.accountQuery.FindWithSum(r.Context(), aid)
 	if err != nil {
-		logger.Error("error read one bank", "error", err, "account_id", aid)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	banks, err := h.accountQuery.FindBanksIDNames(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error query goals", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -120,8 +113,7 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		LIMIT*1-LIMIT,
 	)
 	if err != nil {
-		logger.Error("error find filtered", "error", err, "filters", filters)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered transactions: %w", err))
 		return
 	}
 	var hasMore bool

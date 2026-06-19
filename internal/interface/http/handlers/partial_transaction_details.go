@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
@@ -30,12 +30,10 @@ func (h *TransactionDetailsHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 }
 
 func (h *TransactionDetailsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
 	t, err := h.service.FindByID(r.Context(), id)
 	if err != nil {
-		logger.Error("error finding transaction", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 	tview := views.NewTransaction(*t)

@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
-	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -48,15 +47,13 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	name := r.FormValue("name")
 	view := views.IncomeCategoryForm{
-		Initial: false,
-		Name:    name,
+		Name: name,
 	}
 
 	msgs := view.Validate()
@@ -69,14 +66,9 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	category, err := h.service.CreateCategory(r.Context(), sessionInfo.UserID, name)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, incomecategory.ErrDuplicate) {
-			logger.Info("invalid form - duplicated", "error", err)
-			view.CustomError = err
-		} else {
-			logger.Error("error creating category", "error", err)
-		}
-		partials.IncomeCategoryForm(view).Render(r.Context(), w)
+		view.SetError(err)
+		form := partials.IncomeCategoryForm(view)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 

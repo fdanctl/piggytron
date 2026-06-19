@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/fdanctl/piggytron/internal/util"
 )
@@ -33,16 +35,50 @@ func (s *Service) FindOneByID(
 ) (*account.Account, error) {
 	aid, err := util.ParseID[account.ID](id)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", id),
+			fmt.Errorf("failed parsing id '%s': %w", id, err),
+			"appaccount.FindOneByID",
+		)
 		return nil, err
 	}
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", uid),
+			fmt.Errorf("failed parsing id '%s': %w", uid, err),
+			"appaccount.FindOneByID",
+		)
 		return nil, err
 	}
 
 	goal, err := s.repo.FindByID(ctx, aid)
+	if err != nil {
+		if errors.Is(err, account.ErrNotFound) {
+			err = errs.NewAppError(
+				errs.KindNotFound,
+				"The account does not exists",
+				fmt.Errorf("failed to found account '%s': %w", id, err),
+				"appaccount.FindOneByID",
+			)
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed to find account '%s': %w", id, err),
+				"appaccount.FindOneByID",
+			)
+		}
+		return nil, err
+	}
 	if goal.UserID() != uid {
-		return nil, errors.New("not found")
+		err = errs.NewAppError(
+			errs.KindNotFound,
+			"The account does not exists",
+			fmt.Errorf("the account does not belong to user '%s': %w", uid, account.ErrNotFound),
+			"appaccount.FindOneByID",
+		)
+		return nil, err
 	}
 	return goal, nil
 }
@@ -56,24 +92,53 @@ func (s *Service) CreateBank(
 ) (*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.CreateBank",
+		)
 		return nil, err
 	}
 
 	id, err := util.NewID[account.ID]()
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed generating id: %w", err),
+			"appuser.CreateBank",
+		)
 		return nil, err
 	}
 
-	account, err := account.NewBank(id, uid, name, currency, isSaving)
+	acc, err := account.NewBank(id, uid, name, currency, isSaving)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create bank",
+			fmt.Errorf("failed to create bank: %w", err),
+			"appuser.CreateBank",
+		)
 		return nil, err
 	}
 
-	err = s.repo.Create(ctx, account)
+	err = s.repo.Create(ctx, acc)
 	if err != nil {
+		if errors.Is(err, account.ErrDuplicate) {
+			err = errs.NewAppError(
+				errs.KindValidation,
+				"A bank with the same name already exists",
+				fmt.Errorf("failed saving account '%s': %w", acc.Name(), err),
+				"appuser.CreateBank",
+			)
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving bank: %w", err),
+				"appuser.CreateBank",
+			)
+		}
 		return nil, err
 	}
-	return account, nil
+	return acc, nil
 }
 
 func (s *Service) CreateGoal(
@@ -88,20 +153,36 @@ func (s *Service) CreateGoal(
 ) (*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.CreateGoal",
+		)
 		return nil, err
 	}
 
 	cid, err := util.ParseID[account.ID](categoryID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", categoryID),
+			fmt.Errorf("failed parsing id '%s': %w", categoryID, err),
+			"appaccount.CreateGoal",
+		)
 		return nil, err
 	}
 
 	id, err := util.NewID[account.ID]()
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed generating id: %w", err),
+			"appuser.CreateGoal",
+		)
 		return nil, err
 	}
 
-	account, err := account.NewGoal(
+	acc, err := account.NewGoal(
 		id,
 		uid,
 		name,
@@ -112,14 +193,33 @@ func (s *Service) CreateGoal(
 		cid,
 	)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create goal",
+			fmt.Errorf("failed to create goal: %w", err),
+			"appuser.CreateGoal",
+		)
 		return nil, err
 	}
 
-	err = s.repo.Create(ctx, account)
+	err = s.repo.Create(ctx, acc)
 	if err != nil {
+		if errors.Is(err, account.ErrDuplicate) {
+			err = errs.NewAppError(
+				errs.KindValidation,
+				"A goal with the same name already exists",
+				fmt.Errorf("failed saving account '%s': %w", acc.Name(), err),
+				"appuser.CreateGoal",
+			)
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving user: %w", err),
+				"appuser.CreateGoal",
+			)
+		}
 		return nil, err
 	}
-	return account, nil
+	return acc, nil
 }
 
 func (s *Service) UpdateGoal(
@@ -135,21 +235,43 @@ func (s *Service) UpdateGoal(
 ) (*account.Account, error) {
 	aid, err := util.ParseID[account.ID](id)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", id),
+			fmt.Errorf("failed parsing id '%s': %w", id, err),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 
 	cid, err := util.ParseID[account.ID](categoryID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", categoryID),
+			fmt.Errorf("failed parsing id '%s': %w", categoryID, err),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appuser.UpdateGoal",
+		)
 		return nil, err
 	}
 	defer tx.Rollback()
@@ -157,15 +279,38 @@ func (s *Service) UpdateGoal(
 	atx := postgres.NewAccountRepository(tx)
 	goal, err := atx.FindByID(ctx, aid)
 	if err != nil {
+		if errors.Is(err, account.ErrNotFound) {
+			err = errs.NewAppError(
+				errs.KindNotFound,
+				"The goal does not exists",
+				fmt.Errorf("failed to found goal '%s': %w", aid, err),
+				"appaccount.UpdateGoal",
+			)
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed finding goal '%s': %w", aid, err),
+				"appaccount.UpdateGoal",
+			)
+		}
 		return nil, err
 	}
 	if goal.UserID() != uid {
-		return nil, errors.New("not found")
+		err = errs.NewAppError(
+			errs.KindNotFound,
+			"The goal does not exists",
+			fmt.Errorf("failed to found goal '%s': %w", aid, err),
+			"appaccount.UpdateGoal",
+		)
+		return nil, err
 	}
 
 	rtx := postgres.NewTransactionRepository(tx)
 	tt, err := rtx.FindAllByAccount(ctx, transaction.ID(goal.ID())) // date DESC
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding account '%s' transactions: %w", goal.ID(), err),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 	var minDate *time.Time
@@ -176,18 +321,66 @@ func (s *Service) UpdateGoal(
 
 	err = goal.ChangeName(name)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			"Name is invalid",
+			fmt.Errorf(
+				"failed to changing name of goal '%s' to '%s': %w",
+				goal.ID(),
+				name,
+				err,
+			),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 	err = goal.ChangeTargetAmount(targetAmount)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			"Target amount is invalid",
+			fmt.Errorf(
+				"failed to change target amount of goal '%s' to '%d': %w",
+				goal.ID(),
+				targetAmount,
+				err,
+			),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 	err = goal.ChangeStartDate(startDate, minDate)
 	if err != nil {
+		msg := fmt.Sprintf("%s is not a valid date", startDate.String())
+		if errors.Is(err, account.ErrContributionBeforeStartDate) {
+			msg = fmt.Sprintf("Exists a contribution before %s", startDate.Format(time.DateOnly))
+		}
+		err = errs.NewAppError(
+			errs.KindValidation,
+			msg,
+			fmt.Errorf(
+				"failed to change start date of goal '%s' to '%s': %w",
+				goal.ID(),
+				startDate.String(),
+				err,
+			),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 	err = goal.ChangeTargetDate(targetDate)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid date", startDate.String()),
+			fmt.Errorf(
+				"failed to change target date of goal '%s' to '%s': %w",
+				goal.ID(),
+				startDate.String(),
+				err,
+			),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 
@@ -201,16 +394,28 @@ func (s *Service) UpdateGoal(
 		}
 		err := rtx.UpdateMany(ctx, tt)
 		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed to update transactions: %w", err),
+				"appaccount.UpdateGoal",
+			)
 			return nil, err
 		}
 	}
 
 	err = atx.Update(ctx, goal)
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to update goal '%s': %w", goal.ID(), err),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 
 	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appaccount.UpdateGoal",
+		)
 		return nil, err
 	}
 
@@ -223,11 +428,21 @@ func (s *Service) FindAllByUser(
 ) ([]*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.FindByID",
+		)
 		return nil, err
 	}
 
 	accounts, err := s.repo.FindAllByUser(ctx, uid)
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding user '%s' accounts: %w", uid, err),
+			"appaccount.FindByID",
+		)
 		return nil, err
 	}
 
@@ -240,11 +455,21 @@ func (s *Service) FindAllBanksByUser(
 ) ([]*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.FindAllBanksByUser",
+		)
 		return nil, err
 	}
 
 	accounts, err := s.repo.FindAllBanksByUser(ctx, uid)
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding user '%s' banks: %w", uid, err),
+			"appaccount.FindAllBanksByUser",
+		)
 		return nil, err
 	}
 
@@ -257,11 +482,21 @@ func (s *Service) FindAllGoalsByUser(
 ) ([]*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.FindAllGoalsByUser",
+		)
 		return nil, err
 	}
 
 	accounts, err := s.repo.FindAllGoalsByUser(ctx, uid)
 	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding user '%s' goals: %w", uid, err),
+			"appaccount.FindAllGoalsByUser",
+		)
 		return nil, err
 	}
 

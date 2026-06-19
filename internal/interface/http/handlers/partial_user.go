@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"database/sql"
-	"errors"
 	"net/http"
 	"net/url"
 
 	"github.com/fdanctl/piggytron/internal/application/appuser"
-	"github.com/fdanctl/piggytron/internal/domain/user"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -77,7 +75,6 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	pwd := r.FormValue("password")
 	redirect := r.FormValue("redirect")
 	view := views.LoginView{
-		Initial:  false,
 		Redirect: redirect,
 		Name:     name,
 		Password: pwd,
@@ -94,15 +91,9 @@ func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 
 	sid, err := h.service.LoginUser(r.Context(), name, pwd)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, appuser.ErrWrongPassword) {
-			logger.Info("error on login", "error", err)
-			view.ErrorMsg = "Name or password are invalid"
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			partials.LoginForm(view).Render(r.Context(), w)
-			return
-		}
-		logger.Error("error on login", "error", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		view.SetError(err)
+		form := partials.LoginForm(view)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 
@@ -122,7 +113,6 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 	pwd := r.FormValue("password")
 	pwdConf := r.FormValue("password-confirm")
 	view := views.SignupView{
-		Initial:         false,
 		Name:            name,
 		Password:        pwd,
 		PasswordConfirm: pwdConf,
@@ -139,14 +129,9 @@ func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 
 	sid, err := h.service.CreateUser(r.Context(), name, pwd)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, user.ErrDuplicate) {
-			logger.Info("error on signup", "error", err)
-			view.CustomError = err
-		} else {
-			logger.Error("error on signup", "error", err)
-		}
-		partials.SignupForm(view).Render(r.Context(), w)
+		view.SetError(err)
+		form := partials.SignupForm(view)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 

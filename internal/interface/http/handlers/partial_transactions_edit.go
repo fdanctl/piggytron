@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -9,7 +9,8 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/application/apptransaction"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -55,8 +56,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -64,8 +64,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	t, err := h.service.FindOneByID(r.Context(), id)
 	if err != nil {
-		logger.Error("error finding transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -75,8 +74,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all income categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
 		return
 	}
 
@@ -86,8 +84,7 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all accounts", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
 		return
 	}
 
@@ -144,8 +141,7 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -165,8 +161,7 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all income categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
 		return
 	}
 
@@ -176,8 +171,7 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all accounts", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
 		return
 	}
 
@@ -185,7 +179,6 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 	switch ttype {
 	case "income":
 		view := views.IncomeForm{
-			Initial:        false,
 			Amount:         amount,
 			Description:    description,
 			Currency:       currency,
@@ -204,7 +197,6 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	case "expense":
 		view := views.ExpenseForm{
-			Initial:     false,
 			Amount:      amount,
 			Description: description,
 			Currency:    currency,
@@ -223,7 +215,6 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	case "transfer":
 		view := views.TransferForm{
-			Initial:        false,
 			Amount:         amount,
 			Description:    description,
 			Currency:       currency,
@@ -252,13 +243,25 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	cents, err := convertAmountStrToInt(amount)
 	if err != nil {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
+		err := errs.NewAppError(
+			errs.KindBadRequest,
+			fmt.Sprintf("%s is not a valid amount", amount),
+			fmt.Errorf("failed to convert amount '%s' to cents: %w", amount, err),
+			"BudgetHandler.Post",
+		)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	d, err := time.Parse("02/01/2006", date)
 	if err != nil {
-		http.Error(w, "Invalid date", http.StatusBadRequest)
+		err := errs.NewAppError(
+			errs.KindBadRequest,
+			fmt.Sprintf("%s is not a valid date", date),
+			fmt.Errorf("failed to parse date '%s': %w", date, err),
+			"BudgetHandler.Post",
+		)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -271,21 +274,11 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TransactionEditHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-
 	id := r.PathValue("id")
 
 	err := h.service.Delete(r.Context(), id)
 	if err != nil {
-		if errors.Is(err, transaction.ErrNegativeBalance) {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-			templ.Join(
-				components.SendToast(components.Error, "Negative balance"),
-			).Render(r.Context(), w)
-			return
-		}
-		logger.Error("error creating transaction", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 	w.Header().Set("HX-Trigger", "transaction-deleted")

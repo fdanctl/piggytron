@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -41,8 +43,7 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger.Debug(month)
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -57,8 +58,8 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		maxD,
 	)
 	if err != nil {
-		logger.Error("error geting category budget-spent", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		err := fmt.Errorf("error geting categories budget-spent: %w", err)
+		httperror.SendError(w, r, err)
 		return
 	}
 

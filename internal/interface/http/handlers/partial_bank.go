@@ -1,13 +1,12 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
-	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -48,8 +47,7 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -58,7 +56,6 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 	savings := r.FormValue("savings")
 
 	view := views.BankForm{
-		Initial:   false,
 		Name:      name,
 		Currency:  currency,
 		IsSavings: savings == "on",
@@ -79,15 +76,9 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		savings == "on",
 	)
 	if err != nil {
-		if errors.Is(err, account.ErrDuplicate) {
-			logger.Info("invalid form - duplicated", "error", err)
-			view.CustomError = err
-		} else {
-			logger.Error("error creating bank", "error", err)
-		}
-
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.BankForm(view).Render(r.Context(), w)
+		view.SetError(err)
+		form := partials.BankForm(view)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 

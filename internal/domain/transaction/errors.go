@@ -11,4 +11,5 @@ var (
 	ErrNotSavingsCategory = errors.New("not a saving category")
 	ErrInvalidAccount     = errors.New("income/expense not possible for goals nor savings account")
 	ErrInvalidType        = errors.New("invalid type")
+	ErrNotFound           = errors.New("not found")
 )

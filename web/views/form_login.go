@@ -1,19 +1,19 @@
 package views
 
 type LoginView struct {
-	Initial  bool
+	Form
 	Redirect string
 
 	Name     string
 	Password string
-	ErrorMsg string
 }
 
 func NewLoginView(redirect string) *LoginView {
-	return &LoginView{
-		Initial:  true,
+	f := LoginView{
 		Redirect: redirect,
 	}
+	f.Initial = true
+	return &f
 }
 
 func (v *LoginView) ValidateName() (msgs []string) {

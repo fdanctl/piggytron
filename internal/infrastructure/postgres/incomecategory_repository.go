@@ -79,6 +79,9 @@ func (r *IncomeCategoryRepository) FindByID(
 		&c.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, incomecategory.ErrNotFound
+		}
 		return nil, err
 	}
 	category := incomecategory.Rehydrate(

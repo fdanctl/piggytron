@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
 	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -47,18 +50,16 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
+	// TODO make it one query intead of two
 	ec, err := h.expenseCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 	var ecView []views.ExpenseCategory
@@ -68,8 +69,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	ic, err := h.incomeCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error reading all income categories", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -95,36 +95,36 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	id := r.PathValue("id")
-	ecat, err := h.expenseCatService.FindCategory(r.Context(), id)
+	ecat, err := h.expenseCatService.FindCategory(r.Context(), id, sessionInfo.UserID)
 	var icat *incomecategory.IncomeCategory
 	if err != nil {
-		icat, err = h.incomeCatService.FindCategory(r.Context(), id)
+		icat, err = h.incomeCatService.FindCategory(r.Context(), id, sessionInfo.UserID)
 		if err != nil {
-			logger.Error("error finding category", "error", err, "cid", id)
-			http.Error(w, "Not found", http.StatusNotFound)
+			if errors.Is(err, sql.ErrNoRows) {
+				http.NotFound(w, r)
+				return
+			}
+			httperror.SendError(w, r, err)
 			return
 		}
 	}
 
+	// TODO use category query to be one query instead of two
 	icats, err := h.incomeCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error reading all income categories", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 	ecats, err := h.expenseCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error reading all expense categories", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -160,8 +160,7 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		LIMIT*1-LIMIT,
 	)
 	if err != nil {
-		logger.Error("error finding filtered transactions", "error", err, "filters", filters)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("error finding filtered transaction: %w", err))
 		return
 	}
 	var hasMore bool

@@ -9,6 +9,8 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -52,11 +54,9 @@ func (h *GoalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -66,8 +66,7 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -77,12 +76,17 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if id != "" {
 		g, err := h.accService.FindOneByID(r.Context(), id, sessionInfo.UserID)
 		if err != nil {
-			logger.Error("error finding goal", "error", err)
-			http.Error(w, "Internal error", http.StatusInternalServerError)
+			httperror.SendError(w, r, err)
 			return
 		}
 		if g.Type() != account.GoalType {
-			http.Error(w, "Not a goal", http.StatusUnprocessableEntity)
+			err := errs.NewAppError(
+				errs.KindNotFound,
+				fmt.Sprintf("%s is not a goal", g.ID()),
+				fmt.Errorf("'%s' is not a goal: %w", g.ID(), account.ErrAccountWrongType),
+				"GoalHandler.Get",
+			)
+			httperror.SendError(w, r, err)
 			return
 		}
 		view.Name = g.Name()
@@ -105,8 +109,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -118,13 +121,11 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	view := views.GoalForm{
-		Initial:      false,
 		Name:         formData.name,
 		Currency:     formData.currency,
 		TargetAmount: formData.tamount,
@@ -141,7 +142,8 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	amount, startDate, pDate, err := h.parseGoalFormValues(view)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		err := errs.NewGenericBadRequestAppError(err, "GoalHandler.Post")
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -156,15 +158,9 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		formData.cat,
 	)
 	if err != nil {
-		if errors.Is(err, account.ErrDuplicate) {
-			logger.Info("invalid form - duplicated", "error", err)
-			view.CustomError = err
-		} else {
-			logger.Error("error creating goal", "error", err)
-		}
-
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalForm(view, ecatOpts, "").Render(r.Context(), w)
+		view.SetError(err)
+		form := partials.GoalFormContent(view, ecatOpts)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 
@@ -172,8 +168,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		r.Context(), string(goal.ID()),
 	)
 	if err != nil {
-		logger.Error("error finding accounts", "error", err)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -203,14 +198,14 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	id := r.PathValue("id")
 	if id == "" {
-		http.Error(w, "Goal ID is required", http.StatusBadRequest)
+		err := errs.NewAppError(errs.KindBadRequest, "Goal ID is required", err, "GoalHandler.Put")
+		httperror.SendError(w, r, err)
 		return
 	}
 	formData := h.parseGoalForm(r)
@@ -221,13 +216,11 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error reading all categories", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	view := views.GoalForm{
-		Initial:      false,
 		Name:         formData.name,
 		Currency:     formData.currency,
 		TargetAmount: formData.tamount,
@@ -245,7 +238,8 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 
 	amount, startDate, pDate, err := h.parseGoalFormValues(view)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		err := errs.NewGenericBadRequestAppError(err, "GoalHandler.Post")
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -261,14 +255,9 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		formData.cat,
 	)
 	if err != nil {
-		if errors.Is(err, account.ErrContributionBeforeStartDate) {
-			view.CustomError = err
-		} else {
-			logger.Error("error updating goal", "error", err)
-		}
-
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
+		view.SetError(err)
+		form := partials.GoalFormContent(view, ecatOpts)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 
@@ -315,10 +304,9 @@ func (h *GoalHandler) parseGoalFormValues(
 		return
 	}
 
-	targetDate, err := time.Parse("02/01/2006", view.TargetDate)
-	if err == nil {
+	targetDate, targetDateErr := time.Parse("02/01/2006", view.TargetDate)
+	if targetDateErr == nil {
 		pTargetDate = &targetDate
 	}
-	err = nil
 	return
 }

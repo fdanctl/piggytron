@@ -10,7 +10,7 @@ import (
 )
 
 type ExpenseForm struct {
-	Initial bool
+	Form
 
 	Amount      string
 	Description string
@@ -18,17 +18,15 @@ type ExpenseForm struct {
 	Date        string
 	Category    string
 	SourceAcc   string
-
-	ErrorMsg    string
-	CustomError error
 }
 
 func NewExpenseForm() *ExpenseForm {
-	return &ExpenseForm{
-		Initial:  true,
+	f := ExpenseForm{
 		Date:     time.Now().Format("02/01/2006"),
 		Currency: currency.EUR.String(),
 	}
+	f.Initial = true
+	return &f
 }
 
 func (v *ExpenseForm) ValidateAmount() (msgs []string) {

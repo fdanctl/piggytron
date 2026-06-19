@@ -10,25 +10,22 @@ import (
 )
 
 type IncomeForm struct {
-	Initial bool
-
+	Form
 	Amount         string
 	Description    string
 	Currency       string
 	Date           string
 	Category       string
 	DestinationAcc string
-
-	ErrorMsg    string
-	CustomError error
 }
 
 func NewIncomeForm() *IncomeForm {
-	return &IncomeForm{
-		Initial:  true,
+	f := IncomeForm{
 		Date:     time.Now().Format("02/01/2006"),
 		Currency: currency.EUR.String(),
 	}
+	f.Initial = true
+	return &f
 }
 
 func (v *IncomeForm) ValidateAmount() (msgs []string) {

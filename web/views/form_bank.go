@@ -8,21 +8,19 @@ import (
 )
 
 type BankForm struct {
-	Initial bool
+	Form
 
 	Name      string
 	Currency  string
 	IsSavings bool
-
-	ErrorMsg    string
-	CustomError error
 }
 
 func NewBankForm() *BankForm {
-	return &BankForm{
-		Initial:  true,
+	f := BankForm{
 		Currency: currency.EUR.String(),
 	}
+	f.Initial = true
+	return &f
 }
 
 func (v *BankForm) ValidateName() (msgs []string) {
@@ -35,7 +33,7 @@ func (v *BankForm) ValidateName() (msgs []string) {
 	}
 
 	if errors.Is(v.CustomError, account.ErrDuplicate) {
-		msgs = append(msgs, v.CustomError.Error())
+		msgs = append(msgs, "A bank with the same name already exists")
 	}
 
 	if len(v.Name) > 50 {

@@ -134,6 +134,9 @@ func (r *BudgetRepository) FindByID(
 		&c.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, budget.ErrNotFound
+		}
 		return nil, err
 	}
 	category := budget.Rehydrate(

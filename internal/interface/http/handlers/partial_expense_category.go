@@ -2,13 +2,12 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
-	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -48,8 +47,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -57,9 +55,8 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 	catType := r.FormValue("type")
 
 	view := views.ExpenseCategoryForm{
-		Initial: false,
-		Name:    name,
-		Type:    catType,
+		Name: name,
+		Type: catType,
 	}
 
 	msgs := view.Validate()
@@ -72,14 +69,9 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 
 	category, err := h.service.CreateCategory(r.Context(), sessionInfo.UserID, name, catType)
 	if err != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		if errors.Is(err, expensecategory.ErrDuplicate) {
-			logger.Info("invalid form - duplicated", "error", err)
-			view.CustomError = err
-		} else {
-			logger.Error("error creating category", "error", err)
-		}
-		partials.ExpenseCategoryForm(view).Render(r.Context(), w)
+		view.SetError(err)
+		form := partials.ExpenseCategoryForm(view)
+		httperror.SendFormError(w, r, err, form)
 		return
 	}
 

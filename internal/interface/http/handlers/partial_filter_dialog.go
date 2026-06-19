@@ -9,6 +9,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -50,18 +51,15 @@ func (h *FilterDialogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
 	c, err := h.categoryQueryService.FindAllCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error finding all Categories", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find all categories: %w", err))
 		return
 	}
 
@@ -75,8 +73,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	account, err := h.accountService.FindAllByUser(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error finding all accounts", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -111,21 +108,30 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		r.Context(), sessionInfo.UserID, filters,
 	)
 	if err != nil {
-		logger.Error("counting filters transactions results", "error", err, "filters", filters)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(
+			w,
+			r,
+			fmt.Errorf("failed to count filters transactions results: %w", err),
+		)
 		return
 	}
 
 	includedAcc, err := h.accQueryService.FindIDNamesIncludes(r.Context(), accounts)
 	if err != nil {
-		logger.Error("find accounts with ids array", "error", err, "accounts_ids", accounts)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(
+			w,
+			r,
+			fmt.Errorf("failed to find accounts id-names for %v: %w", accounts, err),
+		)
 		return
 	}
 	includedCats, err := h.categoryQueryService.FindCategoriesIDIncludes(r.Context(), cats)
 	if err != nil {
-		logger.Error("find category with ids array", "error", err, "categories_ids", cats)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(
+			w,
+			r,
+			fmt.Errorf("failed to find categories id-names for %v: %w", cats, err),
+		)
 		return
 	}
 
@@ -142,11 +148,9 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -183,8 +187,11 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		r.Context(), sessionInfo.UserID, filters,
 	)
 	if err != nil {
-		logger.Error("counting filters transactions results", "error", err, "filters", filters)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(
+			w,
+			r,
+			fmt.Errorf("failed to count filters transactions results: %w", err),
+		)
 		return
 	}
 

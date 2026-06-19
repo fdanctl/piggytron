@@ -7,19 +7,17 @@ import (
 )
 
 type SignupView struct {
-	Initial bool
+	Form
 
 	Name            string
 	Password        string
 	PasswordConfirm string
-	ErrorMsg        string
-	CustomError     error
 }
 
 func NewSignupView() *SignupView {
-	return &SignupView{
-		Initial: true,
-	}
+	f := SignupView{}
+	f.Initial = true
+	return &f
 }
 
 func (v *SignupView) ValidateName() (msgs []string) {
@@ -30,7 +28,7 @@ func (v *SignupView) ValidateName() (msgs []string) {
 		msgs = append(msgs, "Name is required")
 	}
 	if errors.Is(v.CustomError, user.ErrDuplicate) {
-		msgs = append(msgs, v.CustomError.Error())
+		msgs = append(msgs, "User already exists")
 	}
 	if len(v.Name) > 50 {
 		msgs = append(msgs, "Max length is 50 character")

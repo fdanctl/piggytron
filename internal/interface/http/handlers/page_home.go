@@ -294,7 +294,20 @@ func (h *SignupHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.SignupForm(*views.NewSignupView())
-	renderWithMainLayout(w, r, "Signup", form)
+	if r.Header.Get("Hx-Request") == "true" {
+		form.Render(r.Context(), w)
+		io.WriteString(w, "<title>Login</title>")
+		return
+	}
+
+	layout := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		ctx = templ.WithChildren(ctx, form)
+		err := layouts.LogLayout().Render(ctx, w)
+		return err
+	})
+
+	ctx := templ.WithChildren(r.Context(), layout)
+	layouts.Base("Signup").Render(ctx, w)
 }
 
 type ExpensesHandler struct{}

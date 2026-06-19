@@ -10,4 +10,5 @@ var (
 	ErrDuplicate                   = errors.New("duplicate")
 	ErrAccountWrongType            = errors.New("incorrect type")
 	ErrContributionBeforeStartDate = errors.New("contribution before start date")
+	ErrNotFound                    = errors.New("not found")
 )

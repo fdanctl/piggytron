@@ -7,18 +7,16 @@ import (
 )
 
 type ExpenseCategoryForm struct {
-	Initial bool
+	Form
 
-	Name        string
-	Type        string
-	ErrorMsg    string
-	CustomError error
+	Name string
+	Type string
 }
 
 func NewExpenseCategoryForm() *ExpenseCategoryForm {
-	return &ExpenseCategoryForm{
-		Initial: true,
-	}
+	f := ExpenseCategoryForm{}
+	f.Initial = true
+	return &f
 }
 
 func (v *ExpenseCategoryForm) ValidateName() (msgs []string) {
@@ -29,7 +27,7 @@ func (v *ExpenseCategoryForm) ValidateName() (msgs []string) {
 		msgs = append(msgs, "Name is required")
 	}
 	if errors.Is(v.CustomError, expensecategory.ErrDuplicate) {
-		msgs = append(msgs, v.CustomError.Error())
+		msgs = append(msgs, "An expense category with the same name already exists")
 	}
 	if len(v.Name) > 30 {
 		msgs = append(msgs, "Max length is 30 character")

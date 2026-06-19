@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -39,8 +40,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -61,8 +61,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		0,
 	)
 	if err != nil {
-		logger.Error("error findingTransactions", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered transactions: %w", err))
 		return
 	}
 
@@ -79,8 +78,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		maxD,
 	)
 	if err != nil {
-		logger.Error("error geting category budget-spent", "error", err)
-		http.Error(w, "Internal Error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("error geting category budget-spent: %w", err))
 		return
 	}
 

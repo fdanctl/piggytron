@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -33,11 +35,9 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -78,8 +78,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		LIMIT*uint(page)-LIMIT,
 	)
 	if err != nil {
-		logger.Error("error finding filtered transactions", "error", err, "filters", filters)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered transactions: %w", err))
 		return
 	}
 	var hasMore bool

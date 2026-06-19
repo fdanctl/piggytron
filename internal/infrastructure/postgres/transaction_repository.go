@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -206,6 +208,9 @@ func (r *TransactionRepository) FindByID(
 		&dto.createdAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, transaction.ErrNotFound
+		}
 		return nil, err
 	}
 

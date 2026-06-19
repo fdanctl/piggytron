@@ -2,6 +2,7 @@ package views
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -12,25 +13,22 @@ import (
 )
 
 type GoalForm struct {
-	Initial bool
-
+	Form
 	Name         string
 	Currency     string
 	TargetAmount string
 	StartDate    string
 	TargetDate   string
 	Category     string
-
-	ErrorMsg    string
-	CustomError error
 }
 
 func NewGoalForm() *GoalForm {
-	return &GoalForm{
-		Initial:   true,
+	f := GoalForm{
 		StartDate: time.Now().Format("02/01/2006"),
 		Currency:  currency.EUR.String(),
 	}
+	f.Initial = true
+	return &f
 }
 
 func (v *GoalForm) ValidateName() (msgs []string) {
@@ -43,7 +41,7 @@ func (v *GoalForm) ValidateName() (msgs []string) {
 	}
 
 	if errors.Is(v.CustomError, account.ErrDuplicate) {
-		msgs = append(msgs, v.CustomError.Error())
+		msgs = append(msgs, "A goal with the name already exists")
 	}
 
 	if len(v.Name) > 50 {
@@ -112,7 +110,8 @@ func (v *GoalForm) ValidateStartDate() (msgs []string) {
 	}
 
 	if errors.Is(v.CustomError, account.ErrContributionBeforeStartDate) {
-		msgs = append(msgs, v.CustomError.Error())
+		msg := fmt.Sprintf("There is a contribution before %s", v.StartDate)
+		msgs = append(msgs, msg)
 	}
 
 	if v.TargetDate == "" {

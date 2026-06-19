@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -47,11 +48,9 @@ func (h *GoalsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 
@@ -59,8 +58,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		r.Context(), sessionInfo.UserID,
 	)
 	if err != nil {
-		logger.Error("error query goals", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find all goals", err))
 		return
 	}
 
@@ -83,11 +81,9 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
-		logger.Error("unexpected error", "error", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		httperror.SendError(w, r, err)
 		return
 	}
 	id := r.PathValue("id")
@@ -97,15 +93,13 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
-		logger.Error("error finding one account", "error", err, "aid", id)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find account: %w", err))
 		return
 	}
 
 	goals, err := h.accountQueryService.FindGoalsIDNames(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		logger.Error("error query goals", "error", err)
-		http.Error(w, "Internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, fmt.Errorf("failed to find goals id-name: %w", err))
 		return
 	}
 
@@ -127,8 +121,7 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		LIMIT*1-LIMIT,
 	)
 	if err != nil {
-		logger.Error("error find filtered", "error", err, "filters", filters)
-		http.Error(w, "internal error", http.StatusInternalServerError)
+		httperror.SendError(w, r, err)
 		return
 	}
 	var hasMore bool

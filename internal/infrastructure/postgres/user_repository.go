@@ -71,6 +71,9 @@ func (r *UserRepository) FindByID(ctx context.Context, id user.ID) (*user.User, 
 		&updatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -102,6 +105,9 @@ func (r *UserRepository) FindByName(ctx context.Context, name string) (*user.Use
 		&updatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, user.ErrNotFound
+		}
 		return nil, err
 	}
 

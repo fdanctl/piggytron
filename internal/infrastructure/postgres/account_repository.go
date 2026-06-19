@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"time"
 
@@ -135,6 +136,9 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 		&b.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, account.ErrNotFound
+		}
 		return nil, err
 	}
 
@@ -181,6 +185,9 @@ func (r *AccountRepository) FindBankByNameAndUser(
 		&b.UpdatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, account.ErrNotFound
+		}
 		return nil, err
 	}
 
