@@ -58,7 +58,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		r.Context(), sessionInfo.UserID,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find all goals", err))
+		httperror.SendError(w, r, fmt.Errorf("failed to find all goals: %w", err))
 		return
 	}
 

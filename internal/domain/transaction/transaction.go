@@ -143,18 +143,20 @@ func NewTransfer(
 	if sourceBalance-amount < 0 {
 		return nil, ErrNegativeBalance
 	}
+	if fromAccountID == toAccountID {
+		return nil, ErrSameAccountTransfer
+	}
 	if toAccountCategoryID != nil && // ie. is a goal
 		(expenseCategoryID == nil || *toAccountCategoryID != *expenseCategoryID) {
 		return nil, ErrGoalCategory
 	}
 	if isToAccSavings {
-		if expenseCategoryID != nil {
+		if expenseCategoryID == nil {
 			return nil, ErrNotSavingsCategory
 		}
 		if toAccountCategoryType != "savings" {
 			return nil, ErrNotSavingsCategory
 		}
-
 	}
 
 	now := time.Now()

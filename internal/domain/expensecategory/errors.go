@@ -8,4 +8,5 @@ var (
 	ErrInvalidType = errors.New("invalid type")
 	ErrDuplicate   = errors.New("duplicate category name")
 	ErrNotFound    = errors.New("not found")
+	ErrSameType    = errors.New("same type")
 )

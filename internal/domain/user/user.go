@@ -62,7 +62,7 @@ func (u *User) UpdatedAt() time.Time {
 }
 
 func (u *User) ChangeName(name string) error {
-	if name == "" {
+	if name == "" || len(name) > 50 {
 		return ErrInvalidName
 	}
 	u.name = name

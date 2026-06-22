@@ -59,7 +59,7 @@ func (ic *IncomeCategory) UpdatedAt() time.Time {
 }
 
 func (ic *IncomeCategory) ChangeName(name string) error {
-	if name == "" {
+	if name == "" || len(name) > 30 {
 		return ErrInvalidName
 	}
 	ic.name = name

@@ -95,13 +95,20 @@ func (ec *ExpenseCategory) UpdatedAt() time.Time {
 	return ec.updatedAt
 }
 
-// TODO
-
 func (ec *ExpenseCategory) ChangeName(name string) error {
-	if name == "" {
+	if name == "" || len(name) > 30 {
 		return ErrInvalidName
 	}
 	ec.name = name
+	ec.updatedAt = time.Now()
+	return nil
+}
+
+func (ec *ExpenseCategory) ChangeType(t ExpenseType) error {
+	if t == ec.expenseType {
+		return ErrSameType
+	}
+	ec.expenseType = t
 	ec.updatedAt = time.Now()
 	return nil
 }

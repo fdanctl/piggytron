@@ -49,7 +49,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", w))
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", err))
 		return
 	}
 
@@ -58,7 +58,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history", w))
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
 	histMap, min, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)

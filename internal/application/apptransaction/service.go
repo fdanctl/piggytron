@@ -376,8 +376,8 @@ func (s *Service) CreateTransfer(
 		if err != nil {
 			err = errs.NewAppError(
 				errs.KindValidation,
-				fmt.Sprintf("%s is not a valid id", cid),
-				fmt.Errorf("failed parsing id '%s': %w", cid, err),
+				fmt.Sprintf("%s is not a valid id", *cid),
+				fmt.Errorf("failed parsing id '%s': %w", *cid, err),
 				"apptransaction.CreateTransfer",
 			)
 			return nil, err
@@ -425,6 +425,17 @@ func (s *Service) CreateTransfer(
 		accCID = &temp
 	}
 
+	var toAccountCatType string
+	if toAccount.IsSaving != nil && *toAccount.IsSaving {
+		cattx := postgres.NewCategoryQueryService(tx)
+		cat, err := cattx.FindByID(ctx, categoryID)
+		if err != nil {
+			errs.NewInternalAppError(err, "apptransaction.CreateTransfer")
+			return nil, err
+		}
+		toAccountCatType = cat.Type
+	}
+
 	t, err := transaction.NewTransfer(
 		id,
 		uid,
@@ -436,7 +447,7 @@ func (s *Service) CreateTransfer(
 		date,
 		fromAccount.Sum,
 		accCID,
-		toAccount.Type,
+		toAccountCatType,
 		toAccount.IsSaving != nil && *toAccount.IsSaving,
 	)
 	if err != nil {

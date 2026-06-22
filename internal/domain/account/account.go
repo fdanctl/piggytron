@@ -76,6 +76,9 @@ func NewGoal(
 	if targetAmount <= 0 {
 		return nil, ErrNegativeNumber
 	}
+	if targetDate != nil && startDate.Compare(*targetDate) > 0 {
+		return nil, ErrStartDateAfterTarget
+	}
 
 	now := time.Now()
 
@@ -213,12 +216,15 @@ func (b *Account) ChangeTargetAmount(amount int) error {
 	return nil
 }
 
-func (b *Account) ChangeStartDate(date time.Time, minPossible *time.Time) error {
+func (b *Account) ChangeStartDate(date time.Time, notLaterThan *time.Time) error {
 	if b.aType != GoalType {
 		return ErrAccountWrongType
 	}
-	if minPossible != nil && date.Compare(*minPossible) == 1 {
+	if notLaterThan != nil && date.Compare(*notLaterThan) == 1 {
 		return ErrContributionBeforeStartDate
+	}
+	if b.TargetDate() != nil && date.Compare(*b.TargetDate()) > 0 {
+		return ErrStartDateAfterTarget
 	}
 	b.startDate = &date
 	b.updatedAt = time.Now()
@@ -228,6 +234,10 @@ func (b *Account) ChangeStartDate(date time.Time, minPossible *time.Time) error 
 func (b *Account) ChangeTargetDate(date *time.Time) error {
 	if b.aType != GoalType {
 		return ErrAccountWrongType
+	}
+	// targetDate < startDate
+	if date != nil && b.StartDate().Compare(*date) > 0 {
+		return ErrStartDateAfterTarget
 	}
 	b.targetDate = date
 	b.updatedAt = time.Now()
