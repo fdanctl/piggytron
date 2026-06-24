@@ -303,7 +303,7 @@ func TestChangeTargetAmount(t *testing.T) {
 	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"))
 	upAt = goal.UpdatedAt()
 	if err := goal.ChangeTargetAmount(amount); err != nil {
-		t.Error("expected error for valid amount")
+		t.Error("unexpected error for valid amount")
 	}
 	if *goal.TargetAmount() != amount || goal.UpdatedAt().Compare(upAt) < 1 {
 		t.Errorf("expected target amount '%d', got '%d'", amount, *goal.TargetAmount())
@@ -312,7 +312,7 @@ func TestChangeTargetAmount(t *testing.T) {
 	upAt = goal.UpdatedAt()
 	// zero amount
 	if err := goal.ChangeTargetAmount(0); err == nil {
-		t.Error("expected error for empty name")
+		t.Error("expected error for zero amount")
 	}
 	if *goal.TargetAmount() != amount || goal.UpdatedAt().Compare(upAt) != 0 {
 		t.Errorf("target amount should remain '%d', got '%d'", amount, *goal.TargetAmount())
@@ -320,13 +320,11 @@ func TestChangeTargetAmount(t *testing.T) {
 
 	// negative amount
 	if err := goal.ChangeTargetAmount(-100); err == nil {
-		t.Error("target amount should not receive income directly")
+		t.Error("expected error for negative amount")
 	}
 	if *goal.TargetAmount() != amount || goal.UpdatedAt().Compare(upAt) != 0 {
 		t.Errorf("target amount should remain '%d', got '%d'", amount, *goal.TargetAmount())
 	}
-
-	// start date after target
 }
 
 func TestChangeStartDate(t *testing.T) {

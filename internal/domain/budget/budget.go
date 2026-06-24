@@ -57,7 +57,7 @@ func Rehydrate(
 }
 
 func (b *Budget) ChangeAmount(nAmount int) error {
-	if nAmount <= 0 {
+	if nAmount < 0 {
 		return ErrInvalidAmount
 	}
 

@@ -294,13 +294,13 @@ func (h *GoalHandler) parseGoalFormValues(
 ) (amount int, startDate time.Time, pTargetDate *time.Time, err error) {
 	amount, err = convertAmountStrToInt(view.TargetAmount)
 	if err != nil {
-		err = errors.New("Invalid amount")
+		err = errors.New("invalid amount")
 		return
 	}
 
 	startDate, err = time.Parse("02/01/2006", view.StartDate)
 	if err != nil {
-		err = errors.New("Invalid date")
+		err = errors.New("invalid date")
 		return
 	}
 

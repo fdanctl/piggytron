@@ -54,3 +54,34 @@ func TestNew(t *testing.T) {
 		})
 	}
 }
+
+func TestChangeAmount(t *testing.T) {
+	amount := 1000
+	b, _ := New(ID("420"), ID("420"), ID("420"), time.Now(), 100)
+	upAt := b.UpdatedAt()
+
+	if err := b.ChangeAmount(amount); err != nil {
+		t.Error("unexpected error for valid amount")
+	}
+	if b.Amount() != amount || b.UpdatedAt().Compare(upAt) < 1 {
+		t.Errorf("expected target amount '%d', got '%d'", amount, b.Amount())
+	}
+
+	upAt = b.UpdatedAt()
+	// zero amount
+	if err := b.ChangeAmount(0); err != nil {
+		t.Error("unexpected error for zero amount")
+	}
+	if b.Amount() != 0 || b.UpdatedAt().Compare(upAt) < 0 {
+		t.Errorf("expected '%d', got '%d'", amount, b.Amount())
+	}
+	upAt = b.UpdatedAt()
+
+	// negative amount
+	if err := b.ChangeAmount(-100); err == nil {
+		t.Error("expected error for negative amount")
+	}
+	if b.Amount() != 0 || b.UpdatedAt().Compare(upAt) != 0 {
+		t.Errorf("target amount should remain '%d', got '%d'", 0, b.Amount())
+	}
+}
