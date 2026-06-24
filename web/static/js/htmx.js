@@ -81,9 +81,16 @@ document.body.addEventListener("htmx:historyRestore", (ev) => {
   }
 });
 
+document.body.addEventListener("htmx:sendError", function (ev) {
+  showToast("error", "Network error");
+});
+
+document.body.addEventListener("htmx:timeout", function (ev) {
+  showToast("error", "Request timed out");
+});
+
 // htmx custom events
 document.body.addEventListener("show-toast", function (ev) {
-  console.log("HELLO");
   showToast(ev.detail.level, ev.detail.message);
 });
 

@@ -1,4 +1,5 @@
 import { handleInputOnBlur } from "../input";
+import { showToast } from "../toast";
 import { goalActions } from "./goal";
 import { uiActions } from "./ui";
 
@@ -23,6 +24,14 @@ document.addEventListener("focusout", (evt) => {
   if (!(evt.target instanceof HTMLInputElement)) return;
 
   handleInputOnBlur(evt.target);
+});
+
+window.addEventListener("offline", () => {
+  showToast("error", "You are offline");
+});
+
+window.addEventListener("online", () => {
+  showToast("success", "Internet connection restored");
 });
 
 function dispatch(actionName, payload) {

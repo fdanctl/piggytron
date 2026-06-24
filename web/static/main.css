@@ -11,6 +11,7 @@
 @import "./css/components/inputs.css";
 @import "./css/components/loader.css";
 @import "./css/components/navigation.css";
+@import "./css/components/nodata.css";
 @import "./css/components/tabs.css";
 @import "./css/components/transaction-card.css";
 @import "./css/components/transaction-details.css";

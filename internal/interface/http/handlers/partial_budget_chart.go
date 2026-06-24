@@ -9,6 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
@@ -81,7 +82,11 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sankey := h.chartsService.MakeSankey(nodes, links, true)
-	chartComponent := h.chartsService.ConvertChartToTemplComponent(sankey)
-	chartComponent.Render(r.Context(), w)
+	component := components.NoData()
+	if len(links) > 0 {
+		sankey := h.chartsService.MakeSankey(nodes, links, true)
+		component = h.chartsService.ConvertChartToTemplComponent(sankey)
+	}
+
+	component.Render(r.Context(), w)
 }

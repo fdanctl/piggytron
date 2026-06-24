@@ -45,8 +45,8 @@ func (v *IncomeForm) ValidateAmount() (msgs []string) {
 		return append(msgs, "Not a valid number")
 	}
 
-	if n < 0 {
-		msgs = append(msgs, "Amount can't be negative")
+	if n <= 0 {
+		msgs = append(msgs, "Amount must greater than 0")
 	}
 	return msgs
 }

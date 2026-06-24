@@ -14,6 +14,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/go-echarts/go-echarts/v2/opts"
@@ -58,11 +59,13 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	params := r.Form
 	amount := params.Get("amount")
 	cid := params.Get("cid")
-	bid := params.Get("bid")
+	budgetID := params.Get("bid")
 	ps := params.Get("prev-amount")
 	catType := params.Get("ctype")
 	ptotalBudgeted := params.Get("total-budgeted")
-	ptotalRowBudget := params.Get("total-row-budget")
+	pneedstotalRowBudget := params.Get("needs-total-row-budget")
+	pwantstotalRowBudget := params.Get("wants-total-row-budget")
+	psavingstotalRowBudget := params.Get("savings-total-row-budget")
 	ptotalRowLeft := params.Get("total-row-left")
 	pcatLeft := params.Get("cat-left")
 	pleftToBudget := params.Get("ltb")
@@ -70,7 +73,6 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	pincome := params.Get("income")
 	poverspent := params.Get("overspent")
 
-	budgetID := bid
 	prev, err := strconv.Atoi(ps)
 	budgetInfoInputs := pages.BudgetInfoInputs(prev, budgetID, cid)
 	if err != nil {
@@ -98,14 +100,15 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if bid == "" || bid == util.ZeroUUID {
-		_, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
+	if budgetID == "" || budgetID == util.ZeroUUID {
+		b, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
 		if err != nil {
 			httperror.SendFormError(w, r, err, budgetInfoInputs)
 			return
 		}
+		budgetID = string(b.ID())
 	} else {
-		err := h.service.UpdateBudgetAmount(r.Context(), bid, cents)
+		err := h.service.UpdateBudgetAmount(r.Context(), budgetID, cents)
 		if err != nil {
 			httperror.SendFormError(w, r, err, budgetInfoInputs)
 			return
@@ -163,12 +166,34 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		overspent -= catLeft
 	}
 
-	totalRowBudget, err := strconv.Atoi(ptotalRowBudget)
+	needsBudget, err := strconv.Atoi(pneedstotalRowBudget)
 	if err != nil {
 		httperror.SendFormError(w, r, err, budgetInfoInputs)
 		return
 	}
-	totalRowBudget += addedAmount
+	wantsBudget, err := strconv.Atoi(pwantstotalRowBudget)
+	if err != nil {
+		httperror.SendFormError(w, r, err, budgetInfoInputs)
+		return
+	}
+	savingsBudget, err := strconv.Atoi(psavingstotalRowBudget)
+	if err != nil {
+		httperror.SendFormError(w, r, err, budgetInfoInputs)
+		return
+	}
+
+	var totalRowBudget int
+	switch catType {
+	case "needs":
+		needsBudget += addedAmount
+		totalRowBudget = needsBudget
+	case "wants":
+		wantsBudget += addedAmount
+		totalRowBudget = wantsBudget
+	case "savings":
+		savingsBudget += addedAmount
+		totalRowBudget = savingsBudget
+	}
 
 	totalRowLeft, err := strconv.Atoi(ptotalRowLeft)
 	if err != nil {
@@ -209,8 +234,11 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	sankey := h.chartsService.MakeSankey(nodes, links, false)
-	chartComponent := h.chartsService.ConvertChartToTemplComponent(sankey)
+	component := components.NoData()
+	if len(links) > 0 {
+		sankey := h.chartsService.MakeSankey(nodes, links, true)
+		component = h.chartsService.ConvertChartToTemplComponent(sankey)
+	}
 
 	obb := templ.Join(
 		pages.BudgetInfoInputs(cents, budgetID, cid),
@@ -230,8 +258,10 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		pages.TotalRow(catType, totalRowBudget, totalRowLeft, templ.Attributes{
 			"hx-swap-oob": "outerHTML",
 		}),
-		pages.PctSpan(catType, totalRowBudget, totalBudgeted),
-		layouts.OOBWraper("budget-sankey", "innerHTML", nil, chartComponent),
+		pages.PctSpan("needs", needsBudget, totalBudgeted),
+		pages.PctSpan("wants", wantsBudget, totalBudgeted),
+		pages.PctSpan("savings", savingsBudget, totalBudgeted),
+		layouts.OOBWraper("budget-sankey", "innerHTML", nil, component),
 	)
 
 	obb.Render(r.Context(), w)

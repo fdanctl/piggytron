@@ -1,6 +1,8 @@
 package views
 
 import (
+	"math"
+
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
@@ -85,6 +87,19 @@ func NewBudgetPageView(
 		}
 	}
 
+	needsPct := (float64(needsBudget) / float64(totalBudgeted)) * 100
+	wantsPct := (float64(wantsBudget) / float64(totalBudgeted)) * 100
+	savingsPct := (float64(savingsBudget) / float64(totalBudgeted)) * 100
+	if math.IsNaN(needsPct) {
+		needsPct = 0
+	}
+	if math.IsNaN(wantsPct) {
+		wantsPct = 0
+	}
+	if math.IsNaN(savingsPct) {
+		savingsPct = 0
+	}
+
 	return BudgetPageView{
 		TotalBudgeted: totalBudgeted,
 		LeftToBudget:  income - totalBudgeted,
@@ -97,14 +112,14 @@ func NewBudgetPageView(
 
 		NeedsBudget: needsBudget,
 		NeedsLeft:   needsBudget - needsSpent,
-		NeedsPct:    (float64(needsBudget) / float64(totalBudgeted)) * 100,
+		NeedsPct:    needsPct,
 
 		WantsBudget: wantsBudget,
 		WantsLeft:   wantsBudget - wantsSpent,
-		WantsPct:    (float64(wantsBudget) / float64(totalBudgeted)) * 100,
+		WantsPct:    wantsPct,
 
 		SavingsBudget: savingsBudget,
 		SavingsLeft:   savingsBudget - savingsSpent,
-		SavingsPct:    (float64(savingsBudget) / float64(totalBudgeted)) * 100,
+		SavingsPct:    savingsPct,
 	}
 }

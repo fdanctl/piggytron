@@ -6,6 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
+	"math"
 )
 
 templ Budget(bview views.BreadcrumbsView, view views.BudgetPageView) {
@@ -89,7 +90,7 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, leftToSpend, overspent in
 templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView) {
 	<div
 		class={ "budget-table", string(eType) }
-		hx-include="inherit, find [name='total-row-budget'], find [name='total-row-left'], find [name='ctype']"
+		hx-include="inherit, find [name='total-row-left'], find [name='ctype']"
 	>
 		<input type="hidden" name="ctype" value={ eType }/>
 		<div class="budget-table__head">
@@ -118,7 +119,7 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 							"hx-swap":            "outerHTML",
 							"hx-post":            "/partials/budget",
 							"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
-							"hx-include":         "inherit, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='bid'], next [name='cid']",
+							"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='bid'], next [name='cid']",
 						})
 					@BudgetInfoInputs(c.Budgeted, c.BudgetID, c.CategoryID)
 				</div>
@@ -140,7 +141,7 @@ templ TotalRow(eType string, totalBudget, totalLeft int, attrs templ.Attributes)
 	<div id={ fmt.Sprintf("%s-total-row", eType) } class="budget-table__total-row" { attrs... }>
 		<span>Total</span>
 		<span>
-			<input type="hidden" name="total-row-budget" value={ totalBudget }/>
+			<input id={ fmt.Sprint(eType, "-total-row-budget") } type="hidden" name={ fmt.Sprint(eType, "-total-row-budget") } value={ totalBudget }/>
 			{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }
 		</span>
 		<span class={ templ.KV("text-negative", totalLeft < 0) }>
@@ -160,6 +161,12 @@ templ BudgetInfoInputs(amount int, bid, cid string) {
 
 templ PctSpan(catType string, totalRowBudget, totalBudgeted int) {
 	<span id={ fmt.Sprintf("%s-pct", catType) } hx-swap-oob="outerHTML" class="font-mono text-xs font-normal">
-		({ views.FormatFloat((float64(totalRowBudget)/float64(totalBudgeted))*100) }%)
+		{{
+			pct := (float64(totalRowBudget) / float64(totalBudgeted)) * 100
+			if math.IsNaN(pct) {
+				pct = 0
+			}
+		}}
+		({ views.FormatFloat(pct) }%)
 	</span>
 }

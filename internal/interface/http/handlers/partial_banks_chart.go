@@ -9,6 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 )
 
@@ -54,7 +55,11 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pieItems := h.chartsService.MakeAssetsPieItems(accounts, 5)
-	pie := h.chartsService.PieRadius(pieItems)
+	pie := components.NoData()
+	if len(pieItems) > 0 {
+		c := h.chartsService.PieRadius(pieItems)
+		pie = h.chartsService.ConvertChartToTemplComponent(c)
+	}
 
 	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
 	if err != nil {
@@ -65,7 +70,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	line := h.chartsService.LineTime(histMap, min, max)
 
 	templ.Join(
-		h.chartsService.ConvertChartToTemplComponent(pie),
+		pie,
 		layouts.OOBWraper(
 			"account-history-chart",
 			"innerHTML",
