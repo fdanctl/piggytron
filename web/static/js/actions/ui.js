@@ -6,6 +6,7 @@ import {
   toggleFilterPill,
 } from "../filters-sheet";
 import { disableBtns } from "../form";
+import { sliderClick, startSliderDrag } from "../slider";
 import {
   cashInputBlur,
   cashInputFocus,
@@ -93,4 +94,8 @@ export const uiActions = {
   "ui.form.disable-btns": disableBtns,
 
   "ui.tab.change": changeTab,
+
+  "ui.slider.drag-start": startSliderDrag,
+
+  "ui.slider.click": sliderClick,
 };

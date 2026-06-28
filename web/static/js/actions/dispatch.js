@@ -14,6 +14,7 @@ const eventAttributes = {
   focusin: "focus",
   focusout: "focusout",
   keydown: "keydown",
+  pointerdown: "pointerdown",
   "htmx:beforeRequest": "beforerequest",
   "htmx:afterRequest": "afterrequest",
   animationend: "animationend",

@@ -1,0 +1,117 @@
+let dragState = {
+  active: false,
+  thumb: null,
+  root: null,
+};
+
+export function sliderClick({ ele, evt }) {
+  const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+  const slider = ele.closest(".slider");
+  const range = Number(slider.dataset.range);
+  const thumbs = slider.getElementsByClassName("slider__thumb");
+  const isDouble = thumbs.length === 2;
+
+  let thumb = thumbs[0];
+  // get value and update input
+  if (isDouble) {
+    const rect = slider.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const value = Math.round(frac * range);
+
+    // find the closest to value
+    let lo = Number(
+      slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`).value,
+    );
+    let hi = Number(
+      slider.querySelector(`[name='${thumbs[1].dataset.thumb}']`).value,
+    );
+    if (value > hi || Math.abs(hi - value) < Math.abs(lo - value)) {
+      thumb = thumbs[1];
+    }
+  }
+  updateSlider(clientX, slider, thumb);
+  startSliderDrag({ ele: thumb });
+}
+
+export function startSliderDrag({ ele }) {
+  ele.classList.add("active");
+  dragState.active = true;
+  dragState.thumb = ele;
+  dragState.root = ele.closest(".slider");
+  document.addEventListener("pointermove", moveSliderDrag);
+  document.addEventListener("pointerup", endSliderDrag);
+}
+
+function moveSliderDrag(evt) {
+  if (!dragState.active) return;
+  const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+  updateSlider(clientX, dragState.root, dragState.thumb);
+}
+
+function endSliderDrag() {
+  dragState.thumb.classList.remove("active");
+  dragState.active = false;
+  dragState.thumb = null;
+  dragState.root = null;
+  document.removeEventListener("pointermove", moveSliderDrag);
+  document.removeEventListener("pointerup", endSliderDrag);
+}
+
+function updateSlider(clientX, slider, thumb) {
+  const range = Number(slider.dataset.range);
+  const thumbs = slider.getElementsByClassName("slider__thumb");
+  const isDouble = thumbs.length === 2;
+  const fill = slider.getElementsByClassName("slider__fill")[0];
+  const thumbName = thumb.dataset.thumb;
+  const input = slider.querySelector(`[name='${thumbName}']`);
+
+  // get value and update input
+  const rect = slider.getBoundingClientRect();
+  const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  let value = Math.round(frac * range);
+
+  if (!isDouble) {
+    input.value = value;
+
+    const pct = (value / range) * 100;
+    thumb.style.left = pct + "%";
+    fill.style.width = pct + "%";
+  } else {
+    let dragging;
+
+    let lo = Number(
+      slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`).value,
+    );
+    let hi = Number(
+      slider.querySelector(`[name='${thumbs[1].dataset.thumb}']`).value,
+    );
+
+    for (let i = 0; i < thumbs.length; i++) {
+      if (thumbs[i].dataset.thumb === thumbName) {
+        dragging = i === 0 ? "lo" : "hi";
+      }
+    }
+
+    let loPct = Number(thumbs[0].style.left.slice(0, -1));
+    let hiPct = Number(thumbs[1].style.left.slice(0, -1));
+
+    let pct;
+    if (dragging === "lo") {
+      value = Math.min(value, hi - 1);
+      input.value = value;
+      pct = (value / range) * 100;
+      loPct = pct;
+    }
+    if (dragging === "hi") {
+      value = Math.max(value, lo + 1);
+      input.value = value;
+      pct = (value / range) * 100;
+      hiPct = pct;
+    }
+
+    thumb.style.left = pct + "%";
+
+    fill.style.left = loPct + "%";
+    fill.style.width = `${hiPct - loPct}%`;
+  }
+}

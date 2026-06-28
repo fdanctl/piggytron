@@ -1,0 +1,47 @@
+package components
+
+import "fmt"
+
+templ DoubleSliderInput(min, max, lo, hi int, loName, hiName string) {
+	{{
+		rnge := max - min
+		loPct := (float64(lo) / float64(rnge)) * 100
+		hiPct := (float64(hi) / float64(rnge)) * 100
+	}}
+	<div class="slider" data-pointerdown="ui.slider.click" data-range={ rnge }>
+		<div class="slider__bar"></div>
+		<div class="slider__fill" style={ fmt.Sprintf("left: %f%%; width: %f%%;", loPct, hiPct-loPct) }></div>
+		<div
+			class="slider__thumb"
+			style={ fmt.Sprintf("left: %f%%;", loPct) }
+			data-thumb={ loName }
+			data-pointerdown="ui.slider.drag-start"
+		></div>
+		<div
+			class="slider__thumb"
+			style={ fmt.Sprintf("left: %f%%;", hiPct) }
+			data-thumb={ hiName }
+			data-pointerdown="ui.slider.drag-start"
+		></div>
+		<input id="lo-input" type="hidden" name={ loName } value={ lo }/>
+		<input id="hi-input" type="hidden" name={ hiName } value={ hi }/>
+	</div>
+}
+
+templ SliderInput(min, max, value int, name string) {
+	{{
+		rnge := max - min
+		valuePct := (float64(value) / float64(rnge)) * 100
+	}}
+	<div class="slider" data-pointerdown="ui.slider.click" data-range={ rnge }>
+		<div class="slider__bar"></div>
+		<div class="slider__fill" id="fill" style={ fmt.Sprintf("width: %f%%;", valuePct) }></div>
+		<div
+			class="slider__thumb"
+			style={ fmt.Sprintf("left: %f%%;", valuePct) }
+			data-thumb={ name }
+			data-pointerdown="ui.slider.drag-start"
+		></div>
+		<input id="lo-input" type="hidden" name={ name } value={ value }/>
+	</div>
+}

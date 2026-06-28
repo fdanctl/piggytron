@@ -371,3 +371,46 @@ input:focus + .checkbox-box {
     background-position: 200% 0;
   }
 }
+
+.slider {
+  position: relative;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+  margin-right: 2px;
+  touch-action: none;
+  cursor: pointer;
+}
+
+.slider__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+
+.slider__fill {
+  position: absolute;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+}
+
+.slider__thumb {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: var(--color-primary);
+  transform: translateX(-50%);
+  cursor: grab;
+  z-index: 2;
+  transition: box-shadow 0.1s;
+}
+
+.slider__thumb.active {
+  width: 2.5px;
+  height: 22px;
+}
