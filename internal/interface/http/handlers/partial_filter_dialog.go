@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strings"
 
@@ -77,6 +78,13 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	min, max, err := h.tQueryService.GetMinMax(r.Context(), sessionInfo.UserID)
+	min = int(math.Floor(float64(min) / float64(100)))
+	max = int(math.Ceil(float64(max) / float64(100)))
+	if min == max {
+		max++
+	}
+
 	var accountOptions []partials.FilterOption
 	for _, v := range account {
 		accountOptions = append(
@@ -141,6 +149,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		includedAcc,
 		includedCats,
 		r.URL.Query(),
+		min, max,
 		resCount,
 	)
 	ctx := templ.WithChildren(r.Context(), content)

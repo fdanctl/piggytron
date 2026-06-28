@@ -8,6 +8,7 @@ export function sliderClick({ ele, evt }) {
   const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
   const slider = ele.closest(".slider");
   const range = Number(slider.dataset.range);
+  const sliderMin = Number(slider.dataset.min) || 0;
   const thumbs = slider.getElementsByClassName("slider__thumb");
   const isDouble = thumbs.length === 2;
 
@@ -16,7 +17,7 @@ export function sliderClick({ ele, evt }) {
   if (isDouble) {
     const rect = slider.getBoundingClientRect();
     const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    const value = Math.round(frac * range);
+    const actualValue = sliderMin + Math.round(frac * range);
 
     // find the closest to value
     const loInput = slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`);
@@ -35,7 +36,7 @@ export function sliderClick({ ele, evt }) {
       hi = Number(hiInput.value);
     }
 
-    if (value > hi || Math.abs(hi - value) < Math.abs(lo - value)) {
+    if (actualValue > hi || Math.abs(hi - actualValue) < Math.abs(lo - actualValue)) {
       thumb = thumbs[1];
     }
   }
@@ -69,6 +70,7 @@ function endSliderDrag() {
 
 function updateSlider(clientX, slider, thumb) {
   const range = Number(slider.dataset.range);
+  const sliderMin = Number(slider.dataset.min) || 0;
   const thumbs = slider.getElementsByClassName("slider__thumb");
   const isDouble = thumbs.length === 2;
   const fill = slider.getElementsByClassName("slider__fill")[0];
@@ -78,12 +80,13 @@ function updateSlider(clientX, slider, thumb) {
   // get value and update input
   const rect = slider.getBoundingClientRect();
   const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-  let value = Math.round(frac * range);
+  let rawValue = Math.round(frac * range);
+  let actualValue = sliderMin + rawValue;
 
   if (!isDouble) {
-    input.value = value;
+    input.value = actualValue;
 
-    const pct = (value / range) * 100;
+    const pct = (rawValue / range) * 100;
     thumb.style.left = pct + "%";
     fill.style.width = pct + "%";
   } else {
@@ -116,16 +119,21 @@ function updateSlider(clientX, slider, thumb) {
 
     let pct;
     if (dragging === "lo") {
-      value = Math.min(value, hi - 1);
-      pct = (value / range) * 100;
+      actualValue = Math.min(actualValue, hi - 1);
+      rawValue = actualValue - sliderMin;
+      pct = (rawValue / range) * 100;
       loPct = pct;
     }
     if (dragging === "hi") {
-      value = Math.max(value, lo + 1);
-      pct = (value / range) * 100;
+      actualValue = Math.max(actualValue, lo + 1);
+      rawValue = actualValue - sliderMin;
+      pct = (rawValue / range) * 100;
       hiPct = pct;
     }
-    input.value = value;
+    if (Number(input.dataset.default) === actualValue) {
+      actualValue = "";
+    }
+    input.value = actualValue;
     input.dispatchEvent(new Event("input", { bubbles: true }));
 
     thumb.style.left = pct + "%";

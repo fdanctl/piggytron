@@ -6,8 +6,8 @@ import "strconv"
 templ DoubleSliderInput(min, max, lo, hi int, loName, hiName string, loAttrs templ.Attributes, hiAttrs templ.Attributes) {
 	{{
 		rnge := max - min
-		loPct := (float64(lo) / float64(rnge)) * 100
-		hiPct := (float64(hi) / float64(rnge)) * 100
+		loPct := (float64(lo-min) / float64(rnge)) * 100
+		hiPct := (float64(hi-min) / float64(rnge)) * 100
 		loValue := ""
 		if min != lo {
 			loValue = strconv.Itoa(lo)
@@ -17,7 +17,7 @@ templ DoubleSliderInput(min, max, lo, hi int, loName, hiName string, loAttrs tem
 			hiValue = strconv.Itoa(hi)
 		}
 	}}
-	<div class="slider" data-pointerdown="ui.slider.click" data-range={ rnge }>
+	<div class="slider" data-pointerdown="ui.slider.click" data-range={ rnge } data-min={ min }>
 		<div class="slider__bar"></div>
 		<div class="slider__fill" style={ fmt.Sprintf("left: %f%%; width: %f%%;", loPct, hiPct-loPct) }></div>
 		<div

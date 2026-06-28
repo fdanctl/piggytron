@@ -53,35 +53,28 @@ export function removeFilterPill({ ele }) {
   const form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
 
-  // Handle amount-range pill separately
+  // handle amount-range pill separately
   if (ele.dataset.id === "amount-range") {
-    // Remove the pill from the DOM
     ele.remove();
 
-    // Reset slider inputs to empty so they aren't sent as filters
+    // reset slider inputs to empty so they aren't sent as filters
     const minInput = form.querySelector("[name='minamount']");
     const maxInput = form.querySelector("[name='maxamount']");
     if (minInput) minInput.value = "";
     if (maxInput) maxInput.value = "";
 
-    // Reset chip displays to defaults
     document.getElementById("minamount-chip").innerText =
       minInput.dataset.default;
     document.getElementById("maxamount-chip").innerText =
       maxInput.dataset.default;
 
-    // Reset the slider visual to full range
     resetSlider(form.querySelector(".slider"));
 
-    // Trigger a single HTMX request to update URL and results.
-    // Temporarily suppress the chip update handler so it doesn't
-    // overwrite the chip display with the empty input value.
-    minInput.dispatchEvent(new Event("input", { bubbles: true }));
     maxInput.dispatchEvent(new Event("input", { bubbles: true }));
     return;
   }
 
-  // Handle regular filter pills (types, accounts, categories)
+  // handle regular filter pills (types, accounts, categories)
   for (let i = 0; i < inputs.length; i++) {
     if (inputs[i].value === ele.dataset.id) {
       inputs[i].checked = false;
@@ -113,7 +106,6 @@ export function changeMaxAmountChip({ ele }) {
 }
 
 function changeAmountRangeChip(ele) {
-  // Don't create/update the pill when the amount filter is being cleared
   const slider = ele.closest(".slider");
   const minInput = slider.querySelector("[name='minamount']");
   const maxInput = slider.querySelector("[name='maxamount']");
@@ -121,12 +113,12 @@ function changeAmountRangeChip(ele) {
     minInput.value !== "" ? minInput.value : minInput.dataset.default;
   const maxVal =
     maxInput.value !== "" ? maxInput.value : maxInput.dataset.default;
-  console.log(minVal);
-  console.log(maxVal);
+  // remove pill if both are the defaults
   if (
     (minVal === "" || minVal === minInput.dataset.default) &&
     (maxVal === "" || maxVal === maxInput.dataset.default)
   ) {
+    document.querySelector(".pill[data-id='amount-range']")?.remove();
     return;
   }
 

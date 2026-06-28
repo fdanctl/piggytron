@@ -49,24 +49,26 @@ templ TransactionsFilters(
 	currAcc []query.AccountIDName,
 	currCats []query.CategoryNameDTO,
 	q url.Values,
+	minAmountPossible, maxAmountPossible int,
 	count int,
 ) {
 	{{
-		min := 0
+		loAmount := minAmountPossible
 		if len(q["minamount"]) > 0 {
 			int, err := strconv.Atoi(q["minamount"][0])
 			if err == nil {
-				min = int
+				loAmount = int
 			}
 
 		}
-		max := 1000
+		hiAmount := maxAmountPossible
 		if len(q["maxamount"]) > 0 {
 			int, err := strconv.Atoi(q["maxamount"][0])
 			if err == nil {
-				max = int
+				hiAmount = int
 			}
 		}
+		fmt.Println(loAmount, hiAmount)
 	}}
 	<form id="transactions-filters">
 		<div
@@ -104,7 +106,7 @@ templ TransactionsFilters(
 					}
 					if len(q["minamount"]) > 0 || len(q["maxamount"]) > 0 {
 						@Pill(
-							fmt.Sprintf("%d€ - %d€", min, max),
+							fmt.Sprintf("%d€ - %d€", loAmount, hiAmount),
 							templ.Attributes{
 								"data-id":     "amount-range",
 								"data-action": "ui.filters.remove",
@@ -121,10 +123,10 @@ templ TransactionsFilters(
 					<div class="flex justify-between items-center mb-sm">
 						<h6>Amount</h6>
 						<div class="text-sm font-light">
-							<span id="minamount-chip">{ min }</span>€ - <span id="maxamount-chip">{ max }</span>€
+							<span id="minamount-chip">{ loAmount }</span>€ - <span id="maxamount-chip">{ hiAmount }</span>€
 						</div>
 					</div>
-					@components.DoubleSliderInput(0, 1000, min, max, "minamount", "maxamount",
+					@components.DoubleSliderInput(minAmountPossible, maxAmountPossible, loAmount, hiAmount, "minamount", "maxamount",
 						templ.Attributes{
 							"data-id":    "amount-range",
 							"data-input": "ui.amount-chip.update-min",
