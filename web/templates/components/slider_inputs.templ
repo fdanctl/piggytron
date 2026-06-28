@@ -1,12 +1,21 @@
 package components
 
 import "fmt"
+import "strconv"
 
-templ DoubleSliderInput(min, max, lo, hi int, loName, hiName string) {
+templ DoubleSliderInput(min, max, lo, hi int, loName, hiName string, loAttrs templ.Attributes, hiAttrs templ.Attributes) {
 	{{
 		rnge := max - min
 		loPct := (float64(lo) / float64(rnge)) * 100
 		hiPct := (float64(hi) / float64(rnge)) * 100
+		loValue := ""
+		if min != lo {
+			loValue = strconv.Itoa(lo)
+		}
+		hiValue := ""
+		if max != hi {
+			hiValue = strconv.Itoa(hi)
+		}
 	}}
 	<div class="slider" data-pointerdown="ui.slider.click" data-range={ rnge }>
 		<div class="slider__bar"></div>
@@ -23,12 +32,12 @@ templ DoubleSliderInput(min, max, lo, hi int, loName, hiName string) {
 			data-thumb={ hiName }
 			data-pointerdown="ui.slider.drag-start"
 		></div>
-		<input id="lo-input" type="hidden" name={ loName } value={ lo }/>
-		<input id="hi-input" type="hidden" name={ hiName } value={ hi }/>
+		<input id="lo-input" type="hidden" name={ loName } value={ loValue } data-default={ min } { loAttrs... }/>
+		<input id="hi-input" type="hidden" name={ hiName } value={ hiValue } data-default={ max } { hiAttrs... }/>
 	</div>
 }
 
-templ SliderInput(min, max, value int, name string) {
+templ SliderInput(min, max, value int, name string, attrs templ.Attributes) {
 	{{
 		rnge := max - min
 		valuePct := (float64(value) / float64(rnge)) * 100
@@ -42,6 +51,6 @@ templ SliderInput(min, max, value int, name string) {
 			data-thumb={ name }
 			data-pointerdown="ui.slider.drag-start"
 		></div>
-		<input id="lo-input" type="hidden" name={ name } value={ value }/>
+		<input id="lo-input" type="hidden" name={ name } value={ value } data-default={ max } { attrs... }/>
 	</div>
 }

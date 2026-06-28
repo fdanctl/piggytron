@@ -7,11 +7,28 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"strconv"
 )
 
 type FilterOption struct {
 	Label string
 	Value string
+}
+
+var typeOptions = []FilterOption{
+	{
+		Label: "Income",
+		Value: "income",
+	},
+	{
+		Label: "Expense",
+		Value: "expense",
+	},
+	{
+		Label: "Transfer",
+		Value: "transfer",
+	},
 }
 
 templ Pill(p string, attrs templ.Attributes) {
@@ -34,111 +51,109 @@ templ TransactionsFilters(
 	q url.Values,
 	count int,
 ) {
+	{{
+		min := 0
+		if len(q["minamount"]) > 0 {
+			int, err := strconv.Atoi(q["minamount"][0])
+			if err == nil {
+				min = int
+			}
+
+		}
+		max := 1000
+		if len(q["maxamount"]) > 0 {
+			int, err := strconv.Atoi(q["maxamount"][0])
+			if err == nil {
+				max = int
+			}
+		}
+	}}
 	<form id="transactions-filters">
-		<div>
-			<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
-				for _, v := range currAcc {
-					@Pill(
-						v.Name,
-						templ.Attributes{
-							"data-id":     string(v.ID),
-							"data-action": "ui.filters.remove",
-						},
-					)
-				}
-				for _, v := range currCats {
-					@Pill(
-						v.Name,
-						templ.Attributes{
-							"data-id":     string(v.ID),
-							"data-action": "ui.filters.remove",
-						},
-					)
-				}
-			</ul>
-		</div>
 		<div
 			class="transactions-filters__body"
 			hx-include="input"
 		>
-			<div>
-				<div class="flex justify-between items-center mb-sm">
-					<h6>Accounts/Goals</h6>
-					<div
-						class="cursor-pointer flex justify-center items-center"
-						data-action="ui.filters-accordion.toggle"
-					>
-						<i>
-							@components.PlusSvg(16, "", "")
-						</i>
-						<i class="hidden">
-							@components.MinusSvg(16, "", "")
-						</i>
-					</div>
-				</div>
-				<div class="flex gap-xs" style="overflow-x: hidden;">
-					for _, o := range accOptions {
-						@components.CheckBoxPill(
-							o.Label,
+			<div class="curr-filters__wrapper">
+				<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
+					for _, v := range q["types"] {
+						@Pill(
+							views.CapitalizeFirst(v),
 							templ.Attributes{
-								"name":       "accounts",
-								"value":      o.Value,
-								"checked":    slices.Contains(q["accounts"], o.Value),
-								"hx-post":    "/partials/transaction-filters",
-								"hx-target":  "#filters-result-btn",
-								"hx-trigger": "input",
-								"data-input": "ui.filters.toggle",
+								"data-id":     v,
+								"data-action": "ui.filters.remove",
 							},
 						)
 					}
-				</div>
+					for _, v := range currAcc {
+						@Pill(
+							v.Name,
+							templ.Attributes{
+								"data-id":     string(v.ID),
+								"data-action": "ui.filters.remove",
+							},
+						)
+					}
+					for _, v := range currCats {
+						@Pill(
+							v.Name,
+							templ.Attributes{
+								"data-id":     string(v.ID),
+								"data-action": "ui.filters.remove",
+							},
+						)
+					}
+					if len(q["minamount"]) > 0 || len(q["maxamount"]) > 0 {
+						@Pill(
+							fmt.Sprintf("%d€ - %d€", min, max),
+							templ.Attributes{
+								"data-id":     "amount-range",
+								"data-action": "ui.filters.remove",
+							},
+						)
+					}
+				</ul>
 			</div>
-			<div class="mt-md">
-				<div class="flex justify-between items-center mb-sm">
-					<h6>Categories</h6>
-					<div
-						class="cursor-pointer flex justify-center items-center"
-						data-action="ui.filters-accordion.toggle"
-					>
-						<i>
-							@components.PlusSvg(16, "", "")
-						</i>
-						<i class="hidden">
-							@components.MinusSvg(16, "", "")
-						</i>
+			<div class="space-y-md">
+				@filterList("Type", "types", q, typeOptions)
+				@filterList("Accounts/Goals", "accounts", q, accOptions)
+				@filterList("Categories", "categories", q, catOptions)
+				<div class="">
+					<div class="flex justify-between items-center mb-sm">
+						<h6>Amount</h6>
+						<div class="text-sm font-light">
+							<span id="minamount-chip">{ min }</span>€ - <span id="maxamount-chip">{ max }</span>€
+						</div>
 					</div>
-				</div>
-				<div class="flex gap-xs" style="overflow-x: hidden;">
-					for _,o := range catOptions {
-						@components.CheckBoxPill(
-							o.Label,
-							templ.Attributes{
-								"name":       "categories",
-								"value":      o.Value,
-								"checked":    slices.Contains(q["categories"], o.Value),
-								"hx-post":    "/partials/transaction-filters",
-								"hx-target":  "#filters-result-btn",
-								"hx-trigger": "input",
-								"data-input": "ui.filters.toggle",
-							},
-						)
-					}
+					@components.DoubleSliderInput(0, 1000, min, max, "minamount", "maxamount",
+						templ.Attributes{
+							"data-id":    "amount-range",
+							"data-input": "ui.amount-chip.update-min",
+							"hx-post":    "/partials/transaction-filters",
+							"hx-target":  "#filters-result-btn",
+							"hx-trigger": "input changed delay:300ms",
+						},
+						templ.Attributes{
+							"data-id":    "amount-range",
+							"data-input": "ui.amount-chip.update-max",
+							"hx-post":    "/partials/transaction-filters",
+							"hx-target":  "#filters-result-btn",
+							"hx-trigger": "input changed delay:300ms",
+						},
+					)
 				</div>
 			</div>
 		</div>
 		<div id="filters-result-btn" class="mt-lg space-y-xs">
-			if (len(currAcc) + len(currCats) > 0) {
-				@components.Button(
-					"Reset",
-					"w-full",
-					components.BtnOutline,
-					components.BtnMedium,
-					templ.Attributes{
-						"type":        "button",
-						"data-action": "ui.filters.reset",
-					},
-				)
-			}
+			@components.Button(
+				"Reset",
+				"w-full",
+				components.BtnOutline,
+				components.BtnMedium,
+				templ.Attributes{
+					"type":        "button",
+					"data-action": "ui.filters.reset",
+				},
+			)
 			@components.Button(
 				fmt.Sprintf("Show %d results", count),
 				"w-full",
@@ -151,4 +166,39 @@ templ TransactionsFilters(
 			)
 		</div>
 	</form>
+}
+
+templ filterList(label, inputName string, q url.Values, options []FilterOption) {
+	<div>
+		<div class="flex justify-between items-center mb-sm">
+			<h6>{ label }</h6>
+			<div
+				class="cursor-pointer flex justify-center items-center"
+				data-action="ui.filters-accordion.toggle"
+			>
+				<i>
+					@components.PlusSvg(16, "", "")
+				</i>
+				<i class="hidden">
+					@components.MinusSvg(16, "", "")
+				</i>
+			</div>
+		</div>
+		<div class="flex gap-xs" style="overflow-x: hidden;">
+			for _, o := range options {
+				@components.CheckBoxPill(
+					o.Label,
+					templ.Attributes{
+						"name":       inputName,
+						"value":      o.Value,
+						"checked":    slices.Contains(q[inputName], o.Value),
+						"hx-post":    "/partials/transaction-filters",
+						"hx-target":  "#filters-result-btn",
+						"hx-trigger": "input",
+						"data-input": "ui.filters.toggle",
+					},
+				)
+			}
+		</div>
+	</div>
 }

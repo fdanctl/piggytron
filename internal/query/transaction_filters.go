@@ -54,7 +54,7 @@ func NewTransactionFilters(
 	}
 
 	if minAmount != "" {
-		minAmnt, err := strconv.Atoi(minAmount)
+		minAmnt, err := strconv.Atoi(minAmount + "00")
 		if err != nil || minAmnt < 0 {
 			pmin = nil
 		} else {
@@ -64,7 +64,7 @@ func NewTransactionFilters(
 	}
 
 	if maxAmount != "" {
-		maxAmnt, err := strconv.Atoi(maxAmount)
+		maxAmnt, err := strconv.Atoi(maxAmount + "00")
 		if err != nil || maxAmnt < 0 {
 			pmax = nil
 		} else {

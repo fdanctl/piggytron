@@ -1,7 +1,7 @@
 #transactions-filters {
   height: 100%;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: 1fr auto;
   gap: var(--spacing-md);
 }
 
@@ -10,6 +10,15 @@
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
+}
+
+.curr-filters__wrapper:has(#curr-filters:empty) {
+  display: none;
+}
+
+#transactions-filters:has(#curr-filters:empty)
+  .btn[data-action="ui.filters.reset"] {
+  display: none;
 }
 
 #curr-filters a {

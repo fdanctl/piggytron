@@ -19,12 +19,22 @@ export function sliderClick({ ele, evt }) {
     const value = Math.round(frac * range);
 
     // find the closest to value
-    let lo = Number(
-      slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`).value,
-    );
-    let hi = Number(
-      slider.querySelector(`[name='${thumbs[1].dataset.thumb}']`).value,
-    );
+    const loInput = slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`);
+    let lo;
+    if (loInput.value === "") {
+      lo = Number(loInput.dataset.default);
+    } else {
+      lo = Number(loInput.value);
+    }
+
+    const hiInput = slider.querySelector(`[name='${thumbs[1].dataset.thumb}']`);
+    let hi;
+    if (hiInput.value === "") {
+      hi = Number(hiInput.dataset.default);
+    } else {
+      hi = Number(hiInput.value);
+    }
+
     if (value > hi || Math.abs(hi - value) < Math.abs(lo - value)) {
       thumb = thumbs[1];
     }
@@ -79,12 +89,21 @@ function updateSlider(clientX, slider, thumb) {
   } else {
     let dragging;
 
-    let lo = Number(
-      slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`).value,
-    );
-    let hi = Number(
-      slider.querySelector(`[name='${thumbs[1].dataset.thumb}']`).value,
-    );
+    const loInput = slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`);
+    let lo;
+    if (loInput.value === "") {
+      lo = Number(loInput.dataset.default);
+    } else {
+      lo = Number(loInput.value);
+    }
+
+    const hiInput = slider.querySelector(`[name='${thumbs[1].dataset.thumb}']`);
+    let hi;
+    if (hiInput.value === "") {
+      hi = Number(hiInput.dataset.default);
+    } else {
+      hi = Number(hiInput.value);
+    }
 
     for (let i = 0; i < thumbs.length; i++) {
       if (thumbs[i].dataset.thumb === thumbName) {
@@ -98,20 +117,34 @@ function updateSlider(clientX, slider, thumb) {
     let pct;
     if (dragging === "lo") {
       value = Math.min(value, hi - 1);
-      input.value = value;
       pct = (value / range) * 100;
       loPct = pct;
     }
     if (dragging === "hi") {
       value = Math.max(value, lo + 1);
-      input.value = value;
       pct = (value / range) * 100;
       hiPct = pct;
     }
+    input.value = value;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
 
     thumb.style.left = pct + "%";
 
     fill.style.left = loPct + "%";
     fill.style.width = `${hiPct - loPct}%`;
+  }
+}
+
+export function resetSlider(slider) {
+  const fill = slider.querySelector(".slider__fill");
+  fill.style.left = "0%";
+  fill.style.width = "100%";
+
+  const thumbs = slider.querySelectorAll(".slider__thumb");
+  if (thumbs.length == 2) {
+    thumbs[0].style.left = "0%";
+    thumbs[1].style.left = "100%";
+  } else {
+    thumbs[0].style.left = "100%";
   }
 }
