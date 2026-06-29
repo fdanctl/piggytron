@@ -133,6 +133,7 @@ document.body.addEventListener("refetch-transactions", function (ev) {
       push: "true",
     });
   } else {
+    document.getElementById("itransactions").innerHTML = "";
     htmx.ajax("GET", "/partials/transactions" + window.location.search, {
       target: "#itransactions",
       swap: "innerHTML",
