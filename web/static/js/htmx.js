@@ -132,6 +132,11 @@ document.body.addEventListener("refetch-transactions", function (ev) {
       swap: "innerHTML",
       push: "true",
     });
+  } else {
+    htmx.ajax("GET", "/partials/transactions" + window.location.search, {
+      target: "#itransactions",
+      swap: "innerHTML",
+    });
   }
 });
 

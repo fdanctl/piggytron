@@ -70,7 +70,14 @@ export function removeFilterPill({ ele }) {
 
     resetSlider(form.querySelector(".slider"));
 
-    maxInput.dispatchEvent(new Event("input", { bubbles: true }));
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.has("minamount")) {
+      minInput.dispatchEvent(new Event("input", { bubbles: true }));
+    } else {
+      maxInput.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     return;
   }
 

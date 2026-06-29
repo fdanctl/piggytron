@@ -79,6 +79,10 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	min, max, err := h.tQueryService.GetMinMax(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
 	min = int(math.Floor(float64(min) / float64(100)))
 	max = int(math.Ceil(float64(max) / float64(100)))
 	if min == max {
@@ -205,7 +209,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("HX-Push-Url", "?"+strings.Join(queries[1:], "&"))
-	w.Header().Set("HX-Trigger", "refetch-transactions")
+	w.Header().Set("HX-Trigger-After-Settle", "refetch-transactions")
 
 	if filterCount > 0 {
 		components.Button(

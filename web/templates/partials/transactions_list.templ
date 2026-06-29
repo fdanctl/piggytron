@@ -12,12 +12,6 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 	<ul
 		id="itransactions"
 		class="space-y-sm"
-		hx-get="/partials/transactions"
-		hx-trigger="refetch-transactions from:body"
-		hx-include="#transactions-filters input"
-		hx-indicator="#infinite-indicator"
-		hx-on::before-request="if (event.target === this) this.innerHTML = '';"
-		hx-disinherit="hx-include hx-indicator"
 	>
 		if len(transactions) == 0 {
 			<p class="text-xs mt-sm">no transactions yet</p>
