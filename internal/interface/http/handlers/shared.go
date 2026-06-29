@@ -106,7 +106,8 @@ func parseMonth(str string) (int, time.Month, error) {
 func queryStrFromFiltersWithCount(
 	page int,
 	types, accounts, cats []string,
-	minAmount, maxAmount string, // make it a range ex. [0, 420]
+	minAmount, maxAmount string,
+	minDate, maxDate string,
 ) (int, []string) {
 	filterCount := len(types) + len(accounts) + len(cats)
 	queries := []string{fmt.Sprintf("page=%d", page)}
@@ -119,12 +120,23 @@ func queryStrFromFiltersWithCount(
 	if len(cats) > 0 {
 		queries = append(queries, "categories="+strings.Join(cats, "&categories="))
 	}
-	if minAmount != "" {
-		queries = append(queries, "minamount="+minAmount)
+	if minAmount != "" || maxAmount != "" {
+		if minAmount != "" {
+			queries = append(queries, "minamount="+minAmount)
+		}
+		if maxAmount != "" {
+			queries = append(queries, "maxamount="+maxAmount)
+		}
 		filterCount++
 	}
-	if maxAmount != "" {
-		queries = append(queries, "maxamount="+maxAmount)
+
+	if minDate != "" || maxDate != "" {
+		if minDate != "" {
+			queries = append(queries, "mindate="+minDate)
+		}
+		if maxDate != "" {
+			queries = append(queries, "maxdate="+maxDate)
+		}
 		filterCount++
 	}
 	return filterCount, queries

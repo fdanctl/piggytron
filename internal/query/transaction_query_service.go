@@ -61,5 +61,6 @@ type TransactionQueryService interface {
 	GetRecentTransactions(
 		ctx context.Context, uid string, limit uint,
 	) ([]TransactionDTO, error)
-	GetMinMax(ctx context.Context, uid string) (int, int, error)
+	// GetMinMaxAmountAndDate return minAmount, maxAmount, minDate, maxDate, error
+	GetMinMaxAmountAndDate(ctx context.Context, uid string) (int, int, time.Time, time.Time, error)
 }

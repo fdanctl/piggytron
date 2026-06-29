@@ -9,6 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 	"strconv"
+	"time"
 )
 
 type FilterOption struct {
@@ -50,6 +51,7 @@ templ TransactionsFilters(
 	currCats []query.CategoryNameDTO,
 	q url.Values,
 	minAmountPossible, maxAmountPossible int,
+	minDatePossible, maxDatePossible int,
 	count int,
 ) {
 	{{
@@ -66,6 +68,22 @@ templ TransactionsFilters(
 			int, err := strconv.Atoi(q["maxamount"][0])
 			if err == nil {
 				hiAmount = int
+			}
+		}
+
+		loDate := minDatePossible
+		if len(q["mindate"]) > 0 {
+			int, err := strconv.Atoi(q["mindate"][0])
+			if err == nil {
+				loDate = int
+			}
+
+		}
+		hiDate := maxDatePossible
+		if len(q["maxdate"]) > 0 {
+			int, err := strconv.Atoi(q["maxdate"][0])
+			if err == nil {
+				hiDate = int
 			}
 		}
 	}}
@@ -112,6 +130,15 @@ templ TransactionsFilters(
 							},
 						)
 					}
+					if len(q["mindate"]) > 0 || len(q["maxdate"]) > 0 {
+						@Pill(
+							fmt.Sprintf("%s - %s", views.FormatDate(time.Unix(int64(loDate), 0)), views.FormatDate(time.Unix(int64(hiDate), 0))),
+							templ.Attributes{
+								"data-id":     "date-range",
+								"data-action": "ui.filters.remove",
+							},
+						)
+					}
 				</ul>
 			</div>
 			<div class="space-y-md">
@@ -136,6 +163,30 @@ templ TransactionsFilters(
 						templ.Attributes{
 							"data-id":    "amount-range",
 							"data-input": "ui.amount-chip.update-max",
+							"hx-post":    "/partials/transaction-filters",
+							"hx-target":  "#filters-result-btn",
+							"hx-trigger": "input changed delay:300ms",
+						},
+					)
+				</div>
+				<div class="">
+					<div class="flex justify-between items-center mb-sm">
+						<h6>Date</h6>
+						<div class="text-sm font-light">
+							<span id="mindate-chip">{ views.FormatDate(time.Unix(int64(loDate), 0)) }</span> - <span id="maxdate-chip">{ views.FormatDate(time.Unix(int64(hiDate), 0)) }</span>
+						</div>
+					</div>
+					@components.DoubleSliderInput(minDatePossible, maxDatePossible, loDate, hiDate, "mindate", "maxdate",
+						templ.Attributes{
+							"data-id":    "date-range",
+							"data-input": "ui.date-chip.update-min",
+							"hx-post":    "/partials/transaction-filters",
+							"hx-target":  "#filters-result-btn",
+							"hx-trigger": "input changed delay:300ms",
+						},
+						templ.Attributes{
+							"data-id":    "date-range",
+							"data-input": "ui.date-chip.update-max",
 							"hx-post":    "/partials/transaction-filters",
 							"hx-target":  "#filters-result-btn",
 							"hx-trigger": "input changed delay:300ms",

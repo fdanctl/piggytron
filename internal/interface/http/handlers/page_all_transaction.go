@@ -68,6 +68,8 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		qcats,
 		qminAmount,
 		qmaxAmount,
+		qminDate,
+		qmaxDate,
 	)
 
 	tWithCount, err := h.query.FindFilteredWithCount(

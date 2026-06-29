@@ -26,14 +26,25 @@ func NewTransactionFilters(
 	minAmount, maxAmount string,
 	minDate, maxDate string,
 ) *TransactionFilters {
+	var ptypes *[]string
+	tt := make([]string, 0, len(ttype))
 	var paccs *[]string
 	accs := make([]string, 0, len(accountIDs))
 	var pcats *[]string
 	cats := make([]string, 0, len(categoryIDs))
-	var pmin *int
-	var pmax *int
+	var pminA *int
+	var pmaxA *int
+	var pminD *time.Time
+	var pmaxD *time.Time
 
-	// TODO very very type
+	for _, t := range ttype {
+		if t == "income" || t == "expense" || t == "transfer" {
+			tt = append(tt, t)
+		}
+	}
+	if len(tt) > 0 {
+		ptypes = &tt
+	}
 
 	for _, aid := range accountIDs {
 		if _, err := uuid.Parse(aid); err == nil {
@@ -56,33 +67,60 @@ func NewTransactionFilters(
 	if minAmount != "" {
 		minAmnt, err := strconv.Atoi(minAmount + "00")
 		if err != nil || minAmnt < 0 {
-			pmin = nil
+			pminA = nil
 		} else {
 			mina := int(minAmnt)
-			pmin = &mina
+			pminA = &mina
 		}
 	}
 
 	if maxAmount != "" {
 		maxAmnt, err := strconv.Atoi(maxAmount + "00")
 		if err != nil || maxAmnt < 0 {
-			pmax = nil
+			pmaxA = nil
 		} else {
 			maxa := int(maxAmnt)
-			pmax = &maxa
+			pmaxA = &maxa
 		}
 	}
 
-	if (pmin != nil && pmax != nil) && *pmax < *pmin {
-		pmax = nil
-		pmin = nil
+	if (pminA != nil && pmaxA != nil) && *pmaxA < *pminA {
+		pmaxA = nil
+		pminA = nil
+	}
+
+	if minDate != "" {
+		minD, err := strconv.ParseInt(minDate, 10, 64)
+		if err != nil || minD < 0 {
+			pminD = nil
+		} else {
+			mind := time.Unix(minD, 0)
+			pminD = &mind
+		}
+	}
+
+	if maxDate != "" {
+		maxD, err := strconv.ParseInt(maxDate, 10, 64)
+		if err != nil || maxD < 0 {
+			pmaxD = nil
+		} else {
+			maxd := time.Unix(maxD, 0)
+			pmaxD = &maxd
+		}
+	}
+
+	if (pminD != nil && pmaxD != nil) && pmaxD.Compare(*pminD) < 0 {
+		pmaxD = nil
+		pminD = nil
 	}
 
 	return &TransactionFilters{
-		Types:       &ttype,
+		Types:       ptypes,
 		AccountIDs:  paccs,
 		CategoryIDs: pcats,
-		MinAmount:   pmin,
-		MaxAmount:   pmax,
+		MinAmount:   pminA,
+		MaxAmount:   pmaxA,
+		MinDate:     pminD,
+		MaxDate:     pmaxD,
 	}
 }

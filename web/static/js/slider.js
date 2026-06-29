@@ -36,7 +36,10 @@ export function sliderClick({ ele, evt }) {
       hi = Number(hiInput.value);
     }
 
-    if (actualValue > hi || Math.abs(hi - actualValue) < Math.abs(lo - actualValue)) {
+    if (
+      actualValue > hi ||
+      Math.abs(hi - actualValue) < Math.abs(lo - actualValue)
+    ) {
       thumb = thumbs[1];
     }
   }
@@ -90,8 +93,6 @@ function updateSlider(clientX, slider, thumb) {
     thumb.style.left = pct + "%";
     fill.style.width = pct + "%";
   } else {
-    let dragging;
-
     const loInput = slider.querySelector(`[name='${thumbs[0].dataset.thumb}']`);
     let lo;
     if (loInput.value === "") {
@@ -108,16 +109,11 @@ function updateSlider(clientX, slider, thumb) {
       hi = Number(hiInput.value);
     }
 
-    for (let i = 0; i < thumbs.length; i++) {
-      if (thumbs[i].dataset.thumb === thumbName) {
-        dragging = i === 0 ? "lo" : "hi";
-      }
-    }
-
+    let dragging = thumbs[0].dataset.thumb === thumbName ? "lo" : "hi";
     let loPct = Number(thumbs[0].style.left.slice(0, -1));
     let hiPct = Number(thumbs[1].style.left.slice(0, -1));
-
     let pct;
+
     if (dragging === "lo") {
       actualValue = Math.min(actualValue, hi - 1);
       rawValue = actualValue - sliderMin;

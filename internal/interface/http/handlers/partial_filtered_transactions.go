@@ -78,7 +78,16 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 		maxDate,
 	)
 
-	_, queries := queryStrFromFiltersWithCount(page+1, types, accounts, cats, minAmount, maxAmount)
+	_, queries := queryStrFromFiltersWithCount(
+		page+1,
+		types,
+		accounts,
+		cats,
+		minAmount,
+		maxAmount,
+		minDate,
+		maxDate,
+	)
 
 	transactions, err := h.query.FindFilteredWithCount(
 		r.Context(),

@@ -1,7 +1,9 @@
 import { buildCalendar, nextMonth, prevMonth } from "../calendar";
 import {
   changeMaxAmountChip,
+  changeMaxDateChip,
   changeMinAmountChip,
+  changeMinDateChip,
   filterAccordionToggle,
   removeFilterPill,
   resetTransactionFiltersForm,
@@ -50,6 +52,10 @@ export const uiActions = {
   "ui.amount-chip.update-min": changeMinAmountChip,
 
   "ui.amount-chip.update-max": changeMaxAmountChip,
+
+  "ui.date-chip.update-min": changeMinDateChip,
+
+  "ui.date-chip.update-max": changeMaxDateChip,
 
   "ui.filters.remove": removeFilterPill,
 

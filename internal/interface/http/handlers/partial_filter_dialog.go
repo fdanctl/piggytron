@@ -78,15 +78,18 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	min, max, err := h.tQueryService.GetMinMax(r.Context(), sessionInfo.UserID)
+	minA, maxA, minD, maxD, err := h.tQueryService.GetMinMaxAmountAndDate(
+		r.Context(),
+		sessionInfo.UserID,
+	)
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return
 	}
-	min = int(math.Floor(float64(min) / float64(100)))
-	max = int(math.Ceil(float64(max) / float64(100)))
-	if min == max {
-		max++
+	minA = int(math.Floor(float64(minA) / float64(100)))
+	maxA = int(math.Ceil(float64(maxA) / float64(100)))
+	if minA == maxA {
+		maxA++
 	}
 
 	var accountOptions []partials.FilterOption
@@ -153,7 +156,8 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		includedAcc,
 		includedCats,
 		r.URL.Query(),
-		min, max,
+		minA, maxA,
+		int(minD.Unix()), int(maxD.Unix()),
 		resCount,
 	)
 	ctx := templ.WithChildren(r.Context(), content)
@@ -194,6 +198,8 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		cats,
 		minAmount,
 		maxAmount,
+		minDate,
+		maxDate,
 	)
 
 	resCount, err := h.tQueryService.CountFilteredResults(

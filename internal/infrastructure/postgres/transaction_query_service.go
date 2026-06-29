@@ -402,26 +402,30 @@ func (s *TransactionQueryService) GetRecentTransactions(
 	return transactions, nil
 }
 
-func (s *TransactionQueryService) GetMinMax(ctx context.Context, uid string) (int, int, error) {
+func (s *TransactionQueryService) GetMinMaxAmountAndDate(
+	ctx context.Context,
+	uid string,
+) (minAmount, maxAmount int, minDate, maxDate time.Time, err error) {
 	row := s.db.QueryRowContext(
 		ctx,
 		`SELECT
-		MIN(amount) AS min,
-		MAX(amount) AS max
+		MIN(amount) AS min_amount,
+		MAX(amount) AS max_amount,
+		MIN(date) AS min_date,
+		MAX(date) AS max_date
 		FROM transactions
 		WHERE user_id = $1`,
 		uid,
 	)
 
-	var min int
-	var max int
-	err := row.Scan(
-		&min,
-		&max,
+	err = row.Scan(
+		&minAmount,
+		&maxAmount,
+		&minDate,
+		&maxDate,
 	)
 	if err != nil {
-		return 0, 0, err
+		return
 	}
-
-	return min, max, nil
+	return
 }
