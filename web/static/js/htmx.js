@@ -81,6 +81,12 @@ document.body.addEventListener("htmx:historyRestore", (ev) => {
   }
 });
 
+document.body.addEventListener("htmx:responseError", function (ev) {
+  if (!ev.detail.xhr.getResponseHeader("HX-Trigger")) {
+    showToast("error", "Something went wrong");
+  }
+});
+
 document.body.addEventListener("htmx:sendError", function (ev) {
   showToast("error", "Network error");
 });

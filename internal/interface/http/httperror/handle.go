@@ -34,10 +34,14 @@ func SendError(w http.ResponseWriter, r *http.Request, err error) bool {
 				"error", apperr.Err,
 			)
 		}
+
+		cancelDeleteSwap(w, r, apperr.Kind)
 		sendTrigger(w, apperr.Message)
 		w.WriteHeader(HTTPStatus(apperr.Kind))
 		return true
 	}
+
+	cancelDeleteSwap(w, r, errs.KindInternal)
 
 	// Unknown error — generic
 	logger.Error("unhandled error", "error", err)
@@ -74,6 +78,7 @@ func SendFormError(w http.ResponseWriter, r *http.Request, err error, form templ
 	if apperr.Kind != errs.KindValidation {
 		sendTrigger(w, apperr.Message)
 	}
+	cancelDeleteSwap(w, r, apperr.Kind)
 	w.WriteHeader(HTTPStatus(apperr.Kind))
 	form.Render(r.Context(), w)
 }
@@ -87,4 +92,10 @@ func sendTrigger(w http.ResponseWriter, msg string) {
 	}
 	b, _ := json.Marshal(trigger)
 	w.Header().Set("HX-Trigger", string(b))
+}
+
+func cancelDeleteSwap(w http.ResponseWriter, r *http.Request, kind errs.ErrorKind) {
+	if kind != errs.KindNotFound && r.Method == http.MethodDelete {
+		w.Header().Set("HX-Reswap", "none")
+	}
 }

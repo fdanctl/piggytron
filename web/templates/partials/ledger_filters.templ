@@ -86,6 +86,23 @@ templ LedgerFilters(
 				hiDate = int
 			}
 		}
+
+		if loAmount >= maxAmountPossible {
+			maxAmountPossible = loAmount + 1
+			hiAmount = maxAmountPossible
+		}
+		if hiAmount <= minAmountPossible {
+			minAmountPossible = hiAmount - 1
+			loAmount = minAmountPossible
+		}
+		if loDate >= maxDatePossible {
+			maxDatePossible = loDate + 86400 // seconds = 24 × 60 × 60
+			hiDate = maxDatePossible
+		}
+		if hiDate <= minDatePossible {
+			minDatePossible = hiDate - 86400 // seconds = 24 × 60 × 60
+			loDate = minDatePossible
+		}
 	}}
 	<form id="transactions-filters">
 		<div

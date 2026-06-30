@@ -11,7 +11,6 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
-	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
@@ -526,7 +525,6 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	var toAccWithSum *query.AccountWithSum
 	if t.ToAccountID() != nil {
 		toacc, err := qtx.FindWithSum(ctx, string(*t.ToAccountID()))
 		if err != nil {
@@ -538,19 +536,18 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 			)
 			return err
 		}
-		toAccWithSum = toacc
-	}
 
-	if err = t.CanBeDeleted(&toAccWithSum.Sum); err != nil {
-		if errors.Is(err, ledger.ErrNegativeBalance) {
-			err = errs.NewAppError(
-				errs.KindValidation,
-				fmt.Sprintf("%s account becomes negative", toAccWithSum.Name),
-				fmt.Errorf("%s account becomes negative: %w", *t.ToAccountID(), err),
-				"appledger.Delete",
-			)
+		if err = t.CanBeDeleted(&toacc.Sum); err != nil {
+			if errors.Is(err, ledger.ErrNegativeBalance) {
+				err = errs.NewAppError(
+					errs.KindValidation,
+					fmt.Sprintf("%s account becomes negative", toacc.Name),
+					fmt.Errorf("%s account becomes negative: %w", *t.ToAccountID(), err),
+					"appledger.Delete",
+				)
+			}
+			return err
 		}
-		return err
 	}
 
 	if err = rtx.Delete(ctx, t.ID()); err != nil {
