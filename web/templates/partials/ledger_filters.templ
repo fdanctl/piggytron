@@ -44,7 +44,7 @@ templ Pill(p string, attrs templ.Attributes) {
 	</div>
 }
 
-templ TransactionsFilters(
+templ LedgerFilters(
 	accOptions,
 	catOptions []FilterOption,
 	currAcc []query.AccountIDName,
@@ -156,14 +156,14 @@ templ TransactionsFilters(
 						templ.Attributes{
 							"data-id":    "amount-range",
 							"data-input": "ui.amount-chip.update-min",
-							"hx-post":    "/partials/transaction-filters",
+							"hx-post":    "/partials/ledger-filters",
 							"hx-target":  "#filters-result-btn",
 							"hx-trigger": "input changed delay:300ms",
 						},
 						templ.Attributes{
 							"data-id":    "amount-range",
 							"data-input": "ui.amount-chip.update-max",
-							"hx-post":    "/partials/transaction-filters",
+							"hx-post":    "/partials/ledger-filters",
 							"hx-target":  "#filters-result-btn",
 							"hx-trigger": "input changed delay:300ms",
 						},
@@ -180,14 +180,14 @@ templ TransactionsFilters(
 						templ.Attributes{
 							"data-id":    "date-range",
 							"data-input": "ui.date-chip.update-min",
-							"hx-post":    "/partials/transaction-filters",
+							"hx-post":    "/partials/ledger-filters",
 							"hx-target":  "#filters-result-btn",
 							"hx-trigger": "input changed delay:300ms",
 						},
 						templ.Attributes{
 							"data-id":    "date-range",
 							"data-input": "ui.date-chip.update-max",
-							"hx-post":    "/partials/transaction-filters",
+							"hx-post":    "/partials/ledger-filters",
 							"hx-target":  "#filters-result-btn",
 							"hx-trigger": "input changed delay:300ms",
 						},
@@ -244,7 +244,7 @@ templ filterList(label, inputName string, q url.Values, options []FilterOption) 
 						"name":       inputName,
 						"value":      o.Value,
 						"checked":    slices.Contains(q[inputName], o.Value),
-						"hx-post":    "/partials/transaction-filters",
+						"hx-post":    "/partials/ledger-filters",
 						"hx-target":  "#filters-result-btn",
 						"hx-trigger": "input",
 						"data-input": "ui.filters.toggle",

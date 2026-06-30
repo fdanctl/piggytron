@@ -7,7 +7,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
-	"github.com/fdanctl/piggytron/internal/application/apptransaction"
+	"github.com/fdanctl/piggytron/internal/application/appledger"
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
@@ -19,13 +19,13 @@ import (
 )
 
 type GoalContributeHandler struct {
-	service       *apptransaction.Service
+	service       *appledger.Service
 	categoryQuery query.CategoryQueryService
 	accService    *appaccount.Service
 }
 
 func NewGoalContributeHandler(
-	ts *apptransaction.Service,
+	ts *appledger.Service,
 	cq query.CategoryQueryService,
 	as *appaccount.Service,
 ) *GoalContributeHandler {

@@ -10,10 +10,10 @@ import (
 )
 
 type TransactionDetailsHandler struct {
-	service query.TransactionQueryService
+	service query.LedgerQueryService
 }
 
-func NewTransactionDetailsHandler(s query.TransactionQueryService) *TransactionDetailsHandler {
+func NewTransactionDetailsHandler(s query.LedgerQueryService) *TransactionDetailsHandler {
 	return &TransactionDetailsHandler{
 		service: s,
 	}

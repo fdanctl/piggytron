@@ -16,18 +16,18 @@ import (
 
 type GoalsHandler struct {
 	accountService      *appaccount.Service
-	tQueryService       query.TransactionQueryService
+	ledgerQueryService  query.LedgerQueryService
 	accountQueryService query.AccountQueryService
 }
 
 func NewGoalsHandler(
 	ac *appaccount.Service,
-	tq query.TransactionQueryService,
+	tq query.LedgerQueryService,
 	aq query.AccountQueryService,
 ) *GoalsHandler {
 	return &GoalsHandler{
 		accountService:      ac,
-		tQueryService:       tq,
+		ledgerQueryService:  tq,
 		accountQueryService: aq,
 	}
 }
@@ -111,9 +111,9 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters := query.NewTransactionFilters(nil, []string{id}, nil, "", "", "", "")
+	filters := query.NewLedgerFilters(nil, []string{id}, nil, "", "", "", "")
 
-	transactions, err := h.tQueryService.FindFilteredWithCount(
+	transactions, err := h.ledgerQueryService.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
 		filters,

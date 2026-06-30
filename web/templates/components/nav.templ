@@ -15,16 +15,15 @@ var NavLinks = [3][]navLink{
 	{
 		{"Goals", "/goals", PiggyBankSvg(0, "", ""), nil},
 		{"Banks", "/banks", LandmarkSvg(0, "", ""), nil},
-		{"Transactions", "", NotebookSvg(0, "", ""), []navLink{
-			{"Expenses", "/transactions/expenses", nil, nil},
-			{"Income", "/transactions/income", nil, nil},
-			{"Transfers", "/transactions/transfers", nil, nil},
-			{"All", "/transactions/all", nil, nil},
-		}},
+		{"Ledger", "/ledger", NotebookSvg(0, "", ""), nil},
 	},
 	{
 		{"Categories", "/categories", TagSvg(0, "", ""), nil},
-		{"Reports", "/reports", FileChartColumnSvg(0, "", ""), nil},
+		{"Reports", "", FileChartColumnSvg(0, "", ""), []navLink{
+			{"Expenses", "/reports/expenses", nil, nil},
+			{"Income", "/reports/income", nil, nil},
+			{"Transfers", "/reports/transfers", nil, nil},
+		}},
 	},
 }
 

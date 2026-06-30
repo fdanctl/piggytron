@@ -17,7 +17,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
-	"github.com/fdanctl/piggytron/internal/application/apptransaction"
+	"github.com/fdanctl/piggytron/internal/application/appledger"
 	"github.com/fdanctl/piggytron/internal/application/appuser"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
@@ -86,7 +86,7 @@ func main() {
 
 	// repositories
 	accountRepo := postgres.NewAccountRepository(db)
-	transactionRepo := postgres.NewTransactionRepository(db)
+	ledgerRepo := postgres.NewLedgerRepository(db)
 	expenseCatRepo := postgres.NewExpenseCategoryRepository(db)
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	userRepo := postgres.NewUserRepository(db)
@@ -94,12 +94,12 @@ func main() {
 
 	// query services
 	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
-	var transactionQueryService query.TransactionQueryService = postgres.NewTransactionQueryService(db)
+	var ledgerQueryService query.LedgerQueryService = postgres.NewLedgerQueryService(db)
 	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
 
 	// services
 	accountService := appaccount.NewService(accountRepo, db)
-	transactionService := apptransaction.NewService(transactionRepo, db)
+	ledgerService := appledger.NewService(ledgerRepo, db)
 	expenseCatService := appexpensecategory.NewService(expenseCatRepo)
 	incomeCatService := appincomecategory.NewService(incomeCatRepo)
 	userService := appuser.NewService(userRepo, hasher, sessionStore)
@@ -121,12 +121,12 @@ func main() {
 	hh := handlers.HomeHandler{}
 	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
 
-	bh := handlers.NewBudgetPageHandler(catQueryService, transactionQueryService)
+	bh := handlers.NewBudgetPageHandler(catQueryService, ledgerQueryService)
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(bh))
 
 	goalsHandler := handlers.NewGoalsHandler(
 		accountService,
-		transactionQueryService,
+		ledgerQueryService,
 		accountQueryService,
 	)
 	webMux.Handle("/goals", middleware.AuthProtectedRoute(goalsHandler))
@@ -134,24 +134,24 @@ func main() {
 
 	banksHandler := handlers.NewBanksHandler(
 		accountService,
-		transactionQueryService,
+		ledgerQueryService,
 		accountQueryService,
 	)
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
 
-	allTransactionsHandler := handlers.NewAllTransactionsHandler(
-		transactionQueryService,
+	ledgerPageHandler := handlers.NewLedgerPageHandler(
+		ledgerQueryService,
 	)
-	webMux.Handle("/transactions/all", middleware.AuthProtectedRoute(allTransactionsHandler))
+	webMux.Handle("/ledger", middleware.AuthProtectedRoute(ledgerPageHandler))
 
 	eh := handlers.ExpensesHandler{}
-	webMux.Handle("/transactions/expenses", middleware.AuthProtectedRoute(&eh))
+	webMux.Handle("/reports/expenses", middleware.AuthProtectedRoute(&eh))
 
 	categoriesHandler := handlers.NewCategoriesHandler(
 		expenseCatService,
 		incomeCatService,
-		transactionQueryService,
+		ledgerQueryService,
 	)
 
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
@@ -181,34 +181,34 @@ func main() {
 	expenseCatHandler := handlers.NewExpenseCategoriesHandler(expenseCatService)
 	partialsMux.Handle("/partials/expense-category", expenseCatHandler)
 
-	filteredTransactionHandler := handlers.NewFilteredTransactionsHandler(transactionQueryService)
-	partialsMux.Handle("/partials/transactions", filteredTransactionHandler)
+	filteredLedgerHandler := handlers.NewFilteredLedgerHandler(ledgerQueryService)
+	partialsMux.Handle("/partials/ledger", filteredLedgerHandler)
 
-	transactionsHandler := handlers.NewTransactionHandler(
-		transactionService,
+	ledgerHandler := handlers.NewLedgerHandler(
+		ledgerService,
 		catQueryService,
 		accountService,
 	)
-	partialsMux.Handle("/partials/transaction", transactionsHandler)
+	partialsMux.Handle("/partials/ledger/entry", ledgerHandler)
 
-	transactionsEditHandler := handlers.NewTransactionEditHandler(
-		transactionService,
+	ledgerEntryHandler := handlers.NewLedgerEntryHandler(
+		ledgerService,
 		catQueryService,
 		accountService,
 	)
-	partialsMux.Handle("/partials/transaction/{id}", transactionsEditHandler)
+	partialsMux.Handle("/partials/ledger/entry/{id}", ledgerEntryHandler)
 
 	goalContributeHandler := handlers.NewGoalContributeHandler(
-		transactionService,
+		ledgerService,
 		catQueryService,
 		accountService,
 	)
 	partialsMux.Handle("/partials/goal-contribute/{id}", goalContributeHandler)
 
-	transactionDetails := handlers.NewTransactionDetailsHandler(transactionQueryService)
-	partialsMux.Handle("/partials/transaction-details/{id}", transactionDetails)
+	transactionDetails := handlers.NewTransactionDetailsHandler(ledgerQueryService)
+	partialsMux.Handle("/partials/ledger/entry/details/{id}", transactionDetails)
 
-	goalContributions := handlers.NewGoalContributionsHandler(transactionQueryService)
+	goalContributions := handlers.NewGoalContributionsHandler(ledgerQueryService)
 	partialsMux.Handle("/partials/contributions", goalContributions)
 
 	catHistChartHandler := handlers.NewCategoryChartHandler(chartsService, catQueryService)
@@ -228,7 +228,7 @@ func main() {
 
 	banksChartsHandler := handlers.NewBanksChartsHandler(
 		chartsService,
-		transactionQueryService,
+		ledgerQueryService,
 		accountQueryService,
 	)
 	partialsMux.Handle("/partials/charts/banks", banksChartsHandler)
@@ -239,13 +239,13 @@ func main() {
 	)
 	partialsMux.Handle("/partials/charts/budget-chart/{month}", budgetChartHandler)
 
-	transactionFiltersHandler := handlers.NewFilterDialogHandler(
+	ledgerFiltersHandler := handlers.NewFilterDialogHandler(
 		catQueryService,
 		accountService,
-		transactionQueryService,
+		ledgerQueryService,
 		accountQueryService,
 	)
-	partialsMux.Handle("/partials/transaction-filters", transactionFiltersHandler)
+	partialsMux.Handle("/partials/ledger-filters", ledgerFiltersHandler)
 
 	bankHandler := handlers.NewBankHandler(accountService)
 	partialsMux.Handle("/partials/bank", bankHandler)

@@ -14,12 +14,12 @@ import (
 
 type BudgetPageHandler struct {
 	categoryQuery    query.CategoryQueryService
-	transactionQuery query.TransactionQueryService
+	transactionQuery query.LedgerQueryService
 }
 
 func NewBudgetPageHandler(
 	cq query.CategoryQueryService,
-	tq query.TransactionQueryService,
+	tq query.LedgerQueryService,
 ) *BudgetPageHandler {
 	return &BudgetPageHandler{
 		transactionQuery: tq,
@@ -47,7 +47,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	// TODO url month query (ex. 202605)
 	now := time.Now()
 
-	filters := query.NewTransactionFilters([]string{"income"}, nil, nil, "", "", "", "")
+	filters := query.NewLedgerFilters([]string{"income"}, nil, nil, "", "", "", "")
 	minD := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	maxD := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	filters.MinDate = &minD
@@ -61,7 +61,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		0,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find filtered transactions: %w", err))
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered ledger entries: %w", err))
 		return
 	}
 

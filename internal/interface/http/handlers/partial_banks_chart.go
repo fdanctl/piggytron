@@ -15,13 +15,13 @@ import (
 
 type BanksChartsHandler struct {
 	chartsService    *appcharts.Service
-	transactionQuery query.TransactionQueryService
+	transactionQuery query.LedgerQueryService
 	accountQuery     query.AccountQueryService
 }
 
 func NewBanksChartsHandler(
 	cs *appcharts.Service,
-	tq query.TransactionQueryService,
+	tq query.LedgerQueryService,
 	aq query.AccountQueryService,
 ) *BanksChartsHandler {
 	return &BanksChartsHandler{

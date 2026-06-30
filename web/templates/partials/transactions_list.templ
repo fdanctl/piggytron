@@ -20,7 +20,7 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 			if i == len(transactions) - 1 && hasMore {
 				@TransactionItem(t, templ.Attributes{
 					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
-					"hx-get":       fmt.Sprintf("/partials/transactions?%s", queryStr),
+					"hx-get":       fmt.Sprintf("/partials/ledger?%s", queryStr),
 					"hx-trigger":   "intersect once",
 					"hx-swap":      "afterend",
 					"hx-indicator": "#infinite-indicator",
@@ -41,7 +41,7 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 	<li
 		id={ fmt.Sprintf("t__%s", t.ID) }
 		class="transaction"
-		hx-get={ fmt.Sprintf("/partials/transaction-details/%s", t.ID) }
+		hx-get={ fmt.Sprintf("/partials/ledger/entry/details/%s", t.ID) }
 		hx-target="#dialog-root"
 		hx-swap="beforeend"
 		onclick=""
@@ -80,7 +80,7 @@ templ ContributionItem(t views.Transaction, attrs templ.Attributes) {
 	<li
 		id={ fmt.Sprintf("t__%s", t.ID) }
 		class="transaction"
-		hx-get={ fmt.Sprintf("/partials/transaction-details/%s", t.ID) }
+		hx-get={ fmt.Sprintf("/partials/ledger/entry/details/%s", t.ID) }
 		hx-target="#dialog-root"
 		hx-swap="beforeend"
 		onclick=""

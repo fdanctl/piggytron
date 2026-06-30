@@ -12,19 +12,19 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-type AllTransactionsHandler struct {
-	query query.TransactionQueryService
+type LedgerPageHandler struct {
+	query query.LedgerQueryService
 }
 
-func NewAllTransactionsHandler(
-	q query.TransactionQueryService,
-) *AllTransactionsHandler {
-	return &AllTransactionsHandler{
+func NewLedgerPageHandler(
+	q query.LedgerQueryService,
+) *LedgerPageHandler {
+	return &LedgerPageHandler{
 		query: q,
 	}
 }
 
-func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *LedgerPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -34,7 +34,7 @@ func (h *AllTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *LedgerPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -50,7 +50,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	qminDate := q.Get("mindate")
 	qmaxDate := q.Get("maxdate")
 
-	filters := query.NewTransactionFilters(
+	filters := query.NewLedgerFilters(
 		qtypes,
 		qaccounts,
 		qcats,
@@ -80,7 +80,7 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		LIMIT*uint(page)-LIMIT,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find filtered transactions: %w", err))
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered ledger entries: %w", err))
 		return
 	}
 	var hasMore bool
@@ -97,11 +97,10 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
-	content := pages.AllTransactions(
+	content := pages.Ledger(
 		views.BreadcrumbsView{
 			Items: []views.BreadcrumbsLink{
-				{Href: "", Name: "Transactions"},
-				{Href: "", Name: "All"},
+				{Href: "", Name: "Ledger"},
 			},
 			Options: nil,
 		},
@@ -111,5 +110,5 @@ func (h *AllTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		transactionsView, strings.Join(queries, "&"), hasMore,
 	)
 
-	renderWithMainLayout(w, r, "Transactions", content)
+	renderWithMainLayout(w, r, "Ledger", content)
 }

@@ -73,7 +73,7 @@ CREATE TABLE accounts (
   UNIQUE (name, type, user_id)
 );
 
-CREATE TABLE transactions (
+CREATE TABLE ledger (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --

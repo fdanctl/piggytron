@@ -20,14 +20,14 @@ import (
 type FilterDialogHandler struct {
 	categoryQueryService query.CategoryQueryService
 	accountService       *appaccount.Service
-	tQueryService        query.TransactionQueryService
+	tQueryService        query.LedgerQueryService
 	accQueryService      query.AccountQueryService
 }
 
 func NewFilterDialogHandler(
 	cs query.CategoryQueryService,
 	as *appaccount.Service,
-	tq query.TransactionQueryService,
+	tq query.LedgerQueryService,
 	aq query.AccountQueryService,
 ) *FilterDialogHandler {
 	return &FilterDialogHandler{
@@ -109,7 +109,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	minDate := q.Get("mindate")
 	maxDate := q.Get("maxdate")
 
-	filters := query.NewTransactionFilters(
+	filters := query.NewLedgerFilters(
 		types,
 		accounts,
 		cats,
@@ -126,7 +126,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(
 			w,
 			r,
-			fmt.Errorf("failed to count filters transactions results: %w", err),
+			fmt.Errorf("failed to count filtered ledger entries results: %w", err),
 		)
 		return
 	}
@@ -150,7 +150,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	content := partials.TransactionsFilters(
+	content := partials.LedgerFilters(
 		accountOptions,
 		categoryOptions,
 		includedAcc,
@@ -181,7 +181,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	minDate := q.Get("mindate")
 	maxDate := q.Get("maxdate")
 
-	filters := query.NewTransactionFilters(
+	filters := query.NewLedgerFilters(
 		types,
 		accounts,
 		cats,
@@ -209,7 +209,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(
 			w,
 			r,
-			fmt.Errorf("failed to count filters transactions results: %w", err),
+			fmt.Errorf("failed to count filtered ledger entries results: %w", err),
 		)
 		return
 	}
@@ -256,7 +256,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 		"style":       "height: 24px;",
 		"hx-swap-oob": "outerHTML",
 		"id":          "filter-btn",
-		"hx-get":      "/partials/transaction-filters?" + strings.Join(queries[1:], "&"),
+		"hx-get":      "/partials/ledger-filters?" + strings.Join(queries[1:], "&"),
 		"hx-target":   "#dialog-root",
 	}).Render(r.Context(), w)
 }

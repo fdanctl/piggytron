@@ -162,7 +162,7 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
           COALESCE(SUM(t.amount), 0)
         FROM
           expense_categories c
-          LEFT JOIN transactions t ON c.id = t.expense_category_id
+          LEFT JOIN ledger t ON c.id = t.expense_category_id
           AND t.date >= $2
           AND t.date < $3
           LEFT JOIN monthly_budgets b ON c.id = b.category_id
@@ -237,7 +237,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
     	  COALESCE(SUM(t.amount), 0) AS value
 		FROM
     	  income_categories c
-    	  LEFT JOIN transactions t 
+    	  LEFT JOIN ledger t 
           ON c.id = t.income_category_id
           AND t.date >= $1
           AND t.date < $2
@@ -292,7 +292,7 @@ func (s *CategoryQueryService) GetYearMonthlyValue(
 		  SUM(t.amount) AS value
 		FROM
 		  income_categories ic
-		  LEFT JOIN transactions t ON ic.id = t.income_category_id
+		  LEFT JOIN ledger t ON ic.id = t.income_category_id
 		WHERE
 		  ic.id = $1
 		  AND EXTRACT(
@@ -317,7 +317,7 @@ func (s *CategoryQueryService) GetYearMonthlyValue(
 		  SUM(t.amount) AS value
 		FROM
 		  expense_categories ec
-		  LEFT JOIN transactions t ON ec.id = t.expense_category_id
+		  LEFT JOIN ledger t ON ec.id = t.expense_category_id
 		WHERE
 		  ec.id = $1
 		  AND EXTRACT(

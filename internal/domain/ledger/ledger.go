@@ -1,4 +1,4 @@
-package transaction
+package ledger
 
 import (
 	"errors"
@@ -31,7 +31,7 @@ func NewType(str string) (Type, error) {
 	}
 }
 
-type Transaction struct {
+type Entry struct {
 	id     ID
 	userID ID
 
@@ -57,7 +57,7 @@ func NewIncome(
 	amount int,
 	description string,
 	date time.Time,
-) (*Transaction, error) {
+) (*Entry, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
 	}
@@ -67,7 +67,7 @@ func NewIncome(
 
 	now := time.Now()
 
-	return &Transaction{
+	return &Entry{
 		id:                id,
 		userID:            userID,
 		ttype:             income,
@@ -91,7 +91,7 @@ func NewExpense(
 	description string,
 	date time.Time,
 	sourceBalance int,
-) (*Transaction, error) {
+) (*Entry, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
 	}
@@ -104,7 +104,7 @@ func NewExpense(
 
 	now := time.Now()
 
-	return &Transaction{
+	return &Entry{
 		id:                id,
 		userID:            userID,
 		ttype:             expense,
@@ -133,7 +133,7 @@ func NewTransfer(
 	toAccountCategoryID *ID,
 	toAccountCategoryType string,
 	isToAccSavings bool,
-) (*Transaction, error) {
+) (*Entry, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
 	}
@@ -161,7 +161,7 @@ func NewTransfer(
 
 	now := time.Now()
 
-	return &Transaction{
+	return &Entry{
 		id:                id,
 		userID:            userID,
 		ttype:             transfer,
@@ -188,8 +188,8 @@ func Rehydrate(
 	description string,
 	date time.Time,
 	createdAt time.Time,
-) *Transaction {
-	return &Transaction{
+) *Entry {
+	return &Entry{
 		id:                id,
 		userID:            userID,
 		ttype:             ttype,
@@ -204,52 +204,52 @@ func Rehydrate(
 	}
 }
 
-func (t *Transaction) ID() ID {
+func (t *Entry) ID() ID {
 	return t.id
 }
 
-func (t *Transaction) UserID() ID {
+func (t *Entry) UserID() ID {
 	return t.userID
 }
 
-func (t *Transaction) Type() Type {
+func (t *Entry) Type() Type {
 	return t.ttype
 }
 
-func (t *Transaction) FromAccountID() *ID {
+func (t *Entry) FromAccountID() *ID {
 	return t.fromAccountID
 }
 
-func (t *Transaction) ToAccountID() *ID {
+func (t *Entry) ToAccountID() *ID {
 	return t.toAccountID
 }
 
-func (t *Transaction) IncomeCategoryID() *ID {
+func (t *Entry) IncomeCategoryID() *ID {
 	return t.incomeCategoryID
 }
 
-func (t *Transaction) ExpenseCategoryID() *ID {
+func (t *Entry) ExpenseCategoryID() *ID {
 	return t.expenseCategoryID
 }
 
-func (t *Transaction) Amount() int {
+func (t *Entry) Amount() int {
 	return t.amount
 }
 
-func (t *Transaction) Description() string {
+func (t *Entry) Description() string {
 	return t.description
 }
 
-func (t *Transaction) Date() time.Time {
+func (t *Entry) Date() time.Time {
 	return t.date
 }
 
-func (t *Transaction) CreatedAt() time.Time {
+func (t *Entry) CreatedAt() time.Time {
 	return t.createdAt
 }
 
 // CanBeDeleted receive the destination account balance or nil if it does not nonexistent
-func (t *Transaction) CanBeDeleted(toAccBalance *int) error {
+func (t *Entry) CanBeDeleted(toAccBalance *int) error {
 	if toAccBalance != nil && *toAccBalance-t.Amount() < 0 {
 		return ErrNegativeBalance
 	}
@@ -258,7 +258,7 @@ func (t *Transaction) CanBeDeleted(toAccBalance *int) error {
 
 // updates
 
-func (t *Transaction) ChangeExpenseCategory(cid ID) error {
+func (t *Entry) ChangeExpenseCategory(cid ID) error {
 	if t.fromAccountID == nil {
 		return errors.New("can't update")
 	}

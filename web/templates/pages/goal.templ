@@ -133,7 +133,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 					<span class="text-muted text-xs">
 						<span id="contribution-count">{ ttCount }</span> movements
 					</span>
-					<a class="text-xs" href={ fmt.Sprintf("/transactions/all?accounts=%s", g.ID) }>
+					<a class="text-xs" href={ fmt.Sprintf("/ledger?accounts=%s", g.ID) }>
 						view all
 					</a>
 				</div>

@@ -25,7 +25,7 @@ type Bank struct {
 	// Amount       string
 }
 
-func NewBankPage(a []query.AccountWithSum, t []query.TransactionDTO) BankPage {
+func NewBankPage(a []query.AccountWithSum, t []query.LedgerEntryDTO) BankPage {
 	var savings int
 	var available int
 	var goals int

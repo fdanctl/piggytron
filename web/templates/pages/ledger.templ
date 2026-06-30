@@ -6,7 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ AllTransactions(
+templ Ledger(
 	bview views.BreadcrumbsView,
 	filterCount uint8,
 	filterQuery string,
@@ -21,13 +21,13 @@ templ AllTransactions(
 			@components.FilterBtn(filterCount, 0, "", "", templ.Attributes{
 				"style":     "height: 24px",
 				"id":        "filter-btn",
-				"hx-get":    "/partials/transaction-filters?" + filterQuery,
+				"hx-get":    "/partials/ledger-filters?" + filterQuery,
 				"hx-target": "#dialog-root",
 				"hx-swap":   "beforeend",
 			})
 			<button
 				class="reset-btn w-fit h-fit flex cursor-pointer"
-				hx-get="/partials/transaction"
+				hx-get="/partials/ledger/entry"
 				hx-target="#dialog-root"
 				hx-swap="beforeend"
 			>

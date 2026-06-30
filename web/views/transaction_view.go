@@ -19,7 +19,7 @@ type Transaction struct {
 }
 
 func NewTransaction(
-	t query.TransactionDTO,
+	t query.LedgerEntryDTO,
 ) Transaction {
 	f := float64(t.Amount) / 100
 	if t.Type == "expense" {
@@ -59,7 +59,7 @@ func NewTransaction(
 }
 
 func NewAccountTransaction(
-	t query.TransactionDTO,
+	t query.LedgerEntryDTO,
 	accName string,
 ) Transaction {
 	f := float64(t.Amount) / 100

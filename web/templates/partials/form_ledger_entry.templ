@@ -58,9 +58,9 @@ templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOpt
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
 		if id != "" {
-			hx-put={ fmt.Sprintf("/partials/transaction/%s", id) }
+			hx-put={ fmt.Sprintf("/partials/ledger/entry/%s", id) }
 		} else {
-			hx-post="/partials/transaction"
+			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
 		novalidate
@@ -178,9 +178,9 @@ templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectO
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
 		if id != "" {
-			hx-put={ fmt.Sprintf("/partials/transaction/%s", id) }
+			hx-put={ fmt.Sprintf("/partials/ledger/entry/%s", id) }
 		} else {
-			hx-post="/partials/transaction"
+			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
 		novalidate
@@ -298,9 +298,9 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
 		if id != "" {
-			hx-put={ fmt.Sprintf("/partials/transaction/%s", id) }
+			hx-put={ fmt.Sprintf("/partials/ledger/entry/%s", id) }
 		} else {
-			hx-post="/partials/transaction"
+			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
 		novalidate

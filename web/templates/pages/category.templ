@@ -26,7 +26,7 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 				</span>
 				<a
 					class="text-xs"
-					href={ fmt.Sprintf("/transactions/all?categories=%s", cat.GetID()) }
+					href={ fmt.Sprintf("/ledger?categories=%s", cat.GetID()) }
 				>
 					view all
 				</a>

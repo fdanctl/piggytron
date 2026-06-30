@@ -68,7 +68,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 				</span>
 				<a
 					class="text-xs"
-					href={ fmt.Sprintf("/transactions/all?accounts=%s", b.ID) }
+					href={ fmt.Sprintf("/ledger?accounts=%s", b.ID) }
 				>
 					view all
 				</a>

@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type TransactionFilters struct {
+type LedgerFilters struct {
 	Types *[]string
 
 	AccountIDs *[]string
@@ -21,11 +21,11 @@ type TransactionFilters struct {
 	MaxDate *time.Time
 }
 
-func NewTransactionFilters(
+func NewLedgerFilters(
 	ttype, accountIDs, categoryIDs []string,
 	minAmount, maxAmount string,
 	minDate, maxDate string,
-) *TransactionFilters {
+) *LedgerFilters {
 	var ptypes *[]string
 	tt := make([]string, 0, len(ttype))
 	var paccs *[]string
@@ -114,7 +114,7 @@ func NewTransactionFilters(
 		pminD = nil
 	}
 
-	return &TransactionFilters{
+	return &LedgerFilters{
 		Types:       ptypes,
 		AccountIDs:  paccs,
 		CategoryIDs: pcats,

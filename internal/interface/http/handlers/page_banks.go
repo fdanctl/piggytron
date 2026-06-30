@@ -14,13 +14,13 @@ import (
 
 type BanksHandler struct {
 	service          *appaccount.Service
-	transactionQuery query.TransactionQueryService
+	transactionQuery query.LedgerQueryService
 	accountQuery     query.AccountQueryService
 }
 
 func NewBanksHandler(
 	s *appaccount.Service,
-	tq query.TransactionQueryService,
+	tq query.LedgerQueryService,
 	aq query.AccountQueryService,
 ) *BanksHandler {
 	return &BanksHandler{
@@ -52,13 +52,13 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transactions, err := h.transactionQuery.GetRecentTransactions(
+	transactions, err := h.transactionQuery.GetRecentEntries(
 		r.Context(),
 		sessionInfo.UserID,
 		5,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find transactions: %w", err))
+		httperror.SendError(w, r, fmt.Errorf("failed to find ledger entries: %w", err))
 		return
 	}
 
@@ -103,7 +103,7 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	filters := query.NewTransactionFilters(nil, []string{aid}, nil, "", "", "", "")
+	filters := query.NewLedgerFilters(nil, []string{aid}, nil, "", "", "", "")
 
 	transactions, err := h.transactionQuery.FindFilteredWithCount(
 		r.Context(),
@@ -113,7 +113,7 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		LIMIT*1-LIMIT,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find filtered transactions: %w", err))
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered ledger entries: %w", err))
 		return
 	}
 	var hasMore bool
@@ -140,8 +140,8 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	content := pages.Bank(
 		views.BreadcrumbsView{
 			Items: []views.BreadcrumbsLink{
-				{Href: "", Name: "Transactions"},
-				{Href: "", Name: "All"},
+				{Href: "/banks", Name: "Banks"},
+				{Href: "/banks/" + bank.ID, Name: bank.Name},
 			},
 			Options: optionsLinks,
 		}, *bank, transactionsViews, hasMore, transactions.Total,

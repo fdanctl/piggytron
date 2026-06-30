@@ -50,7 +50,7 @@ templ TransactionDetails(t views.Transaction) {
 				templ.Attributes{
 					"hx-target":  fmt.Sprintf("#t__%s", t.ID),
 					"hx-swap":    "delete",
-					"hx-delete":  fmt.Sprintf("/partials/transaction/%s", t.ID),
+					"hx-delete":  fmt.Sprintf("/partials/ledger/entry/%s", t.ID),
 					"hx-confirm": "{\"title\":\"Delete transaction\",\"message\":\"Are you you want to delete this transaction?\",\"acceptText\":\"Confirm\",\"refuseText\":\"Cancel\"}",
 				},
 				components.IconLeft, components.TrashSvg(0, "", ""),
@@ -58,7 +58,7 @@ templ TransactionDetails(t views.Transaction) {
 			@components.ButtonWithIcon(
 				"Edit", "w-full", components.BtnOutline, components.BtnMedium,
 				templ.Attributes{
-					"hx-get":    fmt.Sprintf("/partials/transaction/%s", t.ID),
+					"hx-get":    fmt.Sprintf("/partials/ledger/entry/%s", t.ID),
 					"hx-target": "#dialog-root",
 					"hx-swap":   "beforeend",
 				},

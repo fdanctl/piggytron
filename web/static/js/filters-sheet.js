@@ -32,11 +32,11 @@ export function filterAccordionToggle({ ele }) {
 
 export function resetTransactionFiltersForm() {
   history.replaceState({}, "", window.location.pathname);
-  htmx.ajax("GET", "/partials/transactions", {
+  htmx.ajax("GET", "/partials/ledger", {
     target: "#itransactions",
   });
   const filterBtn = document.getElementById("filter-btn");
-  filterBtn.setAttribute("hx-get", "/partials/transaction-filters?");
+  filterBtn.setAttribute("hx-get", "/partials/ledger-filters?");
   filterBtn.querySelector(".notification")?.remove();
   htmx.process(filterBtn);
 

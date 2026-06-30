@@ -17,20 +17,20 @@ import (
 )
 
 type CategoriesHandler struct {
-	incomeCatService  *appincomecategory.Service
-	expenseCatService *appexpensecategory.Service
-	tQueryService     query.TransactionQueryService
+	incomeCatService   *appincomecategory.Service
+	expenseCatService  *appexpensecategory.Service
+	ledgerQueryService query.LedgerQueryService
 }
 
 func NewCategoriesHandler(
 	es *appexpensecategory.Service,
 	is *appincomecategory.Service,
-	tq query.TransactionQueryService,
+	tq query.LedgerQueryService,
 ) *CategoriesHandler {
 	return &CategoriesHandler{
-		incomeCatService:  is,
-		expenseCatService: es,
-		tQueryService:     tq,
+		incomeCatService:   is,
+		expenseCatService:  es,
+		ledgerQueryService: tq,
 	}
 }
 
@@ -150,9 +150,9 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	filters := query.NewTransactionFilters(nil, nil, []string{id}, "", "", "", "")
+	filters := query.NewLedgerFilters(nil, nil, []string{id}, "", "", "", "")
 
-	transactions, err := h.tQueryService.FindFilteredWithCount(
+	transactions, err := h.ledgerQueryService.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
 		filters,

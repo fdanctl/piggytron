@@ -166,7 +166,7 @@ func (s *AccountQueryService) FindWithSum(
 		 FROM accounts a
 		 LEFT JOIN expense_categories c
 			ON a.category_id = c.id
-		 LEFT JOIN transactions t 
+		 LEFT JOIN ledger t 
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.id = $2
@@ -233,7 +233,7 @@ func (s *AccountQueryService) FindAllWithSum(
 		 FROM accounts a
 		 LEFT JOIN expense_categories c
 			ON a.category_id = c.id
-		 LEFT JOIN transactions t 
+		 LEFT JOIN ledger t 
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.user_id = $2
@@ -310,7 +310,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 		 FROM accounts a
 		 LEFT JOIN expense_categories c
 			ON a.category_id = c.id
-		 LEFT JOIN transactions t 
+		 LEFT JOIN ledger t 
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.user_id = $1 AND a.type = 'goal'
@@ -370,7 +370,7 @@ func (s *AccountQueryService) GetBanksDailyChange(
 				END
 			) AS change
 		 FROM accounts a
-		 LEFT JOIN transactions t
+		 LEFT JOIN ledger t
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.user_id = $1 AND a.type = 'bank'
@@ -429,7 +429,7 @@ func (s *AccountQueryService) GetAccountDailyChange(
 				END
 			) AS change
 		 FROM accounts a
-		 LEFT JOIN transactions t
+		 LEFT JOIN ledger t
 			ON a.id = t.to_account_id OR a.id = t.from_account_id
 		 WHERE
 			a.id = $1

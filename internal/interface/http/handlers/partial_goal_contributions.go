@@ -17,11 +17,11 @@ import (
 )
 
 type GoalContributionsHandler struct {
-	query query.TransactionQueryService
+	query query.LedgerQueryService
 }
 
 func NewGoalContributionsHandler(
-	q query.TransactionQueryService,
+	q query.LedgerQueryService,
 ) *GoalContributionsHandler {
 	return &GoalContributionsHandler{
 		query: q,
@@ -63,7 +63,7 @@ func (h *GoalContributionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	accounts := q["accounts"]
 	name := q.Get("name")
 
-	filters := query.NewTransactionFilters(
+	filters := query.NewLedgerFilters(
 		nil,
 		accounts,
 		nil,
@@ -87,7 +87,7 @@ func (h *GoalContributionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		LIMIT*uint(page)-LIMIT,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find filterd transactions: %w", err))
+		httperror.SendError(w, r, fmt.Errorf("failed to find filtered ledger entries: %w", err))
 		return
 	}
 	var hasMore bool

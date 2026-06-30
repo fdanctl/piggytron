@@ -16,19 +16,19 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-type FilteredTransactionsHandler struct {
-	query query.TransactionQueryService
+type FilteredLedgerHandler struct {
+	query query.LedgerQueryService
 }
 
-func NewFilteredTransactionsHandler(
-	q query.TransactionQueryService,
-) *FilteredTransactionsHandler {
-	return &FilteredTransactionsHandler{
+func NewFilteredLedgerHandler(
+	q query.LedgerQueryService,
+) *FilteredLedgerHandler {
+	return &FilteredLedgerHandler{
 		query: q,
 	}
 }
 
-func (h *FilteredTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *FilteredLedgerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -38,7 +38,7 @@ func (h *FilteredTransactionsHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	}
 }
 
-func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *FilteredLedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -68,7 +68,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 	minDate := q.Get("mindate")
 	maxDate := q.Get("maxdate")
 
-	filters := query.NewTransactionFilters(
+	filters := query.NewLedgerFilters(
 		types,
 		accounts,
 		cats,
@@ -114,7 +114,7 @@ func (h *FilteredTransactionsHandler) Get(w http.ResponseWriter, r *http.Request
 				c = partials.TransactionItem(t, templ.Attributes{
 					"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					"hx-get": fmt.Sprintf(
-						"/partials/transactions?%s",
+						"/partials/ledger?%s",
 						strings.Join(queries, "&"),
 					),
 					"hx-trigger":   "intersect once",

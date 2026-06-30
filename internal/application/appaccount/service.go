@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/fdanctl/piggytron/internal/util"
@@ -304,11 +304,11 @@ func (s *Service) UpdateGoal(
 		return nil, err
 	}
 
-	rtx := postgres.NewTransactionRepository(tx)
-	tt, err := rtx.FindAllByAccount(ctx, transaction.ID(goal.ID())) // date DESC
+	rtx := postgres.NewLedgerRepository(tx)
+	tt, err := rtx.FindAllByAccount(ctx, ledger.ID(goal.ID())) // date DESC
 	if err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed finding account '%s' transactions: %w", goal.ID(), err),
+			fmt.Errorf("failed finding account '%s' ledger entry: %w", goal.ID(), err),
 			"appaccount.UpdateGoal",
 		)
 		return nil, err
@@ -388,14 +388,14 @@ func (s *Service) UpdateGoal(
 		goal.ChangeCategory(cid)
 
 		for _, t := range tt {
-			if t.ToAccountID() != nil && *t.ToAccountID() == transaction.ID(goal.ID()) {
-				t.ChangeExpenseCategory(transaction.ID(cid))
+			if t.ToAccountID() != nil && *t.ToAccountID() == ledger.ID(goal.ID()) {
+				t.ChangeExpenseCategory(ledger.ID(cid))
 			}
 		}
 		err := rtx.UpdateMany(ctx, tt)
 		if err != nil {
 			err = errs.NewInternalAppError(
-				fmt.Errorf("failed to update transactions: %w", err),
+				fmt.Errorf("failed to update ledger entry: %w", err),
 				"appaccount.UpdateGoal",
 			)
 			return nil, err

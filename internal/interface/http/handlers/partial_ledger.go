@@ -3,12 +3,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
-	"github.com/fdanctl/piggytron/internal/application/apptransaction"
+	"github.com/fdanctl/piggytron/internal/application/appledger"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
@@ -18,51 +17,39 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-type TransactionEditHandler struct {
-	service       *apptransaction.Service
+type LedgerHandler struct {
+	service       *appledger.Service
 	categoryQuery query.CategoryQueryService
 	accService    *appaccount.Service
 }
 
-func NewTransactionEditHandler(
-	ts *apptransaction.Service,
+func NewLedgerHandler(
+	ts *appledger.Service,
 	cq query.CategoryQueryService,
 	as *appaccount.Service,
-) *TransactionEditHandler {
-	return &TransactionEditHandler{
+) *LedgerHandler {
+	return &LedgerHandler{
 		service:       ts,
 		categoryQuery: cq,
 		accService:    as,
 	}
 }
 
-func (h *TransactionEditHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *LedgerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
 
-	case http.MethodPut:
-		h.Put(w, r)
-
-	case http.MethodDelete:
-		h.Delete(w, r)
+	case http.MethodPost:
+		h.Post(w, r)
 
 	default:
 		http.NotFound(w, r)
 	}
 }
 
-func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
+func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
-	if err != nil {
-		httperror.SendError(w, r, err)
-		return
-	}
-
-	id := r.PathValue("id")
-
-	t, err := h.service.FindOneByID(r.Context(), id)
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return
@@ -88,56 +75,21 @@ func (h *TransactionEditHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var title string
-	var content templ.Component
-	switch string(t.Type()) {
-	case "income":
-		v := views.NewIncomeForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO fix
-		v.Description = t.Description()
-		v.Date = t.Date().Format("02/01/2006")
-		v.Category = string(*t.IncomeCategoryID())
-		v.DestinationAcc = string(*t.ToAccountID())
-		title = "Edit Income"
-		content = partials.IncomeForm(*v, icatOpts, noSavingsBanksOpts, string(t.ID()))
+	form := partials.TransactionForm(
+		*views.NewIncomeForm(),
+		*views.NewExpenseForm(),
+		*views.NewTransferForm(),
+		icatOpts,
+		ecatOpts,
+		append(noSavingsBanksOpts, goalSavingsOpts...),
+		noSavingsBanksOpts,
+	)
 
-	case "expense":
-		v := views.NewExpenseForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO fix
-		v.Description = t.Description()
-		v.Date = t.Date().Format("02/01/2006")
-		v.Category = string(*t.ExpenseCategoryID())
-		v.SourceAcc = string(*t.FromAccountID())
-		title = "Edit Expense"
-		content = partials.ExpenseForm(*v, ecatOpts, noSavingsBanksOpts, string(t.ID()))
-
-	case "transfer":
-		v := views.NewTransferForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO fix
-		v.Description = t.Description()
-		v.Date = t.Date().Format("02/01/2006")
-		if t.ExpenseCategoryID() != nil {
-			v.Category = string(*t.ExpenseCategoryID())
-		}
-		v.DestinationAcc = string(*t.ToAccountID())
-		v.SourceAcc = string(*t.FromAccountID())
-		title = "Edit Transfer"
-		content = partials.TransferForm(
-			*v,
-			ecatOpts,
-			append(noSavingsBanksOpts, goalSavingsOpts...),
-			string(t.ID()),
-		)
-
-	default:
-		logger.Debug("DEFAULT")
-	}
-
-	ctx := templ.WithChildren(r.Context(), content)
-	components.DialogWrapper("", title, nil).Render(ctx, w)
+	ctx := templ.WithChildren(r.Context(), form)
+	components.DialogWrapper("", "New Entry", nil).Render(ctx, w)
 }
 
-func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
+func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -145,7 +97,6 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := r.PathValue("id")
 	ttype := r.FormValue("type")
 	amount := r.FormValue("amount")
 	currency := r.FormValue("currency")
@@ -265,21 +216,63 @@ func (h *TransactionEditHandler) Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update
-	logger.Debug(id)
-	logger.Debug(strconv.Itoa(cents))
-	logger.Debug(d.Format(time.DateOnly))
+	switch ttype {
+	case "income":
+		_, err := h.service.CreateIncome(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
+			destination,
+		)
+		if err != nil {
+			httperror.SendFormError(w, r, err, form)
+			return
+		}
 
-	form.Render(r.Context(), w)
-}
+	case "expense":
+		_, err := h.service.CreateExpense(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
+			source,
+		)
+		if err != nil {
+			httperror.SendFormError(w, r, err, form)
+			return
+		}
 
-func (h *TransactionEditHandler) Delete(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-
-	err := h.service.Delete(r.Context(), id)
-	if err != nil {
-		httperror.SendError(w, r, err)
-		return
+	case "transfer":
+		_, err := h.service.CreateTransfer(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
+			source,
+			destination,
+		)
+		if err != nil {
+			httperror.SendFormError(w, r, err, form)
+			return
+		}
 	}
-	w.Header().Set("HX-Trigger", "transaction-deleted")
+
+	w.Header().Set("HX-Trigger", "refetch-transactions,closeModal")
+	templ.Join(
+		form,
+		components.SendToast(
+			components.Success,
+			fmt.Sprintf("%s transaction added", views.CapitalizeFirst(ttype)),
+		),
+	).Render(r.Context(), w)
 }

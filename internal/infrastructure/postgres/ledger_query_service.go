@@ -9,20 +9,20 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
-type TransactionQueryService struct {
+type LedgerQueryService struct {
 	db *sql.DB
 }
 
-func NewTransactionQueryService(db *sql.DB) *TransactionQueryService {
-	return &TransactionQueryService{
+func NewLedgerQueryService(db *sql.DB) *LedgerQueryService {
+	return &LedgerQueryService{
 		db: db,
 	}
 }
 
-func (s *TransactionQueryService) FindByID(
+func (s *LedgerQueryService) FindByID(
 	ctx context.Context,
 	id string,
-) (*query.TransactionDTO, error) {
+) (*query.LedgerEntryDTO, error) {
 	row := s.db.QueryRowContext(
 		ctx,
 		`SELECT
@@ -37,7 +37,7 @@ func (s *TransactionQueryService) FindByID(
 			t.description,
 			t.date,
 			t.created_at
-		 FROM transactions t
+		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
 		 LEFT JOIN accounts ta
@@ -50,7 +50,7 @@ func (s *TransactionQueryService) FindByID(
 		id,
 	)
 
-	var dto query.TransactionDTO
+	var dto query.LedgerEntryDTO
 	err := row.Scan(
 		&dto.ID,
 		&dto.UserID,
@@ -70,12 +70,12 @@ func (s *TransactionQueryService) FindByID(
 	return &dto, nil
 }
 
-func (s *TransactionQueryService) FindFiltered(
+func (s *LedgerQueryService) FindFiltered(
 	ctx context.Context,
 	uid string,
-	filters *query.TransactionFilters,
+	filters *query.LedgerFilters,
 	limit, offset uint,
-) ([]query.TransactionDTO, error) {
+) ([]query.LedgerEntryDTO, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
@@ -90,7 +90,7 @@ func (s *TransactionQueryService) FindFiltered(
 			t.description,
 			t.date,
 			t.created_at
-		 FROM transactions t
+		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
 		 LEFT JOIN accounts ta
@@ -126,10 +126,10 @@ func (s *TransactionQueryService) FindFiltered(
 	}
 	defer rows.Close()
 
-	var transactions []query.TransactionDTO
+	var entries []query.LedgerEntryDTO
 
 	for rows.Next() {
-		var dto query.TransactionDTO
+		var dto query.LedgerEntryDTO
 		err := rows.Scan(
 			&dto.ID,
 			&dto.UserID,
@@ -146,21 +146,21 @@ func (s *TransactionQueryService) FindFiltered(
 		if err != nil {
 			return nil, err
 		}
-		transactions = append(transactions, dto)
+		entries = append(entries, dto)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return transactions, nil
+	return entries, nil
 }
 
-func (s *TransactionQueryService) FindFilteredWithCount(
+func (s *LedgerQueryService) FindFilteredWithCount(
 	ctx context.Context,
 	uid string,
-	filters *query.TransactionFilters,
+	filters *query.LedgerFilters,
 	limit, offset uint,
-) (*query.TransactionsWithTotalCount, error) {
+) (*query.EntriesWithTotalCount, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
@@ -176,7 +176,7 @@ func (s *TransactionQueryService) FindFilteredWithCount(
 			t.date,
 			t.created_at,
 			COUNT(*) OVER() AS total_count
-		 FROM transactions t
+		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
 		 LEFT JOIN accounts ta
@@ -212,11 +212,11 @@ func (s *TransactionQueryService) FindFilteredWithCount(
 	}
 	defer rows.Close()
 
-	var transactions []query.TransactionDTO
+	var entries []query.LedgerEntryDTO
 	var totalCount int
 
 	for rows.Next() {
-		var dto query.TransactionDTO
+		var dto query.LedgerEntryDTO
 		var count int
 		err := rows.Scan(
 			&dto.ID,
@@ -236,27 +236,27 @@ func (s *TransactionQueryService) FindFilteredWithCount(
 			return nil, err
 		}
 		totalCount = count
-		transactions = append(transactions, dto)
+		entries = append(entries, dto)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return &query.TransactionsWithTotalCount{
-		Data:  transactions,
+	return &query.EntriesWithTotalCount{
+		Data:  entries,
 		Total: totalCount,
 	}, nil
 }
 
-func (s *TransactionQueryService) CountFilteredResults(
+func (s *LedgerQueryService) CountFilteredResults(
 	ctx context.Context,
 	uid string,
-	filters *query.TransactionFilters,
+	filters *query.LedgerFilters,
 ) (int, error) {
 	row := s.db.QueryRowContext(
 		ctx,
 		`SELECT COUNT(*)
-		 FROM transactions
+		 FROM ledger
 		 WHERE user_id = $1
 	     AND ($2::TEXT[] IS NULL OR type = ANY($2))
 	     AND ($3::UUID[] IS NULL OR from_account_id = ANY($3) OR to_account_id = ANY($3))
@@ -280,7 +280,7 @@ func (s *TransactionQueryService) CountFilteredResults(
 	return count, nil
 }
 
-func (s *TransactionQueryService) GetExpensesByCategoryBetweenDates(
+func (s *LedgerQueryService) GetExpensesByCategoryBetweenDates(
 	ctx context.Context,
 	uid string,
 	minDate, maxDate time.Time,
@@ -291,7 +291,7 @@ func (s *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 			COALESCE(expense_category_id, $1) AS expense_category_id,
 			COALESCE(SUM(amount), 0) AS total
 		 FROM
-  			transactions
+  			ledger
 		 WHERE
   			type = 'expense'
   			AND date >= $2
@@ -336,9 +336,9 @@ func (s *TransactionQueryService) GetExpensesByCategoryBetweenDates(
 	}, nil
 }
 
-func (s *TransactionQueryService) GetRecentTransactions(
+func (s *LedgerQueryService) GetRecentEntries(
 	ctx context.Context, uid string, limit uint,
-) ([]query.TransactionDTO, error) {
+) ([]query.LedgerEntryDTO, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
 		`SELECT
@@ -353,7 +353,7 @@ func (s *TransactionQueryService) GetRecentTransactions(
 			t.description,
 			t.date,
 			t.created_at
-		 FROM transactions t
+		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
 		 LEFT JOIN accounts ta
@@ -373,10 +373,10 @@ func (s *TransactionQueryService) GetRecentTransactions(
 	}
 	defer rows.Close()
 
-	var transactions []query.TransactionDTO
+	var entries []query.LedgerEntryDTO
 
 	for rows.Next() {
-		var dto query.TransactionDTO
+		var dto query.LedgerEntryDTO
 		err := rows.Scan(
 			&dto.ID,
 			&dto.UserID,
@@ -393,16 +393,16 @@ func (s *TransactionQueryService) GetRecentTransactions(
 		if err != nil {
 			return nil, err
 		}
-		transactions = append(transactions, dto)
+		entries = append(entries, dto)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return transactions, nil
+	return entries, nil
 }
 
-func (s *TransactionQueryService) GetMinMaxAmountAndDate(
+func (s *LedgerQueryService) GetMinMaxAmountAndDate(
 	ctx context.Context,
 	uid string,
 ) (minAmount, maxAmount int, minDate, maxDate time.Time, err error) {
@@ -413,7 +413,7 @@ func (s *TransactionQueryService) GetMinMaxAmountAndDate(
 		MAX(amount) AS max_amount,
 		MIN(date) AS min_date,
 		MAX(date) AS max_date
-		FROM transactions
+		FROM ledger
 		WHERE user_id = $1`,
 		uid,
 	)

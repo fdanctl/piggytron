@@ -8,30 +8,30 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/domain/transaction"
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
 )
 
-type TransactionRepository struct {
+type LedgerRepository struct {
 	db DBTX
 }
 
-func NewTransactionRepository(db DBTX) *TransactionRepository {
-	return &TransactionRepository{
+func NewLedgerRepository(db DBTX) *LedgerRepository {
+	return &LedgerRepository{
 		db: db,
 	}
 }
 
-type TransactionDto struct {
-	id     transaction.ID
-	userID transaction.ID
+type LedgerEntryDto struct {
+	id     ledger.ID
+	userID ledger.ID
 
-	ttype transaction.Type
+	ttype ledger.Type
 
-	fromAccountID *transaction.ID
-	toAccountID   *transaction.ID
+	fromAccountID *ledger.ID
+	toAccountID   *ledger.ID
 
-	incomeCategoryID  *transaction.ID
-	expenseCategoryID *transaction.ID
+	incomeCategoryID  *ledger.ID
+	expenseCategoryID *ledger.ID
 
 	amount      int
 	description string
@@ -39,10 +39,10 @@ type TransactionDto struct {
 	createdAt   time.Time
 }
 
-func (r *TransactionRepository) Create(ctx context.Context, t *transaction.Transaction) error {
+func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO transactions (
+		`INSERT INTO ledger (
 		    id,
 		    user_id,
 		    type,
@@ -75,9 +75,9 @@ func (r *TransactionRepository) Create(ctx context.Context, t *transaction.Trans
 	return nil
 }
 
-func (r *TransactionRepository) UpdateMany(
+func (r *LedgerRepository) UpdateMany(
 	ctx context.Context,
-	tt []*transaction.Transaction,
+	tt []*ledger.Entry,
 ) error {
 	if len(tt) == 0 {
 		return nil
@@ -135,7 +135,7 @@ func (r *TransactionRepository) UpdateMany(
 	}
 
 	query := fmt.Sprintf(`
-		UPDATE transactions AS t
+		UPDATE ledger AS t
 		SET
 			type = v.type,
 			from_account_id = v.from_account_id,
@@ -168,10 +168,10 @@ func (r *TransactionRepository) UpdateMany(
 	return err
 }
 
-func (r *TransactionRepository) Delete(ctx context.Context, id transaction.ID) error {
+func (r *LedgerRepository) Delete(ctx context.Context, id ledger.ID) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`DELETE FROM transactions WHERE id = $1`,
+		`DELETE FROM ledger WHERE id = $1`,
 		id,
 	)
 	if err != nil {
@@ -181,19 +181,19 @@ func (r *TransactionRepository) Delete(ctx context.Context, id transaction.ID) e
 	return nil
 }
 
-func (r *TransactionRepository) FindByID(
+func (r *LedgerRepository) FindByID(
 	ctx context.Context,
-	id transaction.ID,
-) (*transaction.Transaction, error) {
+	id ledger.ID,
+) (*ledger.Entry, error) {
 	row := r.db.QueryRowContext(
 		ctx,
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
-		 FROM transactions
+		 FROM ledger
 		 WHERE id = $1`,
 		id,
 	)
 
-	var dto TransactionDto
+	var dto LedgerEntryDto
 	err := row.Scan(
 		&dto.id,
 		&dto.userID,
@@ -209,12 +209,12 @@ func (r *TransactionRepository) FindByID(
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, transaction.ErrNotFound
+			return nil, ledger.ErrNotFound
 		}
 		return nil, err
 	}
 
-	transaction := transaction.Rehydrate(
+	transaction := ledger.Rehydrate(
 		dto.id,
 		dto.userID,
 		dto.ttype,
@@ -230,14 +230,14 @@ func (r *TransactionRepository) FindByID(
 	return transaction, nil
 }
 
-func (r *TransactionRepository) FindAllByUser(
+func (r *LedgerRepository) FindAllByUser(
 	ctx context.Context,
-	uid transaction.ID,
-) ([]*transaction.Transaction, error) {
+	uid ledger.ID,
+) ([]*ledger.Entry, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
-		 FROM transactions
+		 FROM ledger
 		 WHERE user_id = $1
 		 ORDER BY date DESC, created_at DESC`,
 		uid,
@@ -247,10 +247,10 @@ func (r *TransactionRepository) FindAllByUser(
 	}
 	defer rows.Close()
 
-	var transactions []*transaction.Transaction
+	var entries []*ledger.Entry
 
 	for rows.Next() {
-		var dto TransactionDto
+		var dto LedgerEntryDto
 		err := rows.Scan(
 			&dto.id,
 			&dto.userID,
@@ -267,7 +267,7 @@ func (r *TransactionRepository) FindAllByUser(
 		if err != nil {
 			return nil, err
 		}
-		transaction := transaction.Rehydrate(
+		transaction := ledger.Rehydrate(
 			dto.id,
 			dto.userID,
 			dto.ttype,
@@ -280,23 +280,23 @@ func (r *TransactionRepository) FindAllByUser(
 			dto.date,
 			dto.createdAt,
 		)
-		transactions = append(transactions, transaction)
+		entries = append(entries, transaction)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return transactions, nil
+	return entries, nil
 }
 
-func (r *TransactionRepository) FindAllByAccount(
+func (r *LedgerRepository) FindAllByAccount(
 	ctx context.Context,
-	aid transaction.ID,
-) ([]*transaction.Transaction, error) {
+	aid ledger.ID,
+) ([]*ledger.Entry, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
-		 FROM transactions
+		 FROM ledger
 		 WHERE from_account_id = $1 OR to_account_id = $1
 		 ORDER BY date DESC, created_at DESC`,
 		aid,
@@ -306,10 +306,10 @@ func (r *TransactionRepository) FindAllByAccount(
 	}
 	defer rows.Close()
 
-	var transactions []*transaction.Transaction
+	var entries []*ledger.Entry
 
 	for rows.Next() {
-		var dto TransactionDto
+		var dto LedgerEntryDto
 		err := rows.Scan(
 			&dto.id,
 			&dto.userID,
@@ -326,7 +326,7 @@ func (r *TransactionRepository) FindAllByAccount(
 		if err != nil {
 			return nil, err
 		}
-		transaction := transaction.Rehydrate(
+		transaction := ledger.Rehydrate(
 			dto.id,
 			dto.userID,
 			dto.ttype,
@@ -339,23 +339,23 @@ func (r *TransactionRepository) FindAllByAccount(
 			dto.date,
 			dto.createdAt,
 		)
-		transactions = append(transactions, transaction)
+		entries = append(entries, transaction)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return transactions, nil
+	return entries, nil
 }
 
-func (r *TransactionRepository) FindAllByCategory(
+func (r *LedgerRepository) FindAllByCategory(
 	ctx context.Context,
-	cid transaction.ID,
-) ([]*transaction.Transaction, error) {
+	cid ledger.ID,
+) ([]*ledger.Entry, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
-		 FROM transactions
+		 FROM ledger
 		 WHERE income_category_id = $1 OR expense_category_id = $1
 		 ORDER BY date DESC, created_at DESC`,
 		cid,
@@ -365,10 +365,10 @@ func (r *TransactionRepository) FindAllByCategory(
 	}
 	defer rows.Close()
 
-	var transactions []*transaction.Transaction
+	var entries []*ledger.Entry
 
 	for rows.Next() {
-		var dto TransactionDto
+		var dto LedgerEntryDto
 		err := rows.Scan(
 			&dto.id,
 			&dto.userID,
@@ -385,7 +385,7 @@ func (r *TransactionRepository) FindAllByCategory(
 		if err != nil {
 			return nil, err
 		}
-		transaction := transaction.Rehydrate(
+		transaction := ledger.Rehydrate(
 			dto.id,
 			dto.userID,
 			dto.ttype,
@@ -398,11 +398,11 @@ func (r *TransactionRepository) FindAllByCategory(
 			dto.date,
 			dto.createdAt,
 		)
-		transactions = append(transactions, transaction)
+		entries = append(entries, transaction)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return transactions, nil
+	return entries, nil
 }

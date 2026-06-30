@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type TransactionDTO struct {
+type LedgerEntryDTO struct {
 	ID     string
 	UserID string
 
@@ -23,8 +23,8 @@ type TransactionDTO struct {
 	CreatedAt   time.Time
 }
 
-type TransactionsWithTotalCount struct {
-	Data  []TransactionDTO
+type EntriesWithTotalCount struct {
+	Data  []LedgerEntryDTO
 	Total int
 }
 
@@ -38,29 +38,29 @@ type CategoryExpenseWithTotal struct {
 	Total int
 }
 
-type TransactionQueryService interface {
-	FindByID(ctx context.Context, id string) (*TransactionDTO, error)
+type LedgerQueryService interface {
+	FindByID(ctx context.Context, id string) (*LedgerEntryDTO, error)
 	FindFiltered(
 		ctx context.Context,
 		uid string,
-		filters *TransactionFilters,
+		filters *LedgerFilters,
 		limit, offset uint,
-	) ([]TransactionDTO, error)
+	) ([]LedgerEntryDTO, error)
 	FindFilteredWithCount(
 		ctx context.Context,
 		uid string,
-		filters *TransactionFilters,
+		filters *LedgerFilters,
 		limit, offset uint,
-	) (*TransactionsWithTotalCount, error)
+	) (*EntriesWithTotalCount, error)
 	CountFilteredResults(
-		ctx context.Context, uid string, filters *TransactionFilters,
+		ctx context.Context, uid string, filters *LedgerFilters,
 	) (int, error)
 	GetExpensesByCategoryBetweenDates(
 		ctx context.Context, uid string, minDate time.Time, maxDate time.Time,
 	) (*CategoryExpenseWithTotal, error)
-	GetRecentTransactions(
+	GetRecentEntries(
 		ctx context.Context, uid string, limit uint,
-	) ([]TransactionDTO, error)
+	) ([]LedgerEntryDTO, error)
 	// GetMinMaxAmountAndDate return minAmount, maxAmount, minDate, maxDate, error
 	GetMinMaxAmountAndDate(ctx context.Context, uid string) (int, int, time.Time, time.Time, error)
 }
