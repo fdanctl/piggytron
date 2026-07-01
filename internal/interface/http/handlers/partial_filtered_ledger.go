@@ -106,33 +106,16 @@ func (h *FilteredLedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 		transactions.Data = transactions.Data[0 : len(transactions.Data)-1]
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		for i, v := range transactions.Data {
-			t := views.NewTransaction(v)
-			var c templ.Component
-			if i == len(transactions.Data)-1 && hasMore {
-				c = partials.TransactionItem(t, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*30),
-					"hx-get": fmt.Sprintf(
-						"/partials/ledger?%s",
-						strings.Join(queries, "&"),
-					),
-					"hx-trigger":   "intersect once",
-					"hx-swap":      "afterend",
-					"hx-indicator": "#infinite-indicator",
-				})
-			} else {
-				c = partials.TransactionItem(t, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*30),
-				})
-			}
-			err := c.Render(ctx, w)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	var tviews []views.Transaction
+	for _, v := range transactions.Data {
+		tviews = append(tviews, views.NewTransaction(v))
+	}
+
+	content := partials.TransactionsListItems(
+		tviews,
+		strings.Join(queries, "&"),
+		hasMore,
+	)
 
 	obb := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		_, err := io.WriteString(w, "<p id=\"filter-result-count\" hx-swap-oob=\"innerHTML\">")

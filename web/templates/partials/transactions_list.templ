@@ -13,28 +13,30 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 		id="itransactions"
 		class="space-y-sm"
 	>
-		if len(transactions) == 0 {
-			<p class="text-xs mt-sm">no transactions yet</p>
-		}
-		for i, t := range transactions {
-			if i == len(transactions) - 1 && hasMore {
-				@TransactionItem(t, templ.Attributes{
-					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
-					"hx-get":       fmt.Sprintf("/partials/ledger?%s", queryStr),
-					"hx-trigger":   "intersect once",
-					"hx-swap":      "afterend",
-					"hx-indicator": "#infinite-indicator",
-				})
-			} else {
-				@TransactionItem(t, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*30),
-				})
-			}
-		}
+		@TransactionsListItems(transactions, queryStr, hasMore)
 	</ul>
 	<div id="infinite-indicator" class="indicator">
 		@components.Loader("", nil)
 	</div>
+}
+
+templ TransactionsListItems(transactions []views.Transaction, queryStr string, hasMore bool) {
+	if len(transactions) == 0 {
+		<p class="text-xs mt-sm">no transactions found</p>
+	}
+	for i, t := range transactions {
+		@TransactionItem(t, templ.Attributes{
+			"style": fmt.Sprintf("animation-delay: %dms", i*30),
+		})
+	}
+	if hasMore {
+		<li
+			hx-get={ fmt.Sprintf("/partials/ledger?%s", queryStr) }
+			hx-trigger="intersect once"
+			hx-swap="outerHTML"
+			hx-indicator="#infinite-indicator"
+		></li>
+	}
 }
 
 templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
@@ -110,4 +112,23 @@ templ ContributionItem(t views.Transaction, attrs templ.Attributes) {
 			</p>
 		</div>
 	</li>
+}
+
+templ ContributionsListItems(transactions []views.Transaction, queryStr string, hasMore bool) {
+	if len(transactions) == 0 {
+		<p class="text-xs mt-sm">no transactions yet</p>
+	}
+	for i, t := range transactions {
+		@ContributionItem(t, templ.Attributes{
+			"style": fmt.Sprintf("animation-delay: %dms", i*30),
+		})
+	}
+	if hasMore {
+		<li
+			hx-get={ fmt.Sprintf("/partials/contributions?%s", queryStr) }
+			hx-trigger="intersect once"
+			hx-swap="outerHTML"
+			hx-indicator="#infinite-indicator"
+		></li>
+	}
 }

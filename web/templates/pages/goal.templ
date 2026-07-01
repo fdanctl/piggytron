@@ -150,24 +150,7 @@ templ contributionsList(transactions []views.Transaction, queryStr string, hasMo
 		hx-indicator="#infinite-indicator"
 		hx-disinherit="hx-indicator"
 	>
-		if len(transactions) == 0 {
-			<p class="text-xs mt-sm">no transactions yet</p>
-		}
-		for i, t := range transactions {
-			if i == len(transactions) - 1 && hasMore {
-				@partials.ContributionItem(t, templ.Attributes{
-					"style":        fmt.Sprintf("animation-delay: %dms", i*30),
-					"hx-get":       fmt.Sprintf("/partials/contributions?%s", queryStr),
-					"hx-trigger":   "intersect once",
-					"hx-swap":      "afterend",
-					"hx-indicator": "#infinite-indicator",
-				})
-			} else {
-				@partials.ContributionItem(t, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*30),
-				})
-			}
-		}
+		@partials.ContributionsListItems(transactions, queryStr, hasMore)
 	</ul>
 	<div id="infinite-indicator" class="indicator">
 		@components.Loader("", nil)

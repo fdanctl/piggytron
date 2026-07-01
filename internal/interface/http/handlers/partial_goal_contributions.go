@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -96,33 +93,16 @@ func (h *GoalContributionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		transactions = transactions[0 : len(transactions)-1]
 	}
 
-	content := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		for i, v := range transactions {
-			t := views.NewAccountTransaction(v, name)
-			var c templ.Component
-			if i == len(transactions)-1 && hasMore {
-				c = partials.ContributionItem(t, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*30),
-					"hx-get": fmt.Sprintf(
-						"/partials/contributions?%s",
-						strings.Join(queries, "&"),
-					),
-					"hx-trigger":   "intersect once",
-					"hx-swap":      "afterend",
-					"hx-indicator": "#infinite-indicator",
-				})
-			} else {
-				c = partials.ContributionItem(t, templ.Attributes{
-					"style": fmt.Sprintf("animation-delay: %dms", i*30),
-				})
-			}
-			err := c.Render(ctx, w)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	var tviews []views.Transaction
+	for _, v := range transactions {
+		tviews = append(tviews, views.NewTransaction(v))
+	}
+
+	content := partials.ContributionsListItems(
+		tviews,
+		strings.Join(queries, "&"),
+		hasMore,
+	)
 
 	content.Render(r.Context(), w)
 }

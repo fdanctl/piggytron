@@ -262,14 +262,17 @@ func (s *LedgerQueryService) CountFilteredResults(
 	     AND ($3::UUID[] IS NULL OR from_account_id = ANY($3) OR to_account_id = ANY($3))
 	     AND ($4::UUID[] IS NULL OR income_category_id = ANY($4) OR expense_category_id = ANY($4))
 	     AND ($5::BIGINT IS NULL OR amount >= $5)
-	     AND ($6::BIGINT IS NULL OR amount <= $6)`,
-		// TODO add min max date
+	     AND ($6::BIGINT IS NULL OR amount <= $6)
+	     AND ($7::TIMESTAMP IS NULL OR date >= $7)
+	     AND ($8::TIMESTAMP IS NULL OR date < $8)`,
 		uid,
 		filters.Types,
 		filters.AccountIDs,
 		filters.CategoryIDs,
 		filters.MinAmount,
 		filters.MaxAmount,
+		filters.MinDate,
+		filters.MaxDate,
 	)
 	var count int
 	err := row.Scan(&count)
