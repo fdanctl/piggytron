@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY,
   name VARCHAR(50) NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP NOT NULL
 );
 
-CREATE TABLE income_categories (
+CREATE TABLE IF NOT EXISTS income_categories (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
@@ -19,7 +19,7 @@ CREATE TABLE income_categories (
   UNIQUE (user_id, name)
 );
 
-CREATE TABLE expense_categories (
+CREATE TABLE IF NOT EXISTS expense_categories (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
@@ -33,7 +33,7 @@ CREATE TABLE expense_categories (
   UNIQUE (user_id, name)
 );
 
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS accounts (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
@@ -70,10 +70,10 @@ CREATE TABLE accounts (
       AND category_id IS NOT NULL
     )
   ),
-  UNIQUE (name, type, user_id)
+  UNIQUE (user_id, type, name)
 );
 
-CREATE TABLE ledger (
+CREATE TABLE IF NOT EXISTS ledger (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
@@ -128,7 +128,7 @@ CREATE TABLE ledger (
 );
 
 -- one per category and month
-CREATE TABLE monthly_budgets (
+CREATE TABLE IF NOT EXISTS monthly_budgets (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   category_id UUID NOT NULL REFERENCES expense_categories (id),

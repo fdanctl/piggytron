@@ -168,10 +168,10 @@ func (r *AccountRepository) FindBankByNameAndUser(
 		ctx,
 		`SELECT id, user_id, name, is_saving, currency, created_at, updated_at
 		 FROM accounts
-		 WHERE user_id = $1 AND name = $2 and type = $3`,
+		 WHERE user_id = $1 AND type = $2 AND name = $3 `,
 		uid,
-		name,
 		account.BankType,
+		name,
 	)
 
 	var b AccountDto
@@ -217,10 +217,10 @@ func (r *AccountRepository) FindGoalByNameAndUser(
 		ctx,
 		`SELECT id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at
 		 FROM accounts
-		 WHERE user_id = $1 AND name = $2 and type = $3`,
+		 WHERE user_id = $1 AND type = $2 AND name = $3`,
 		uid,
-		name,
 		account.GoalType,
+		name,
 	)
 
 	var b AccountDto
@@ -380,7 +380,7 @@ func (r *AccountRepository) FindAllGoalsByUser(
 		ctx,
 		`SELECT id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at
 		 FROM accounts
-		 WHERE user_id = $1 and type = 'goal'`,
+		 WHERE user_id = $1 AND type = 'goal'`,
 		uid,
 	)
 	if err != nil {
