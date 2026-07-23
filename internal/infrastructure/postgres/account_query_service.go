@@ -154,20 +154,12 @@ func (s *AccountQueryService) FindWithSum(
 			COALESCE(c.type,'income'),
 			a.created_at, 
 			a.updated_at, 
-			COALESCE(
-				SUM(
-					CASE
-					  WHEN t.from_account_id = a.id THEN t.amount * -1
-					  ELSE t.amount
-					END
-				),
-				0
-			) AS sum
+			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum
 		 FROM accounts a
 		 LEFT JOIN expense_categories c
 			ON a.category_id = c.id
-		 LEFT JOIN ledger t 
-			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 LEFT JOIN monthly_summary ms
+			ON a.id = ms.account_id
 		 WHERE
 			a.id = $2
 		 GROUP BY
@@ -221,20 +213,12 @@ func (s *AccountQueryService) FindAllWithSum(
 			COALESCE(c.type,'income'),
 			a.created_at, 
 			a.updated_at, 
-			COALESCE(
-				SUM(
-					CASE
-					  WHEN t.from_account_id = a.id THEN t.amount * -1
-					  ELSE t.amount
-					END
-				),
-				0
-			) AS sum
+			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum
 		 FROM accounts a
 		 LEFT JOIN expense_categories c
 			ON a.category_id = c.id
-		 LEFT JOIN ledger t 
-			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 LEFT JOIN monthly_summary ms
+			ON a.id = ms.account_id
 		 WHERE
 			a.user_id = $2
 		 GROUP BY
@@ -298,20 +282,12 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			COALESCE(c.type,'income'),
 			a.created_at, 
 			a.updated_at, 
-			COALESCE(
-				SUM(
-					CASE
-					  WHEN t.from_account_id = a.id THEN t.amount * -1
-					  ELSE t.amount
-					END
-				),
-				0
-			) AS sum
+			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum
 		 FROM accounts a
 		 LEFT JOIN expense_categories c
 			ON a.category_id = c.id
-		 LEFT JOIN ledger t 
-			ON a.id = t.to_account_id OR a.id = t.from_account_id
+		 LEFT JOIN monthly_summary ms
+			ON a.id = ms.account_id
 		 WHERE
 			a.user_id = $1 AND a.type = 'goal'
 		 GROUP BY

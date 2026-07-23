@@ -9,6 +9,7 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
+	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/fdanctl/piggytron/internal/util"
@@ -87,21 +88,22 @@ func (s *Service) CreateIncome(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
 
 	acc, err := qtx.FindWithSum(ctx, dstAccID)
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
-			"Source account not found",
+			"Destination account not found",
 			fmt.Errorf("failed to find account '%s': %w", dstAccID, err),
-			"appledger.CreateExpense",
+			"appledger.CreateIncome",
 		)
 		return nil, err
 	}
 
 	var accCID *account.ID
 	if acc.Category.ID != util.ZeroUUID {
-		temp := account.ID(acc.ID)
+		temp := account.ID(acc.Category.ID)
 		accCID = &temp
 	}
 
@@ -158,10 +160,36 @@ func (s *Service) CreateIncome(
 		return nil, err
 	}
 
+	// monthly summary
+	ms, err := monthlysummary.New(
+		monthlysummary.ID(acc.ID),
+		monthlysummary.NewMonth(date),
+		amount,
+		0,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create summary",
+			fmt.Errorf("failed to create summary: %w", err),
+			"appledger.CreateIncome",
+		)
+		return nil, err
+	}
+
+	err = mstx.Save(ctx, ms)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving summary: %w", err),
+			"appledger.CreateIncome",
+		)
+		return nil, err
+	}
+
 	if err = tx.Commit(); err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed to commit': %w", err),
-			"appaccount.CreateIncome",
+			fmt.Errorf("failed to commit: %w", err),
+			"appledger.CreateIncome",
 		)
 		return nil, err
 	}
@@ -233,6 +261,7 @@ func (s *Service) CreateExpense(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
 
 	acc, err := qtx.FindWithSum(ctx, srcAccID)
 	if err != nil {
@@ -247,7 +276,7 @@ func (s *Service) CreateExpense(
 
 	var accCID *account.ID
 	if acc.Category.ID != util.ZeroUUID {
-		temp := account.ID(acc.ID)
+		temp := account.ID(acc.Category.ID)
 		accCID = &temp
 	}
 
@@ -266,11 +295,11 @@ func (s *Service) CreateExpense(
 		acc.UpdatedAt,
 	)
 
-	if err := a.CanReceiveIncome(); err != nil {
+	if err := a.CanMakeExpense(); err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
-			fmt.Sprintf("%s of type %s can't receive income ledger entries", a.Name(), a.Type()),
-			fmt.Errorf("%s of type %s can't receive income: %w", a.Name(), a.Type(), err),
+			fmt.Sprintf("%s of type %s can't make expenses", a.Name(), a.Type()),
+			fmt.Errorf("%s of type %s can't make expenses: %w", a.Name(), a.Type(), err),
 			"appledger.CreateExpense",
 		)
 		return nil, err
@@ -305,10 +334,36 @@ func (s *Service) CreateExpense(
 		return nil, err
 	}
 
+	// monthly summary
+	ms, err := monthlysummary.New(
+		monthlysummary.ID(acc.ID),
+		monthlysummary.NewMonth(date),
+		0,
+		amount,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create summary",
+			fmt.Errorf("failed to create summary: %w", err),
+			"appledger.CreateExpense",
+		)
+		return nil, err
+	}
+
+	err = mstx.Save(ctx, ms)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving summary: %w", err),
+			"appledger.CreateExpense",
+		)
+		return nil, err
+	}
+
 	if err = tx.Commit(); err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed to commit': %w", err),
-			"appaccount.CreateExpense",
+			fmt.Errorf("failed to commit: %w", err),
+			"appledger.CreateExpense",
 		)
 		return nil, err
 	}
@@ -375,8 +430,8 @@ func (s *Service) CreateTransfer(
 		if err != nil {
 			err = errs.NewAppError(
 				errs.KindValidation,
-				fmt.Sprintf("%s is not a valid id", *cid),
-				fmt.Errorf("failed parsing id '%s': %w", *cid, err),
+				fmt.Sprintf("%s is not a valid id", categoryID),
+				fmt.Errorf("failed parsing id '%s': %w", categoryID, err),
 				"appledger.CreateTransfer",
 			)
 			return nil, err
@@ -396,6 +451,7 @@ func (s *Service) CreateTransfer(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
 
 	fromAccount, err := qtx.FindWithSum(ctx, srcAccID)
 	if err != nil {
@@ -482,6 +538,59 @@ func (s *Service) CreateTransfer(
 		return nil, err
 	}
 
+	// monthly summary
+	// fromAcc
+	fms, err := monthlysummary.New(
+		monthlysummary.ID(fromAccID),
+		monthlysummary.NewMonth(date),
+		0,
+		amount,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create summary",
+			fmt.Errorf("failed to create summary: %w", err),
+			"appledger.CreateTransfer",
+		)
+		return nil, err
+	}
+
+	err = mstx.Save(ctx, fms)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving summary: %w", err),
+			"appledger.CreateTransfer",
+		)
+		return nil, err
+	}
+
+	// toAcc
+	tms, err := monthlysummary.New(
+		monthlysummary.ID(toAccID),
+		monthlysummary.NewMonth(date),
+		amount,
+		0,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create summary",
+			fmt.Errorf("failed to create summary: %w", err),
+			"appledger.CreateTransfer",
+		)
+		return nil, err
+	}
+
+	err = mstx.Save(ctx, tms)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving summary: %w", err),
+			"appledger.CreateTransfer",
+		)
+		return nil, err
+	}
+
 	if err = tx.Commit(); err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to commit': %w", err),
@@ -493,7 +602,7 @@ func (s *Service) CreateTransfer(
 	return t, nil
 }
 
-// Update
+// TODO: Update
 
 func (s *Service) Delete(ctx context.Context, id string) error {
 	tid, err := util.ParseID[ledger.ID](id)
@@ -519,6 +628,7 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
 
 	t, err := rtx.FindByID(ctx, tid)
 	if err != nil {
@@ -558,11 +668,65 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
+	// monthly summary — read current, subtract, write back
+	month := monthlysummary.NewMonth(t.Date())
+
+	if t.FromAccountID() != nil {
+		fms, err := mstx.FindByAccountAndMonth(ctx, string(*t.FromAccountID()), month)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed finding summary: %w", err),
+				"appledger.Delete",
+			)
+			return err
+		}
+		if err := fms.SubMoneyOut(t.Amount()); err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed updating summary: %w", err),
+				"appledger.Delete",
+			)
+			return err
+		}
+		if err := mstx.Update(ctx, fms); err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving summary: %w", err),
+				"appledger.Delete",
+			)
+			return err
+		}
+	}
+
+	if t.ToAccountID() != nil {
+		tms, err := mstx.FindByAccountAndMonth(ctx, string(*t.ToAccountID()), month)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed finding summary: %w", err),
+				"appledger.Delete",
+			)
+			return err
+		}
+		if err := tms.SubMoneyIn(t.Amount()); err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed updating summary: %w", err),
+				"appledger.Delete",
+			)
+			return err
+		}
+		if err := mstx.Update(ctx, tms); err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving summary: %w", err),
+				"appledger.Delete",
+			)
+			return err
+		}
+	}
+
 	if err = tx.Commit(); err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed to commit': %w", err),
+			fmt.Errorf("failed to commit: %w", err),
 			"appledger.Delete",
 		)
+		return err
 	}
 	return nil
 }
