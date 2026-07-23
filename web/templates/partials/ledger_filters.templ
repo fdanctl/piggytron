@@ -253,7 +253,7 @@ templ filterList(label, inputName string, q url.Values, options []FilterOption) 
 				</i>
 			</div>
 		</div>
-		<div class="flex gap-xs" style="overflow-x: hidden;">
+		<div class="pill-box">
 			for _, o := range options {
 				@components.CheckBoxPill(
 					o.Label,

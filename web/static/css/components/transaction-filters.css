@@ -46,3 +46,13 @@
 .pill span {
   cursor: default;
 }
+
+.pill-box {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: hidden;
+  max-height: 148px;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
