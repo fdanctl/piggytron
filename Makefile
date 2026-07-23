@@ -120,3 +120,8 @@ clean: confirm clean-dev
 .PHONY: push
 push: confirm audit no-dirty
 	git push
+
+## db/dump-seed: makes new seed data
+.PHONY: db/dump-seed
+db/dump-seed:
+	@docker exec postgres pg_dump -U $(DB_USER) --data-only --inserts $(DB_NAME) > scripts/02-seed.sql
