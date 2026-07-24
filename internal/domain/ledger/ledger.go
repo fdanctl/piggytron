@@ -90,7 +90,7 @@ func NewExpense(
 	amount int,
 	description string,
 	date time.Time,
-	sourceBalance int,
+	minRunningBalance int, // from that date onwards
 ) (*Entry, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
@@ -98,7 +98,7 @@ func NewExpense(
 	if amount <= 0 {
 		return nil, ErrInvalidAmount
 	}
-	if sourceBalance-amount < 0 {
+	if minRunningBalance-amount < 0 {
 		return nil, ErrNegativeBalance
 	}
 
@@ -129,7 +129,7 @@ func NewTransfer(
 	description string,
 	date time.Time,
 
-	sourceBalance int,
+	minRunningBalance int,
 	toAccountCategoryID *ID,
 	toAccountCategoryType string,
 	isToAccSavings bool,
@@ -140,7 +140,7 @@ func NewTransfer(
 	if amount <= 0 {
 		return nil, ErrInvalidAmount
 	}
-	if sourceBalance-amount < 0 {
+	if minRunningBalance-amount < 0 {
 		return nil, ErrNegativeBalance
 	}
 	if fromAccountID == toAccountID {

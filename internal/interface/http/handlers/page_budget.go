@@ -44,7 +44,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO url month query (ex. 202605)
+	// TODO url month query (ex. 2026-05)
 	now := time.Now()
 
 	filters := query.NewLedgerFilters([]string{"income"}, nil, nil, "", "", "", "")

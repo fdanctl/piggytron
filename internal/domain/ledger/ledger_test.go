@@ -84,88 +84,88 @@ func TestNewIncome(t *testing.T) {
 
 func TestNewExpense(t *testing.T) {
 	tests := []struct {
-		name          string
-		id            ID
-		userID        ID
-		fromAccID     ID
-		eCategoryID   ID
-		amount        int
-		description   string
-		date          time.Time
-		sourceBalance int
-		wantErr       error
+		name              string
+		id                ID
+		userID            ID
+		fromAccID         ID
+		eCategoryID       ID
+		amount            int
+		description       string
+		date              time.Time
+		minRunningBalance int
+		wantErr           error
 	}{
 		{
-			name:          "valid expense",
-			id:            ID("420"),
-			userID:        ID("420"),
-			fromAccID:     ID("420"),
-			eCategoryID:   ID("420"),
-			amount:        10000,
-			description:   "a good description",
-			date:          time.Now(),
-			sourceBalance: 20000,
-			wantErr:       nil,
+			name:              "valid expense",
+			id:                ID("420"),
+			userID:            ID("420"),
+			fromAccID:         ID("420"),
+			eCategoryID:       ID("420"),
+			amount:            10000,
+			description:       "a good description",
+			date:              time.Now(),
+			minRunningBalance: 20000,
+			wantErr:           nil,
 		},
 		{
-			name:          "empty description",
-			id:            ID("420"),
-			userID:        ID("420"),
-			fromAccID:     ID("420"),
-			eCategoryID:   ID("420"),
-			amount:        10000,
-			description:   "",
-			date:          time.Now(),
-			sourceBalance: 20000,
-			wantErr:       ErrInvalidDescription,
+			name:              "empty description",
+			id:                ID("420"),
+			userID:            ID("420"),
+			fromAccID:         ID("420"),
+			eCategoryID:       ID("420"),
+			amount:            10000,
+			description:       "",
+			date:              time.Now(),
+			minRunningBalance: 20000,
+			wantErr:           ErrInvalidDescription,
 		},
 		{
-			name:          "zero amount",
-			id:            ID("420"),
-			userID:        ID("420"),
-			fromAccID:     ID("420"),
-			eCategoryID:   ID("420"),
-			amount:        0,
-			description:   "a good description",
-			date:          time.Now(),
-			sourceBalance: 20000,
-			wantErr:       ErrInvalidAmount,
+			name:              "zero amount",
+			id:                ID("420"),
+			userID:            ID("420"),
+			fromAccID:         ID("420"),
+			eCategoryID:       ID("420"),
+			amount:            0,
+			description:       "a good description",
+			date:              time.Now(),
+			minRunningBalance: 20000,
+			wantErr:           ErrInvalidAmount,
 		},
 		{
-			name:          "negative amount",
-			id:            ID("420"),
-			userID:        ID("420"),
-			fromAccID:     ID("420"),
-			eCategoryID:   ID("420"),
-			amount:        -10000,
-			description:   "a good description",
-			date:          time.Now(),
-			sourceBalance: 20000,
-			wantErr:       ErrInvalidAmount,
+			name:              "negative amount",
+			id:                ID("420"),
+			userID:            ID("420"),
+			fromAccID:         ID("420"),
+			eCategoryID:       ID("420"),
+			amount:            -10000,
+			description:       "a good description",
+			date:              time.Now(),
+			minRunningBalance: 20000,
+			wantErr:           ErrInvalidAmount,
 		},
 		{
-			name:          "zero balance",
-			id:            ID("420"),
-			userID:        ID("420"),
-			fromAccID:     ID("420"),
-			eCategoryID:   ID("420"),
-			amount:        10000,
-			description:   "a good description",
-			date:          time.Now(),
-			sourceBalance: 10000,
-			wantErr:       nil,
+			name:              "zero balance",
+			id:                ID("420"),
+			userID:            ID("420"),
+			fromAccID:         ID("420"),
+			eCategoryID:       ID("420"),
+			amount:            10000,
+			description:       "a good description",
+			date:              time.Now(),
+			minRunningBalance: 10000,
+			wantErr:           nil,
 		},
 		{
-			name:          "negative balance",
-			id:            ID("420"),
-			userID:        ID("420"),
-			fromAccID:     ID("420"),
-			eCategoryID:   ID("420"),
-			amount:        20000,
-			description:   "a good description",
-			date:          time.Now(),
-			sourceBalance: 10000,
-			wantErr:       ErrNegativeBalance,
+			name:              "negative balance",
+			id:                ID("420"),
+			userID:            ID("420"),
+			fromAccID:         ID("420"),
+			eCategoryID:       ID("420"),
+			amount:            20000,
+			description:       "a good description",
+			date:              time.Now(),
+			minRunningBalance: 10000,
+			wantErr:           ErrNegativeBalance,
 		},
 	}
 
@@ -179,7 +179,7 @@ func TestNewExpense(t *testing.T) {
 				tt.amount,
 				tt.description,
 				tt.date,
-				tt.sourceBalance,
+				tt.minRunningBalance,
 			)
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("NewExpense() error = %v, wantErr %v", err, tt.wantErr)

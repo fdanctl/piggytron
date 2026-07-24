@@ -35,6 +35,12 @@ type AccountWithSum struct {
 	Sum int
 }
 
+type AccountWithMinRunningBalance struct {
+	AccountWithCategory
+	MinRunningBalance int
+	MinDate           time.Time
+}
+
 type AccountDailyChange struct {
 	ID     string
 	Name   string
@@ -51,4 +57,16 @@ type AccountQueryService interface {
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
 	GetAccountDailyChange(ctx context.Context, id string) ([]AccountDailyChange, error)
+	GetMinRunningBalance(
+		ctx context.Context,
+		id string,
+		fromDate time.Time,
+		excludeEntryID *string,
+	) (int, time.Time, error)
+	GetAccountWithMinRunningBalance(
+		ctx context.Context,
+		id string,
+		fromDate time.Time,
+		excludeEntryID *string,
+	) (*AccountWithMinRunningBalance, error)
 }

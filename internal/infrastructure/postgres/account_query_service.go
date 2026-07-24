@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
 )
@@ -444,4 +445,251 @@ func (s *AccountQueryService) GetAccountDailyChange(
 		results = append(results, r)
 	}
 	return results, nil
+}
+
+func (s *AccountQueryService) GetMinRunningBalance(
+	ctx context.Context,
+	id string,
+	fromDate time.Time,
+	excludeEntryID *string,
+) (int, time.Time, error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		`
+		WITH
+		  baseline AS (
+		    SELECT
+		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS bal
+		    FROM
+		      monthly_summary ms
+		    WHERE
+		      ms.account_id = $1
+		      AND ms.month < $2
+		  ),
+		  transactions AS (
+		    SELECT
+		      DATE (t.date) as day,
+		      COALESCE(
+		        SUM(
+		          CASE
+		            WHEN t.from_account_id = $1 THEN t.amount * -1
+		            ELSE t.amount
+		          END
+		        ),
+		        0
+		      ) AS net
+		    FROM
+		      ledger t
+		    WHERE
+		      (
+		        t.from_account_id = $1
+		        OR t.to_account_id = $1
+		      )
+		      AND t.date >= $2
+		      AND ($4::UUID IS NULL OR t.id != $4)
+		    GROUP BY
+		      day
+		    ORDER BY
+		      day
+		  ),
+		  running AS (
+		    SELECT
+		      day,
+		      net,
+		      (
+		        SELECT
+		          bal
+		        FROM
+		          baseline
+		      ) + SUM(net) OVER (
+		        ORDER BY
+		          day
+		      ) AS running_balance
+		    FROM
+		      transactions
+		  ),
+          result AS (
+            SELECT
+              running_balance AS min_running_balance,
+              day AS min_date
+            FROM
+              running
+            WHERE
+              running_balance = (
+                SELECT
+                  MIN(running_balance)
+                FROM
+                  running
+                WHERE
+                  day >= $3
+              )
+		      AND day >= $3
+            ORDER BY
+              day
+            LIMIT
+              1
+          )
+		SELECT * FROM result
+		UNION ALL
+		SELECT
+		  (SELECT bal FROM baseline),
+		  $3
+		WHERE NOT EXISTS (SELECT 1 FROM result)`,
+		id,
+		time.Date(fromDate.Year(), fromDate.Month(), 1, 0, 0, 0, 0, fromDate.Location()),
+		fromDate,
+		excludeEntryID,
+	)
+
+	var minBalance int
+	var minDate time.Time
+	err := row.Scan(
+		&minBalance,
+		&minDate,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return -1, time.Now(), account.ErrNotFound
+		}
+		return -1, time.Now(), err
+	}
+	return minBalance, minDate, nil
+}
+
+func (s *AccountQueryService) GetAccountWithMinRunningBalance(
+	ctx context.Context,
+	id string,
+	fromDate time.Time,
+	excludeEntryID *string,
+) (*query.AccountWithMinRunningBalance, error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		`
+		WITH
+		  baseline AS (
+		    SELECT
+		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS bal
+		    FROM
+		      monthly_summary ms
+		    WHERE
+		      ms.account_id = $1
+		      AND ms.month < $2
+		  ),
+		  transactions AS (
+		    SELECT
+		      DATE (t.date) as day,
+		      COALESCE(
+		        SUM(
+		          CASE
+		            WHEN t.from_account_id = $1 THEN t.amount * -1
+		            ELSE t.amount
+		          END
+		        ),
+		        0
+		      ) AS net
+		    FROM
+		      ledger t
+		    WHERE
+		      (
+		        t.from_account_id = $1
+		        OR t.to_account_id = $1
+		      )
+		      AND t.date >= $2
+		      AND ($4::UUID IS NULL OR t.id != $4)
+		    GROUP BY
+		      day
+		    ORDER BY
+		      day
+		  ),
+		  running AS (
+		    SELECT
+		      day,
+		      net,
+		      (
+		        SELECT
+		          bal
+		        FROM
+		          baseline
+		      ) + SUM(net) OVER (
+		        ORDER BY
+		          day
+		      ) AS running_balance
+		    FROM
+		      transactions
+		  ),
+          result AS (
+            SELECT
+              running_balance AS min_running_balance,
+              day AS min_date
+            FROM
+              running
+            WHERE
+              running_balance = (
+                SELECT
+                  MIN(running_balance)
+                FROM
+                  running
+                WHERE
+                  day >= $3
+              )
+		      AND day >= $3
+            ORDER BY
+              day
+            LIMIT
+              1
+          )
+		SELECT
+			a.id,
+			a.user_id,
+			a.type,
+			a.name,
+			a.is_saving,
+			a.currency,
+			a.target_amount,
+			a.start_date,
+			a.target_date,
+			COALESCE(c.id, $1),
+			COALESCE(c.name,''),
+			COALESCE(c.type,'income'),
+			a.created_at,
+			a.updated_at,
+			COALESCE(r.min_running_balance, (SELECT bal FROM baseline)),
+			COALESCE(r.min_date, $3)
+		FROM accounts a
+		LEFT JOIN expense_categories c
+			ON a.category_id = c.id
+		LEFT JOIN result r ON TRUE
+		WHERE
+			a.id = $1`,
+		id,
+		time.Date(fromDate.Year(), fromDate.Month(), 1, 0, 0, 0, 0, fromDate.Location()),
+		fromDate,
+		excludeEntryID,
+	)
+
+	var g query.AccountWithMinRunningBalance
+	var c query.CategoryDTO
+
+	if err := row.Scan(
+		&g.ID,
+		&g.UserID,
+		&g.Type,
+		&g.Name,
+		&g.IsSaving,
+		&g.Currency,
+		&g.TargetAmount,
+		&g.StartDate,
+		&g.TargetDate,
+		&c.ID,
+		&c.Name,
+		&c.Type,
+		&g.CreatedAt,
+		&g.UpdatedAt,
+		&g.MinRunningBalance,
+		&g.MinDate,
+	); err != nil {
+		return nil, err
+	}
+	g.Category = &c
+	return &g, nil
 }

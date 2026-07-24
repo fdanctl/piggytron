@@ -263,7 +263,7 @@ func (s *Service) CreateExpense(
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 
-	acc, err := qtx.FindWithSum(ctx, srcAccID)
+	acc, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, nil)
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
@@ -313,15 +313,28 @@ func (s *Service) CreateExpense(
 		amount,
 		description,
 		date,
-		acc.Sum,
+		acc.MinRunningBalance,
 	)
 	if err != nil {
-		err = errs.NewAppError(
-			errs.KindBusinessRule,
-			"Failed to create expense",
-			fmt.Errorf("failed to create expense: %w", err),
-			"appledger.CreateExpense",
-		)
+		if errors.Is(err, ledger.ErrNegativeBalance) {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				fmt.Sprintf(
+					"%s becomes negative on %s",
+					acc.Name,
+					acc.MinDate.Format("January 2, 2006"),
+				),
+				fmt.Errorf("failed to create expense: %w", err),
+				"appledger.CreateExpense",
+			)
+		} else {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Failed to create expense",
+				fmt.Errorf("failed to create expense: %w", err),
+				"appledger.CreateExpense",
+			)
+		}
 		return nil, err
 	}
 
@@ -453,7 +466,7 @@ func (s *Service) CreateTransfer(
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 
-	fromAccount, err := qtx.FindWithSum(ctx, srcAccID)
+	fromAccount, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, nil)
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
@@ -481,7 +494,7 @@ func (s *Service) CreateTransfer(
 	}
 
 	var toAccountCatType string
-	if toAccount.IsSaving != nil && *toAccount.IsSaving {
+	if toAccount.IsSaving != nil && *toAccount.IsSaving && categoryID != "" {
 		cattx := postgres.NewCategoryQueryService(tx)
 		cat, err := cattx.FindByID(ctx, categoryID)
 		if err != nil {
@@ -500,7 +513,7 @@ func (s *Service) CreateTransfer(
 		amount,
 		description,
 		date,
-		fromAccount.Sum,
+		fromAccount.MinRunningBalance,
 		accCID,
 		toAccountCatType,
 		toAccount.IsSaving != nil && *toAccount.IsSaving,
@@ -508,7 +521,11 @@ func (s *Service) CreateTransfer(
 	if err != nil {
 		msg := "Failed to create transfer"
 		if errors.Is(err, ledger.ErrNegativeBalance) {
-			msg = fmt.Sprintf("%s account becomes negative", fromAccount.Name)
+			msg = fmt.Sprintf(
+				"%s becomes negative on %s",
+				fromAccount.Name,
+				fromAccount.MinDate.Format("January 2, 2006"),
+			)
 		}
 		if errors.Is(err, ledger.ErrGoalCategory) {
 			msg = fmt.Sprintf(
@@ -635,8 +652,14 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
+	// if it's income or a transfer
 	if t.ToAccountID() != nil {
-		toacc, err := qtx.FindWithSum(ctx, string(*t.ToAccountID()))
+		toAcc, err := qtx.GetAccountWithMinRunningBalance(
+			ctx,
+			string(*t.ToAccountID()),
+			t.Date(),
+			nil,
+		)
 		if err != nil {
 			err = errs.NewAppError(
 				errs.KindBusinessRule,
@@ -647,11 +670,15 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 			return err
 		}
 
-		if err = t.CanBeDeleted(&toacc.Sum); err != nil {
+		if err = t.CanBeDeleted(&toAcc.MinRunningBalance); err != nil {
 			if errors.Is(err, ledger.ErrNegativeBalance) {
 				err = errs.NewAppError(
 					errs.KindValidation,
-					fmt.Sprintf("%s account becomes negative", toacc.Name),
+					fmt.Sprintf(
+						"%s becomes negative on %s",
+						toAcc.Name,
+						toAcc.MinDate.Format("January 2, 2006"),
+					),
 					fmt.Errorf("%s account becomes negative: %w", *t.ToAccountID(), err),
 					"appledger.Delete",
 				)
