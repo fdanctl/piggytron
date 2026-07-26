@@ -33,6 +33,7 @@ import {
   colapseSidebar,
   navigate,
   openNavSheet,
+  overlayClose,
 } from "../navigation";
 import { changeTab } from "../tabs";
 
@@ -110,4 +111,6 @@ export const uiActions = {
   "ui.slider.drag-start": startSliderDrag,
 
   "ui.slider.click": sliderClick,
+
+  "ui.overlay.close": overlayClose,
 };

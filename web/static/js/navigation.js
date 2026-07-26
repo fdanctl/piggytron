@@ -36,11 +36,13 @@ const sidebarHidePopover = (ele) => {
 const dialogRoot = document.querySelector("#dialog-root");
 
 export function openNavSheet() {
-  dialogRoot.querySelector("#nav-sheet").showModal();
+  dialogRoot
+    .querySelector("#nav-sheet")
+    .parentElement.classList.remove("hidden");
 }
 
 export const closeLastDialog = () => {
-  const lc = dialogRoot.lastElementChild;
+  const lc = dialogRoot.lastElementChild.firstElementChild;
   closeDialog(lc);
 };
 
@@ -52,15 +54,17 @@ export const closeAllDialog = () => {
 };
 
 export const closeDialog = (ele) => {
+  if (!ele) return;
+  document.body.classList.remove("dialog-open");
   ele.classList.add("closing");
   ele.addEventListener(
     "transitionend",
     () => {
-      ele.close();
+      ele.parentElement.classList.add("hidden");
       ele.classList.remove("closing");
       // if not nav sheet remove from dom
       if (!ele.matches("#nav-sheet")) {
-        ele.remove();
+        ele.parentElement.remove();
       }
     },
     { once: true },
@@ -73,11 +77,14 @@ dialogRoot?.lastChild.addEventListener("toggle", (e) => {
   }
 });
 
-document.addEventListener("click", (e) => {
-  if (e.target === dialogRoot?.lastChild) {
+export function overlayClose({ evt }) {
+  if (
+    (evt.type === "click" || evt.key === "Escape") &&
+    evt.target === dialogRoot?.lastChild
+  ) {
     closeLastDialog();
   }
-});
+}
 
 let startY = 0;
 let currentDialog = null;
@@ -86,7 +93,7 @@ let dragging = false;
 document.addEventListener("touchstart", (e) => {
   const dialog = e.target.closest(".dialog");
 
-  if (dialog !== dialogRoot?.lastElementChild) return;
+  if (dialog?.parentElement !== dialogRoot?.lastElementChild) return;
   if (dialog.scrollTop > 0) return;
 
   currentDialog = dialog;
@@ -124,6 +131,7 @@ document.addEventListener("touchend", (e) => {
   currentDialog.style.transition = "transform 200ms ease";
 
   if (shouldClose) {
+    document.body.classList.remove("dialog-open");
     currentDialog.classList.add("closing");
 
     let toClose = currentDialog;
@@ -132,11 +140,11 @@ document.addEventListener("touchend", (e) => {
       "transitionend",
       () => {
         toClose.style.transform = "translateY(0)";
-        toClose.close();
+        toClose.parentElement.classList.add("hidden");
         toClose.classList.remove("closing");
         // if not nav sheet remove from dom
         if (!toClose.matches("#nav-sheet")) {
-          toClose.remove();
+          toClose.parentElement.remove();
         }
       },
       { once: true },

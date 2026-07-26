@@ -37,7 +37,6 @@
   }
   .toast {
     width: fit-content;
-    max-width: 18rem;
     animation: toast-life-desktop 4s ease-in-out;
   }
 }

@@ -8,7 +8,11 @@ export function confirmModal({
   refuseText = "No",
 } = {}) {
   return new Promise((resolve) => {
-    const modal = document.createElement("dialog");
+    const overlay = document.createElement("div");
+    overlay.classList.add("dialog__overlay");
+    overlay.tabIndex = "-1";
+
+    const modal = document.createElement("div");
     modal.tabIndex = "-1";
     modal.classList.add("dialog", "float");
 
@@ -28,9 +32,10 @@ export function confirmModal({
       </div>
 `;
 
-    document.getElementById("dialog-root").appendChild(modal);
-    modal.showModal();
-    modal.focus();
+    overlay.appendChild(modal);
+    document.getElementById("dialog-root").appendChild(overlay);
+    document.body.classList.add("dialog-open");
+    overlay.focus();
 
     modal.querySelector(".accept").onclick = () => {
       closeDialog(modal);

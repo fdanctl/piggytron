@@ -14,17 +14,26 @@ templ Main() {
 			{ children... }
 		</div>
 	</main>
-	<div id="dialog-root">
-		<dialog
-			id="nav-sheet"
-			class="dialog"
+	<div
+		id="dialog-root"
+		data-action="ui.overlay.close"
+		data-keydown="ui.overlay.close"
+	>
+		<div
+			class="dialog__overlay hidden"
+			tabindex="-1"
 		>
-			<div class="dialog__bar">
-				<div></div>
+			<div
+				id="nav-sheet"
+				class="dialog"
+			>
+				<div class="dialog__bar">
+					<div></div>
+				</div>
+				@components.Nav(templ.Attributes{
+					"hx-swap": "innerHTML show:window:top",
+				})
 			</div>
-			@components.Nav(templ.Attributes{
-				"hx-swap": "innerHTML show:window:top",
-			})
-		</dialog>
+		</div>
 	</div>
 }
