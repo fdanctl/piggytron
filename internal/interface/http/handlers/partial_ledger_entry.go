@@ -269,8 +269,10 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(w, r, err)
 		return
 	}
-	_, err = h.service.UpdateIncome(
+
+	_, err = h.service.Update(
 		r.Context(),
+		ttype,
 		id,
 		sessionInfo.UserID,
 		cents,
@@ -278,6 +280,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		description,
 		d,
 		category,
+		source,
 		destination,
 	)
 	if err != nil {

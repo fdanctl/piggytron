@@ -256,8 +256,6 @@ func (t *Entry) CanBeDeleted(toAccBalance *int) error {
 	return nil
 }
 
-// updates
-
 func (t *Entry) UpdateIncome(
 	toAccountID ID,
 	incomeCategoryID ID,
@@ -292,5 +290,28 @@ func (t *Entry) ChangeExpenseCategory(cid ID) error {
 	}
 
 	t.expenseCategoryID = &cid
+	return nil
+}
+
+func (t *Entry) UpdateExpense(
+	fromAccountID ID,
+	expenseCategoryID ID,
+	amount int,
+	description string,
+	date time.Time,
+) error {
+	if description == "" {
+		return ErrInvalidDescription
+	}
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+
+	t.fromAccountID = &fromAccountID
+	t.expenseCategoryID = &expenseCategoryID
+	t.amount = amount
+	t.description = description
+	t.date = date
+
 	return nil
 }

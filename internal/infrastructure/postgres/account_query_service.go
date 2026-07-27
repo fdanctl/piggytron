@@ -468,26 +468,35 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 		  ),
 		  transactions AS (
 		    SELECT
-		      DATE (t.date) as day,
-		      COALESCE(
-		        SUM(
+		      day,
+		      SUM(net) AS net
+		    FROM
+		      (
+		        SELECT
+		          DATE (t.date) AS day,
 		          CASE
 		            WHEN t.from_account_id = $1 THEN t.amount * -1
 		            ELSE t.amount
-		          END
-		        ),
-		        0
-		      ) AS net
-		    FROM
-		      ledger t
-		    WHERE
-		      (
-		        t.from_account_id = $1
-		        OR t.to_account_id = $1
-		      )
-		      AND t.date >= $2
-		      AND ($4::TIMESTAMP IS NULL OR t.date <= $4)
-		      AND ($5::UUID IS NULL OR t.id != $5)
+		          END AS net
+		        FROM
+		          ledger t
+		        WHERE
+		          (
+		            t.from_account_id = $1
+		            OR t.to_account_id = $1
+		          )
+		          AND t.date >= $2
+		          AND ($4::TIMESTAMP IS NULL OR t.date <= $4)
+		          AND ($5::UUID IS NULL OR t.id != $5)
+		        UNION ALL
+		        -- Guarantee fromDate always has a row so its balance is never
+		        -- excluded from the minimum search.
+		        SELECT
+		          $3::DATE AS day,
+		          0 AS net
+		        WHERE
+		          $4::TIMESTAMP IS NULL OR $3 <= $4
+		      ) combined
 		    GROUP BY
 		      day
 		    ORDER BY

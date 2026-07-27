@@ -1,6 +1,7 @@
 package appledger
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -191,6 +192,373 @@ func (s *Service) CreateExpense(
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to commit: %w", err),
 			"appledger.CreateExpense",
+		)
+		return nil, err
+	}
+
+	return t, nil
+}
+
+func (s *Service) UpdateExpense(
+	ctx context.Context,
+	id string,
+	userID string,
+	amount int,
+	currency string,
+	description string,
+	date time.Time,
+	categoryID string,
+	srcAccID string,
+) (*ledger.Entry, error) {
+	tid, err := util.ParseID[ledger.ID](id)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", id),
+			fmt.Errorf("failed parsing id '%s': %w", id, err),
+			"appledger.UpdateExpense",
+		)
+		return nil, err
+	}
+
+	uid, err := util.ParseID[ledger.ID](userID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appledger.UpdateExpense",
+		)
+		return nil, err
+	}
+
+	cid, err := util.ParseID[ledger.ID](categoryID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", categoryID),
+			fmt.Errorf("failed parsing id '%s': %w", categoryID, err),
+			"appledger.UpdateExpense",
+		)
+		return nil, err
+	}
+
+	fromAccID, err := util.ParseID[ledger.ID](srcAccID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", srcAccID),
+			fmt.Errorf("failed parsing id '%s': %w", srcAccID, err),
+			"appledger.UpdateExpense",
+		)
+		return nil, err
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed creating transaction: %w", err),
+			"appledger.UpdateExpense",
+		)
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	rtx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
+
+	t, err := rtx.FindByID(ctx, tid)
+	if err != nil {
+		if errors.Is(err, ledger.ErrNotFound) {
+			err = errs.NewAppError(
+				errs.KindNotFound,
+				"Failed to find transaction",
+				fmt.Errorf("failed to find transaction '%s': %w", tid, err),
+				"appledger.UpdateExpense",
+			)
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed to find transaction '%s': %w", id, err),
+				"appledger.UpdateExpense",
+			)
+		}
+		return nil, err
+	}
+
+	if t.UserID() != uid || t.Type() != "expense" {
+		return nil, ledger.ErrNotFound
+	}
+
+	accountChanged := t.FromAccountID() == nil || string(*t.FromAccountID()) != string(fromAccID)
+	prevAmount := t.Amount()
+	prevDate := t.Date()
+	prevAccountID := string(*t.FromAccountID())
+
+	// Account changed: NEW account gains expense → verify NEW account stays solvent.
+	if accountChanged {
+		// Verify the NEW account (it gains expense)
+		acc, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, nil, nil)
+		if err != nil {
+			return nil, errs.NewInternalAppError(
+				fmt.Errorf("failed to find account '%s': %w", prevAccountID, err),
+				"appledger.UpdateExpense",
+			)
+		}
+
+		//////
+		// check if new account can make expense
+		var accCID *account.ID
+		if acc.Category.ID != util.ZeroUUID {
+			temp := account.ID(acc.Category.ID)
+			accCID = &temp
+		}
+
+		a := account.Rehydrate(
+			account.ID(acc.ID),
+			account.ID(acc.UserID),
+			account.AccountType(acc.Type),
+			acc.Name,
+			acc.IsSaving,
+			acc.TargetAmount,
+			acc.StartDate,
+			acc.TargetDate,
+			accCID,
+			acc.Currency,
+			acc.CreatedAt,
+			acc.UpdatedAt,
+		)
+
+		if err := a.CanMakeExpense(); err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				fmt.Sprintf("%s of type %s can't make expenses", a.Name(), a.Type()),
+				fmt.Errorf("%s of type %s can't make expenses: %w", a.Name(), a.Type(), err),
+				"appledger.UpdateExpense",
+			)
+			return nil, err
+		}
+		//////
+
+		if acc.MinRunningBalance-amount < 0 {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				fmt.Sprintf(
+					"%s becomes negative on %s",
+					acc.Name,
+					acc.MinDate.Format("January 2, 2006"),
+				),
+				fmt.Errorf("balance check failed: %w", ledger.ErrNegativeBalance),
+				"appledger.UpdateExpense",
+			)
+			return nil, err
+		}
+	} else {
+		// Same account
+		c, err := getCaseFromTable(date.Compare(t.Date()), cmp.Compare(amount, t.Amount()))
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("don't know how could I make this error: %w", err),
+				"appledger.UpdateExpense",
+			)
+			return nil, err
+		}
+		// 1. Lower date && lower amount
+		// 2. Lower date && same amount
+		// 3. Lower date && higher amount
+		// 4. Same date && lower amount
+		// 5. Same date && same amount
+		// 6. Same date && higher amount
+		// 7. Higher date && lower amount
+		// 8. Higher date && same amount
+		// 9. Higher date && higher amount
+		fmt.Printf("=========== case %d ==============", c)
+		switch c {
+		// Same account — only verify if the update is "worse" than before:
+		// not more money and money does not arrives before.
+		case 4, 5, 7, 8:
+			// SAFE
+		case 1, 2, 3:
+			// Check from NEW date until PREV date the balance - NEW amount >= 0
+			until := time.Date(
+				prevDate.Year(),
+				prevDate.Month(),
+				prevDate.Day()-1,
+				0,
+				0,
+				0,
+				0,
+				prevDate.Location(),
+			)
+			acc, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, &until, nil)
+			if err != nil {
+				return nil, errs.NewInternalAppError(
+					fmt.Errorf("failed to find account '%s': %w", prevAccountID, err),
+					"appledger.UpdateExpense",
+				)
+			}
+			if acc.MinRunningBalance-amount < 0 {
+				err = errs.NewAppError(
+					errs.KindBusinessRule,
+					fmt.Sprintf(
+						"%s becomes negative on %s",
+						acc.Name,
+						acc.MinDate.Format("January 2, 2006"),
+					),
+					fmt.Errorf("case %d, balance check failed: %w", c, ledger.ErrNegativeBalance),
+					"appledger.UpdateExpense",
+				)
+				return nil, err
+			}
+			if c == 3 {
+				// Check from PREV date the balance + PREV amount - NEW amount >= 0
+				acc, err := qtx.GetAccountWithMinRunningBalance(
+					ctx,
+					prevAccountID,
+					prevDate,
+					nil,
+					nil,
+				)
+				if err != nil {
+					return nil, errs.NewInternalAppError(
+						fmt.Errorf("failed to find account '%s': %w", prevAccountID, err),
+						"appledger.UpdateExpense",
+					)
+				}
+				if acc.MinRunningBalance+prevAmount-amount < 0 {
+					err = errs.NewAppError(
+						errs.KindBusinessRule,
+						fmt.Sprintf(
+							"%s becomes negative on %s",
+							acc.Name,
+							acc.MinDate.Format("January 2, 2006"),
+						),
+						fmt.Errorf(
+							"case %d, balance check failed: %w",
+							c,
+							ledger.ErrNegativeBalance,
+						),
+						"appledger.UpdateExpense",
+					)
+					return nil, err
+				}
+			}
+
+		case 6, 9:
+			// Check from NEW date the balance + PREV amount - NEW amount >= 0
+			acc, err := qtx.GetAccountWithMinRunningBalance(ctx, prevAccountID, date, nil, nil)
+			if err != nil {
+				return nil, errs.NewInternalAppError(
+					fmt.Errorf("failed to find account '%s': %w", prevAccountID, err),
+					"appledger.UpdateExpense",
+				)
+			}
+			if acc.MinRunningBalance+prevAmount-amount < 0 {
+				err = errs.NewAppError(
+					errs.KindBusinessRule,
+					fmt.Sprintf(
+						"%s becomes negative on %s",
+						acc.Name,
+						acc.MinDate.Format("January 2, 2006"),
+					),
+					fmt.Errorf("case %d, balance check failed: %w", c, ledger.ErrNegativeBalance),
+					"appledger.UpdateExpense",
+				)
+				return nil, err
+			}
+		}
+	}
+
+	if err := t.UpdateExpense(fromAccID, cid, amount, description, date); err != nil {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to update expense",
+			fmt.Errorf("failed to create expense: %w", err),
+			"appledger.UpdateExpense",
+		)
+	}
+
+	if err := rtx.Update(ctx, t); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving transaction: %w", err),
+			"appledger.UpdateExpense",
+		)
+		return nil, err
+	}
+
+	// Monthly summary bookkeeping.
+	newAccountID := string(fromAccID)
+
+	if accountChanged {
+		// Case A: account changed.
+		// PREV account: remove PREV expense from PREV month.
+		if err := s.updateMonthlySummary(
+			ctx,
+			mstx,
+			0,
+			-prevAmount,
+			prevAccountID,
+			monthlysummary.NewMonth(prevDate),
+		); err != nil {
+			return nil, err
+		}
+		// NEW account: add NEW expense at NEW month.
+		if err := s.updateMonthlySummary(
+			ctx,
+			mstx,
+			0,
+			t.Amount(),
+			newAccountID,
+			monthlysummary.NewMonth(t.Date()),
+		); err != nil {
+			return nil, err
+		}
+	} else {
+		// Case B: same account.
+		prevMonth := monthlysummary.NewMonth(prevDate)
+		newMonth := monthlysummary.NewMonth(t.Date())
+
+		if prevMonth.Time().Compare(newMonth.Time()) != 0 {
+			// Different months: remove PREV expense from PREV month, add NEW expense to NEW month.
+			if err := s.updateMonthlySummary(
+				ctx,
+				mstx,
+				0,
+				-prevAmount,
+				newAccountID,
+				prevMonth,
+			); err != nil {
+				return nil, err
+			}
+			if err := s.updateMonthlySummary(
+				ctx,
+				mstx,
+				0,
+				t.Amount(),
+				newAccountID,
+				newMonth,
+			); err != nil {
+				return nil, err
+			}
+		} else {
+			// Same month: net delta = newAmount - prevAmount.
+			if err := s.updateMonthlySummary(
+				ctx,
+				mstx,
+				0,
+				t.Amount()-prevAmount,
+				newAccountID,
+				prevMonth,
+			); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit: %w", err),
+			"appledger.UpdateExpense",
 		)
 		return nil, err
 	}

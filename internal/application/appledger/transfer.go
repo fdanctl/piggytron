@@ -97,13 +97,10 @@ func (s *Service) CreateTransfer(
 
 	fromAccount, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, nil, nil)
 	if err != nil {
-		err = errs.NewAppError(
-			errs.KindBusinessRule,
-			"Source account not found",
+		return nil, errs.NewInternalAppError(
 			fmt.Errorf("failed to find account '%s': %w", srcAccID, err),
 			"appledger.CreateTransfer",
 		)
-		return nil, err
 	}
 	toAccount, err := qtx.FindWithSum(ctx, dstAccID)
 	if err != nil {

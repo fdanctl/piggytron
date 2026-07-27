@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
@@ -22,6 +23,51 @@ var ErrCanChangeType = errors.New("can't change transaction type")
 
 func NewService(r ledger.Repository, db *sql.DB) *Service {
 	return &Service{repo: r, db: db}
+}
+
+func (s *Service) Update(
+	ctx context.Context,
+	ttype string,
+	id string,
+	userID string,
+	amount int,
+	currency string,
+	description string,
+	date time.Time,
+	categoryID string,
+	srcAccID string,
+	dstAccID string,
+) (*ledger.Entry, error) {
+	switch ttype {
+	case "income":
+		return s.UpdateIncome(
+			ctx,
+			id,
+			userID,
+			amount,
+			currency,
+			description,
+			date,
+			categoryID,
+			dstAccID,
+		)
+
+	case "expense":
+		return s.UpdateExpense(
+			ctx,
+			id,
+			userID,
+			amount,
+			currency,
+			description,
+			date,
+			categoryID,
+			srcAccID,
+		)
+
+	case "transfer":
+	}
+	return nil, errors.New("invalid transaction type")
 }
 
 func (s *Service) Delete(ctx context.Context, id string) error {

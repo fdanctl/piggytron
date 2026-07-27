@@ -294,6 +294,44 @@ func (s *Service) UpdateIncome(
 				"appledger.UpdateIncome",
 			)
 		}
+
+		//////
+		// check if new account can receive income
+		var accCID *account.ID
+		if acc.Category.ID != util.ZeroUUID {
+			temp := account.ID(acc.Category.ID)
+			accCID = &temp
+		}
+
+		a := account.Rehydrate(
+			account.ID(acc.ID),
+			account.ID(acc.UserID),
+			account.AccountType(acc.Type),
+			acc.Name,
+			acc.IsSaving,
+			acc.TargetAmount,
+			acc.StartDate,
+			acc.TargetDate,
+			accCID,
+			acc.Currency,
+			acc.CreatedAt,
+			acc.UpdatedAt,
+		)
+		if err := a.CanReceiveIncome(); err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				fmt.Sprintf(
+					"%s of type %s can't receive income ledger entries",
+					a.Name(),
+					a.Type(),
+				),
+				fmt.Errorf("%s of type %s can't receive income: %w", a.Name(), a.Type(), err),
+				"appledger.UpdateIncome",
+			)
+			return nil, err
+		}
+		//////
+
 		if acc.MinRunningBalance < 0 {
 			err = errs.NewAppError(
 				errs.KindBusinessRule,
@@ -348,7 +386,7 @@ func (s *Service) UpdateIncome(
 						acc.Name,
 						acc.MinDate.Format("January 2, 2006"),
 					),
-					fmt.Errorf("balance check failed: %w", ledger.ErrNegativeBalance),
+					fmt.Errorf("case %d, balance check failed: %w", c, ledger.ErrNegativeBalance),
 					"appledger.UpdateIncome",
 				)
 				return nil, err
@@ -378,7 +416,7 @@ func (s *Service) UpdateIncome(
 						acc.Name,
 						acc.MinDate.Format("January 2, 2006"),
 					),
-					fmt.Errorf("balance check failed: %w", ledger.ErrNegativeBalance),
+					fmt.Errorf("case %d, balance check failed: %w", c, ledger.ErrNegativeBalance),
 					"appledger.UpdateIncome",
 				)
 				return nil, err
@@ -400,7 +438,11 @@ func (s *Service) UpdateIncome(
 							acc.Name,
 							acc.MinDate.Format("January 2, 2006"),
 						),
-						fmt.Errorf("balance check failed: %w", ledger.ErrNegativeBalance),
+						fmt.Errorf(
+							"case %d, balance check failed: %w",
+							c,
+							ledger.ErrNegativeBalance,
+						),
 						"appledger.UpdateIncome",
 					)
 					return nil, err
@@ -409,9 +451,15 @@ func (s *Service) UpdateIncome(
 		}
 	}
 
-	t.UpdateIncome(toAccID, cid, amount, description, date)
-	err = rtx.Update(ctx, t)
-	if err != nil {
+	if err := t.UpdateIncome(toAccID, cid, amount, description, date); err != nil {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to update income",
+			fmt.Errorf("failed to create expense: %w", err),
+			"appledger.UpdateIncome",
+		)
+	}
+	if err := rtx.Update(ctx, t); err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed saving transaction: %w", err),
 			"appledger.UpdateIncome",
