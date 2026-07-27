@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
 )
@@ -447,119 +446,11 @@ func (s *AccountQueryService) GetAccountDailyChange(
 	return results, nil
 }
 
-func (s *AccountQueryService) GetMinRunningBalance(
-	ctx context.Context,
-	id string,
-	fromDate time.Time,
-	excludeEntryID *string,
-) (int, time.Time, error) {
-	row := s.db.QueryRowContext(
-		ctx,
-		`
-		WITH
-		  baseline AS (
-		    SELECT
-		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS bal
-		    FROM
-		      monthly_summary ms
-		    WHERE
-		      ms.account_id = $1
-		      AND ms.month < $2
-		  ),
-		  transactions AS (
-		    SELECT
-		      DATE (t.date) as day,
-		      COALESCE(
-		        SUM(
-		          CASE
-		            WHEN t.from_account_id = $1 THEN t.amount * -1
-		            ELSE t.amount
-		          END
-		        ),
-		        0
-		      ) AS net
-		    FROM
-		      ledger t
-		    WHERE
-		      (
-		        t.from_account_id = $1
-		        OR t.to_account_id = $1
-		      )
-		      AND t.date >= $2
-		      AND ($4::UUID IS NULL OR t.id != $4)
-		    GROUP BY
-		      day
-		    ORDER BY
-		      day
-		  ),
-		  running AS (
-		    SELECT
-		      day,
-		      net,
-		      (
-		        SELECT
-		          bal
-		        FROM
-		          baseline
-		      ) + SUM(net) OVER (
-		        ORDER BY
-		          day
-		      ) AS running_balance
-		    FROM
-		      transactions
-		  ),
-          result AS (
-            SELECT
-              running_balance AS min_running_balance,
-              day AS min_date
-            FROM
-              running
-            WHERE
-              running_balance = (
-                SELECT
-                  MIN(running_balance)
-                FROM
-                  running
-                WHERE
-                  day >= $3
-              )
-		      AND day >= $3
-            ORDER BY
-              day
-            LIMIT
-              1
-          )
-		SELECT * FROM result
-		UNION ALL
-		SELECT
-		  (SELECT bal FROM baseline),
-		  $3
-		WHERE NOT EXISTS (SELECT 1 FROM result)`,
-		id,
-		time.Date(fromDate.Year(), fromDate.Month(), 1, 0, 0, 0, 0, fromDate.Location()),
-		fromDate,
-		excludeEntryID,
-	)
-
-	var minBalance int
-	var minDate time.Time
-	err := row.Scan(
-		&minBalance,
-		&minDate,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return -1, time.Now(), account.ErrNotFound
-		}
-		return -1, time.Now(), err
-	}
-	return minBalance, minDate, nil
-}
-
 func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 	ctx context.Context,
 	id string,
 	fromDate time.Time,
+	untilDate *time.Time,
 	excludeEntryID *string,
 ) (*query.AccountWithMinRunningBalance, error) {
 	row := s.db.QueryRowContext(
@@ -595,7 +486,8 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 		        OR t.to_account_id = $1
 		      )
 		      AND t.date >= $2
-		      AND ($4::UUID IS NULL OR t.id != $4)
+		      AND ($4::TIMESTAMP IS NULL OR t.date <= $4)
+		      AND ($5::UUID IS NULL OR t.id != $5)
 		    GROUP BY
 		      day
 		    ORDER BY
@@ -664,6 +556,7 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 		id,
 		time.Date(fromDate.Year(), fromDate.Month(), 1, 0, 0, 0, 0, fromDate.Location()),
 		fromDate,
+		untilDate,
 		excludeEntryID,
 	)
 

@@ -93,7 +93,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	switch string(t.Type()) {
 	case "income":
 		v := views.NewIncomeForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO fix
+		v.Amount = strconv.Itoa(t.Amount()) // TODO format money, it's in cents
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())
@@ -103,7 +103,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "expense":
 		v := views.NewExpenseForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO fix
+		v.Amount = strconv.Itoa(t.Amount()) // TODO format money, it's in cents
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.ExpenseCategoryID())
@@ -113,7 +113,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "transfer":
 		v := views.NewTransferForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO fix
+		v.Amount = strconv.Itoa(t.Amount()) // TODO format money, it's in cents
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		if t.ExpenseCategoryID() != nil {
@@ -186,7 +186,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Category:       category,
 			DestinationAcc: destination,
 		}
-		form = partials.IncomeForm(view, icatOpts, noSavingsBanksOpts, "")
+		form = partials.IncomeForm(view, icatOpts, noSavingsBanksOpts, id)
 		msgs := view.Validate()
 		if len(msgs) > 0 {
 			logger.Info("invalid form", "error", msgs)
@@ -204,7 +204,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Category:    category,
 			SourceAcc:   source,
 		}
-		form = partials.ExpenseForm(view, ecatOpts, noSavingsBanksOpts, "")
+		form = partials.ExpenseForm(view, ecatOpts, noSavingsBanksOpts, id)
 		msgs := view.Validate()
 		if len(msgs) > 0 {
 			logger.Info("invalid form", "error", msgs)
@@ -227,7 +227,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			view,
 			ecatOpts,
 			append(noSavingsBanksOpts, goalSavingsOpts...),
-			"",
+			id,
 		)
 		msgs := view.Validate()
 		if len(msgs) > 0 {
@@ -247,7 +247,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			errs.KindBadRequest,
 			fmt.Sprintf("%s is not a valid amount", amount),
 			fmt.Errorf("failed to convert amount '%s' to cents: %w", amount, err),
-			"BudgetHandler.Post",
+			"LedgerEntryHandler.Put",
 		)
 		httperror.SendError(w, r, err)
 		return
@@ -259,13 +259,31 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			errs.KindBadRequest,
 			fmt.Sprintf("%s is not a valid date", date),
 			fmt.Errorf("failed to parse date '%s': %w", date, err),
-			"BudgetHandler.Post",
+			"LedgerEntryHandler.Put",
 		)
 		httperror.SendError(w, r, err)
 		return
 	}
 
-	// Update
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+	_, err = h.service.UpdateIncome(
+		r.Context(),
+		id,
+		sessionInfo.UserID,
+		cents,
+		currency,
+		description,
+		d,
+		category,
+		destination,
+	)
+	if err != nil {
+		httperror.SendFormError(w, r, err, form)
+		return
+	}
 	logger.Debug(id)
 	logger.Debug(strconv.Itoa(cents))
 	logger.Debug(d.Format(time.DateOnly))

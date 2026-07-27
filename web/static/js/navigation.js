@@ -49,7 +49,7 @@ export const closeLastDialog = () => {
 export const closeAllDialog = () => {
   const children = [...dialogRoot.children];
   for (let i = children.length - 1; i >= 0; i--) {
-    closeDialog(children[i]);
+    closeDialog(children[i].firstElementChild);
   }
 };
 

@@ -75,6 +75,34 @@ func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 	return nil
 }
 
+func (r *LedgerRepository) Update(ctx context.Context, t *ledger.Entry) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`UPDATE ledger
+		SET
+		    from_account_id = $2,
+			to_account_id = $3,
+		    income_category_id = $4,
+		    expense_category_id = $5,
+		    amount = $6,
+		    description = $7,
+		    date = $8
+		WHERE id = $1`,
+		t.ID(),
+		t.FromAccountID(),
+		t.ToAccountID(),
+		t.IncomeCategoryID(),
+		t.ExpenseCategoryID(),
+		t.Amount(),
+		t.Description(),
+		t.Date(),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *LedgerRepository) UpdateMany(
 	ctx context.Context,
 	tt []*ledger.Entry,

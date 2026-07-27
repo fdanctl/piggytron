@@ -67,120 +67,155 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestSubMoneyIn(t *testing.T) {
+func TestAddMoneyIn(t *testing.T) {
 	tests := []struct {
-		name    string
-		initial int
-		sub     int
-		want    int
-		wantErr error
+		name       string
+		initialIn  int
+		delta      int
+		wantErr    error
+		wantMoneyIn int
 	}{
 		{
-			name:    "sub positive",
-			initial: 100,
-			sub:     30,
-			want:    70,
-			wantErr: nil,
+			name:        "add positive amount",
+			initialIn:   1000,
+			delta:       500,
+			wantErr:     nil,
+			wantMoneyIn: 1500,
 		},
 		{
-			name:    "sub zero",
-			initial: 100,
-			sub:     0,
-			want:    100,
-			wantErr: nil,
+			name:        "add zero",
+			initialIn:   1000,
+			delta:       0,
+			wantErr:     nil,
+			wantMoneyIn: 1000,
 		},
 		{
-			name:    "sub negative",
-			initial: 100,
-			sub:     -10,
-			want:    100,
-			wantErr: ErrInvalidAmount,
+			name:        "subtract within bounds",
+			initialIn:   1000,
+			delta:       -500,
+			wantErr:     nil,
+			wantMoneyIn: 500,
 		},
 		{
-			name:    "sub more than available",
-			initial: 50,
-			sub:     100,
-			want:    50,
-			wantErr: ErrInvalidAmount,
+			name:        "subtract to zero",
+			initialIn:   1000,
+			delta:       -1000,
+			wantErr:     nil,
+			wantMoneyIn: 0,
 		},
 		{
-			name:    "sub exact amount",
-			initial: 100,
-			sub:     100,
-			want:    0,
-			wantErr: nil,
+			name:        "subtract below zero rejected",
+			initialIn:   1000,
+			delta:       -1001,
+			wantErr:     ErrInvalidAmount,
+			wantMoneyIn: 1000,
+		},
+		{
+			name:        "add to zero",
+			initialIn:   0,
+			delta:       500,
+			wantErr:     nil,
+			wantMoneyIn: 500,
+		},
+		{
+			name:        "subtract from zero rejected",
+			initialIn:   0,
+			delta:       -1,
+			wantErr:     ErrInvalidAmount,
+			wantMoneyIn: 0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s, _ := New("acc1", NewMonth(time.Now()), tt.initial, 0)
-
-			err := s.SubMoneyIn(tt.sub)
-			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("SubMoneyIn() error = %v, wantErr %v", err, tt.wantErr)
+			ms, err := New(ID("acc1"), NewMonth(time.Now()), tt.initialIn, 0)
+			if err != nil {
+				t.Fatalf("New() setup error: %v", err)
 			}
-			if s.MoneyIn() != tt.want {
-				t.Errorf("MoneyIn() = %d, want %d", s.MoneyIn(), tt.want)
+
+			err = ms.AddMoneyIn(tt.delta)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("AddMoneyIn(%d) error = %v, wantErr %v", tt.delta, err, tt.wantErr)
+			}
+			if ms.MoneyIn() != tt.wantMoneyIn {
+				t.Errorf("AddMoneyIn(%d) MoneyIn = %d, want %d", tt.delta, ms.MoneyIn(), tt.wantMoneyIn)
 			}
 		})
 	}
 }
 
-func TestSubMoneyOut(t *testing.T) {
+func TestAddMoneyOut(t *testing.T) {
 	tests := []struct {
-		name    string
-		initial int
-		sub     int
-		want    int
-		wantErr error
+		name        string
+		initialOut  int
+		delta       int
+		wantErr     error
+		wantMoneyOut int
 	}{
 		{
-			name:    "sub positive",
-			initial: 200,
-			sub:     60,
-			want:    140,
-			wantErr: nil,
+			name:         "add positive amount",
+			initialOut:   1000,
+			delta:        500,
+			wantErr:      nil,
+			wantMoneyOut: 1500,
 		},
 		{
-			name:    "sub zero",
-			initial: 200,
-			sub:     0,
-			want:    200,
-			wantErr: nil,
+			name:         "add zero",
+			initialOut:   1000,
+			delta:        0,
+			wantErr:      nil,
+			wantMoneyOut: 1000,
 		},
 		{
-			name:    "sub negative",
-			initial: 200,
-			sub:     -30,
-			want:    200,
-			wantErr: ErrInvalidAmount,
+			name:         "subtract within bounds",
+			initialOut:   1000,
+			delta:        -500,
+			wantErr:      nil,
+			wantMoneyOut: 500,
 		},
 		{
-			name:    "sub more than available",
-			initial: 40,
-			sub:     90,
-			want:    40,
-			wantErr: ErrInvalidAmount,
+			name:         "subtract to zero",
+			initialOut:   1000,
+			delta:        -1000,
+			wantErr:      nil,
+			wantMoneyOut: 0,
 		},
 		{
-			name:    "sub exact amount",
-			initial: 200,
-			sub:     200,
-			want:    0,
-			wantErr: nil,
+			name:         "subtract below zero rejected",
+			initialOut:   1000,
+			delta:        -1001,
+			wantErr:      ErrInvalidAmount,
+			wantMoneyOut: 1000,
+		},
+		{
+			name:         "add to zero",
+			initialOut:   0,
+			delta:        500,
+			wantErr:      nil,
+			wantMoneyOut: 500,
+		},
+		{
+			name:         "subtract from zero rejected",
+			initialOut:   0,
+			delta:        -1,
+			wantErr:      ErrInvalidAmount,
+			wantMoneyOut: 0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s, _ := New("acc1", NewMonth(time.Now()), 0, tt.initial)
-			err := s.SubMoneyOut(tt.sub)
-			if !errors.Is(err, tt.wantErr) {
-				t.Errorf("SubMoneyOut() error = %v, wantErr %v", err, tt.wantErr)
+			ms, err := New(ID("acc1"), NewMonth(time.Now()), 0, tt.initialOut)
+			if err != nil {
+				t.Fatalf("New() setup error: %v", err)
 			}
-			if s.MoneyOut() != tt.want {
-				t.Errorf("MoneyOut() = %d, want %d", s.MoneyOut(), tt.want)
+
+			err = ms.AddMoneyOut(tt.delta)
+			if !errors.Is(err, tt.wantErr) {
+				t.Errorf("AddMoneyOut(%d) error = %v, wantErr %d", tt.delta, err, tt.wantErr)
+			}
+			if ms.MoneyOut() != tt.wantMoneyOut {
+				t.Errorf("AddMoneyOut(%d) MoneyOut = %d, want %d", tt.delta, ms.MoneyOut(), tt.wantMoneyOut)
 			}
 		})
 	}

@@ -258,6 +258,34 @@ func (t *Entry) CanBeDeleted(toAccBalance *int) error {
 
 // updates
 
+func (t *Entry) UpdateIncome(
+	toAccountID ID,
+	incomeCategoryID ID,
+	amount int,
+	description string,
+	date time.Time,
+) error {
+	if t.ttype != income {
+		return errors.New("can't update income, type not income")
+	}
+
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+
+	if description == "" {
+		return ErrInvalidDescription
+	}
+
+	t.toAccountID = &toAccountID
+	t.incomeCategoryID = &incomeCategoryID
+	t.amount = amount
+	t.description = description
+	t.date = date
+
+	return nil
+}
+
 func (t *Entry) ChangeExpenseCategory(cid ID) error {
 	if t.fromAccountID == nil {
 		return errors.New("can't update")

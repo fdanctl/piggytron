@@ -69,26 +69,20 @@ func (s *MonthlySummary) UpdatedAt() time.Time {
 	return s.updatedAt
 }
 
-func (s *MonthlySummary) SubMoneyIn(v int) error {
-	if v < 0 {
+func (s *MonthlySummary) AddMoneyIn(v int) error {
+	if s.moneyIn+v < 0 {
 		return ErrInvalidAmount
 	}
-	if s.moneyIn-v < 0 {
-		return ErrInvalidAmount
-	}
-	s.moneyIn -= v
+	s.moneyIn += v
 	s.updatedAt = time.Now()
 	return nil
 }
 
-func (s *MonthlySummary) SubMoneyOut(v int) error {
-	if v < 0 {
+func (s *MonthlySummary) AddMoneyOut(v int) error {
+	if s.moneyOut+v < 0 {
 		return ErrInvalidAmount
 	}
-	if s.moneyOut-v < 0 {
-		return ErrInvalidAmount
-	}
-	s.moneyOut -= v
+	s.moneyOut += v
 	s.updatedAt = time.Now()
 	return nil
 }
