@@ -29,8 +29,8 @@ func (s *Service) CreateExpense(
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindValidation,
-			fmt.Sprintf("%s is not a valid id", uid),
-			fmt.Errorf("failed parsing id '%s': %w", uid, err),
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
 			"appledger.CreateExpense",
 		)
 		return nil, err
@@ -40,8 +40,8 @@ func (s *Service) CreateExpense(
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindValidation,
-			fmt.Sprintf("%s is not a valid id", cid),
-			fmt.Errorf("failed parsing id '%s': %w", cid, err),
+			fmt.Sprintf("%s is not a valid id", catID),
+			fmt.Errorf("failed parsing id '%s': %w", catID, err),
 			"appledger.CreateExpense",
 		)
 		return nil, err
@@ -51,8 +51,8 @@ func (s *Service) CreateExpense(
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindValidation,
-			fmt.Sprintf("%s is not a valid id", fromAccID),
-			fmt.Errorf("failed parsing id '%s': %w", fromAccID, err),
+			fmt.Sprintf("%s is not a valid id", srcAccID),
+			fmt.Errorf("failed parsing id '%s': %w", srcAccID, err),
 			"appledger.CreateExpense",
 		)
 		return nil, err
@@ -294,6 +294,14 @@ func (s *Service) UpdateExpense(
 	prevAmount := t.Amount()
 	prevDate := t.Date()
 	prevAccountID := string(*t.FromAccountID())
+	if err := t.UpdateExpense(fromAccID, cid, amount, description, date); err != nil {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to update expense",
+			fmt.Errorf("failed to update expense: %w", err),
+			"appledger.UpdateExpense",
+		)
+	}
 
 	// Account changed: NEW account gains expense → verify NEW account stays solvent.
 	if accountChanged {
@@ -355,7 +363,7 @@ func (s *Service) UpdateExpense(
 		}
 	} else {
 		// Same account
-		c, err := getCaseFromTable(date.Compare(t.Date()), cmp.Compare(amount, t.Amount()))
+		c, err := getCaseFromTable(date.Compare(prevDate), cmp.Compare(amount, prevAmount))
 		if err != nil {
 			err = errs.NewInternalAppError(
 				fmt.Errorf("don't know how could I make this error: %w", err),
@@ -372,7 +380,6 @@ func (s *Service) UpdateExpense(
 		// 7. Higher date && lower amount
 		// 8. Higher date && same amount
 		// 9. Higher date && higher amount
-		fmt.Printf("=========== case %d ==============", c)
 		switch c {
 		// Same account — only verify if the update is "worse" than before:
 		// not more money and money does not arrives before.
@@ -469,15 +476,6 @@ func (s *Service) UpdateExpense(
 		}
 	}
 
-	if err := t.UpdateExpense(fromAccID, cid, amount, description, date); err != nil {
-		return nil, errs.NewAppError(
-			errs.KindBusinessRule,
-			"Failed to update expense",
-			fmt.Errorf("failed to create expense: %w", err),
-			"appledger.UpdateExpense",
-		)
-	}
-
 	if err := rtx.Update(ctx, t); err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed saving transaction: %w", err),
@@ -507,16 +505,16 @@ func (s *Service) UpdateExpense(
 			ctx,
 			mstx,
 			0,
-			t.Amount(),
+			amount,
 			newAccountID,
-			monthlysummary.NewMonth(t.Date()),
+			monthlysummary.NewMonth(date),
 		); err != nil {
 			return nil, err
 		}
 	} else {
 		// Case B: same account.
 		prevMonth := monthlysummary.NewMonth(prevDate)
-		newMonth := monthlysummary.NewMonth(t.Date())
+		newMonth := monthlysummary.NewMonth(date)
 
 		if prevMonth.Time().Compare(newMonth.Time()) != 0 {
 			// Different months: remove PREV expense from PREV month, add NEW expense to NEW month.
@@ -534,7 +532,7 @@ func (s *Service) UpdateExpense(
 				ctx,
 				mstx,
 				0,
-				t.Amount(),
+				amount,
 				newAccountID,
 				newMonth,
 			); err != nil {
@@ -546,7 +544,7 @@ func (s *Service) UpdateExpense(
 				ctx,
 				mstx,
 				0,
-				t.Amount()-prevAmount,
+				amount-prevAmount,
 				newAccountID,
 				prevMonth,
 			); err != nil {

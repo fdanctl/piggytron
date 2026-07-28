@@ -136,8 +136,8 @@ document.body.addEventListener("contentPush", function (ev) {
 });
 
 document.body.addEventListener("refetch-transactions", function (ev) {
-  const isGoalPage = document.getElementsByClassName("goal-actions").length > 0;
-  if (isGoalPage) {
+  const isLedgerPage = window.location.pathname.includes("ledger");
+  if (!isLedgerPage) {
     htmx.ajax("GET", window.location.pathname, {
       target: "#content",
       swap: "innerHTML",
@@ -154,10 +154,19 @@ document.body.addEventListener("refetch-transactions", function (ev) {
 
 document.body.addEventListener("transaction-deleted", function (ev) {
   closeAllDialog();
-  const countEle = document.getElementById("filter-result-count");
-  const count = countEle.innerText.match(/^\d*/);
+  const isLedgerPage = window.location.pathname.includes("ledger");
+  if (!isLedgerPage) {
+    htmx.ajax("GET", window.location.pathname, {
+      target: "#content",
+      swap: "innerHTML",
+      push: "true",
+    });
+  } else {
+    const countEle = document.getElementById("filter-result-count");
+    const count = countEle.innerText.match(/^\d*/);
 
-  if (count) {
-    countEle.innerText = `${Number(count[0]) - 1} results`;
+    if (count) {
+      countEle.innerText = `${Number(count[0]) - 1} results`;
+    }
   }
 });

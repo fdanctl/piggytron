@@ -66,8 +66,20 @@ func (s *Service) Update(
 		)
 
 	case "transfer":
+		return s.UpdateTransfer(
+			ctx,
+			id,
+			userID,
+			amount,
+			currency,
+			description,
+			date,
+			categoryID,
+			srcAccID,
+			dstAccID,
+		)
 	}
-	return nil, errors.New("invalid transaction type")
+	return nil, errs.NewGenericBadRequestAppError(ledger.ErrInvalidType, "appledger.Update")
 }
 
 func (s *Service) Delete(ctx context.Context, id string) error {

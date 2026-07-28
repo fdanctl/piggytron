@@ -283,6 +283,14 @@ func (s *Service) UpdateIncome(
 	prevAmount := t.Amount()
 	prevDate := t.Date()
 	prevAccountID := string(*t.ToAccountID())
+	if err := t.UpdateIncome(toAccID, cid, amount, description, date); err != nil {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to update income",
+			fmt.Errorf("failed to update income: %w", err),
+			"appledger.UpdateIncome",
+		)
+	}
 
 	// Account changed: PREV account loses income → verify PREV account stays solvent.
 	if accountChanged {
@@ -347,7 +355,7 @@ func (s *Service) UpdateIncome(
 		}
 	} else {
 		// Same account
-		c, err := getCaseFromTable(date.Compare(t.Date()), cmp.Compare(amount, t.Amount()))
+		c, err := getCaseFromTable(date.Compare(prevDate), cmp.Compare(amount, prevAmount))
 		if err != nil {
 			err = errs.NewInternalAppError(
 				fmt.Errorf("don't know how could I make this error: %w", err),
@@ -451,14 +459,6 @@ func (s *Service) UpdateIncome(
 		}
 	}
 
-	if err := t.UpdateIncome(toAccID, cid, amount, description, date); err != nil {
-		return nil, errs.NewAppError(
-			errs.KindBusinessRule,
-			"Failed to update income",
-			fmt.Errorf("failed to create expense: %w", err),
-			"appledger.UpdateIncome",
-		)
-	}
 	if err := rtx.Update(ctx, t); err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed saving transaction: %w", err),
@@ -487,17 +487,17 @@ func (s *Service) UpdateIncome(
 		if err := s.updateMonthlySummary(
 			ctx,
 			mstx,
-			t.Amount(),
+			amount,
 			0,
 			newAccountID,
-			monthlysummary.NewMonth(t.Date()),
+			monthlysummary.NewMonth(date),
 		); err != nil {
 			return nil, err
 		}
 	} else {
 		// Case B: same account.
 		prevMonth := monthlysummary.NewMonth(prevDate)
-		newMonth := monthlysummary.NewMonth(t.Date())
+		newMonth := monthlysummary.NewMonth(date)
 
 		if prevMonth.Time().Compare(newMonth.Time()) != 0 {
 			// Different months: remove PREV income from PREV month, add NEW income to NEW month.
@@ -514,7 +514,7 @@ func (s *Service) UpdateIncome(
 			if err := s.updateMonthlySummary(
 				ctx,
 				mstx,
-				t.Amount(),
+				amount,
 				0,
 				newAccountID,
 				newMonth,
@@ -526,7 +526,7 @@ func (s *Service) UpdateIncome(
 			if err := s.updateMonthlySummary(
 				ctx,
 				mstx,
-				t.Amount()-prevAmount,
+				amount-prevAmount,
 				0,
 				newAccountID,
 				prevMonth,

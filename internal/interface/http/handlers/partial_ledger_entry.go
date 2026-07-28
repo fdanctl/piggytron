@@ -1,9 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/a-h/templ"
@@ -93,7 +93,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	switch string(t.Type()) {
 	case "income":
 		v := views.NewIncomeForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO format money, it's in cents
+		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())
@@ -103,7 +103,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "expense":
 		v := views.NewExpenseForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO format money, it's in cents
+		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.ExpenseCategoryID())
@@ -113,7 +113,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "transfer":
 		v := views.NewTransferForm()
-		v.Amount = strconv.Itoa(t.Amount()) // TODO format money, it's in cents
+		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		if t.ExpenseCategoryID() != nil {
@@ -238,7 +238,12 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		}
 
 	default:
-		logger.Debug("DEFAULT")
+		httperror.SendError(
+			w,
+			r,
+			errs.NewGenericBadRequestAppError(errors.New("invalid type"), "LedgerEntryHandler.Put"),
+		)
+		return
 	}
 
 	cents, err := convertAmountStrToInt(amount)
@@ -265,11 +270,6 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err != nil {
-		httperror.SendError(w, r, err)
-		return
-	}
-
 	_, err = h.service.Update(
 		r.Context(),
 		ttype,
@@ -287,11 +287,15 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		httperror.SendFormError(w, r, err, form)
 		return
 	}
-	logger.Debug(id)
-	logger.Debug(strconv.Itoa(cents))
-	logger.Debug(d.Format(time.DateOnly))
 
-	form.Render(r.Context(), w)
+	w.Header().Set("HX-Trigger", "refetch-transactions,closeAllModal")
+	templ.Join(
+		form,
+		components.SendToast(
+			components.Success,
+			fmt.Sprintf("%s transaction updated", views.CapitalizeFirst(ttype)),
+		),
+	).Render(r.Context(), w)
 }
 
 func (h *LedgerEntryHandler) Delete(w http.ResponseWriter, r *http.Request) {

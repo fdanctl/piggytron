@@ -300,6 +300,9 @@ func (t *Entry) UpdateExpense(
 	description string,
 	date time.Time,
 ) error {
+	if t.ttype != expense {
+		return errors.New("can't update expense, type not expense")
+	}
 	if description == "" {
 		return ErrInvalidDescription
 	}
@@ -312,6 +315,68 @@ func (t *Entry) UpdateExpense(
 	t.amount = amount
 	t.description = description
 	t.date = date
+
+	return nil
+}
+
+// UpdateTransfer does not verify the toAccountID, for it use UpdateTransferToAccountAndCategory instead
+func (t *Entry) UpdateTransfer(
+	fromAccountID ID,
+	toAccountID ID,
+	amount int,
+	description string,
+	date time.Time,
+) error {
+	if t.ttype != transfer {
+		return errors.New("can't update transfer, type not transfer")
+	}
+	if description == "" {
+		return ErrInvalidDescription
+	}
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+	if fromAccountID == toAccountID {
+		return ErrSameAccountTransfer
+	}
+
+	t.toAccountID = &toAccountID
+	t.fromAccountID = &fromAccountID
+	t.amount = amount
+	t.description = description
+	t.date = date
+
+	return nil
+}
+
+func (t *Entry) UpdateTransferToAccountAndCategory(
+	expenseCategoryID *ID,
+	toAccountID ID,
+	toAccountCategoryID *ID,
+	toAccountCategoryType string,
+	isToAccSavings bool,
+) error {
+	if t.ttype != transfer {
+		return errors.New("can't update transfer, type not transfer")
+	}
+	if toAccountID == *t.fromAccountID {
+		return ErrSameAccountTransfer
+	}
+	if toAccountCategoryID != nil && // ie. is a goal
+		(expenseCategoryID == nil || *toAccountCategoryID != *expenseCategoryID) {
+		return ErrGoalCategory
+	}
+	if isToAccSavings {
+		if expenseCategoryID == nil {
+			return ErrNotSavingsCategory
+		}
+		if toAccountCategoryType != "savings" {
+			return ErrNotSavingsCategory
+		}
+	}
+
+	t.toAccountID = &toAccountID
+	t.expenseCategoryID = expenseCategoryID
 
 	return nil
 }
