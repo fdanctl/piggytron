@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/budget"
-	"github.com/lib/pq"
 )
 
 type BudgetRepository struct {
@@ -21,8 +20,6 @@ func NewBudgetRepository(db *sql.DB) *BudgetRepository {
 }
 
 type BudgetDto struct {
-	ID         budget.ID
-	UserID     budget.ID
 	CategoryID budget.ID
 	Month      time.Time
 	Amount     int
@@ -30,103 +27,50 @@ type BudgetDto struct {
 	UpdatedAt  time.Time
 }
 
-func (r *BudgetRepository) Create(
+func (r *BudgetRepository) Save(
 	ctx context.Context,
 	b *budget.Budget,
 ) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`
-		INSERT INTO monthly_budgets (id, user_id, category_id, month, amount, created_at, updated_at)
-		VALUES($1,$2,$3,$4,$5,$6,$7)
-		`,
-		b.ID(),
-		b.UserID(),
+		INSERT INTO monthly_budgets (category_id, month, amount, created_at, updated_at)
+		VALUES($1,$2,$3,$4,$5)
+		ON CONFLICT(category_id, month)
+		DO UPDATE SET
+			amount = EXCLUDED.amount,
+			updated_at = EXCLUDED.updated_at`,
 		b.CategoryID(),
-		b.Month(),
+		b.Month().Time(),
 		b.Amount(),
 		b.CreatedAt(),
 		b.UpdatedAt(),
 	)
 	if err != nil {
-		var pqErr *pq.Error
-
-		if errors.As(err, &pqErr) {
-			switch pqErr.Code {
-			case "23505":
-				return budget.ErrDuplicate
-			}
-		}
-
 		return err
 	}
 
 	return nil
 }
 
-// func (r *BudgetRepository) Update(
-// 	ctx context.Context,
-// 	budget *budget.Budget,
-// ) error {
-// 	_, err := r.db.ExecContext(
-// 		ctx,
-// 		`
-//         UPDATE monthly_budgets
-//         SET
-//             month = $1,
-//             amount = $2,
-//             updated_at = $3
-//         WHERE id = $4
-//         `,
-// 		budget.Month(),
-// 		budget.Amount(),
-// 		budget.UpdatedAt(),
-// 		budget.ID(),
-// 	)
-//
-// 	return err
-// }
-
-func (r *BudgetRepository) UpdateAmount(
+func (r *BudgetRepository) FindByCategoryAndMonth(
 	ctx context.Context,
-	id budget.ID,
-	amount int,
-) error {
-	_, err := r.db.ExecContext(
-		ctx,
-		`
-        UPDATE monthly_budgets
-        SET
-            amount = $1,
-            updated_at = $2
-        WHERE id = $3
-        `,
-		amount,
-		time.Now(),
-		id,
-	)
-
-	return err
-}
-
-func (r *BudgetRepository) FindByID(
-	ctx context.Context,
-	id budget.ID,
+	cid budget.ID,
+	month budget.Month,
 ) (*budget.Budget, error) {
 	row := r.db.QueryRowContext(
 		ctx,
 		`
-		SELECT id, user_id, category_id, month, amount, created_at, updated_at
+		SELECT category_id, month, amount, created_at, updated_at
 		FROM monthly_budgets
-		WHERE id = $1
+		WHERE category_id = $1 AND month = $2
 		`,
-		id,
+		cid,
+		month,
 	)
 
 	var c BudgetDto
 	err := row.Scan(
-		&c.ID,
-		&c.UserID,
 		&c.CategoryID,
 		&c.Month,
 		&c.Amount,
@@ -140,8 +84,6 @@ func (r *BudgetRepository) FindByID(
 		return nil, err
 	}
 	category := budget.Rehydrate(
-		c.ID,
-		c.UserID,
 		c.CategoryID,
 		c.Month,
 		c.Amount,

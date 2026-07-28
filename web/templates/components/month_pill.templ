@@ -1,11 +1,29 @@
 package components
 
 templ MonthPill(class string) {
-	<div class={ "month-pill", templ.KV(class != "", class) }>
+	<div class={ "month-pill", templ.KV(class, class != "") }>
 		<button class="reset-btn">
 			@ChevronLeftSvg(0, "", "")
 		</button>
-		@Select("Jun 2026", "", nil, false, nil)
+		@Dropdown("input", "Jun 2026", true) {
+			<ul class="options">
+				<li>
+					<a href="?month=2026-07">
+						Jul 2026
+					</a>
+				</li>
+				<li>
+					<a href="?month=2026-06">
+						Jun 2026
+					</a>
+				</li>
+				<li>
+					<a href="?month=2026-05">
+						May 2026
+					</a>
+				</li>
+			</ul>
+		}
 		<button class="reset-btn">
 			@ChevronRightSvg(0, "", "")
 		</button>

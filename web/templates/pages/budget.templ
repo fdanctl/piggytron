@@ -2,24 +2,28 @@ package pages
 
 import (
 	"fmt"
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
 	"math"
+	"time"
 )
 
 templ Budget(bview views.BreadcrumbsView, view views.BudgetPageView) {
-	@components.Breadcrumbs(bview)
-	// if view.TotalBudgeted == 0 {
-	@lastMonthImport()
-	// }
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+		@components.MonthPill("")
+	</div>
+	if view.TotalBudgeted == 0 {
+		@lastMonthImport(view.Month)
+	}
 	@BudgetStats(view.TotalBudgeted, view.LeftToBudget, view.Income, view.LeftToSpend, view.Overspent, nil)
-	// TODO dynamic month
 	<div
 		id="budget-sankey"
 		class="chart-container mt-xl mb-xl"
-		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s", "202605") }
+		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s", view.Month) }
 		hx-trigger="load"
 	>
 		@components.Loader("htmx-indicator", nil)
@@ -31,15 +35,14 @@ templ Budget(bview views.BreadcrumbsView, view views.BudgetPageView) {
 	</div>
 }
 
-// TODO receive current month
-templ lastMonthImport() {
+templ lastMonthImport(month budget.Month) {
 	<div class="flex">
 		<div class="last-month-import">
 			<div class="last-month-import__icon">
 				@components.CalendarArrowUp(0, "", "")
 			</div>
 			<div>
-				<p class="last-month-import__h">Import April's budget</p>
+				<p class="last-month-import__h">Import { time.Date(month.Time().Year(), month.Time().Month()-1, 1, 0, 0, 0, 0, time.UTC).Month() }'s budget</p>
 				<p class="last-month-import__p">Copy last month's category amounts as a starting point</p>
 			</div>
 			<div class="last-month-import__btns">
@@ -119,9 +122,9 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 							"hx-swap":            "outerHTML",
 							"hx-post":            "/partials/budget",
 							"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
-							"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='bid'], next [name='cid']",
+							"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
 						})
-					@BudgetInfoInputs(c.Budgeted, c.BudgetID, c.CategoryID)
+					@BudgetInfoInputs(c.Budgeted, c.Month.String(), c.CategoryID)
 				</div>
 				@CatRowLeftCell(c.CategoryID, c.Left, nil)
 			</div>
@@ -151,10 +154,10 @@ templ TotalRow(eType string, totalBudget, totalLeft int, attrs templ.Attributes)
 	</div>
 }
 
-templ BudgetInfoInputs(amount int, bid, cid string) {
+templ BudgetInfoInputs(amount int, month string, cid string) {
 	<div class="budget-info hidden">
 		<input type="hidden" name="prev-amount" value={ amount }/>
-		<input type="hidden" name="bid" value={ bid }/>
+		<input type="hidden" name="month" value={ month }/>
 		<input type="hidden" name="cid" value={ cid }/>
 	</div>
 }

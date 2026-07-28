@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
+	"github.com/fdanctl/piggytron/internal/domain/budget"
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -48,15 +50,26 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
+	bm := budget.NewMonth(time.Now())
+	if month != "" {
+		bm, err = budget.ParseMonth(month)
+		if err != nil {
+			err := errs.NewAppError(
+				errs.KindBadRequest,
+				fmt.Sprintf("%s is not a valid month", month),
+				fmt.Errorf("failed to parse month '%s': %w", month, err),
+				"BudgetChartHandler.Get",
+			)
+			httperror.SendError(w, r, err)
+			return
+		}
+	}
 
-	minD := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-	maxD := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	categoryBudget, err := h.categoryQuery.GetCategoriesBudgetSpent(
 		r.Context(),
 		sessionInfo.UserID,
-		minD,
-		maxD,
+		bm.Time(),
+		time.Date(bm.Time().Year(), bm.Time().Month()+1, 1, 0, 0, 0, 0, time.UTC),
 	)
 	if err != nil {
 		err := fmt.Errorf("error geting categories budget-spent: %w", err)

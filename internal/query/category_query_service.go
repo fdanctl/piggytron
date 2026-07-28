@@ -18,7 +18,7 @@ type CategoryDTO struct {
 
 type ExpenseCategoryBudgetSpent struct {
 	CategoryID string
-	BudgetID   string
+	Month      time.Time
 	Type       string
 	Name       string
 	Budgeted   int

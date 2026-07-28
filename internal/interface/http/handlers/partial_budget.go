@@ -9,11 +9,11 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appbudget"
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/internal/util"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -59,7 +59,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	params := r.Form
 	amount := params.Get("amount")
 	cid := params.Get("cid")
-	budgetID := params.Get("bid")
+	month := params.Get("month")
 	ps := params.Get("prev-amount")
 	catType := params.Get("ctype")
 	ptotalBudgeted := params.Get("total-budgeted")
@@ -74,7 +74,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	poverspent := params.Get("overspent")
 
 	prev, err := strconv.Atoi(ps)
-	budgetInfoInputs := pages.BudgetInfoInputs(prev, budgetID, cid)
+	budgetInfoInputs := pages.BudgetInfoInputs(prev, month, cid)
 	if err != nil {
 		httperror.SendFormError(w, r, err, budgetInfoInputs)
 		return
@@ -92,7 +92,20 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now()
+	bm := budget.NewMonth(time.Now())
+	if month != "" {
+		bm, err = budget.ParseMonth(month)
+		if err != nil {
+			err := errs.NewAppError(
+				errs.KindBadRequest,
+				fmt.Sprintf("%s is not a valid month", month),
+				fmt.Errorf("failed to parse month '%s': %w", month, err),
+				"BudgetHandler.Post",
+			)
+			httperror.SendError(w, r, err)
+			return
+		}
+	}
 
 	if cents == prev {
 		logger.Debug("nothing to do")
@@ -100,19 +113,10 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if budgetID == "" || budgetID == util.ZeroUUID {
-		b, err := h.service.CreateBudget(r.Context(), sessionInfo.UserID, cid, now, cents)
-		if err != nil {
-			httperror.SendFormError(w, r, err, budgetInfoInputs)
-			return
-		}
-		budgetID = string(b.ID())
-	} else {
-		err := h.service.UpdateBudgetAmount(r.Context(), budgetID, cents)
-		if err != nil {
-			httperror.SendFormError(w, r, err, budgetInfoInputs)
-			return
-		}
+	_, err = h.service.CreateBudget(r.Context(), cid, bm, cents)
+	if err != nil {
+		httperror.SendFormError(w, r, err, budgetInfoInputs)
+		return
 	}
 
 	addedAmount := cents - prev
@@ -202,13 +206,11 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	totalRowLeft += addedAmount
 
-	minD := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-	maxD := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	categoryBudget, err := h.categoryQuery.GetCategoriesBudgetSpent(
 		r.Context(),
 		sessionInfo.UserID,
-		minD,
-		maxD,
+		bm.Time(),
+		time.Date(bm.Time().Year(), bm.Time().Month()+1, 1, 0, 0, 0, 0, time.UTC),
 	)
 	if err != nil {
 		err := fmt.Errorf("error geting categories budget-spent: %w", err)
@@ -241,7 +243,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	obb := templ.Join(
-		pages.BudgetInfoInputs(cents, budgetID, cid),
+		pages.BudgetInfoInputs(cents, month, cid),
 		pages.CatRowLeftCell(cid, catLeft, templ.Attributes{
 			"hx-swap-oob": "outerHTML",
 		}),

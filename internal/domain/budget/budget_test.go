@@ -9,37 +9,29 @@ import (
 func TestNew(t *testing.T) {
 	tests := []struct {
 		name       string
-		id         ID
-		userID     ID
 		categoryID ID
-		month      time.Time
+		month      Month
 		amount     int
 		wantErr    error
 	}{
 		{
 			name:       "valid budget",
-			id:         ID("420"),
-			userID:     ID("420"),
 			categoryID: ID("420"),
-			month:      time.Now(),
+			month:      NewMonth(time.Now()),
 			amount:     100,
 			wantErr:    nil,
 		},
 		{
 			name:       "valid budget zero amount",
-			id:         ID("420"),
-			userID:     ID("420"),
 			categoryID: ID("420"),
-			month:      time.Now(),
+			month:      NewMonth(time.Now()),
 			amount:     0,
 			wantErr:    nil,
 		},
 		{
 			name:       "negative amount",
-			id:         ID("420"),
-			userID:     ID("420"),
 			categoryID: ID("420"),
-			month:      time.Now(),
+			month:      NewMonth(time.Now()),
 			amount:     -100,
 			wantErr:    ErrInvalidAmount,
 		},
@@ -47,7 +39,7 @@ func TestNew(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := New(tt.id, tt.userID, tt.categoryID, tt.month, tt.amount)
+			_, err := New(tt.categoryID, tt.month, tt.amount)
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -57,7 +49,7 @@ func TestNew(t *testing.T) {
 
 func TestChangeAmount(t *testing.T) {
 	amount := 1000
-	b, _ := New(ID("420"), ID("420"), ID("420"), time.Now(), 100)
+	b, _ := New(ID("420"), NewMonth(time.Now()), 100)
 	upAt := b.UpdatedAt()
 
 	if err := b.ChangeAmount(amount); err != nil {

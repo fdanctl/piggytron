@@ -3,10 +3,12 @@ package views
 import (
 	"math"
 
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
 type BudgetPageView struct {
+	Month         budget.Month
 	TotalBudgeted int
 	LeftToBudget  int
 	Income        int
@@ -31,13 +33,14 @@ type BudgetPageView struct {
 
 type BudgetRowView struct {
 	CategoryID string
-	BudgetID   string
+	Month      budget.Month
 	Name       string
 	Budgeted   int
 	Left       int
 }
 
 func NewBudgetPageView(
+	month budget.Month,
 	income int,
 	catBudgetSpent []query.ExpenseCategoryBudgetSpent,
 ) BudgetPageView {
@@ -65,7 +68,7 @@ func NewBudgetPageView(
 
 		row := BudgetRowView{
 			CategoryID: v.CategoryID,
-			BudgetID:   v.BudgetID,
+			Month:      budget.Month(v.Month),
 			Name:       v.Name,
 			Budgeted:   v.Budgeted,
 			Left:       left,
@@ -101,6 +104,7 @@ func NewBudgetPageView(
 	}
 
 	return BudgetPageView{
+		Month:         month,
 		TotalBudgeted: totalBudgeted,
 		LeftToBudget:  income - totalBudgeted,
 		Income:        income,

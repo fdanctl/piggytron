@@ -5,10 +5,8 @@ import "time"
 type ID string
 
 type Budget struct {
-	id         ID
-	userID     ID
 	categoryID ID
-	month      time.Time
+	month      Month
 	amount     int
 
 	createdAt time.Time
@@ -16,8 +14,8 @@ type Budget struct {
 }
 
 func New(
-	id, userID, categoryID ID,
-	month time.Time,
+	categoryID ID,
+	month Month,
 	amount int,
 ) (*Budget, error) {
 	if amount < 0 {
@@ -27,8 +25,6 @@ func New(
 	now := time.Now()
 
 	return &Budget{
-		id:         id,
-		userID:     userID,
 		categoryID: categoryID,
 		month:      month,
 		amount:     amount,
@@ -39,16 +35,14 @@ func New(
 }
 
 func Rehydrate(
-	id, userID, categoryID ID,
+	categoryID ID,
 	month time.Time,
 	amount int,
 	createdAt, updatedAt time.Time,
 ) *Budget {
 	return &Budget{
-		id:         id,
-		userID:     userID,
 		categoryID: categoryID,
-		month:      month,
+		month:      NewMonth(month),
 		amount:     amount,
 
 		createdAt: createdAt,
@@ -66,19 +60,11 @@ func (b *Budget) ChangeAmount(nAmount int) error {
 	return nil
 }
 
-func (b *Budget) ID() ID {
-	return b.id
-}
-
-func (b *Budget) UserID() ID {
-	return b.userID
-}
-
 func (b *Budget) CategoryID() ID {
 	return b.categoryID
 }
 
-func (b *Budget) Month() time.Time {
+func (b *Budget) Month() Month {
 	return b.month
 }
 

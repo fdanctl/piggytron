@@ -24,7 +24,6 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
-	"github.com/fdanctl/piggytron/internal/query"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
@@ -36,9 +35,25 @@ func main() {
 		return
 	}
 
+	var logger *slog.Logger
+
+	if cfg.IsDev {
+		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelDebug,
+		}))
+	} else {
+		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	}
+
 	db, err := sql.Open("postgres", cfg.DBURL)
 	if err != nil {
-		log.Fatalln("failed to open db", err.Error())
+		logger.Error("failed to open db", "error", err.Error())
+		os.Exit(1)
+		return
+	}
+	if err := db.Ping(); err != nil {
+		logger.Error("failed to connect to db", "error", err.Error())
+		os.Exit(1)
 		return
 	}
 	defer db.Close()
@@ -55,16 +70,6 @@ func main() {
 		return
 	}
 	defer client.Close()
-
-	var logger *slog.Logger
-
-	if cfg.IsDev {
-		logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		}))
-	} else {
-		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	}
 
 	hasher := appuser.NewPasswordHasher(
 		cfg.HashConfig.Time,
@@ -93,9 +98,9 @@ func main() {
 	budgetRepo := postgres.NewBudgetRepository(db)
 
 	// query services
-	var catQueryService query.CategoryQueryService = postgres.NewCategoryQueryService(db)
-	var ledgerQueryService query.LedgerQueryService = postgres.NewLedgerQueryService(db)
-	var accountQueryService query.AccountQueryService = postgres.NewAccountQueryService(db)
+	catQueryService := postgres.NewCategoryQueryService(db)
+	ledgerQueryService := postgres.NewLedgerQueryService(db)
+	accountQueryService := postgres.NewAccountQueryService(db)
 
 	// services
 	accountService := appaccount.NewService(accountRepo, db)
@@ -106,7 +111,8 @@ func main() {
 	budgetService := appbudget.NewService(budgetRepo)
 	chartsService := appcharts.NewService()
 
-	webMux := http.NewServeMux() // returns full HTML page
+	// web mux - returns full HTML page (or, in most cases, just the main element if Hx-Request)
+	webMux := http.NewServeMux()
 	webMux.Handle(
 		"/static/",
 		http.StripPrefix(
@@ -163,7 +169,8 @@ func main() {
 	sh := handlers.SignupHandler{}
 	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
 
-	partialsMux := http.NewServeMux() // returns HTMX fragment
+	// partials mux - returns HTMX fragments
+	partialsMux := http.NewServeMux()
 
 	userHandler := handlers.NewUserHandler(userService, sessionCM)
 	partialsMux.Handle("/partials/auth/{action}", userHandler)
@@ -255,12 +262,6 @@ func main() {
 	)
 	partialsMux.Handle("/partials/goal", goalHandler)
 	partialsMux.Handle("/partials/goal/{id}", goalHandler)
-
-	// TODO remove
-	partialsMux.HandleFunc("/partials/slow", func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(2 * time.Second)
-		fmt.Fprint(w, time.Now().Format(time.TimeOnly))
-	})
 
 	logger.Info("server starting", "addr", ":8080")
 

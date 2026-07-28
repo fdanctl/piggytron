@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict Fh9s2NTGv8TgvVVHwh69PmrcgCtvtXfODFfhVyY7SAeveoTcpRhka1rfZiAVJje
+\restrict zYa3o28FTwsaezVOVcm18yOctha1hANBAb09f5kJH7Ea3hFBknRexGWZQv8jL6b
 
 -- Dumped from database version 16.13
 -- Dumped by pg_dump version 16.13
@@ -93,12 +93,12 @@ INSERT INTO public.ledger VALUES ('9719fe91-89f9-41ef-8813-9883667c6e85', 'b1486
 -- Data for Name: monthly_budgets; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.monthly_budgets VALUES ('30d03799-1930-46aa-8de0-e0f2c0991452', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', '4024bbac-7642-431a-8924-2accdffb4fcb', '2026-05-25', 25000, '2026-05-25 18:57:17.166853', '2026-05-25 18:57:17.166853');
-INSERT INTO public.monthly_budgets VALUES ('c1ea41e4-63fe-4c4c-8c94-e183df2934d4', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', '6833f201-1557-4615-b28b-0a928cc508d5', '2026-05-25', 3000, '2026-05-25 18:57:29.396574', '2026-05-25 18:58:00.704453');
-INSERT INTO public.monthly_budgets VALUES ('f9510e38-cbdc-496b-8b23-e25018c960d6', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'b7cd2e91-f4fa-4359-8413-87f44e83063a', '2026-05-25', 15000, '2026-05-25 18:59:08.519723', '2026-05-25 18:59:45.556278');
-INSERT INTO public.monthly_budgets VALUES ('fb27ebbe-3053-4a2f-a432-487da0747ac0', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'dd654864-25bc-42db-87a2-c2158a49519b', '2026-05-25', 60000, '2026-05-25 19:00:23.761825', '2026-05-25 19:00:38.155267');
-INSERT INTO public.monthly_budgets VALUES ('42d78411-b063-4ea3-a789-faba1d978f1b', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', '16777ce0-6bc6-4a09-8880-5c82892a9700', '2026-05-25', 10000, '2026-05-25 19:01:12.503269', '2026-05-25 19:01:35.104947');
-INSERT INTO public.monthly_budgets VALUES ('6f8a1e4e-8b2c-4b9d-a005-109fe25a5c4e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', '71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', '2026-05-25', 7000, '2026-05-25 19:02:08.359642', '2026-05-25 19:02:18.053866');
+INSERT INTO public.monthly_budgets VALUES ('4024bbac-7642-431a-8924-2accdffb4fcb', '2026-05-25', 25000, '2026-05-25 18:57:17.166853', '2026-05-25 18:57:17.166853');
+INSERT INTO public.monthly_budgets VALUES ('6833f201-1557-4615-b28b-0a928cc508d5', '2026-05-25', 3000, '2026-05-25 18:57:29.396574', '2026-05-25 18:58:00.704453');
+INSERT INTO public.monthly_budgets VALUES ('b7cd2e91-f4fa-4359-8413-87f44e83063a', '2026-05-25', 15000, '2026-05-25 18:59:08.519723', '2026-05-25 18:59:45.556278');
+INSERT INTO public.monthly_budgets VALUES ('dd654864-25bc-42db-87a2-c2158a49519b', '2026-05-25', 60000, '2026-05-25 19:00:23.761825', '2026-05-25 19:00:38.155267');
+INSERT INTO public.monthly_budgets VALUES ('16777ce0-6bc6-4a09-8880-5c82892a9700', '2026-05-25', 10000, '2026-05-25 19:01:12.503269', '2026-05-25 19:01:35.104947');
+INSERT INTO public.monthly_budgets VALUES ('71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', '2026-05-25', 7000, '2026-05-25 19:02:08.359642', '2026-05-25 19:02:18.053866');
 
 
 --
@@ -117,5 +117,5 @@ INSERT INTO public.monthly_summary VALUES ('61a9f1db-6eda-424c-afb3-0a088df81d29
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Fh9s2NTGv8TgvVVHwh69PmrcgCtvtXfODFfhVyY7SAeveoTcpRhka1rfZiAVJje
+\unrestrict zYa3o28FTwsaezVOVcm18yOctha1hANBAb09f5kJH7Ea3hFBknRexGWZQv8jL6b
 

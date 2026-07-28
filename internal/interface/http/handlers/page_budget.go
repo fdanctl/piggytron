@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/budget"
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -44,12 +46,27 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO url month query (ex. 2026-05)
-	now := time.Now()
+	month := r.URL.Query().Get("month")
+
+	bm := budget.NewMonth(time.Now())
+	if month != "" {
+		bm, err = budget.ParseMonth(month)
+		if err != nil {
+			err := errs.NewAppError(
+				errs.KindBadRequest,
+				fmt.Sprintf("%s is not a valid month", month),
+				fmt.Errorf("failed to parse month '%s': %w", month, err),
+				"BudgetHandler.Post",
+			)
+			httperror.SendError(w, r, err)
+			return
+		}
+	}
+	logger.Debug(bm.String())
 
 	filters := query.NewLedgerFilters([]string{"income"}, nil, nil, "", "", "", "")
-	minD := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-	maxD := time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	minD := bm.Time()
+	maxD := time.Date(bm.Time().Year(), bm.Time().Month()+1, 1, 0, 0, 0, 0, time.UTC)
 	filters.MinDate = &minD
 	filters.MaxDate = &maxD
 
@@ -82,7 +99,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pageView := views.NewBudgetPageView(totalIncome, categoryBudgetSpent)
+	pageView := views.NewBudgetPageView(bm, totalIncome, categoryBudgetSpent)
 
 	content := pages.Budget(
 		views.BreadcrumbsView{

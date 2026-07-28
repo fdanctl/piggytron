@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type CategoryQueryService struct {
@@ -155,7 +154,7 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 		`
         SELECT
           c.id as cid,
-          COALESCE(b.id, $1) AS bid,
+          COALESCE(b.month, $1) AS month,
           c.type,
           c.name,
           COALESCE(b.amount, 0),
@@ -172,8 +171,10 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
           c.user_id = $4
         GROUP BY
           c.id,
-          b.id`,
-		util.ZeroUUID,
+		  b.category_id,
+          b.month
+		`,
+		time.Now(),
 		minDate,
 		maxDate,
 		uid,
@@ -189,7 +190,7 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
 		var dto query.ExpenseCategoryBudgetSpent
 		if err := rows.Scan(
 			&dto.CategoryID,
-			&dto.BudgetID,
+			&dto.Month,
 			&dto.Type,
 			&dto.Name,
 			&dto.Budgeted,
@@ -227,7 +228,8 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
           c.user_id = $3
         GROUP BY
           c.id,
-          b.id
+		  b.category_id,
+          b.month
 
 		UNION ALL
 
