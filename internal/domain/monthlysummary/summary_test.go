@@ -69,10 +69,10 @@ func TestNew(t *testing.T) {
 
 func TestAddMoneyIn(t *testing.T) {
 	tests := []struct {
-		name       string
-		initialIn  int
-		delta      int
-		wantErr    error
+		name        string
+		initialIn   int
+		delta       int
+		wantErr     error
 		wantMoneyIn int
 	}{
 		{
@@ -146,10 +146,10 @@ func TestAddMoneyIn(t *testing.T) {
 
 func TestAddMoneyOut(t *testing.T) {
 	tests := []struct {
-		name        string
-		initialOut  int
-		delta       int
-		wantErr     error
+		name         string
+		initialOut   int
+		delta        int
+		wantErr      error
 		wantMoneyOut int
 	}{
 		{

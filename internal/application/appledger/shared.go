@@ -14,15 +14,15 @@ func (s *Service) updateMonthlySummary(
 	ctx context.Context,
 	mstx *postgres.MonthlySummaryRepository,
 	inDelta, outDelta int,
-	accId string,
+	accID string,
 	month monthlysummary.Month,
 ) error {
 	// monthly summary — read current, add/subtract, write back
-	fms, err := mstx.FindByAccountAndMonth(ctx, accId, month)
+	fms, err := mstx.FindByAccountAndMonth(ctx, accID, month)
 	if err != nil {
 		if errors.Is(err, monthlysummary.ErrNotFound) {
 			fms, err := monthlysummary.New(
-				monthlysummary.ID(accId),
+				monthlysummary.ID(accID),
 				month,
 				inDelta,
 				outDelta,
