@@ -136,7 +136,7 @@ document.body.addEventListener("contentPush", function (ev) {
 });
 
 document.body.addEventListener("budget-import-completed", function (ev) {
-  htmx.ajax("GET", window.location.pathname, {
+  htmx.ajax("GET", window.location.href, {
     target: "#content",
     swap: "innerHTML",
     push: "true",
