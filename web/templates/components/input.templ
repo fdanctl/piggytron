@@ -90,6 +90,7 @@ templ CheckBoxPill(label string, attrs templ.Attributes) {
 type SelectOption struct {
 	Label string
 	Value string
+	Attrs templ.Attributes
 }
 
 templ Select(placeholder string, value string, options []SelectOption, hasError bool, attrs templ.Attributes) {
@@ -106,7 +107,10 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 			}
 		}
 	}}
-	@Dropdown(class, placeholder, true) {
+	@Dropdown(class, placeholder, true, templ.Attributes{
+		"data-action": "ui.select.center-selected",
+	},
+	) {
 		<ul class="options">
 			for _, o := range options {
 				<li
@@ -114,6 +118,7 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 					data-action="ui.select.option"
 					onclick=""
 					data-value={ o.Value }
+					{ o.Attrs... }
 				>
 					<span>{ o.Label }</span>
 					@CheckSvg(16, "", "")

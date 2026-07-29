@@ -1,9 +1,10 @@
 package partials
 
 import "github.com/fdanctl/piggytron/web/templates/components"
+import "time"
 
 templ BankChartCard(chart templ.Component) {
-	@components.MonthPill("")
+	@components.MonthPill("", "Jul 2026", time.Now())
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-md));"

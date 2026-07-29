@@ -1,30 +1,62 @@
 package components
 
-templ MonthPill(class string) {
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/internal/domain/budget"
+	"time"
+)
+
+type OptionLink struct {
+	Href  string
+	Name  string
+	Month string
+}
+
+func MonthOptionsFromDate(d time.Time, max int) ([]OptionLink, bool) {
+	bp := budget.NewMonth(d)
+
+	var opts []OptionLink
+	curr := time.Now()
+	var isAll bool
+	for max > 0 {
+		m := budget.NewMonth(curr)
+		opts = append(opts, OptionLink{Href: fmt.Sprintf("?month=%s", m.String()), Name: m.Label(), Month: m.String()})
+		max--
+		if m.Time().Compare(bp.Time()) == 0 {
+			isAll = true
+			break
+		}
+		curr = time.Date(curr.Year(), curr.Month()-1, 1, 0, 0, 0, 0, time.UTC)
+	}
+	return opts, isAll
+}
+
+templ MonthPill(class string, placeholder string, sinceDate time.Time) {
 	<div class={ "month-pill", templ.KV(class, class != "") }>
-		<button class="reset-btn">
+		<button class="reset-btn" data-action="ui.month-pill.prev-budget">
 			@ChevronLeftSvg(0, "", "")
 		</button>
-		@Dropdown("input", "Jun 2026", true) {
-			<ul class="options">
-				<li>
-					<a href="?month=2026-07">
-						Jul 2026
-					</a>
-				</li>
-				<li>
-					<a href="?month=2026-06">
-						Jun 2026
-					</a>
-				</li>
-				<li>
-					<a href="?month=2026-05">
-						May 2026
-					</a>
-				</li>
+		@Dropdown("input", placeholder, true, nil) {
+			<ul class="options" hx-target="#content" hx-boost="true">
+				{{ options, isAll := MonthOptionsFromDate(sinceDate, 12) }}
+				for _, o := range options {
+					<li>
+						<a href={ o.Href }>
+							{ o.Name }
+						</a>
+					</li>
+				}
+				<li
+					class={ templ.KV("hidden", isAll) }
+					data-intersect="ui.month-pill.generate-options"
+					if len(options) > 0 {
+						data-break={ budget.Month(sinceDate).String() }
+						data-last={ options[len(options)-1].Month }
+					}
+				></li>
 			</ul>
 		}
-		<button class="reset-btn">
+		<button class="reset-btn" data-action="ui.month-pill.next-budget">
 			@ChevronRightSvg(0, "", "")
 		</button>
 	</div>

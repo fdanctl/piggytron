@@ -63,4 +63,5 @@ type LedgerQueryService interface {
 	) ([]LedgerEntryDTO, error)
 	// GetMinMaxAmountAndDate return minAmount, maxAmount, minDate, maxDate, error
 	GetMinMaxAmountAndDate(ctx context.Context, uid string) (int, int, time.Time, time.Time, error)
+	GetFirstEntryDate(ctx context.Context, uid string) (time.Time, error)
 }

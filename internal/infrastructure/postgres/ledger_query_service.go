@@ -427,8 +427,23 @@ func (s *LedgerQueryService) GetMinMaxAmountAndDate(
 		&minDate,
 		&maxDate,
 	)
-	if err != nil {
-		return
-	}
+	return
+}
+
+func (s *LedgerQueryService) GetFirstEntryDate(
+	ctx context.Context,
+	uid string,
+) (date time.Time, err error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		`SELECT date FROM ledger
+		WHERE user_id = $1
+		ORDER BY date ASC
+		LIMIT 1
+		`,
+		uid,
+	)
+
+	err = row.Scan(&date)
 	return
 }

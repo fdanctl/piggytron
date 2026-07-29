@@ -21,7 +21,7 @@ templ Breadcrumbs(view views.BreadcrumbsView) {
 					@ChevronRightSvg(20, "", "")
 				</i>
 			} else if len(view.Options) > 0 {
-				@Dropdown("w-fit font-semibold", v.Name, false) {
+				@Dropdown("w-fit font-semibold", v.Name, false, nil) {
 					<ul class="breadcrumbs-selection">
 						for _, o := range view.Options {
 							<li>

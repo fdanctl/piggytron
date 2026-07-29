@@ -65,3 +65,55 @@ export function buildCalendar({ ele }) {
     daysContainer.appendChild(ddiv);
   }
 }
+
+export function generateYearLI({ ele, data }) {
+  const range = 10;
+  let dir = data.direction;
+
+  let opts = [];
+  let y =
+    dir === "down"
+      ? Number(ele.previousElementSibling.dataset.value)
+      : Number(ele.nextElementSibling.dataset.value);
+  dir = dir === "down" ? -1 : 1;
+
+  let i = 1;
+  while (i <= range) {
+    y = y + 1 * dir;
+    opts.push(makeYearOption(y));
+    i++;
+  }
+
+  if (dir < 0) {
+    ele.parentElement.append(...opts);
+    ele.parentElement.appendChild(ele);
+  } else {
+    ele.parentElement.prepend(...opts.reverse());
+    ele.parentElement.prepend(ele);
+  }
+}
+
+function makeYearOption(year) {
+  const li = document.createElement("li");
+  li.dataset.action = "ui.select.option";
+  li.dataset.value = year;
+  const span = document.createElement("span");
+  span.innerText = year;
+  const svg = `<svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class=""
+    >
+      <path d="M20 6 9 17l-5-5"></path>
+    </svg>`;
+  li.innerHTML = svg;
+  li.prepend(span);
+  return li;
+}

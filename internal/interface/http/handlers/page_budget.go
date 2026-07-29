@@ -39,7 +39,6 @@ func (h *BudgetPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -62,7 +61,6 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	logger.Debug(bm.String())
 
 	filters := query.NewLedgerFilters([]string{"income"}, nil, nil, "", "", "", "")
 	minD := bm.Time()
@@ -86,7 +84,6 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	for _, v := range incomes {
 		totalIncome += v.Amount
 	}
-	logger.Debug("total income: " + fmt.Sprint(totalIncome))
 
 	categoryBudgetSpent, err := h.categoryQuery.GetExpenseCategoriesBudgetSpent(
 		r.Context(),
@@ -100,6 +97,11 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageView := views.NewBudgetPageView(bm, totalIncome, categoryBudgetSpent)
+	d, err := h.transactionQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, errs.NewInternalAppError(err, "BudgetPageHandler.Get"))
+		return
+	}
 
 	content := pages.Budget(
 		views.BreadcrumbsView{
@@ -108,6 +110,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 			},
 			Options: nil,
 		},
+		d,
 		pageView,
 	)
 

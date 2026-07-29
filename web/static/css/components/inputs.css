@@ -224,29 +224,31 @@ input:focus + .checkbox-box {
 }
 
 /* select options */
-.options > li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--spacing-sm);
-  margin-top: var(--spacing-xs);
-  cursor: pointer;
-  border-radius: var(--radius-xs);
-  gap: var(--spacing-xs);
-}
-.options > li:first-child {
-  margin-top: 0;
-}
+@scope (.options) {
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+    cursor: pointer;
+    border-radius: var(--radius-xs);
+    gap: var(--spacing-xs);
+  }
+  li:first-child {
+    margin-top: 0;
+  }
 
-.options > li > svg {
-  visibility: hidden;
-}
-.options > li.selected,
-.options > li:hover {
-  background-color: var(--color-bg-muted);
-}
-.options > li.selected > svg {
-  visibility: visible;
+  li > svg {
+    visibility: hidden;
+  }
+  li.selected,
+  li:hover {
+    background-color: var(--color-bg-muted);
+  }
+  li.selected > svg {
+    visibility: visible;
+  }
 }
 
 /* date */

@@ -45,7 +45,7 @@ export function selectSelect({ ele, data }) {
   }
 }
 
-export function selectToggle({ data }) {
+export function centerSelected({ data }) {
   const popover = document.getElementById(data.target);
 
   requestAnimationFrame(() => {

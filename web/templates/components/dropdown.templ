@@ -11,7 +11,7 @@ type DropdownOptions struct {
 	name  string
 }
 
-templ Dropdown(class, name string, minWFull bool) {
+templ Dropdown(class, name string, minWFull bool, attrs templ.Attributes) {
 	{{
 		b := make([]byte, 5)
 		_, err := rand.Read(b)
@@ -24,10 +24,10 @@ templ Dropdown(class, name string, minWFull bool) {
 		<button
 			class={ "reset-btn", templ.KV(class, class != "") }
 			type="button"
-			data-action="ui.select.toggle"
 			data-target={ id }
 			popovertarget={ id }
 			style={ fmt.Sprintf("anchor-name: %s;", id) }
+			{ attrs... }
 		>
 			<span>
 				{ name }

@@ -3,7 +3,35 @@ import { showToast } from "../toast";
 import { goalActions } from "./goal";
 import { uiActions } from "./ui";
 
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const ele = entry.target;
+      dispatch(ele.dataset[eventAttributes.intersect], {
+        ele,
+        evt: entry,
+        data: ele.dataset,
+      });
+    }
+  });
+});
+
+document.body.addEventListener("htmx:afterOnLoad", function (ev) {
+  observer.disconnect();
+  const elements = document.querySelectorAll(
+    `[data-${eventAttributes.intersect}]`,
+  );
+  elements.forEach((el) => observer.observe(el));
+});
+
+function log({ ele, evt, data }) {
+  console.log(ele);
+  console.log(evt);
+  console.log(data);
+}
+
 const actions = {
+  "dev.log.this": log,
   ...uiActions,
   ...goalActions,
 };
@@ -17,8 +45,10 @@ const eventAttributes = {
   pointerdown: "pointerdown",
   "htmx:beforeRequest": "beforerequest",
   "htmx:afterRequest": "afterrequest",
+  "htmx:afterOnLoad": "afteronload",
   animationend: "animationend",
   submit: "submit",
+  intersect: "intersect",
 };
 
 document.addEventListener("focusout", (evt) => {
@@ -36,15 +66,18 @@ window.addEventListener("online", () => {
 });
 
 function dispatch(actionName, payload) {
-  const action = actions[actionName];
+  const names = actionName.trim().split(/\s+/);
 
-  if (!action) {
-    console.warn(`Unknown action: ${actionName}`);
+  for (const n of names) {
+    const action = actions[n];
+    if (!action) {
+      console.warn(`Unknown action: ${n}`);
 
-    return;
+      continue;
+    }
+
+    action(payload);
   }
-
-  action(payload);
 }
 
 function createListener(eventName, dataAttr) {
@@ -62,5 +95,10 @@ function createListener(eventName, dataAttr) {
 }
 
 for (let [key, value] of Object.entries(eventAttributes)) {
-  createListener(key, value);
+  if (value === eventAttributes.intersect) {
+    const elements = document.querySelectorAll(`[data-${value}]`);
+    elements.forEach((el) => observer.observe(el));
+  } else {
+    createListener(key, value);
+  }
 }

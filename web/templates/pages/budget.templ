@@ -11,10 +11,10 @@ import (
 	"time"
 )
 
-templ Budget(bview views.BreadcrumbsView, view views.BudgetPageView) {
+templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.BudgetPageView) {
 	<div class="flex justify-between">
 		@components.Breadcrumbs(bview)
-		@components.MonthPill("")
+		@components.MonthPill("", view.Month.Label(), datePillSince)
 	</div>
 	if view.TotalBudgeted == 0 {
 		@lastMonthImport(view.Month)

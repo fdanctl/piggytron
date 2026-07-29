@@ -1,4 +1,9 @@
-import { buildCalendar, nextMonth, prevMonth } from "../calendar";
+import {
+  buildCalendar,
+  generateYearLI,
+  nextMonth,
+  prevMonth,
+} from "../calendar";
 import {
   changeMaxAmountChip,
   changeMaxDateChip,
@@ -24,7 +29,7 @@ import {
   selectDay,
   selectSelect,
   selectTime,
-  selectToggle,
+  centerSelected,
   timeOnChange,
   budgetInputScan,
 } from "../input";
@@ -36,6 +41,11 @@ import {
   overlayClose,
 } from "../navigation";
 import { changeTab } from "../tabs";
+import {
+  generateMoreMonthsLI,
+  nextBudgetMonth,
+  prevBudgetMonth,
+} from "../month-pill";
 
 function removeEle({ ele }) {
   ele.remove();
@@ -49,6 +59,8 @@ export const uiActions = {
   "ui.calendar.next-month": nextMonth,
 
   "ui.calendar.rebuild": buildCalendar,
+
+  "ui.calendar.generate-year-options": generateYearLI,
 
   "ui.amount-chip.update-min": changeMinAmountChip,
 
@@ -80,7 +92,7 @@ export const uiActions = {
 
   "ui.time-input.select": selectTime,
 
-  "ui.select.toggle": selectToggle,
+  "ui.select.center-selected": centerSelected,
 
   "ui.budget-input.keydown": budgetInput,
 
@@ -113,4 +125,10 @@ export const uiActions = {
   "ui.slider.click": sliderClick,
 
   "ui.overlay.close": overlayClose,
+
+  "ui.month-pill.generate-options": generateMoreMonthsLI,
+
+  "ui.month-pill.prev-budget": prevBudgetMonth,
+
+  "ui.month-pill.next-budget": nextBudgetMonth,
 };

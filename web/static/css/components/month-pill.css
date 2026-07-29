@@ -1,0 +1,61 @@
+.month-pill {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  align-items: center;
+  z-index: 10;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  height: fit-content;
+  width: fit-content;
+}
+
+@scope (.month-pill) {
+  button {
+    border-radius: var(--radius-xl);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 18px;
+    width: 18px;
+  }
+  button svg {
+    width: 14px;
+    height: 14px;
+  }
+  span {
+    font-size: 10px;
+  }
+
+  button:hover {
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+  }
+
+  .input {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    color: var(--color-primary);
+    background-color: rgba(var(--color-primary-rgb), 0.1);
+    width: 90px;
+    border-radius: var(--radius-xl);
+  }
+
+  .input:focus,
+  .input:hover {
+    box-shadow: none;
+    background-color: rgba(var(--color-primary-rgb), 0.2);
+  }
+
+  .options > li {
+    justify-content: center;
+  }
+}
+
+@scope (.card) {
+  .month-pill {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+  }
+}
