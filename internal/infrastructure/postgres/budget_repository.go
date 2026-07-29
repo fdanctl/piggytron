@@ -46,11 +46,7 @@ func (r *BudgetRepository) Save(
 		b.CreatedAt(),
 		b.UpdatedAt(),
 	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (r *BudgetRepository) FindByCategoryAndMonth(
@@ -66,7 +62,7 @@ func (r *BudgetRepository) FindByCategoryAndMonth(
 		WHERE category_id = $1 AND month = $2
 		`,
 		cid,
-		month,
+		month.Time(),
 	)
 
 	var c BudgetDto
@@ -91,4 +87,74 @@ func (r *BudgetRepository) FindByCategoryAndMonth(
 		c.UpdatedAt,
 	)
 	return category, err
+}
+
+func (r *BudgetRepository) CopyLastMonthBudget(
+	ctx context.Context,
+	uid budget.ID,
+	month budget.Month,
+) (int, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`
+        WITH
+        copy AS (
+          INSERT INTO
+            monthly_budgets (
+              category_id,
+              month,
+              amount,
+              created_at,
+              updated_at
+            )
+          SELECT
+            ms.category_id,
+            $2,
+            ms.amount,
+            NOW(),
+            NOW()
+          FROM
+            monthly_budgets ms
+            JOIN expense_categories c ON ms.category_id = c.id
+            AND ms.month = $3 AND ms.amount > 0
+          WHERE
+            c.user_id = $1
+          ON CONFLICT (category_id, month) DO UPDATE
+          SET
+            amount = EXCLUDED.amount,
+            updated_at = EXCLUDED.updated_at
+          WHERE
+            monthly_budgets.amount <= 0
+          RETURNING
+            1 as inserted
+        )
+        SELECT
+          COALESCE(SUM(inserted), 0) as total_inserted
+        FROM
+        copy`,
+		uid,
+		month.Time(),
+		time.Date(
+			month.Time().Year(),
+			month.Time().Month()-1,
+			1,
+			0,
+			0,
+			0,
+			0,
+			month.Time().Location(),
+		),
+	)
+
+	var amountUpdated int
+	err := row.Scan(
+		&amountUpdated,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, budget.ErrNotFound
+		}
+		return 0, err
+	}
+	return amountUpdated, nil
 }

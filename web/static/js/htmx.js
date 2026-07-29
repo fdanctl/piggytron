@@ -135,6 +135,14 @@ document.body.addEventListener("contentPush", function (ev) {
   });
 });
 
+document.body.addEventListener("budget-import-completed", function (ev) {
+  htmx.ajax("GET", window.location.pathname, {
+    target: "#content",
+    swap: "innerHTML",
+    push: "true",
+  });
+});
+
 document.body.addEventListener("refetch-transactions", function (ev) {
   const isLedgerPage = window.location.pathname.includes("ledger");
   if (!isLedgerPage) {

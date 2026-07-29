@@ -47,8 +47,49 @@ import {
   prevBudgetMonth,
 } from "../month-pill";
 
-function removeEle({ ele }) {
-  ele.remove();
+function queryNextSelector(ele, selector) {
+  const results = ele.parentElement.querySelectorAll(selector);
+  for (let i = 0; i < results.length; i++) {
+    const elt = results[i];
+    if (elt.compareDocumentPosition(ele) === Node.DOCUMENT_POSITION_PRECEDING) {
+      return elt;
+    }
+  }
+}
+
+function queryPreviousSelector(ele, selector) {
+  const results = ele.parentElement.querySelectorAll(selector);
+  for (let i = results.length - 1; i >= 0; i--) {
+    const elt = results[i];
+    if (elt.compareDocumentPosition(ele) === Node.DOCUMENT_POSITION_FOLLOWING) {
+      return elt;
+    }
+  }
+}
+function getTarget(ele, selector) {
+  if (selector.indexOf("closest ") === 0) {
+    return ele.closest(selector.slice(8));
+  } else if (selector.indexOf("find ") === 0) {
+    return ele.querySelector(selector.slice(5));
+  } else if (selector === "next" || selector === "nextElementSibling") {
+    return ele.nextElementSibling;
+  } else if (selector.indexOf("next ") === 0) {
+    return queryNextSelector(ele, selector.slice(5));
+  } else if (selector === "previous" || selector === "previousElementSibling") {
+    return ele.previousElementSibling;
+  } else if (selector.indexOf("previous ") === 0) {
+    return queryPreviousSelector(ele, selector.slice(9));
+  } else {
+    return document.querySelector(selector);
+  }
+}
+
+function removeEle({ ele, data }) {
+  let t = ele;
+  if (data.target) {
+    t = getTarget(ele, data.target);
+  }
+  t.remove();
 }
 
 export const uiActions = {

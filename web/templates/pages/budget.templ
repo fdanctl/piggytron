@@ -46,8 +46,8 @@ templ lastMonthImport(month budget.Month) {
 				<p class="last-month-import__p">Copy last month's category amounts as a starting point</p>
 			</div>
 			<div class="last-month-import__btns">
-				@components.Button("Dismiss", "last-month-import__dismiss", components.BtnSecondary, components.BtnMedium, nil)
-				@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, nil, components.IconLeft, components.DownloadSvg(0, "", ""))
+				@components.Button("Dismiss", "last-month-import__dismiss", components.BtnSecondary, components.BtnMedium, templ.Attributes{"data-action": "ui.element.remove", "data-target": "closest .last-month-import"})
+				@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"hx-post": fmt.Sprintf("/partials/budget/import?month=%s", month.String()), "hx-target": "closest .last-month-import", "hx-swap": "delete"}, components.IconLeft, components.DownloadSvg(0, "", ""))
 			</div>
 		</div>
 	</div>

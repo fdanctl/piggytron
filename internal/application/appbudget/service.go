@@ -106,3 +106,26 @@ func (s *Service) FindBudget(
 
 	return b, nil
 }
+
+func (s *Service) CopyFromLastMonth(
+	ctx context.Context,
+	userID string,
+	month budget.Month,
+) (int, error) {
+	uid, err := util.ParseID[budget.ID](userID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appbudget.CopyFromLastMonth",
+		)
+		return 0, err
+	}
+
+	count, err := s.repo.CopyLastMonthBudget(ctx, uid, month)
+	if err != nil {
+		return 0, errs.NewInternalAppError(err, "appbudget.CopyFromLastMonth")
+	}
+	return count, nil
+}

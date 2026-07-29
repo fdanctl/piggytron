@@ -66,7 +66,8 @@ func main() {
 
 	_, err = client.Ping(context.Background()).Result()
 	if err != nil {
-		log.Fatalln("failed to connect to redis", err.Error())
+		logger.Error("failed to connect to redis", "error", err.Error())
+		os.Exit(1)
 		return
 	}
 	defer client.Close()
@@ -181,6 +182,9 @@ func main() {
 		catQueryService,
 	)
 	partialsMux.Handle("/partials/budget", budgetHandler)
+
+	importBudgetHandler := handlers.NewImportBudgetHandler(budgetService)
+	partialsMux.Handle("/partials/budget/import", importBudgetHandler)
 
 	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
 	partialsMux.Handle("/partials/income-category", incomeCatHandler)
