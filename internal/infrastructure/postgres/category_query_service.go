@@ -162,19 +162,18 @@ func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
         FROM
           expense_categories c
           LEFT JOIN ledger t ON c.id = t.expense_category_id
-          AND t.date >= $2
-          AND t.date < $3
+          AND t.date >= $1
+          AND t.date < $2
           LEFT JOIN monthly_budgets b ON c.id = b.category_id
-          AND b.month >= $2
-          AND b.month < $3
+          AND b.month >= $1
+          AND b.month < $2
         WHERE
-          c.user_id = $4
+          c.user_id = $3
         GROUP BY
           c.id,
 		  b.category_id,
           b.month
 		`,
-		time.Now(),
 		minDate,
 		maxDate,
 		uid,
