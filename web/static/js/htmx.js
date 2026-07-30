@@ -33,8 +33,9 @@ export function confirmModal({
 `;
 
     overlay.appendChild(modal);
-    document.getElementById("dialog-root").appendChild(overlay);
-    document.body.classList.add("dialog-open");
+    const root = document.getElementById("dialog-root");
+    root.appendChild(overlay);
+    root.classList.add("dialog--open");
     overlay.focus();
 
     modal.querySelector(".accept").onclick = () => {

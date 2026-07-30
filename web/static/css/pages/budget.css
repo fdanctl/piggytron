@@ -110,12 +110,6 @@
     padding: 6px 14px;
     align-items: center;
   }
-}
-
-@scope (.budget-table) {
-  > span:first-child {
-    text-align: left;
-  }
 
   .input {
     font-family: var(--font-mono);
@@ -172,6 +166,12 @@
   text-align: right;
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
+}
+
+@scope (.budget-table__head) {
+  > span:first-child {
+    text-align: left;
+  }
 }
 
 .budget-table__row {

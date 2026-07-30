@@ -4,7 +4,7 @@ templ DialogWrapper(class string, title string, attrs templ.Attributes) {
 	<div
 		class="dialog__overlay"
 		tabindex="-1"
-		hx-on::load="document.body.classList.add('dialog-open'); this.focus()"
+		hx-on::load="document.getElementById('dialog-root').classList.add('dialog--open'); this.focus()"
 	>
 		<div
 			class={ "dialog", templ.KV(class, class != "") }

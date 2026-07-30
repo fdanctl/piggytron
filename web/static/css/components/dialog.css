@@ -27,15 +27,15 @@
   overflow-y: scroll;
 }
 
-.dialog.closing {
-  transform: translateY(100%) !important;
+.dialog--closing {
+  transform: translateY(100%);
 }
 
 .dialog:focus {
   outline: none;
 }
 
-body.dialog-open {
+body:has(.dialog--open) {
   overflow: hidden;
 }
 
@@ -96,8 +96,8 @@ body.dialog-open {
     border: none;
   }
 
-  .dialog.closing {
-    transform: translateY(0) !important;
+  .dialog--closing {
+    transform: translateY(0);
     opacity: 0;
   }
 
@@ -109,7 +109,7 @@ body.dialog-open {
     display: none;
   }
 
-  .dialog.floating-sheet.top-right {
+  .dialog.floating-sheet--top-right {
     width: 320px;
     position: fixed;
     top: var(--spacing-sm);
@@ -139,9 +139,9 @@ body.dialog-open {
     transition: transform 200ms ease-in;
   }
 
-  .dialog.floating-sheet.top-right.closing,
-  .dialog.right-sheet.closing {
-    transform: translateX(100%) !important;
+  .dialog--closing.floating-sheet--top-right,
+  .dialog--closing.right-sheet {
+    transform: translateX(100%);
     opacity: 1;
   }
 

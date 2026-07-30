@@ -36,6 +36,7 @@ const sidebarHidePopover = (ele) => {
 const dialogRoot = document.querySelector("#dialog-root");
 
 export function openNavSheet() {
+  dialogRoot.classList.add("dialog--open");
   dialogRoot
     .querySelector("#nav-sheet")
     .parentElement.classList.remove("hidden");
@@ -55,13 +56,13 @@ export const closeAllDialog = () => {
 
 export const closeDialog = (ele) => {
   if (!ele) return;
-  document.body.classList.remove("dialog-open");
-  ele.classList.add("closing");
+  dialogRoot.classList.remove("dialog--open");
+  ele.classList.add("dialog--closing");
   ele.addEventListener(
     "transitionend",
     () => {
       ele.parentElement.classList.add("hidden");
-      ele.classList.remove("closing");
+      ele.classList.remove("dialog--closing");
       // if not nav sheet remove from dom
       if (!ele.matches("#nav-sheet")) {
         ele.parentElement.remove();
@@ -131,8 +132,8 @@ document.addEventListener("touchend", (e) => {
   currentDialog.style.transition = "transform 200ms ease";
 
   if (shouldClose) {
-    document.body.classList.remove("dialog-open");
-    currentDialog.classList.add("closing");
+    currentDialog.closest(".dialog--open")?.classList.remove("dialog--open");
+    currentDialog.classList.add("dialog--closing");
 
     let toClose = currentDialog;
 
@@ -141,7 +142,7 @@ document.addEventListener("touchend", (e) => {
       () => {
         toClose.style.transform = "translateY(0)";
         toClose.parentElement.classList.add("hidden");
-        toClose.classList.remove("closing");
+        toClose.classList.remove("dialog--closing");
         // if not nav sheet remove from dom
         if (!toClose.matches("#nav-sheet")) {
           toClose.parentElement.remove();
@@ -150,7 +151,7 @@ document.addEventListener("touchend", (e) => {
       { once: true },
     );
   } else {
-    currentDialog.style.transform = "translateY(0)";
+    currentDialog.style.transform = "";
   }
 
   dragging = false;
