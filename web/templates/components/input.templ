@@ -13,7 +13,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 			{ attrs... }
 		/>
 		<div>
-			<i class="feedback-icon">
+			<i class="input__feedback">
 				@CircleXSvg(16, "", "")
 			</i>
 			if t, ok := attrs["type"]; ok && t == "password" {
@@ -21,7 +21,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 					type="button"
 					data-action="ui.password.toggle"
 					onclick=""
-					class="reset-btn pwd-toggle"
+					class="reset-btn input__pwd-toggle"
 				>
 					<i>
 						@EyeSvg(20, "", "")
@@ -64,6 +64,7 @@ templ SearchBar(class string, attrs templ.Attributes) {
 			class={ "input", templ.KV(class, class != "") }
 			type="search"
 			placeholder={ placeholder }
+			{ attrs ... }
 		/>
 		<i>
 			@SearchSvg(16, "", "")
@@ -95,7 +96,7 @@ type SelectOption struct {
 
 templ Select(placeholder string, value string, options []SelectOption, hasError bool, attrs templ.Attributes) {
 	{{
-		class := "input"
+		class := "input select"
 		if hasError {
 			class += " input--error"
 		}
@@ -114,7 +115,7 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 		<ul class="options">
 			for _, o := range options {
 				<li
-					class={ templ.KV("selected", o.Label == placeholder) }
+					class={ templ.KV("options__item--selected", o.Label == placeholder) }
 					data-action="ui.select.option"
 					onclick=""
 					data-value={ o.Value }
@@ -155,7 +156,7 @@ templ Checkbox(class, label string, value bool, attrs templ.Attributes) {
 			}
 			{ attrs... }
 		/>
-		<span class="checkbox-box">
+		<span class="checkbox__box">
 			@CheckSvg(0, "", "")
 		</span>
 		<span>{ label }</span>
@@ -178,7 +179,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 			maxlength="10"
 			{ attrs... }
 		/>
-		<div>
+		<div class="date-input__icon">
 			<button
 				class="reset-btn flex justify-center items-center"
 				type="button"
@@ -193,7 +194,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 	</div>
 	<div
 		id={ id }
-		class="popover date-input"
+		class="popover date-input__popover"
 		style={ fmt.Sprintf("position-anchor: %s;", id) }
 		popover
 		data-action="ui.date-input.select"
@@ -236,7 +237,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 			{ attrs... }
 			maxlength="5"
 		/>
-		<div>
+		<div class="date-input__icon">
 			<button
 				class="reset-btn flex justify-center items-center"
 				type="button"
@@ -251,11 +252,11 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 	</div>
 	<div
 		id={ id }
-		class="popover date-input"
+		class="popover date-input__popover"
 		style={ fmt.Sprintf("position-anchor: %s;", id) }
 		popover
 	>
-		<div class="time-popover">
+		<div class="date-input__time">
 			<div>
 				<p>Hours</p>
 				<ul class="options">

@@ -27,15 +27,15 @@ export function confirmModal({
       <h4 class="mb-md">${title}</h4>
       <p class="text-subtitle">${message}</p>
       <div class="flex gap-xs justify-end items-center mt-sm">
-        <button class="btn btn-outline refuse">${refuseText}</button>
-        <button class="btn btn-outline accept">${acceptText}</button>
+        <button class="btn btn--outline refuse">${refuseText}</button>
+        <button class="btn btn--outline accept">${acceptText}</button>
       </div>
 `;
 
     overlay.appendChild(modal);
     const root = document.getElementById("dialog-root");
     root.appendChild(overlay);
-    root.classList.add("dialog--open");
+    root.classList.add("is-dialog-open");
     overlay.focus();
 
     modal.querySelector(".accept").onclick = () => {

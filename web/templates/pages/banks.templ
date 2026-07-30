@@ -18,7 +18,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 					<div>
 						<h6 class="card__title">Net Worth</h6>
 						<div>
-							<div class="metric__value xl">
+							<div class="metric__value metric__value--xl">
 								{ views.FormatMoney(float64(view.NetWorth) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
 							<div class={ "metric__sub", templ.KV("text-positive", true) }>

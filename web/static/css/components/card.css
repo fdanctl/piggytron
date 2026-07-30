@@ -51,7 +51,7 @@
   font-family: var(--font-mono);
 }
 
-.metric__value.xl {
+.metric__value--xl {
   font-size: var(--font-size-2xl);
 }
 
@@ -62,6 +62,6 @@
   font-family: var(--font-mono);
 }
 
-.metric__sub.xl {
+.metric__sub--xl {
   font-size: var(--font-size-xs);
 }

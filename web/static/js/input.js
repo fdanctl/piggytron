@@ -33,9 +33,9 @@ export function selectSelect({ ele, data }) {
 
   const opts = ele.parentElement.querySelectorAll("li");
   for (let i = 0; i < opts.length; i++) {
-    opts[i].classList.remove("selected");
+    opts[i].classList.remove("options__item--selected");
   }
-  ele.classList.add("selected");
+  ele.classList.add("options__item--selected");
   ele.closest(".popover").hidePopover();
   let drop = ele.closest(".dropdown");
   if (drop) {
@@ -50,7 +50,7 @@ export function centerSelected({ data }) {
 
   requestAnimationFrame(() => {
     if (popover.matches(":popover-open")) {
-      const selected = popover.querySelector(".selected");
+      const selected = popover.querySelector(".options__item--selected");
 
       selected?.scrollIntoView({
         block: "center",
@@ -234,10 +234,10 @@ export function openCalendar({ data }) {
   clickOption(monthInput, String(month));
   monthInput.dispatchEvent(new Event("change"), { bubbles: true }); // triggers change event
 
-  const days = target.querySelectorAll(".days > div");
+  const days = target.querySelectorAll(".calendar__days > div");
   for (let i = 0; i < days.length; i++) {
     if (day == Number(days[i].innerText)) {
-      days[i].classList.add("selected");
+      days[i].classList.add("calendar__day--selected");
     }
   }
 }
@@ -288,20 +288,20 @@ export function timeOnChange({ ele }) {
 }
 
 export function selectTime({ ele }) {
-  const popover = ele.closest(".popover");
+  const popover = ele.closest(".date-input__popover");
 
   const opts = ele.parentElement.querySelectorAll("li");
   for (let i = 0; i < opts.length; i++) {
-    opts[i].classList.remove("selected");
+    opts[i].classList.remove("options__item--selected");
   }
-  ele.classList.add("selected");
+  ele.classList.add("options__item--selected");
 
   let h = "00";
   let m = "00";
 
   const harr = popover.querySelectorAll('[data-type="hour"]');
   for (let i = 0; i < harr.length; i++) {
-    if (harr[i].matches(".selected")) {
+    if (harr[i].matches(".options__item--selected")) {
       h = harr[i].innerText;
       break;
     }
@@ -309,7 +309,7 @@ export function selectTime({ ele }) {
 
   const marr = popover.querySelectorAll('[data-type="minutes"]');
   for (let i = 0; i < marr.length; i++) {
-    if (marr[i].matches(".selected")) {
+    if (marr[i].matches(".options__item--selected")) {
       m = marr[i].innerText;
       break;
     }
@@ -323,12 +323,12 @@ export function selectTime({ ele }) {
 export function openTimePopover({ data }) {
   const target = document.getElementById(data.target);
   const inputValue = target
-    .closest(".popover")
+    .closest(".date-input__popover")
     .previousSibling.querySelector("input").value;
 
   const opts = target.querySelectorAll("li");
   for (let i = 0; i < opts.length; i++) {
-    opts[i].classList.remove("selected");
+    opts[i].classList.remove("options__item--selected");
   }
   if (inputValue.length < 5) {
     return;
@@ -342,7 +342,7 @@ export function openTimePopover({ data }) {
   const harr = target.querySelectorAll('[data-type="hour"]');
   for (let i = 0; i < harr.length; i++) {
     if (harr[i].innerText === h) {
-      harr[i].classList.add("selected");
+      harr[i].classList.add("options__item--selected");
       break;
     }
   }
@@ -350,13 +350,13 @@ export function openTimePopover({ data }) {
   const marr = target.querySelectorAll('[data-type="minutes"]');
   for (let i = 0; i < marr.length; i++) {
     if (marr[i].innerText === m) {
-      marr[i].classList.add("selected");
+      marr[i].classList.add("options__item--selected");
       break;
     }
   }
 
   if (target.matches(":popover-open")) {
-    const selected = target.querySelectorAll(".selected");
+    const selected = target.querySelectorAll(".options__item--selected");
     for (let i = 0; i < selected.length; i++) {
       selected[i].scrollIntoView({ block: "center" });
     }

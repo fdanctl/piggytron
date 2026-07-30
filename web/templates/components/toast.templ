@@ -1,5 +1,7 @@
 package components
 
+import "fmt"
+
 type toastLevel string
 
 const (
@@ -11,7 +13,7 @@ const (
 
 templ SendToast(level toastLevel, msg string) {
 	<div hx-swap-oob="beforeend:#toast-root">
-		<div class={ "toast cursor-pointer", string(level) } data-animationend="ui.element.remove" data-action="ui.element.remove">
+		<div class={ "toast cursor-pointer", fmt.Sprint("toast--", level) } data-animationend="ui.element.remove" data-action="ui.element.remove">
 			switch level {
 				case Success:
 					@CheckSvg(16, "", "")

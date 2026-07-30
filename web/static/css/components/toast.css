@@ -76,22 +76,22 @@
   height: 16px;
 }
 
-.toast.success {
+.toast--success {
   color: white;
   background-color: var(--color-success);
 }
 
-.toast.warning {
+.toast--warning {
   color: white;
   background-color: var(--color-warning);
 }
 
-.toast.error {
+.toast--error {
   color: white;
   background-color: var(--color-error);
 }
 
-.toast.info {
+.toast--info {
   color: white;
   background-color: var(--color-info);
 }

@@ -18,7 +18,7 @@ templ TransactionForm(
 ) {
 	<div class="tabs-list">
 		<button
-			class="reset-btn tab-trigger active"
+			class="reset-btn tab-trigger tab-trigger--active"
 			data-tab="income"
 			data-action="ui.tab.change"
 			data-tab-trigger="transaction"
@@ -371,6 +371,7 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 				"value": v.Date,
 			},
 		)
+		{{ categories = append([]components.SelectOption{{Label: "-- Select category --", Value: ""}}, categories...) }}
 		@components.SelectGroup(
 			"",
 			"Category",
@@ -510,9 +511,12 @@ templ GoalContributionForm(v views.TransferForm, categories, accounts []componen
 				label = categories[index].Label
 			}
 		}}
-		@components.InputGroup(
+		@components.SelectGroup(
 			"",
 			"Category",
+			label,
+			label,
+			nil,
 			views.StringArrToStr(v.ValidateCategory()),
 			v.CategoryHasError(),
 			true,

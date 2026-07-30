@@ -35,7 +35,7 @@
   outline: none;
 }
 
-body:has(.dialog--open) {
+body:has(.is-dialog-open) {
   overflow: hidden;
 }
 
@@ -82,6 +82,11 @@ body:has(.dialog--open) {
   color: var(--color-error);
 }
 
+.dialog__x svg {
+  width: 16px;
+  height: 16px;
+}
+
 @media (width >= 600px) {
   .dialog {
     padding: var(--spacing-md) var(--spacing-md);
@@ -109,7 +114,7 @@ body:has(.dialog--open) {
     display: none;
   }
 
-  .dialog.floating-sheet--top-right {
+  .dialog--top-right {
     width: 320px;
     position: fixed;
     top: var(--spacing-sm);
@@ -120,7 +125,7 @@ body:has(.dialog--open) {
     transition: transform 200ms ease-in;
   }
 
-  .dialog.right-sheet {
+  .dialog--right-sheet {
     display: grid;
     grid-template-rows: auto 1fr;
     height: 100dvh;
@@ -139,8 +144,8 @@ body:has(.dialog--open) {
     transition: transform 200ms ease-in;
   }
 
-  .dialog--closing.floating-sheet--top-right,
-  .dialog--closing.right-sheet {
+  .dialog--closing.dialog--top-right,
+  .dialog--closing.dialog--right-sheet {
     transform: translateX(100%);
     opacity: 1;
   }

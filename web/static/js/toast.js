@@ -48,7 +48,7 @@ function makeSVG(level, size = 24, color = "currentColor", className = "") {
 
 export function showToast(level, msg) {
   const toast = document.createElement("div");
-  toast.classList.add("toast", "cursor-pointer", level);
+  toast.classList.add("toast", "cursor-pointer", "toast--" + level);
   toast.dataset.animationend = "ui.element.remove";
   toast.dataset.action = "ui.element.remove";
 

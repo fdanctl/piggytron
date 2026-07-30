@@ -82,7 +82,7 @@ templ CalendarPreRendered() {
 				<div class="text-sm text-muted font-medium flex justify-center items-center">{ d }</div>
 			}
 		</div>
-		<div class="days">
+		<div class="calendar__days">
 			// 7 * 4
 			for i := 0; i < 28; i++ {
 				@dayDiv(i, firstSunday)
@@ -147,6 +147,6 @@ templ Calendar() {
 				<div class="text-sm text-muted font-medium flex justify-center items-center">{ d }</div>
 			}
 		</div>
-		<div class="days"></div>
+		<div class="calendar__days"></div>
 	</div>
 }

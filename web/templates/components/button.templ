@@ -22,13 +22,13 @@ const (
 )
 
 templ Button(text, class string, variant btnVariant, size btnSize, attrs templ.Attributes) {
-	<button class={ "btn unselectable", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+	<button class={ "btn unselectable", fmt.Sprint("btn--", variant), fmt.Sprint("btn--", size), templ.KV(class, class != "") } { attrs... }>
 		{ text }
 	</button>
 }
 
 templ IconButton(icon templ.Component, class string, variant btnVariant, size btnSize, attrs templ.Attributes) {
-	<button class={ "btn", "btn-icon", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+	<button class={ "btn", "btn--icon", fmt.Sprint("btn--", variant), fmt.Sprint("btn--", size), templ.KV(class, class != "") } { attrs... }>
 		@icon
 	</button>
 }
@@ -41,7 +41,7 @@ const (
 )
 
 templ ButtonWithIcon(text, class string, variant btnVariant, size btnSize, attrs templ.Attributes, placement btnIconPlacement, icon templ.Component) {
-	<button class={ "btn", fmt.Sprint("btn-", variant), fmt.Sprint("btn-", size), templ.KV(class, class != "") } { attrs... }>
+	<button class={ "btn", fmt.Sprint("btn--", variant), fmt.Sprint("btn--", size), templ.KV(class, class != "") } { attrs... }>
 		if placement == IconLeft {
 			@icon
 			{ text }

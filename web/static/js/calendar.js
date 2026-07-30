@@ -43,7 +43,7 @@ export function buildCalendar({ ele }) {
   const monthFirstWeekDay = date.getDay();
   const firstSunday = date - new Date(monthFirstWeekDay * 24 * 60 * 60 * 900); // hours * minutes * seconds * miliseconds
 
-  const daysContainer = calendar.querySelector(".days");
+  const daysContainer = calendar.querySelector(".calendar__days");
   daysContainer.innerHTML = "";
 
   for (let i = 0; i < 42; i++) {

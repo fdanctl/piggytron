@@ -6,8 +6,8 @@ export function changeTab({ ele, data }) {
     `[data-tab-content="${data.tabTrigger}"]`,
   );
 
-  triggers.forEach((t) => t.classList.remove("active"));
-  ele.classList.add("active");
+  triggers.forEach((t) => t.classList.remove("tab-trigger--active"));
+  ele.classList.add("tab-trigger--active");
 
   contents.forEach((content) => content.classList.add("hidden"));
   const targetContent = document.getElementById(`${data.tab}-content`);

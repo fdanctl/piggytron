@@ -7,14 +7,14 @@
 }
 
 .calendar > div:nth-child(2),
-.calendar > .days {
+.calendar__days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--spacing-xs);
   place-items: center center;
 }
 
-.calendar > .days > div {
+.calendar__days > div {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -25,7 +25,7 @@
   cursor: pointer;
 }
 
-.calendar > .days > div:hover,
-.calendar > .days > div.selected {
+.calendar__days > div:hover,
+.calendar__days > div.calendar__day--selected {
   background-color: var(--color-border);
 }

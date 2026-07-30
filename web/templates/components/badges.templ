@@ -1,5 +1,7 @@
 package components
 
+import "fmt"
+
 type badgeVariant string
 
 const (
@@ -10,7 +12,7 @@ const (
 )
 
 templ Badge(text, class string, variant badgeVariant) {
-	<div class={ "badge", templ.KV(string(variant), variant != ""), templ.KV(class, class != "") }>
+	<div class={ "badge", templ.KV(fmt.Sprint("badge--", variant), variant != ""), templ.KV(class, class != "") }>
 		{ text }
 	</div>
 }

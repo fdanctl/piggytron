@@ -7,7 +7,7 @@ import (
 )
 
 templ TransactionDetails(t views.Transaction) {
-	@components.DialogWrapper("floating-sheet floating-sheet--top-right", "Transaction Details", nil) {
+	@components.DialogWrapper("dialog--top-right", "Transaction Details", nil) {
 		<div class="mb-sm">
 			<p class="tdetails__amount-label">Amount</p>
 			<p class="tdetails__amount">{ t.Amount }</p>
@@ -46,7 +46,7 @@ templ TransactionDetails(t views.Transaction) {
 		<hr class="w-full"/>
 		<div class="w-full flex justify-between gap-xs">
 			@components.ButtonWithIcon(
-				"Delete", "w-full destructive-hover", components.BtnOutline, components.BtnMedium,
+				"Delete", "w-full btn--destructive-hover", components.BtnOutline, components.BtnMedium,
 				templ.Attributes{
 					"hx-target":  fmt.Sprintf("#t__%s", t.ID),
 					"hx-swap":    "delete",

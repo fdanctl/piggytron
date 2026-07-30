@@ -57,32 +57,32 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, leftToSpend, overspent in
 	<div id="budget-stats" class="budget-stats mt-lg" { attrs... }>
 		<div class="card">
 			<h6 class="card__title">Left to budget</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", leftToBudget < 0) }>
+			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToBudget < 0) }>
 				{ views.FormatMoney(float64(leftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="ltb-input" type="hidden" name="ltb" value={ leftToBudget }/>
 				<input id="total-budgeted" type="hidden" name="total-budgeted" value={ totalBudgeted }/>
 			</p>
-			<p class="metric__sub xl mt-xs">
+			<p class="metric__sub metric__sub--xl mt-xs">
 				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income
 				<input id="income-input" type="hidden" name="income" value={ income }/>
 			</p>
 		</div>
 		<div class="card">
 			<h6 class="card__title">Left to spend</h6>
-			<p id="left-to-spent" class={ "metric__value xl", templ.KV("text-negative", leftToSpend < 0) }>
+			<p id="left-to-spent" class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToSpend < 0) }>
 				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="lts-input" type="hidden" name="lts" value={ leftToSpend }/>
 			</p>
-			<p class="metric__sub xl mt-xs">
+			<p class="metric__sub metric__sub--xl mt-xs">
 				budgeted but unspent
 			</p>
 		</div>
 		<div class="card">
 			<h6 class="card__title">Overspent</h6>
-			<p class={ "metric__value xl", templ.KV("text-negative", overspent != 0) }>
+			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", overspent != 0) }>
 				{ views.FormatMoney(float64(overspent) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
-			<p class="metric__sub xl mt-xs">
+			<p class="metric__sub metric__sub--xl mt-xs">
 				across all categories
 				<input id="overspent" type="hidden" name="overspent" value={ overspent }/>
 			</p>

@@ -3,7 +3,7 @@ let colapsed = localStorage.getItem("colapsed") === "true";
 const sidebar = document.getElementById("sidebar");
 
 export const colapseSidebar = () => {
-  document.documentElement.classList.toggle("sidebar-colapsed");
+  document.documentElement.classList.toggle("is-sidebar-collapsed");
   colapsed = !colapsed;
   localStorage.setItem("colapsed", colapsed);
   sidebar
@@ -36,7 +36,7 @@ const sidebarHidePopover = (ele) => {
 const dialogRoot = document.querySelector("#dialog-root");
 
 export function openNavSheet() {
-  dialogRoot.classList.add("dialog--open");
+  dialogRoot.classList.add("is-dialog-open");
   dialogRoot
     .querySelector("#nav-sheet")
     .parentElement.classList.remove("hidden");
@@ -56,7 +56,7 @@ export const closeAllDialog = () => {
 
 export const closeDialog = (ele) => {
   if (!ele) return;
-  dialogRoot.classList.remove("dialog--open");
+  dialogRoot.classList.remove("is-dialog-open");
   ele.classList.add("dialog--closing");
   ele.addEventListener(
     "transitionend",
@@ -132,7 +132,9 @@ document.addEventListener("touchend", (e) => {
   currentDialog.style.transition = "transform 200ms ease";
 
   if (shouldClose) {
-    currentDialog.closest(".dialog--open")?.classList.remove("dialog--open");
+    currentDialog
+      .closest(".is-dialog-open")
+      ?.classList.remove("is-dialog-open");
     currentDialog.classList.add("dialog--closing");
 
     let toClose = currentDialog;
@@ -192,7 +194,7 @@ const handleCloseAllSublinks = (ev) => {
 
 const handleExpandToggle = (ele) => {
   if (
-    document.documentElement.classList.contains("sidebar-colapsed") &&
+    document.documentElement.classList.contains("is-sidebar-collapsed") &&
     ele.closest("#sidebar")
   ) {
     return;
@@ -202,7 +204,7 @@ const handleExpandToggle = (ele) => {
 
 const handleExpandOpen = (ele) => {
   if (
-    document.documentElement.classList.contains("sidebar-colapsed") &&
+    document.documentElement.classList.contains("is-sidebar-collapsed") &&
     ele.closest("#sidebar")
   ) {
     return;

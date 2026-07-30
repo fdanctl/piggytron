@@ -161,7 +161,7 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		resCount,
 	)
 	ctx := templ.WithChildren(r.Context(), content)
-	components.DialogWrapper("right-sheet", "Filters", nil).Render(ctx, w)
+	components.DialogWrapper("dialog--right-sheet", "Filters", nil).Render(ctx, w)
 }
 
 func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {

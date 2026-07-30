@@ -27,7 +27,7 @@
 
 .btn:focus {
   outline: none;
-  box-shadow: var(--shadow-focus) !important;
+  box-shadow: var(--shadow-focus);
 }
 
 .btn svg {
@@ -44,118 +44,127 @@
   display: none;
 }
 
-.btn-icon {
+.btn--icon {
   padding: 0.5rem;
 }
 
-.btn-primary {
+.btn--primary {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
   border-color: var(--color-primary);
 }
 
-.btn-primary:focus,
-.btn-primary:hover:not(:disabled) {
+.btn--primary:focus,
+.btn--primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
 }
 
-.btn-secondary {
+.btn--secondary {
   background-color: var(--color-secondary);
   color: var(--color-on-secondary);
   border-color: var(--color-border);
 }
 
-.btn-secondary:focus,
-.btn-secondary:hover:not(:disabled) {
+.btn--secondary:focus,
+.btn--secondary:hover:not(:disabled) {
   background-color: var(--color-secondary-hover);
 }
 
-.btn-outline-primary {
+.btn--outline-primary {
   background-color: transparent;
   color: var(--color-primary);
   border-color: var(--color-primary);
 }
 
-.btn-outline-primary:focus,
-.btn-outline-primary:hover:not(:disabled) {
+.btn--outline-primary:focus,
+.btn--outline-primary:hover:not(:disabled) {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
 }
 
-.btn-outline {
+.btn--outline {
   background-color: transparent;
   color: var(--color-text);
   border-color: var(--color-border);
 }
 
-.btn-outline:focus,
-.btn-outline:hover:not(:disabled) {
+.btn--outline:focus,
+.btn--outline:hover:not(:disabled) {
   background-color: var(--color-border);
 }
 
-.btn-ghost {
+.btn--ghost {
   background-color: transparent;
   color: var(--color-text);
   border-color: transparent;
 }
 
-.btn-ghost:focus,
-.btn-ghost:hover:not(:disabled) {
+.btn--ghost:focus,
+.btn--ghost:hover:not(:disabled) {
   background-color: var(--color-border);
 }
 
-.btn-destructive {
+.btn--destructive {
   background-color: var(--color-error);
   color: white;
   border-color: var(--color-error);
 }
 
-.destructive-hover:focus,
-.btn-destructive:focus {
-  box-shadow: var(--shadow-focus-error) !important;
+.btn--destructive:focus {
+  box-shadow: var(--shadow-focus-error);
 }
 
-.destructive-hover:focus,
-.destructive-hover:hover,
-.btn-destructive:focus,
-.btn-destructive:hover:not(:disabled) {
+.btn--destructive:focus,
+.btn--destructive:hover:not(:disabled) {
   color: white;
-  background-color: var(--color-error-hover) !important;
+  background-color: var(--color-error-hover);
   border-color: var(--color-error-hover);
 }
 
-.btn-sm {
+/* add to any btn variant to make it destructive on hover/focus */
+.btn--destructive-hover:focus {
+  box-shadow: var(--shadow-focus-error);
+}
+
+.btn--destructive-hover:focus,
+.btn--destructive-hover:hover:not(:disabled) {
+  color: white;
+  background: var(--color-error-hover);
+  border-color: var(--color-error-hover);
+}
+
+.btn--sm {
   padding: 0.375rem 0.75rem;
   font-size: var(--font-size-xs);
   gap: 0.25rem;
 }
 
-.btn-sm.btn-icon {
+.btn--sm.btn--icon {
   padding: 0.375rem;
 }
 
-.btn-sm svg {
+.btn--sm svg {
   height: 0.75rem;
   width: 0.75rem;
 }
 
-.btn-lg {
+.btn--lg {
   padding: 0.75rem 1.5rem;
   font-size: var(--font-size-md);
   gap: 0.5rem;
 }
 
-.btn-lg.btn-icon {
+.btn--lg.btn--icon {
   padding: 0.75rem;
 }
 
-.btn-lg svg {
+.btn--lg svg {
   height: 1.35rem;
   width: 1.35rem;
 }
 
-.filter-btn {
+.btn--filter {
   position: relative;
   height: fit-content;
   width: fit-content;

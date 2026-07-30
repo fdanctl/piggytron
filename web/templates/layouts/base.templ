@@ -26,7 +26,7 @@ templ Base(title string) {
 			<script src="/static/sidebar-initial.js"></script>
 			<script>
 				let c = localStorage.getItem("colapsed") === "true";
-				document.documentElement.classList.toggle("sidebar-colapsed", c);
+				document.documentElement.classList.toggle("is-sidebar-collapsed", c);
 			</script>
 			<script>
 				const theme = localStorage.getItem("theme") || "system";

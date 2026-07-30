@@ -261,7 +261,7 @@ input[type="number"] {
   --color-warning-border: #f1ab11;
   --color-on-warning: #f1ab11;
   --color-error: #c11204;
-  --color-error-hover: #c11204;
+  --color-error-hover: #e91102;
   --color-error-bg: #f5ded0;
   --color-error-border: #c11204;
   --color-on-error: #c11204;
@@ -275,10 +275,6 @@ input[type="number"] {
     color: var(--cian-100);
     background: rgb(94 239 239 / 10%);
   }
-}
-
-.main {
-  scroll-behavior: smooth;
 }
 
 body {

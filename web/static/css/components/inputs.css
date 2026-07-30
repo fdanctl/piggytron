@@ -82,13 +82,13 @@
   object-fit: contain;
 }
 
-.input ~ div > .feedback-icon {
+.input ~ div > .input__feedback {
   display: none;
   color: var(--color-error);
 }
 
 input.input--error:not(:focus),
-.input:has(+ div .pwd-toggle) {
+.input:has(+ div .input__pwd-toggle) {
   padding-right: calc(20px + var(--spacing-md));
 }
 
@@ -96,7 +96,7 @@ input.input--error:not(:focus),
   padding-right: calc(40px + var(--spacing-md));
 }
 
-.input--error:not(:focus) ~ div > .feedback-icon {
+.input--error:not(:focus) ~ div > .input__feedback {
   display: flex;
 }
 
@@ -112,14 +112,20 @@ input.input--error:not(:focus),
   align-items: center;
   gap: var(--spacing-sm);
   font-size: var(--font-size-sm);
+  width: fit-content;
 }
 
 .checkbox input {
-  position: absolute;
   opacity: 0;
+  display: none;
 }
 
-.checkbox-box {
+.checkbox:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.checkbox__box {
   width: 18px;
   height: 18px;
   border: 1px solid var(--color-border);
@@ -130,22 +136,22 @@ input.input--error:not(:focus),
   padding: 3px;
 }
 
-.checkbox-box svg {
+.checkbox__box svg {
   object-fit: contain;
   display: none;
   color: var(--color-text-inverse);
 }
 
-input:checked + .checkbox-box {
+input:checked + .checkbox__box {
   background-color: var(--color-text);
   border: white;
 }
 
-input:checked + .checkbox-box svg {
+input:checked + .checkbox__box svg {
   display: block;
 }
 
-input:focus + .checkbox-box {
+input:focus + .checkbox__box {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
@@ -221,6 +227,14 @@ input:focus + .checkbox-box {
 }
 
 /* select options */
+.select:has(+ span input:disabled) {
+  background-color: var(--color-border);
+  border: 1px solid var(--color-border);
+  opacity: 0.7;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
 @scope (.options) {
   li {
     display: flex;
@@ -241,18 +255,18 @@ input:focus + .checkbox-box {
     visibility: hidden;
   }
 
-  li.selected,
+  li.options__item--selected,
   li:hover {
     background-color: var(--color-bg-muted);
   }
 
-  li.selected > svg {
+  li.options__item--selected > svg {
     visibility: visible;
   }
 }
 
 /* date */
-.popover.date-input {
+.date-input__popover {
   display: none;
   margin: 0;
   inset: auto;
@@ -266,20 +280,20 @@ input:focus + .checkbox-box {
 }
 
 @media (width >= 600px) {
-  .popover.date-input {
+  .date-input__popover {
     right: anchor(right);
   }
 }
 
-.popover.date-input.min-w {
+.date-input__popover--min-w {
   min-width: anchor-size(width);
 }
 
-.popover.date-input:popover-open {
+.date-input__popover:popover-open {
   display: block;
 }
 
-.popover.date-input > div {
+.date-input__popover > div {
   color: var(--color-text);
   background-color: var(--color-bg);
   border: 1px solid var(--color-border);
@@ -290,17 +304,23 @@ input:focus + .checkbox-box {
   scrollbar-color: var(--color-border) transparent;
 }
 
+.date-input:has(input:disabled) .date-input__icon {
+  pointer-events: none;
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* time */
-.time-popover {
+.date-input__time {
   display: flex;
   gap: var(--spacing-sm);
 }
 
-.time-popover > div {
+.date-input__time > div {
   width: 100px;
 }
 
-.time-popover ul {
+.date-input__time ul {
   margin-top: var(--spacing-xs);
   height: 150px;
   overflow-y: scroll;
@@ -311,7 +331,7 @@ input:focus + .checkbox-box {
 
 .toggle-switch {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(var(--count), 1fr);
   border: 0.5px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 3px;
@@ -321,6 +341,7 @@ input:focus + .checkbox-box {
 }
 
 .toggle-switch label {
+  cursor: pointer;
   display: flex;
   justify-content: center;
   align-items: center;

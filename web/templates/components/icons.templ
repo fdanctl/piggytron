@@ -276,7 +276,7 @@ templ ListFilterSvg(size uint8, color string, class string) {
 }
 
 templ FilterBtn(filtersCount uint8, size uint8, color string, class string, attrs templ.Attributes) {
-	<button class="reset-btn filter-btn" { attrs... }>
+	<button class="reset-btn btn--filter" { attrs... }>
 		@svgWrapper(size, color, class) {
 			<path d="M2 5h20"></path><path d="M6 12h12"></path><path d="M9 19h6"></path>
 		}

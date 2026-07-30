@@ -1,66 +1,818 @@
 package pages
 
-import "github.com/fdanctl/piggytron/web/templates/components"
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"time"
+)
 
 templ Test() {
-	<style>
-		#my-btn {
-			anchor-name: --Profile-button;
-			width: fit-content;
-		}
-		#mypop {
-			display: none;
-			/* anchoring to the button */
-			position: absolute;
-			position-anchor: --Profile-button;
-			margin: 0;
-			inset: auto;
-			bottom: anchor(bottom);
-			left: anchor(right);
-			opacity: 0;
-			transition:
-				opacity 1s,
-				display 1s,
-				overlay 1s;
-			transition-behavior: allow-discrete;
-
-			position-try-fallbacks: --left;
-
-			margin-left: 0.25rem;
-		}
-		#mypop:popover-open {
-			display: grid;
-			opacity: 1;
-		}
-	</style>
-	<div>
-		<div
-			id="my-btn"
-			onmouseenter="document.getElementById('mypop').showPopover();"
-			onmouseleave="document.getElementById('mypop').hidePopover();"
-		>
-			open
+	<h1 class="text-2xl font-bold mb-lg">Component & Icon Test Page</h1>
+	<!-- ============================================================ -->
+	<!-- BUTTONS                                                        -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Buttons
+		</h2>
+		<h3 class="font-medium mb-sm">Variants — Enabled vs Disabled</h3>
+		<div class="flex flex-wrap gap-sm items-center mb-md">
+			@components.Button("Primary", "", components.BtnPrimary, components.BtnMedium, nil)
+			@components.Button("Primary", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.Button("Secondary", "", components.BtnSecondary, components.BtnMedium, nil)
+			@components.Button("Secondary", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"disabled": ""})
 		</div>
-	</div>
-	<div>
-		<div id="mypop" popover>
-			<p>this is a text</p>
+		<div class="flex flex-wrap gap-sm items-center mb-md">
+			@components.Button("Outline Primary", "", components.BtnOutlinePrimary, components.BtnMedium, nil)
+			@components.Button("Outline Primary", "", components.BtnOutlinePrimary, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.Button("Outline", "", components.BtnOutline, components.BtnMedium, nil)
+			@components.Button("Outline", "", components.BtnOutline, components.BtnMedium, templ.Attributes{"disabled": ""})
 		</div>
-	</div>
-	@components.Dropdown("", "one", false, nil) {
-		<h1>hello one</h1>
-	}
-	@components.Dropdown("", "t", false, nil) {
-		<h1>hello two</h1>
-	}
-	@components.InputGroup("", "label", "hello error", false, true, nil)
-	@components.InputGroup("", "label", "hello error", true, true, nil)
-	@components.Input("", false, nil)
-	@components.Input("", true, nil)
-	@components.SearchBar("", nil)
-	@components.DateInput("", false, templ.Attributes{"placeholder": "dd/mm/yyyy"})
-	@components.Input("", false, templ.Attributes{"type": "time"})
-	@components.TimeInput("", false, nil)
-	@components.DoubleSliderInput(0, 150, 20, 50, "minamount", "maxamount", nil, nil)
-	@components.SliderInput(0, 100, 25, "yoo", nil)
+		<div class="flex flex-wrap gap-sm items-center mb-md">
+			@components.Button("Ghost", "", components.BtnGhost, components.BtnMedium, nil)
+			@components.Button("Ghost", "", components.BtnGhost, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.Button("Destructive", "", components.BtnDestructive, components.BtnMedium, nil)
+			@components.Button("Destructive", "", components.BtnDestructive, components.BtnMedium, templ.Attributes{"disabled": ""})
+		</div>
+		<h3 class="font-medium mb-sm">Sizes — Enabled vs Disabled</h3>
+		<div class="flex flex-wrap gap-sm items-center mb-md">
+			@components.Button("Small", "", components.BtnPrimary, components.BtnSmall, nil)
+			@components.Button("Small", "", components.BtnPrimary, components.BtnSmall, templ.Attributes{"disabled": ""})
+			@components.Button("Medium", "", components.BtnPrimary, components.BtnMedium, nil)
+			@components.Button("Medium", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.Button("Large", "", components.BtnPrimary, components.BtnLarge, nil)
+			@components.Button("Large", "", components.BtnPrimary, components.BtnLarge, templ.Attributes{"disabled": ""})
+		</div>
+		<h3 class="font-medium mb-sm">Icon Buttons — Enabled vs Disabled</h3>
+		<div class="flex flex-wrap gap-sm items-center mb-md">
+			@components.IconButton(components.PlusSvg(0, "", ""), "", components.BtnPrimary, components.BtnMedium, nil)
+			@components.IconButton(components.PlusSvg(0, "", ""), "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.IconButton(components.PencilSvg(0, "", ""), "", components.BtnSecondary, components.BtnMedium, nil)
+			@components.IconButton(components.PencilSvg(0, "", ""), "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.IconButton(components.TrashSvg(0, "", ""), "", components.BtnDestructive, components.BtnMedium, nil)
+			@components.IconButton(components.TrashSvg(0, "", ""), "", components.BtnDestructive, components.BtnMedium, templ.Attributes{"disabled": ""})
+		</div>
+		<div class="flex flex-wrap gap-sm items-center mb-md">
+			@components.IconButton(components.SearchSvg(0, "", ""), "", components.BtnOutline, components.BtnMedium, nil)
+			@components.IconButton(components.SearchSvg(0, "", ""), "", components.BtnOutline, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.IconButton(components.Settings2Svg(0, "", ""), "", components.BtnGhost, components.BtnMedium, nil)
+			@components.IconButton(components.Settings2Svg(0, "", ""), "", components.BtnGhost, components.BtnMedium, templ.Attributes{"disabled": ""})
+			@components.IconButton(components.EllipsisSvg(0, "", ""), "", components.BtnOutlinePrimary, components.BtnMedium, nil)
+			@components.IconButton(components.EllipsisSvg(0, "", ""), "", components.BtnOutlinePrimary, components.BtnMedium, templ.Attributes{"disabled": ""})
+		</div>
+		<h3 class="font-medium mb-sm">Buttons with Icons — Enabled vs Disabled</h3>
+		<div class="flex flex-wrap gap-sm items-center">
+			@components.ButtonWithIcon("Add New", "", components.BtnPrimary, components.BtnMedium, nil, components.IconLeft, components.PlusSvg(0, "", ""))
+			@components.ButtonWithIcon("Add New", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"disabled": ""}, components.IconLeft, components.PlusSvg(0, "", ""))
+			@components.ButtonWithIcon("Edit", "", components.BtnSecondary, components.BtnMedium, nil, components.IconLeft, components.PencilSvg(0, "", ""))
+			@components.ButtonWithIcon("Edit", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"disabled": ""}, components.IconLeft, components.PencilSvg(0, "", ""))
+			@components.ButtonWithIcon("Delete", "", components.BtnDestructive, components.BtnMedium, nil, components.IconLeft, components.TrashSvg(0, "", ""))
+			@components.ButtonWithIcon("Delete", "", components.BtnDestructive, components.BtnMedium, templ.Attributes{"disabled": ""}, components.IconLeft, components.TrashSvg(0, "", ""))
+		</div>
+		<div class="flex flex-wrap gap-sm items-center mt-sm">
+			@components.ButtonWithIcon("Download", "", components.BtnOutlinePrimary, components.BtnMedium, nil, components.IconLeft, components.DownloadSvg(0, "", ""))
+			@components.ButtonWithIcon("Download", "", components.BtnOutlinePrimary, components.BtnMedium, templ.Attributes{"disabled": ""}, components.IconLeft, components.DownloadSvg(0, "", ""))
+			@components.ButtonWithIcon("Next →", "", components.BtnPrimary, components.BtnMedium, nil, components.IconRigth, components.ChevronRightSvg(0, "", ""))
+			@components.ButtonWithIcon("Next →", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"disabled": ""}, components.IconRigth, components.ChevronRightSvg(0, "", ""))
+			@components.ButtonWithIcon("Save", "", components.BtnOutline, components.BtnMedium, nil, components.IconLeft, components.CheckSvg(0, "", ""))
+			@components.ButtonWithIcon("Save", "", components.BtnOutline, components.BtnMedium, templ.Attributes{"disabled": ""}, components.IconLeft, components.CheckSvg(0, "", ""))
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- BADGES                                                         -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Badges
+		</h2>
+		<div class="flex flex-wrap gap-sm items-center">
+			@components.Badge("Needs", "", components.BadgeNeeds)
+			@components.Badge("Wants", "", components.BadgeWants)
+			@components.Badge("Savings", "", components.BadgeSavings)
+			@components.Badge("Default", "", components.BadgeDefault)
+			@components.Badge("Custom", "font-mono text-xs", components.BadgeDefault)
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- INPUTS                                                         -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Inputs
+		</h2>
+		<h3 class="font-medium mb-sm">Basic Input — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.Input("", false, templ.Attributes{"placeholder": "Normal input...", "type": "text", "id": "basic-input"})
+			</div>
+			<div style="flex: 1;">
+				@components.Input("", false, templ.Attributes{"placeholder": "Disabled input...", "type": "text", "id": "basic-input-disabled", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Input with Error — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.Input("", true, templ.Attributes{"placeholder": "Error state", "type": "text", "id": "error-input"})
+			</div>
+			<div style="flex: 1;">
+				@components.Input("", true, templ.Attributes{"placeholder": "Disabled error", "type": "text", "id": "error-input-disabled", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Password Input — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.Input("", false, templ.Attributes{"placeholder": "Enter password...", "type": "password", "id": "pwd-input"})
+			</div>
+			<div style="flex: 1;">
+				@components.Input("", false, templ.Attributes{"placeholder": "Disabled password...", "type": "password", "id": "pwd-input-disabled", "disabled": "", "value": "password"})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Input Group — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.InputGroup("", "Username", "", false, true, templ.Attributes{"id": "inputgroup-username", "placeholder": "Enter your username"})
+			</div>
+			<div style="flex: 1;">
+				@components.InputGroup("", "Username", "", false, true, templ.Attributes{"id": "inputgroup-username-disabled", "placeholder": "Disabled field", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Input Group (optional) — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.InputGroup("", "Nickname", "", false, false, templ.Attributes{"id": "inputgroup-nickname", "placeholder": "Enter a nickname"})
+			</div>
+			<div style="flex: 1;">
+				@components.InputGroup("", "Nickname", "", false, false, templ.Attributes{"id": "inputgroup-nickname-disabled", "placeholder": "Disabled optional", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Input Group with Error — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.InputGroup("", "Email", "Invalid email address", true, true, templ.Attributes{"id": "inputgroup-email", "placeholder": "Enter your email"})
+			</div>
+			<div style="flex: 1;">
+				@components.InputGroup("", "Email", "Invalid email address", true, true, templ.Attributes{"id": "inputgroup-email-disabled", "placeholder": "Disabled with error", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Search Bar — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.SearchBar("", nil)
+			</div>
+			<div style="flex: 1;">
+				@components.SearchBar("", templ.Attributes{"placeholder": "Disabled search...", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Checkbox — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				<div class="flex flex-col gap-xs">
+					@components.Checkbox("", "Accept terms and conditions", false, nil)
+					@components.Checkbox("", "Remember me", true, nil)
+				</div>
+			</div>
+			<div style="flex: 1;">
+				<div class="flex flex-col gap-xs">
+					@components.Checkbox("", "Disabled unchecked", false, templ.Attributes{"disabled": ""})
+					@components.Checkbox("", "Disabled checked", true, templ.Attributes{"disabled": ""})
+				</div>
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Checkbox Pill</h3>
+		<div class="flex flex-wrap gap-sm">
+			@components.CheckBoxPill("Option A", templ.Attributes{"name": "pill-a"})
+			@components.CheckBoxPill("Option B", templ.Attributes{"name": "pill-b"})
+			@components.CheckBoxPill("Option C", templ.Attributes{"name": "pill-c"})
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- SELECT & DROPDOWN                                              -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Select & Dropdown
+		</h2>
+		<div class="grid grid-cols-2 gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Select</h3>
+				@components.Select("Choose an option...", "", []components.SelectOption{
+					{Label: "Option 1", Value: "1"},
+					{Label: "Option 2", Value: "2"},
+					{Label: "Option 3", Value: "3"},
+				}, false, templ.Attributes{"name": "basic-select"})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Select (preselected)</h3>
+				@components.Select("Choose...", "2", []components.SelectOption{
+					{Label: "Option 1", Value: "1"},
+					{Label: "Option 2", Value: "2"},
+					{Label: "Option 3", Value: "3"},
+				}, false, templ.Attributes{"name": "preselected-select"})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Select Group</h3>
+				@components.SelectGroup("", "Category", "", "Pick a category...", []components.SelectOption{
+					{Label: "Food & Dining", Value: "food"},
+					{Label: "Transportation", Value: "transport"},
+					{Label: "Entertainment", Value: "entertainment"},
+					{Label: "Utilities", Value: "utilities"},
+				}, "", false, true, templ.Attributes{"id": "category-select"})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Select Group with Error</h3>
+				@components.SelectGroup("", "Currency", "", "Select currency", []components.SelectOption{
+					{Label: "USD", Value: "usd"},
+					{Label: "EUR", Value: "eur"},
+					{Label: "GBP", Value: "gbp"},
+				}, "This field is required", true, true, templ.Attributes{"id": "currency-select"})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Select Group with empty option</h3>
+				@components.Select("Choose an option...", "", []components.SelectOption{
+					{Label: "Choose an option...", Value: ""},
+					{Label: "Option 1", Value: "1"},
+					{Label: "Option 2", Value: "2"},
+					{Label: "Option 3", Value: "3"},
+				}, false, templ.Attributes{"name": "basic-select"})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Select Group Disabled</h3>
+				@components.Select("Choose an option...", "", []components.SelectOption{
+					{Label: "Choose an option...", Value: ""},
+					{Label: "Option 1", Value: "1"},
+					{Label: "Option 2", Value: "2"},
+					{Label: "Option 3", Value: "3"},
+				}, false, templ.Attributes{"name": "basic-select", "disabled": ""})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Basic Dropdown</h3>
+				@components.Dropdown("", "Actions ▾", false, nil) {
+					<ul class="options">
+						<li><span>View Details</span></li>
+						<li><span>Edit</span></li>
+						<li><span>Duplicate</span></li>
+						<li><span>Delete</span></li>
+					</ul>
+				}
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Dropdown with min-w-full</h3>
+				@components.Dropdown("", "More options ▾", true, nil) {
+					<ul class="options">
+						<li><span>Profile Settings</span></li>
+						<li><span>Account Settings</span></li>
+						<li><span>Notifications</span></li>
+						<li><span>Help Center</span></li>
+					</ul>
+				}
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- DATE & TIME INPUTS                                             -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Date & Time Inputs
+		</h2>
+		<h3 class="font-medium mb-sm">Date Input — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.DateInput("", false, templ.Attributes{"placeholder": "dd/mm/yyyy", "id": "date-input-1"})
+			</div>
+			<div style="flex: 1;">
+				@components.DateInput("", false, templ.Attributes{"placeholder": "dd/mm/yyyy", "id": "date-input-disabled", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Date Input with Error — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.DateInput("", true, templ.Attributes{"placeholder": "dd/mm/yyyy", "id": "date-input-error"})
+			</div>
+			<div style="flex: 1;">
+				@components.DateInput("", true, templ.Attributes{"placeholder": "dd/mm/yyyy", "id": "date-input-error-disabled", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Date Input Group — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.DateInputGroup("", "Birth Date", "", false, true, templ.Attributes{"id": "date-group", "placeholder": "dd/mm/yyyy"})
+			</div>
+			<div style="flex: 1;">
+				@components.DateInputGroup("", "Birth Date", "", false, true, templ.Attributes{"id": "date-group-disabled", "placeholder": "dd/mm/yyyy", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Date Input Group (optional) — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.DateInputGroup("", "End Date", "", false, false, templ.Attributes{"id": "date-group-opt", "placeholder": "dd/mm/yyyy"})
+			</div>
+			<div style="flex: 1;">
+				@components.DateInputGroup("", "End Date", "", false, false, templ.Attributes{"id": "date-group-opt-disabled", "placeholder": "dd/mm/yyyy", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Time Input — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md mb-md">
+			<div style="flex: 1;">
+				@components.TimeInput("", false, templ.Attributes{"id": "time-input-1"})
+			</div>
+			<div style="flex: 1;">
+				@components.TimeInput("", false, templ.Attributes{"id": "time-input-disabled", "disabled": ""})
+			</div>
+		</div>
+		<h3 class="font-medium mb-sm">Time Input with Error — Enabled vs Disabled</h3>
+		<div class="flex items-end gap-md">
+			<div style="flex: 1;">
+				@components.TimeInput("", true, templ.Attributes{"id": "time-input-error"})
+			</div>
+			<div style="flex: 1;">
+				@components.TimeInput("", true, templ.Attributes{"id": "time-input-error-disabled", "disabled": ""})
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- TOGGLE SWITCH                                                  -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Toggle Switch
+		</h2>
+		<div class="grid grid-cols-2 gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Toggle Switch (2 options)</h3>
+				@components.ToggleSwitch("", "toggle-billing", []components.ToggleOption{
+					{Label: "Monthly", Id: "monthly", Value: "monthly"},
+					{Label: "Yearly", Id: "yearly", Value: "yearly"},
+				}, nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Toggle Switch (3 options)</h3>
+				@components.ToggleSwitch("", "toggle-period", []components.ToggleOption{
+					{Label: "Day", Id: "day", Value: "day"},
+					{Label: "Week", Id: "week", Value: "week"},
+					{Label: "Month", Id: "month", Value: "month"},
+				}, nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Toggle Switch Group</h3>
+				@components.ToggleSwitchGroup("", "View Mode", "view-mode", []components.ToggleOption{
+					{Label: "Table", Id: "table", Value: "table"},
+					{Label: "Grid", Id: "grid", Value: "grid"},
+					{Label: "List", Id: "list", Value: "list"},
+				}, nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Toggle Switch Group (2 options)</h3>
+				@components.ToggleSwitchGroup("", "Chart Type", "chart-type", []components.ToggleOption{
+					{Label: "Bar", Id: "bar", Value: "bar"},
+					{Label: "Line", Id: "line", Value: "line"},
+				}, nil)
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- SLIDERS                                                        -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Sliders
+		</h2>
+		<div class="grid grid-cols-2 gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Single Slider (value: 25/100)</h3>
+				@components.SliderInput(0, 100, 25, "single-slider", nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Single Slider (value: 75/100)</h3>
+				@components.SliderInput(0, 100, 75, "single-slider-2", nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Double Slider (range: 20-50 / 0-150)</h3>
+				@components.DoubleSliderInput(0, 150, 20, 50, "minamount", "maxamount", nil, nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Double Slider (range: 30-90 / 0-200)</h3>
+				@components.DoubleSliderInput(0, 200, 30, 90, "minprice", "maxprice", nil, nil)
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- LOADERS & PROGRESS                                             -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Loaders & Progress
+		</h2>
+		<div class="grid grid-cols-2 gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Loader (3 bouncing dots)</h3>
+				@components.Loader("", nil)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Custom Loader with class</h3>
+				@components.Loader("p-md", templ.Attributes{"style": "background: var(--color-surface); border-radius: var(--radius-md);"})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Spinner (various sizes)</h3>
+				<div class="flex gap-md items-center">
+					<div class="flex flex-col items-center gap-xs">
+						@components.Spinner(16, "", "")
+						<span class="text-xs">16</span>
+					</div>
+					<div class="flex flex-col items-center gap-xs">
+						@components.Spinner(24, "", "")
+						<span class="text-xs">24</span>
+					</div>
+					<div class="flex flex-col items-center gap-xs">
+						@components.Spinner(32, "", "")
+						<span class="text-xs">32</span>
+					</div>
+					<div class="flex flex-col items-center gap-xs">
+						@components.Spinner(40, "", "")
+						<span class="text-xs">40</span>
+					</div>
+				</div>
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Spinner (colored)</h3>
+				<div class="flex gap-md items-center">
+					@components.Spinner(24, "var(--color-primary)", "")
+					@components.Spinner(24, "var(--color-success)", "")
+					@components.Spinner(24, "var(--color-warning)", "")
+					@components.Spinner(24, "var(--color-error)", "")
+				</div>
+			</div>
+			<div class="col-span-2">
+				<h3 class="font-medium mb-sm">Progress Bar</h3>
+				<div class="flex flex-col gap-sm" style="max-width: 400px;">
+					<div class="flex items-center gap-sm">
+						<span class="text-sm w-fit" style="min-width: 3rem;">25%</span>
+						@components.ProgressBar("", 25)
+					</div>
+					<div class="flex items-center gap-sm">
+						<span class="text-sm w-fit" style="min-width: 3rem;">50%</span>
+						@components.ProgressBar("", 50)
+					</div>
+					<div class="flex items-center gap-sm">
+						<span class="text-sm w-fit" style="min-width: 3rem;">75%</span>
+						@components.ProgressBar("", 75)
+					</div>
+					<div class="flex items-center gap-sm">
+						<span class="text-sm w-fit" style="min-width: 3rem;">100%</span>
+						@components.ProgressBar("", 100)
+					</div>
+					<div class="flex items-center gap-sm">
+						<span class="text-sm w-fit" style="min-width: 3rem;">150%</span>
+						@components.ProgressBar("", 150)
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- CALENDAR                                                       -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Calendar
+		</h2>
+		<div class="grid grid-cols-2 gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Pre-rendered Calendar</h3>
+				@components.CalendarPreRendered()
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Empty Calendar (JS-populated)</h3>
+				@components.Calendar()
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- BREADCRUMBS                                                    -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Breadcrumbs
+		</h2>
+		<div class="flex flex-col gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Simple Breadcrumbs</h3>
+				@components.Breadcrumbs(views.BreadcrumbsView{
+					Items: []views.BreadcrumbsLink{
+						{Href: "/", Name: "Home"},
+						{Href: "/banks", Name: "Banks"},
+						{Name: "Current Account"},
+					},
+				})
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Breadcrumbs with Dropdown</h3>
+				@components.Breadcrumbs(views.BreadcrumbsView{
+					Items: []views.BreadcrumbsLink{
+						{Href: "/", Name: "Home"},
+						{Href: "/budget", Name: "Budget"},
+						{Name: "Select month..."},
+					},
+					Options: []views.BreadcrumbsLink{
+						{Href: "/budget?month=012024", Name: "January 2024"},
+						{Href: "/budget?month=022024", Name: "February 2024"},
+						{Href: "/budget?month=032024", Name: "March 2024"},
+					},
+				})
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- MONTH PILL                                                     -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Month Pill
+		</h2>
+		<div class="flex flex-col gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Month Navigation Pill</h3>
+				@components.MonthPill("", "Select month", time.Now())
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- FILTER BUTTON                                                  -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Filter Button
+		</h2>
+		<div class="flex gap-md items-center">
+			<div class="flex flex-col items-center gap-xs">
+				<span class="text-xs text-muted">No filters</span>
+				@components.FilterBtn(0, 0, "", "", nil)
+			</div>
+			<div class="flex flex-col items-center gap-xs">
+				<span class="text-xs text-muted">3 active</span>
+				@components.FilterBtn(3, 0, "", "", nil)
+			</div>
+			<div class="flex flex-col items-center gap-xs">
+				<span class="text-xs text-muted">7 active</span>
+				@components.FilterBtn(7, 0, "", "", nil)
+			</div>
+			<div class="flex flex-col items-center gap-xs">
+				<span class="text-xs text-muted">Custom size/color</span>
+				@components.FilterBtn(5, 32, "var(--color-error)", "", nil)
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- NO DATA                                                        -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			No Data
+		</h2>
+		@components.NoData()
+	</section>
+	<!-- ============================================================ -->
+	<!-- HEADER / SIDEBAR COMPONENTS (embedded)                         -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Header / Sidebar Sub-components
+		</h2>
+		<div class="grid grid-cols-2 gap-md">
+			<div>
+				<h3 class="font-medium mb-sm">Logo</h3>
+				@components.Logo()
+			</div>
+			<div class="relative">
+				<h3 class="font-medium mb-sm">Notification Badge</h3>
+				@components.Notification()
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Profile Picture (no notification)</h3>
+				@components.ProfilePic(false)
+			</div>
+			<div>
+				<h3 class="font-medium mb-sm">Profile Picture (with notification)</h3>
+				@components.ProfilePic(true)
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- ALL ICONS                                                      -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			All Icons
+		</h2>
+		<p class="text-sm text-muted mb-md">All available SVG icons. Default size 24, currentColor.</p>
+		<div class="grid grid-cols-4 gap-md" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CircleXSvg(24, "", "")
+				<span class="text-xs text-center">CircleXSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.EyeSvg(24, "", "")
+				<span class="text-xs text-center">EyeSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.EyeOffSvg(24, "", "")
+				<span class="text-xs text-center">EyeOffSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.SearchSvg(24, "", "")
+				<span class="text-xs text-center">SearchSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.HouseSvg(24, "", "")
+				<span class="text-xs text-center">HouseSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ChartPieSvg(24, "", "")
+				<span class="text-xs text-center">ChartPieSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.PiggyBankSvg(24, "", "")
+				<span class="text-xs text-center">PiggyBankSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.LandmarkSvg(24, "", "")
+				<span class="text-xs text-center">LandmarkSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.NotebookSvg(24, "", "")
+				<span class="text-xs text-center">NotebookSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.TagSvg(24, "", "")
+				<span class="text-xs text-center">TagSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.FileChartColumnSvg(24, "", "")
+				<span class="text-xs text-center">FileChartColumnSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.Settings2Svg(24, "", "")
+				<span class="text-xs text-center">Settings2Svg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.SunSvg(24, "", "")
+				<span class="text-xs text-center">SunSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.MoonSvg(24, "", "")
+				<span class="text-xs text-center">MoonSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ChevronLeftSvg(24, "", "")
+				<span class="text-xs text-center">ChevronLeftSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ChevronRightSvg(24, "", "")
+				<span class="text-xs text-center">ChevronRightSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ChevronDownSvg(24, "", "")
+				<span class="text-xs text-center">ChevronDownSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ChevronUpSvg(24, "", "")
+				<span class="text-xs text-center">ChevronUpSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CalendarDaysSvg(24, "", "")
+				<span class="text-xs text-center">CalendarDaysSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CalendarArrowUp(24, "", "")
+				<span class="text-xs text-center">CalendarArrowUp</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.MenuSvg(24, "", "")
+				<span class="text-xs text-center">MenuSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.XSvg(24, "", "")
+				<span class="text-xs text-center">XSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ArrowUpRight(24, "", "")
+				<span class="text-xs text-center">ArrowUpRight</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.PenSvg(24, "", "")
+				<span class="text-xs text-center">PenSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.TrashSvg(24, "", "")
+				<span class="text-xs text-center">TrashSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.BellSvg(24, "", "")
+				<span class="text-xs text-center">BellSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.PlusSvg(24, "", "")
+				<span class="text-xs text-center">PlusSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.MinusSvg(24, "", "")
+				<span class="text-xs text-center">MinusSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ArrowLeftSvg(24, "", "")
+				<span class="text-xs text-center">ArrowLeftSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ArrowRightSvg(24, "", "")
+				<span class="text-xs text-center">ArrowRightSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ArrowRightLeftSvg(24, "", "")
+				<span class="text-xs text-center">ArrowRightLeftSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ArrowUpDownSvg(24, "", "")
+				<span class="text-xs text-center">ArrowUpDownSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ListFilterSvg(24, "", "")
+				<span class="text-xs text-center">ListFilterSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CheckSvg(24, "", "")
+				<span class="text-xs text-center">CheckSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.TriangleAlertSvg(24, "", "")
+				<span class="text-xs text-center">TriangleAlertSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.InfoSvg(24, "", "")
+				<span class="text-xs text-center">InfoSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CircleQuestionMarkSvg(24, "", "")
+				<span class="text-xs text-center">CircleQuestionMarkSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ClockSvg(24, "", "")
+				<span class="text-xs text-center">ClockSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.DownloadSvg(24, "", "")
+				<span class="text-xs text-center">DownloadSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.SquarePenSvg(24, "", "")
+				<span class="text-xs text-center">SquarePenSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.PencilSvg(24, "", "")
+				<span class="text-xs text-center">PencilSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.EllipsisSvg(24, "", "")
+				<span class="text-xs text-center">EllipsisSvg</span>
+			</div>
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- ASSET / BRAND LOGO                                             -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Brand Logo / Asset
+		</h2>
+		<div style="max-width: 200px;">
+			<h3 class="font-medium mb-sm">Asset1 (Piggytron Coin)</h3>
+			@components.Asset1()
+		</div>
+	</section>
+	<!-- ============================================================ -->
+	<!-- TOAST (via OOB swap injection for testing)                     -->
+	<!-- ============================================================ -->
+	<section class="mb-xl">
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Toast Notifications
+		</h2>
+		<p class="text-sm text-muted mb-sm">Toasts are rendered via OOB swap. The following are shown inline for preview purposes.</p>
+		<div class="flex flex-col gap-sm" style="max-width: 400px;">
+			<div class="toast toast--success">
+				@components.CheckSvg(16, "", "")
+				<div><p>Success! Operation completed.</p></div>
+			</div>
+			<div class="toast toast--warning">
+				@components.TriangleAlertSvg(16, "", "")
+				<div><p>Warning: Please review your input.</p></div>
+			</div>
+			<div class="toast toast--error">
+				@components.CircleXSvg(16, "", "")
+				<div><p>Error: Something went wrong.</p></div>
+			</div>
+			<div class="toast toast--info">
+				@components.InfoSvg(16, "", "")
+				<div><p>Info: New update available.</p></div>
+			</div>
+		</div>
+	</section>
 }

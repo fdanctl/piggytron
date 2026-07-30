@@ -7,17 +7,17 @@
   border-radius: var(--radius-xl);
 }
 
-.badge.needs {
+.badge--needs {
   color: var(--color-on-needs);
   background-color: var(--color-needs);
 }
 
-.badge.wants {
+.badge--wants {
   color: var(--color-on-wants);
   background-color: var(--color-wants);
 }
 
-.badge.savings {
+.badge--savings {
   color: var(--color-on-savings);
   background-color: var(--color-savings);
 }
