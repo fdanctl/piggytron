@@ -1,27 +1,30 @@
 .calendar {
   width: fit-content;
 }
+
 .calendar .dropdown {
   width: 4.625rem;
 }
+
 .calendar > div:nth-child(2),
 .calendar > .days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--spacing-xs);
-  justify-items: center;
-  align-items: center;
+  place-items: center center;
 }
+
 .calendar > .days > div {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 2rem;
   height: 2rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
+
 .calendar > .days > div:hover,
 .calendar > .days > div.selected {
   background-color: var(--color-border);

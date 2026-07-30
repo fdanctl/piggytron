@@ -10,7 +10,6 @@
   display: none;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xs);
   border-radius: var(--radius-sm);
   background-color: var(--color-primary);
   color: var(--color-on-primary);
@@ -26,8 +25,12 @@
 }
 
 .last-month-import__p {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+
+  @container main (min-width: 600px) {
+    display: flex;
+  }
 }
 
 .last-month-import__btns {
@@ -35,65 +38,59 @@
   display: flex;
   gap: var(--spacing-xs);
   align-items: center;
+
+  @container main (min-width: 600px) {
+    margin-left: var(--spacing-xl);
+  }
 }
 
 .last-month-import__dismiss {
   display: none;
+
+  @container main (min-width: 600px) {
+    display: flex;
+  }
 }
 
 .budget-stats {
   display: flex;
-  /* justify-content: space-between; */
   gap: var(--spacing-xs);
+
+  @container main (min-width: 600px) {
+    gap: var(--spacing-sm);
+  }
 }
 
-.budget-stats > .card {
-  width: 100%;
-}
+@scope (.budget-stats) {
+  .card {
+    width: 100%;
+  }
 
-.budget-stats > .card:last-child {
-  display: none;
-}
+  .card:last-child {
+    display: none;
+  }
 
-.budget-stats .metric__sub {
-  display: none;
+  .metric__sub {
+    display: none;
+  }
+
+  @container main (min-width: 600px) {
+    .card:last-child {
+      display: block;
+    }
+
+    .metric__sub {
+      display: block;
+    }
+  }
 }
 
 .budget-table-container {
   display: grid;
   gap: var(--spacing-sm);
-}
 
-@container main (min-width: 800px) {
-  .budget-table-container {
+  @container main (min-width: 800px) {
     grid-template-columns: 1fr 1fr;
-  }
-}
-
-@container main (min-width: 600px) {
-  .last-month-import__icon {
-    display: flex;
-  }
-
-  .last-month-import__dismiss {
-    display: flex;
-  }
-
-  .last-month-import__btns {
-    margin-left: var(--spacing-xl);
-  }
-
-  .budget-stats {
-    /* justify-content: space-between; */
-    gap: var(--spacing-sm);
-  }
-
-  .budget-stats > .card:last-child {
-    display: block;
-  }
-
-  .budget-stats .metric__sub {
-    display: block;
   }
 }
 
@@ -104,81 +101,97 @@
   height: fit-content;
 }
 
-.budget-table > div {
-  display: grid;
-  grid-template-columns: 1fr 100px 100px;
-  padding: 6px 14px;
-  align-items: center;
+@scope (.budget-table) {
+  .budget-table__head,
+  .budget-table__row,
+  .budget-table__total-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 100px;
+    padding: 6px 14px;
+    align-items: center;
+  }
+}
+
+@scope (.budget-table) {
+  > span:first-child {
+    text-align: left;
+  }
+
+  .input {
+    font-family: var(--font-mono);
+    text-align: right;
+    padding-right: var(--spacing-sm);
+  }
+}
+
+@scope (.budget-table--needs) {
+  .budget-table__head {
+    background-color: var(--color-needs);
+    color: var(--color-on-needs);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-needs);
+    box-shadow: var(--shadow-focus-needs);
+    background-color: var(--color-input-focus);
+  }
+}
+
+@scope (.budget-table--wants) {
+  .budget-table__head {
+    background-color: var(--color-wants);
+    color: var(--color-on-wants);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-wants);
+    box-shadow: var(--shadow-focus-wants);
+    background-color: var(--color-input-focus);
+  }
+}
+
+@scope (.budget-table--savings) {
+  .budget-table__head {
+    background-color: var(--color-savings);
+    color: var(--color-on-savings);
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-savings);
+    box-shadow: var(--shadow-focus-savings);
+    background-color: var(--color-input-focus);
+  }
 }
 
 .budget-table__head {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   text-align: right;
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
-}
-.budget-table__head > span:first-child {
-  text-align: left;
-}
-
-.budget-table .input {
-  font-family: var(--font-mono);
-  text-align: right;
-  padding-right: var(--spacing-sm);
-}
-
-.budget-table.needs > .budget-table__head {
-  background-color: var(--color-needs);
-  color: var(--color-on-needs);
-}
-
-.budget-table.needs .input:focus {
-  outline: none;
-  border-color: var(--color-needs);
-  box-shadow: var(--shadow-focus-needs);
-  background-color: var(--color-input-focus);
-}
-
-.budget-table.wants > .budget-table__head {
-  background-color: var(--color-wants);
-  color: var(--color-on-wants);
-}
-
-.budget-table.wants .input:focus {
-  outline: none;
-  border-color: var(--color-wants);
-  box-shadow: var(--shadow-focus-wants);
-  background-color: var(--color-input-focus);
-}
-
-.budget-table.savings > .budget-table__head {
-  background-color: var(--color-savings);
-  color: var(--color-on-savings);
-}
-
-.budget-table.savings .input:focus {
-  outline: none;
-  border-color: var(--color-savings);
-  box-shadow: var(--shadow-focus-savings);
-  background-color: var(--color-input-focus);
 }
 
 .budget-table__row {
   text-align: right;
   border-bottom: 1px solid var(--color-border-secondary);
 }
-.budget-table__row > span:first-child {
-  text-align: left;
-}
 
-.budget-table__row > span:last-child {
-  font-size: 16px;
-  font-family: var(--font-mono);
+@scope (.budget-table__row ) {
+  > span:first-child {
+    text-align: left;
+  }
+
+  > span:last-child {
+    font-size: var(--font-size-md);
+    font-family: var(--font-mono);
+  }
 }
 
 .budget-table__total-row {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   text-align: right;
   background-color: var(--color-secondary);
@@ -186,8 +199,11 @@
   border-bottom-right-radius: var(--radius-md);
   font-family: var(--font-mono);
 }
-.budget-table__total-row > span:first-child {
-  text-align: left;
-  color: var(--color-text-secondary);
-  font-family: var(--font-sans);
+
+@scope (.budget-table__total-row) {
+  > span:first-child {
+    text-align: left;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+  }
 }

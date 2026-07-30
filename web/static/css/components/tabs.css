@@ -6,7 +6,7 @@
 
 .tab-trigger {
   padding: var(--spacing-sm) var(--spacing-md);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   background-color: transparent;
   border: none;
@@ -19,6 +19,7 @@
 .tab-trigger:hover {
   border-bottom: 2px solid var(--color-primary-muted);
 }
+
 .tab-trigger.active {
   border-bottom: 2px solid var(--color-primary);
 }

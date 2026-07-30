@@ -11,6 +11,7 @@ templ Breadcrumbs(view views.BreadcrumbsView) {
 		for i, v := range view.Items {
 			if i < len(view.Items) - 1 {
 				<a
+					class="breadcrumbs__link"
 					if v.Href != "" {
 						href={ v.Href }
 					}

@@ -4,7 +4,6 @@
   background-color: var(--color-overlay);
   backdrop-filter: blur(1px);
   z-index: 40;
-
   display: grid;
   place-items: center;
 }
@@ -19,14 +18,11 @@
   transition: transform 200ms ease-in;
   animation: slide-up 200ms ease-in;
   color: var(--color-text);
-
   max-width: 100vw;
   width: 100%;
-  margin: auto 0 0 0;
+  margin: auto 0 0;
   border: none;
-
   max-height: 95dvh;
-
   scrollbar-width: none;
   overflow-y: scroll;
 }
@@ -43,8 +39,8 @@ body.dialog-open {
   overflow: hidden;
 }
 
-@media (max-width: 600px) {
-  .dialog.float {
+.dialog--float {
+  @media (width <= 600px) {
     border-radius: var(--radius-lg);
     margin-bottom: var(--spacing-xs);
     margin-left: var(--spacing-xs);
@@ -81,23 +77,22 @@ body.dialog-open {
   color: var(--color-border);
   cursor: pointer;
 }
+
 .dialog__x:hover {
   color: var(--color-error);
 }
 
-@media (min-width: 600px) {
+@media (width >= 600px) {
   .dialog {
     padding: var(--spacing-md) var(--spacing-md);
     border-radius: var(--radius-sm);
     transition: opacity 150ms ease-in;
     opacity: 1;
-
     max-width: 600px;
     width: 90vw;
     max-height: 80vh;
     margin: 0;
     animation: show-dialog 150ms ease-in;
-
     border: none;
   }
 
@@ -149,25 +144,8 @@ body.dialog-open {
     transform: translateX(100%) !important;
     opacity: 1;
   }
+
   .dialog__x {
     visibility: visible;
-  }
-}
-
-@keyframes show-dialog {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slide-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
   }
 }

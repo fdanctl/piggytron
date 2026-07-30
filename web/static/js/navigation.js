@@ -8,7 +8,7 @@ export const colapseSidebar = () => {
   localStorage.setItem("colapsed", colapsed);
   sidebar
     .querySelectorAll(".sublinks")
-    .forEach((e) => e.classList.remove("open"));
+    .forEach((e) => e.classList.remove("sublinks--open"));
 };
 
 const sidebarTogglePopover = (ele) => {
@@ -185,7 +185,7 @@ const handleCloseAllSublinks = (ev) => {
   const allSublinks = ev.target.closest("nav").querySelectorAll(".sublinks");
 
   for (let i = 0; i < allSublinks.length; i++) {
-    allSublinks[i].classList.remove("open");
+    allSublinks[i].classList.remove("sublinks--open");
   }
 };
 
@@ -196,7 +196,7 @@ const handleExpandToggle = (ele) => {
   ) {
     return;
   }
-  ele.classList.toggle("open");
+  ele.classList.toggle("sublinks--open");
 };
 
 const handleExpandOpen = (ele) => {
@@ -206,11 +206,11 @@ const handleExpandOpen = (ele) => {
   ) {
     return;
   }
-  ele.classList.add("open");
+  ele.classList.add("sublinks--open");
 };
 
 const handleExpandRemove = (ele) => {
-  ele.classList.remove("open");
+  ele.classList.remove("sublinks--open");
 };
 
 const handleSublinkFocus = (ele) => {

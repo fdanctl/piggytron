@@ -106,7 +106,7 @@ dev/clean:
 
 ## clean: clean up the build binaries
 .PHONY: clean
-clean: confirm clean-dev
+clean: confirm dev/clean
 	@echo "Cleaning up..."
 	@rm -f web/templates/**/*_templ.go
 	@rm -f web/static/assets/app.js

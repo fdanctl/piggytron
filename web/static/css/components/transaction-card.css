@@ -6,7 +6,6 @@
   padding: var(--spacing-sm);
   border-radius: var(--radius-md);
   cursor: pointer;
-
   animation-name: slide-down;
   animation-duration: 200ms;
   animation-iteration-count: 1;
@@ -18,10 +17,12 @@
   background-color: var(--color-bg-secondary);
 }
 
-.transaction > div:first-child {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+@scope (.transaction) {
+  > div:first-child {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
 }
 
 .transaction__icon {
@@ -39,7 +40,7 @@
 
 .transaction__description,
 .transaction__amount {
-  font-size: 1rem;
+  font-size: var(--font-size-md);
   font-weight: 500;
   text-box-trim: trim-both;
   margin-bottom: 2px;
@@ -47,15 +48,20 @@
 
 .transaction__sub,
 .transaction__date {
-  font-size: 0.7rem;
+  font-size: var(--font-size-xs);
   text-box-trim: trim-both;
 }
 
-.transaction__sub > b {
-  font-weight: 500;
+@scope (.transaction__sub) {
+  > b {
+    font-weight: 500;
+  }
+
+  > span {
+    color: var(--color-text-secondary);
+  }
 }
 
-.transaction__sub > span,
 .transaction__date {
   color: var(--color-text-secondary);
 }

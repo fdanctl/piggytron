@@ -112,16 +112,16 @@
 }
 
 /* ===== TEXT ===== */
+.text-xs {
+  font-size: var(--font-size-xs);
+}
+
 .text-sm {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
 .text-base {
-  font-size: 1rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
+  font-size: var(--font-size-md);
 }
 
 .uppercase {
@@ -412,9 +412,5 @@
 
 .unselectable {
   -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }

@@ -16,7 +16,6 @@
   position: relative;
   top: 3px;
   border: 1px solid var(--color-primary);
-
   display: inline-block;
   animation: scale-y 1s infinite ease-in-out both;
 }
@@ -29,27 +28,6 @@
   animation-delay: 0.3s;
 }
 
-@keyframes scale-y {
-  0%,
-  60%,
-  100% {
-    height: 1rem;
-  }
-
-  30% {
-    height: 1.5rem;
-  }
-}
-
 .spinner {
   animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

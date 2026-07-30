@@ -21,18 +21,22 @@
   display: none;
 }
 
-#curr-filters a {
-  display: block;
-  width: 100%;
-  text-align: right;
-  margin-bottom: var(--spacing-xs);
+@scope (#curr-filters) {
+  a {
+    display: block;
+    width: 100%;
+    text-align: right;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  a:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }
-#curr-filters a:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
+
 .pill {
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   padding-left: var(--spacing-sm);
   padding-right: var(--spacing-xs);
   display: flex;
@@ -43,16 +47,18 @@
   border-radius: var(--radius-xl);
   text-box-trim: trim-both;
 }
-.pill span {
-  cursor: default;
+
+@scope (.pill) {
+  .pill span {
+    cursor: default;
+  }
 }
 
 .pill-box {
   display: flex;
   gap: var(--spacing-xs);
-  overflow-x: hidden;
+  overflow: hidden scroll;
   max-height: 148px;
-  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }

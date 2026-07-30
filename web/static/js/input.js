@@ -1,10 +1,10 @@
 import { buildCalendar, clickOption } from "./calendar";
 
 export function handleInputOnBlur(ele) {
-  ele.classList.toggle("error", !ele.validity.valid);
+  ele.classList.toggle("input--error", !ele.validity.valid);
   const parent = ele.parentElement.parentElement;
   if (parent.classList.contains("input-group")) {
-    parent.classList.toggle("error", !ele.validity.valid);
+    parent.classList.toggle("input-group--error", !ele.validity.valid);
   }
 }
 
@@ -40,8 +40,8 @@ export function selectSelect({ ele, data }) {
   let drop = ele.closest(".dropdown");
   if (drop) {
     drop.querySelector("button > span").innerText = ele.firstChild.innerText;
-    drop.querySelector("button").classList.remove("error");
-    ele.closest(".input-group")?.classList.remove("error");
+    drop.querySelector("button").classList.remove("input--error");
+    ele.closest(".input-group")?.classList.remove("input-group--error");
   }
 }
 

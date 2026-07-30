@@ -92,7 +92,7 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, leftToSpend, overspent in
 
 templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView) {
 	<div
-		class={ "budget-table", string(eType) }
+		class={ "budget-table", fmt.Sprintf("budget-table--%s", string(eType)) }
 		hx-include="inherit, find [name='total-row-left'], find [name='ctype']"
 	>
 		<input type="hidden" name="ctype" value={ eType }/>

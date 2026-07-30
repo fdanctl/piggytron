@@ -14,7 +14,7 @@ export function confirmModal({
 
     const modal = document.createElement("div");
     modal.tabIndex = "-1";
-    modal.classList.add("dialog", "float");
+    modal.classList.add("dialog", "dialog--float");
 
     modal.innerHTML = `
 		<div class="dialog__bar">

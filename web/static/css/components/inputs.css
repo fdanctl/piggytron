@@ -1,37 +1,43 @@
 /* Input */
-.input-group > span {
+@scope (.input-group) {
+  > label {
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+  }
+
+  > label > span {
+    font-weight: 300;
+    color: var(--color-text-secondary);
+  }
+
+  > *:nth-child(2) {
+    margin-top: var(--spacing-xs);
+  }
+}
+
+.input-group__message {
   display: none;
   padding-left: var(--radius-md);
   color: var(--color-error);
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
 }
 
-.input-group.error > span {
-  display: block;
-}
-
-.input-group > label {
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  font-size: 0.75rem;
-}
-.input-group > label > span {
-  font-weight: 300;
-  color: var(--color-text-secondary);
-}
-
-.input-group > *:nth-child(2) {
-  margin-top: var(--spacing-xs);
+@scope (.input-group--error) {
+  .input-group__message {
+    display: block;
+  }
 }
 
 .input:not([type="checkbox"], [type="radio"]) {
   width: 100%;
 }
+
 .input {
   display: block;
   padding: var(--spacing-sm) var(--spacing-md);
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   line-height: 1.5;
   color: var(--color-text);
   background-color: var(--color-muted);
@@ -55,7 +61,7 @@
   color: var(--color-text-secondary);
 }
 
-.input.error:not(:focus) {
+.input--error:not(:focus) {
   border-color: var(--color-error);
 }
 
@@ -65,8 +71,7 @@
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  align-items: center;
-  justify-items: center;
+  place-items: center center;
   gap: var(--spacing-xs);
 }
 
@@ -74,27 +79,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* height: 16px; */
-  /* width: 16px; */
   object-fit: contain;
 }
 
-.input ~ div > .feedbackIcon {
+.input ~ div > .feedback-icon {
   display: none;
   color: var(--color-error);
 }
 
-input.input.error:not(:focus),
-.input:has(+ div .pwdToggle) {
+input.input--error:not(:focus),
+.input:has(+ div .pwd-toggle) {
   padding-right: calc(20px + var(--spacing-md));
 }
 
-.input[type="password"].error {
+.input--error[type="password"] {
   padding-right: calc(40px + var(--spacing-md));
 }
 
-.input.error:not(:focus) ~ div > .feedbackIcon {
+.input--error:not(:focus) ~ div > .feedback-icon {
   display: flex;
 }
 
@@ -109,7 +111,7 @@ input.input.error:not(:focus),
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-size: 14px;
+  font-size: var(--font-size-sm);
 }
 
 .checkbox input {
@@ -120,13 +122,11 @@ input.input.error:not(:focus),
 .checkbox-box {
   width: 18px;
   height: 18px;
-
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 3px;
 }
 
@@ -166,13 +166,9 @@ input:focus + .checkbox-box {
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-secondary);
-
   display: flex;
   align-items: center;
   justify-content: center;
-
-  /* height: 16px; */
-  /* width: 16px; */
   object-fit: contain;
 }
 
@@ -219,6 +215,7 @@ input:focus + .checkbox-box {
 .check-pill:has(input[type="checkbox"]:checked) > div:first-child {
   background-color: var(--color-text);
 }
+
 .check-pill:has(input[type="checkbox"]:checked) > div:first-child > svg {
   display: block;
 }
@@ -235,6 +232,7 @@ input:focus + .checkbox-box {
     border-radius: var(--radius-xs);
     gap: var(--spacing-xs);
   }
+
   li:first-child {
     margin-top: 0;
   }
@@ -242,10 +240,12 @@ input:focus + .checkbox-box {
   li > svg {
     visibility: hidden;
   }
+
   li.selected,
   li:hover {
     background-color: var(--color-bg-muted);
   }
+
   li.selected > svg {
     visibility: visible;
   }
@@ -264,11 +264,13 @@ input:focus + .checkbox-box {
   position-try-fallbacks: flip-block;
   position-try: flip-block;
 }
-@media (min-width: 600px) {
+
+@media (width >= 600px) {
   .popover.date-input {
     right: anchor(right);
   }
 }
+
 .popover.date-input.min-w {
   min-width: anchor-size(width);
 }
@@ -325,7 +327,7 @@ input:focus + .checkbox-box {
   gap: 5px;
   padding: 6px 16px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-tertiary);
   transition: all 0.15s;
@@ -340,7 +342,7 @@ input:focus + .checkbox-box {
 }
 
 .toggle-switch input {
-  width: 0px;
+  width: 0;
   visibility: hidden;
   display: none;
 }
@@ -351,20 +353,17 @@ input:focus + .checkbox-box {
 
 .scan {
   position: relative;
-
   background-image: linear-gradient(
     90deg,
     transparent 20%,
-    rgba(255, 255, 255, 0.05) 40%,
-    rgba(94, 239, 239, 0.35) 50%,
-    rgba(255, 255, 255, 0.05) 60%,
+    rgb(255 255 255 / 5%) 40%,
+    rgb(94 239 239 / 35%) 50%,
+    rgb(255 255 255 / 5%) 60%,
     transparent 80%
   );
-
   background-size: 250% 100%;
   background-repeat: no-repeat;
   background-position: -30% 0;
-
   animation: scan-animation 0.75s linear;
 }
 

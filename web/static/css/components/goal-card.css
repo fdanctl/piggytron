@@ -2,16 +2,12 @@
   margin-top: var(--spacing-sm);
   display: grid;
   gap: var(--spacing-sm);
-}
 
-@container main (min-width: 675px) {
-  .goal-list {
+  @container main (min-width: 675px) {
     grid-template-columns: repeat(2, 1fr);
   }
-}
 
-@container main (min-width: 1200px) {
-  .goal-list {
+  @container main (min-width: 1200px) {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -22,18 +18,19 @@
   border-radius: var(--radius-md);
   cursor: pointer;
 }
+
 .goal-card:hover {
   background-color: var(--color-bg-secondary);
 }
 
 .goal-card__target-date {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
 }
 
 .goal-card__amount,
 .goal-card__percentage {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
 }
 
 .goal-card__percentage {
@@ -62,7 +59,7 @@
 .goal-card__subinfo {
   display: flex;
   justify-content: space-between;
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
 }
 
 .goal-card__subinfo > div {

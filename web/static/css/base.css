@@ -1,9 +1,10 @@
 /* ===== RESET ===== */
+
 /* Reset margins, padding, and borders */
 * {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 /* Make headings and paragraphs consistent */
@@ -14,7 +15,6 @@ h4,
 h5,
 h6,
 p {
-  /* font-size: 100%; */
   font-weight: normal;
 }
 
@@ -42,13 +42,14 @@ textarea {
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+  appearance: none;
   margin: 0;
 }
 
 input[type="number"] {
-  -moz-appearance: textfield;
+  appearance: textfield;
 }
+
 /* ===== VARIABLES ===== */
 :root {
   /* COLOR (layer 1) */
@@ -60,7 +61,6 @@ input[type="number"] {
   --cian-600: #0b2c2c;
   --cian-700: #031414;
   --cian-base: #297373;
-
   --purple-100: #ded4dc;
   --purple-200: #bea9ba;
   --purple-300: #b185a7;
@@ -69,7 +69,6 @@ input[type="number"] {
   --purple-600: #2b2229;
   --purple-700: #150f14;
   --purple-base: #755f71;
-
   --green-100: #b6e9ba;
   --green-200: #95bf98;
   --green-300: #759778;
@@ -78,7 +77,6 @@ input[type="number"] {
   --green-600: #202b21;
   --green-700: #0c130c;
   --green-base: #95bf98;
-
   --orange-100: #f2d7d3;
   --orange-200: #e5a69c;
   --orange-300: #d9725b;
@@ -87,7 +85,6 @@ input[type="number"] {
   --orange-600: #431f17;
   --orange-700: #1f0b07;
   --orange-base: #d9725b;
-
   --grey-100: #d5dbdb;
   --grey-200: #afb3b3;
   --grey-300: #898d8d;
@@ -98,79 +95,93 @@ input[type="number"] {
   --grey-base: #666966;
 
   /* COLOR (layer 2) */
-  --color-bg: #ffffff; /* Main app/page background */
+
+  /* background */
+  --color-bg: #fff; /* Main app/page background */
   --color-bg-secondary: #eff6f6; /* Sub-sections */
   --color-bg-muted: #c3d5d5; /* Subtle backgrounds */
   --color-surface: #f7f6f4; /* Cards, panels, modals */
   --color-surface-hover: #eff6f6; /* Hovered card */
-  --color-overlay: rgba(0, 0, 0, 0.5); /* Modal overlay */
+  --color-overlay: rgb(0 0 0 / 50%); /* Modal overlay */
 
+  /* text */
   --color-text: var(--cian-600); /* Primary text */
   --color-text-secondary: var(--grey-400); /* Muted text */
-  --color-text-inverse: #ffffff; /* Text on dark/primary */
+  --color-text-inverse: #fff; /* Text on dark/primary */
   --color-text-disabled: #325e5e; /* Disabled text */
   --color-link: var(--cian-200); /* Links */
   --color-link-hover: var(--cian-300);
 
+  /* border */
   --color-border: #cce6e6; /* Default borders */
   --color-border-secondary: var(--grey-100); /* Default borders */
 
+  /* primary */
   --color-primary-rgb: 75, 196, 196;
   --color-primary: var(--cian-200);
   --color-primary-hover: #55dede;
   --color-primary-muted: #94c6c6; /* Light background version */
   --color-on-primary: var(--cian-600); /* Text on primary */
 
+  /* secondary */
   --color-secondary: #ede9e3;
   --color-secondary-hover: #cce6e6;
   --color-on-secondary: var(--cian-600);
 
+  /* feedback */
   --color-success: #209b52;
   --color-success-hover: #209b52;
   --color-success-bg: #d9efe2;
   --color-success-border: #209b52;
   --color-on-success: #209b52;
-
   --color-warning: #f1ab11;
   --color-warning-hover: #f1ab11;
   --color-warning-bg: #fdebc7;
   --color-warning-border: #f1ab11;
   --color-on-warning: #f1ab11;
-
   --color-error: #c11204;
   --color-error-hover: #9e0e03;
   --color-error-bg: #f5ded0;
   --color-error-border: #c11204;
   --color-on-error: #c11204;
-
   --color-info: #3f70db;
   --color-info-hover: #3f70db;
   --color-info-bg: #d6e3f6;
   --color-info-border: #3f70db;
   --color-on-info: #3f70db;
 
+  /* expense types  */
   --color-needs: var(--green-200);
   --color-on-needs: var(--green-500);
-
   --color-wants: var(--orange-300);
   --color-on-wants: var(--orange-600);
-
   --color-savings: var(--purple-200);
   --color-on-savings: var(--purple-600);
-
   --color-positive: #1d9e75;
   --color-negative: #ef5350;
 
   /* Typography */
+
+  /* Font Families */
   --font-sans: system-ui, sans-serif;
   --font-mono: monospace;
-
   --font-heading: var(--font-sans);
   --font-body: var(--font-sans);
 
+  /* Font Sizes */
+  --font-size-xxs: 0.625rem; /* 10px */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-md: 1rem; /* 16px (base) */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+  --font-size-5xl: 3rem; /* 48px */
+
   /* Spacing */
   --spacing-xs: 0.25rem;
-  --spacing-sm: 0.4rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
@@ -185,24 +196,17 @@ input[type="number"] {
   --radius-xl: 1rem;
 
   /* Shadows */
-  --shadow-focus: 0 0 0 3px rgba(58, 154, 154, 0.4);
-  --shadow-focus-error: 0 0 0 3px rgba(220, 38, 38, 0.5);
-  --shadow-focus-needs: 0 0 0 3px rgba(149, 191, 152, 0.4);
-  --shadow-focus-wants: 0 0 0 3px rgba(217, 114, 91, 0.4);
-  --shadow-focus-savings: 0 0 0 3px rgba(190, 169, 186, 0.4);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-focus: 0 0 0 3px rgb(58 154 154 / 40%);
+  --shadow-focus-error: 0 0 0 3px rgb(220 38 38 / 50%);
+  --shadow-focus-needs: 0 0 0 3px rgb(149 191 152 / 40%);
+  --shadow-focus-wants: 0 0 0 3px rgb(217 114 91 / 40%);
+  --shadow-focus-savings: 0 0 0 3px rgb(190 169 186 / 40%);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 5%);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
   --shadow-lg:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
   --shadow-xl:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-::-moz-selection {
-  /* Code for Firefox */
-  color: var(--color-text);
-  background: #94c6c6;
+    0 20px 25px -5px rgb(0 0 0 / 10%), 0 10px 10px -5px rgb(0 0 0 / 4%);
 }
 
 ::selection {
@@ -212,66 +216,64 @@ input[type="number"] {
 
 [data-theme="dark"] {
   /* COLOR (layer 2) */
-  --color-bg: #333333; /* Main app/page background */
+
+  /* background */
+  --color-bg: #333; /* Main app/page background */
   --color-bg-secondary: #353838; /* Sub-sections */
   --color-bg-muted: #495757; /* Subtle backgrounds */
   --color-surface: #383838; /* Cards, panels, modals */
   --color-surface-hover: #363636; /* Hovered card */
-  --color-overlay: rgba(0, 0, 0, 0.5); /* Modal overlay */
+  --color-overlay: rgb(0 0 0 / 50%); /* Modal overlay */
 
-  --color-text: #ffffff; /* Primary text */
+  /* text */
+  --color-text: #fff; /* Primary text */
   --color-text-secondary: var(--grey-200); /* Muted text */
   --color-text-inverse: var(--cian-600); /* Text on dark/primary */
   --color-text-disabled: var(--grey-300); /* Disabled text */
   --color-link: var(--cian-100); /* Links */
   --color-link-hover: var(--cian-200);
 
+  /* border */
   --color-border: var(--grey-400); /* Default borders */
   --color-border-secondary: var(--grey-500); /* Default borders */
 
+  /* primary */
   --color-primary-rgb: 94, 239, 239;
   --color-primary: var(--cian-100);
   --color-primary-hover: var(--cian-200);
   --color-primary-muted: #94c6c6; /* Light background version */
   --color-on-primary: var(--cian-600); /* Text on primary */
 
+  /* secondary */
   --color-secondary: #2a2a28;
   --color-secondary-hover: #3b3b38;
   --color-on-secondary: #f3f3f3;
 
+  /* feedback */
   --color-success: #209b52;
   --color-success-hover: #209b52;
   --color-success-bg: #d9efe2;
   --color-success-border: #209b52;
   --color-on-success: #209b52;
-
   --color-warning: #f1ab11;
   --color-warning-hover: #f1ab11;
   --color-warning-bg: #fdebc7;
   --color-warning-border: #f1ab11;
   --color-on-warning: #f1ab11;
-
   --color-error: #c11204;
   --color-error-hover: #c11204;
   --color-error-bg: #f5ded0;
   --color-error-border: #c11204;
   --color-on-error: #c11204;
-
   --color-info: #3f70db;
   --color-info-hover: #3f70db;
   --color-info-bg: #d6e3f6;
   --color-info-border: #3f70db;
   --color-on-info: #3f70db;
 
-  ::-moz-selection {
-    /* Code for Firefox */
-    color: var(--cian-100);
-    background: RGBA(94, 239, 239, 0.1);
-  }
-
   ::selection {
     color: var(--cian-100);
-    background: RGBA(94, 239, 239, 0.1);
+    background: rgb(94 239 239 / 10%);
   }
 }
 
@@ -281,12 +283,9 @@ input[type="number"] {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-bg);
-  color: var(--color-text);
   line-height: 1.6;
-  /* transition: */
-  /*   background-color 0.3s ease, */
-  /*   color 0.3s ease; */
+  color: var(--color-text);
+  background-color: var(--color-bg);
 }
 
 /* ===== TYPOGRAPHY ===== */
@@ -303,76 +302,71 @@ h6 {
 }
 
 .heading-display {
-  font-size: 3.5rem;
+  font-size: var(--font-size-5xl);
   font-weight: 700;
   line-height: 1.1;
 }
 
 h1,
 .h1 {
-  font-size: 2.5rem;
+  font-size: var(--font-size-4xl);
 }
 
 h2,
 .h2 {
-  font-size: 2rem;
+  font-size: var(--font-size-3xl);
 }
 
 h3,
 .h3 {
-  font-size: 1.5rem;
+  font-size: var(--font-size-2xl);
 }
 
 h4,
 .h4 {
-  font-size: 1.25rem;
+  font-size: var(--font-size-xl);
 }
 
 h5,
 .h5 {
   font-family: var(--font-body);
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
 }
 
 h6,
 .h6 {
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--font-size-md);
 }
 
 p,
 .text-base {
-  font-size: 1rem;
+  font-size: var(--font-size-md);
   font-weight: 400;
   line-height: 1.6;
 }
 
 .text-subtitle {
-  font-size: 1.125rem;
+  font-size: var(--font-size-lg);
   font-weight: 400;
   line-height: 1.6;
   color: var(--color-text-secondary);
 }
 
 .text-caption {
-  font-size: 0.75rem;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   line-height: 1.4;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.text-sm {
-  font-size: 0.875rem;
-}
-
-/* Separator */
 hr,
 .separator {
   height: 1px;
+  margin: var(--spacing-md) 0;
   background-color: var(--color-border);
   border: none;
-  margin: var(--spacing-md) 0;
 }
 
 .indicator {
@@ -387,23 +381,91 @@ hr,
 /* ===== ANIMATIONS ===== */
 @keyframes pop {
   from {
-    transform: scale(0);
     opacity: 0;
+    transform: scale(0);
   }
 
   to {
-    transform: scale(1);
     opacity: 1;
+    transform: scale(1);
   }
 }
 
 @keyframes slide-down {
   from {
+    opacity: 0;
     transform: translateY(-50%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes show-dialog {
+  from {
     opacity: 0;
   }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+
   to {
     transform: translateY(0);
-    opacity: 1;
+  }
+}
+
+@keyframes scale-y {
+  0%,
+  60%,
+  100% {
+    height: 1rem;
+  }
+
+  30% {
+    height: 1.5rem;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* === css transition slide === */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-from-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes slide-to-left {
+  to {
+    transform: translateX(-100%);
   }
 }

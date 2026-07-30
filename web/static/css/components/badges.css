@@ -1,20 +1,23 @@
 .badge {
   display: inline-flex;
-  font-size: 0.75rem;
-  border-radius: var(--radius-xl);
-  padding: 0 var(--spacing-sm);
-  height: fit-content;
   width: fit-content;
+  height: fit-content;
+  padding: 0 var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  border-radius: var(--radius-xl);
 }
+
 .badge.needs {
-  background-color: var(--color-needs);
   color: var(--color-on-needs);
+  background-color: var(--color-needs);
 }
+
 .badge.wants {
-  background-color: var(--color-wants);
   color: var(--color-on-wants);
+  background-color: var(--color-wants);
 }
+
 .badge.savings {
-  background-color: var(--color-savings);
   color: var(--color-on-savings);
+  background-color: var(--color-savings);
 }

@@ -9,11 +9,11 @@ import (
 templ Input(class string, hasError bool, attrs templ.Attributes) {
 	<div class="relative">
 		<input
-			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			class={ "input", templ.KV("input--error", hasError), templ.KV(class, class != "") }
 			{ attrs... }
 		/>
 		<div>
-			<i class="feedbackIcon">
+			<i class="feedback-icon">
 				@CircleXSvg(16, "", "")
 			</i>
 			if t, ok := attrs["type"]; ok && t == "password" {
@@ -21,7 +21,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 					type="button"
 					data-action="ui.password.toggle"
 					onclick=""
-					class="reset-btn pwdToggle"
+					class="reset-btn pwd-toggle"
 				>
 					<i>
 						@EyeSvg(20, "", "")
@@ -37,7 +37,7 @@ templ Input(class string, hasError bool, attrs templ.Attributes) {
 
 templ InputGroup(class, label, errMsg string, hasError, required bool, attrs templ.Attributes) {
 	<div
-		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
+		class={ "input-group", templ.KV("input-group--error", hasError), templ.KV(class, class != "") }
 	>
 		if id, ok := attrs["id"]; ok && label != "" {
 			<label for={ id.(string) }>
@@ -48,7 +48,7 @@ templ InputGroup(class, label, errMsg string, hasError, required bool, attrs tem
 			</label>
 		}
 		@Input("", hasError, attrs)
-		<span>{ errMsg }</span>
+		<span class="input-group__message">{ errMsg }</span>
 	</div>
 }
 
@@ -97,7 +97,7 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 	{{
 		class := "input"
 		if hasError {
-			class += " error"
+			class += " input--error"
 		}
 		if value != "" {
 			for _, o := range options {
@@ -131,7 +131,7 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 
 templ SelectGroup(class, label, value, placeholder string, options []SelectOption, errMsg string, hasError, required bool, attrs templ.Attributes) {
 	<div
-		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
+		class={ "input-group", templ.KV("input-group--error", hasError), templ.KV(class, class != "") }
 	>
 		if id, ok := attrs["id"]; ok && label != "" {
 			<label for={ id.(string) }>
@@ -142,7 +142,7 @@ templ SelectGroup(class, label, value, placeholder string, options []SelectOptio
 			</label>
 		}
 		@Select(placeholder, value, options, hasError, attrs)
-		<span>{ errMsg }</span>
+		<span class="input-group__message">{ errMsg }</span>
 	</div>
 }
 
@@ -173,7 +173,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 	}}
 	<div class="relative date-input">
 		<input
-			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			class={ "input", templ.KV("input--error", hasError), templ.KV(class, class != "") }
 			data-input="ui.date-input.input"
 			maxlength="10"
 			{ attrs... }
@@ -204,7 +204,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 
 templ DateInputGroup(class, label, errMsg string, hasError bool, required bool, attrs templ.Attributes) {
 	<div
-		class={ "input-group", templ.KV("error", hasError), templ.KV(class, class != "") }
+		class={ "input-group", templ.KV("input-group--error", hasError), templ.KV(class, class != "") }
 	>
 		if id, ok := attrs["id"]; ok && label != "" {
 			<label for={ id.(string) }>
@@ -215,7 +215,7 @@ templ DateInputGroup(class, label, errMsg string, hasError bool, required bool, 
 			</label>
 		}
 		@DateInput("", hasError, attrs)
-		<span>{ errMsg }</span>
+		<span class="input-group__message">{ errMsg }</span>
 	</div>
 }
 
@@ -230,7 +230,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 	}}
 	<div class="relative date-input">
 		<input
-			class={ "input", templ.KV("error", hasError), templ.KV(class, class != "") }
+			class={ "input", templ.KV("input--error", hasError), templ.KV(class, class != "") }
 			data-input="ui.time-input.input"
 			placeholder="--:--"
 			{ attrs... }

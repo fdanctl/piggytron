@@ -23,6 +23,7 @@
     background-color: transparent;
     box-shadow: var(--shadow-lg);
   }
+
   .popover.min-w {
     min-width: anchor-size(width);
   }

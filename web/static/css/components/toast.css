@@ -30,11 +30,12 @@
   animation: toast-life-mobile 4s ease-in-out;
 }
 
-@media (min-width: 600px) {
+@media (width >= 600px) {
   #toast-root {
     width: fit-content;
     flex-direction: column-reverse;
   }
+
   .toast {
     width: fit-content;
     animation: toast-life-desktop 4s ease-in-out;
