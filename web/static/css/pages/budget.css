@@ -191,6 +191,9 @@
 }
 
 .budget-carryover {
+  > span {
+    display: none;
+  }
   cursor: default;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);
@@ -200,13 +203,20 @@
   width: fit-content;
   display: flex;
   place-items: center center;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  > span {
-    margin-left: 3px;
+  padding: var(--spacing-xs);
+
+  > i {
+    display: flex;
+    place-items: center center;
     font-size: var(--font-size-sm);
-    margin-bottom: 3px;
-    height: 0;
-    line-height: 0;
+  }
+
+  @container main (min-width: 600px) {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    gap: 3px;
+    > span {
+      display: block;
+    }
   }
 }
 

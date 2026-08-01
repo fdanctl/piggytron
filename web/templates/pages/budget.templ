@@ -151,9 +151,15 @@ templ Carryover(etype string, value int) {
 	}}
 	<span class={ "budget-carryover", fmt.Sprint("budget-carryover--", etype), fmt.Sprint("budget-carryover--", posneg) }>
 		if value > 0 {
-			+{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) } <span>↺</span>
+			<span>+{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) }</span>
+			<i>
+				@components.RotateCcwSvg(10, "", "")
+			</i>
 		} else {
-			{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) } <span>↺</span>
+			<span>{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) }</span>
+			<i>
+				@components.RotateCcwSvg(10, "", "")
+			</i>
 		}
 	</span>
 }

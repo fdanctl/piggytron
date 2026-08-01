@@ -8,17 +8,17 @@ import (
 )
 
 type BudgetPageView struct {
-	Month             budget.Month
-	TotalBudgeted     int
-	ReadyToAssign     int
-	Income            int
-	AvailableToSpend  int
-	Overspent         int
-	NeedsRows         []BudgetRowView
-	WantsRows         []BudgetRowView
-	SavingsRows       []BudgetRowView
-	TotalCarryover    int
-	UnassignCarryover int
+	Month               budget.Month
+	TotalBudgeted       int
+	ReadyToAssign       int
+	Income              int
+	AvailableToSpend    int
+	Overspent           int
+	NeedsRows           []BudgetRowView
+	WantsRows           []BudgetRowView
+	SavingsRows         []BudgetRowView
+	CategoriesCarryover int
+	UnassignCarryover   int
 
 	NeedsLeft   int
 	NeedsBudget int
@@ -122,18 +122,20 @@ func NewBudgetPageView(
 		savingsPct = 0
 	}
 
+	categoriesCarryover := totalBudgetedPrev - totalSpentPrev
+
 	return BudgetPageView{
-		Month:             month,
-		TotalBudgeted:     totalBudgeted,
-		ReadyToAssign:     balance - totalAvailable,
-		Income:            income,
-		AvailableToSpend:  totalAvailable,
-		Overspent:         overspent * -1,
-		NeedsRows:         needs,
-		WantsRows:         wants,
-		SavingsRows:       savings,
-		TotalCarryover:    totalBudgetedPrev - totalSpentPrev,
-		UnassignCarryover: max((balance-net)-(totalBudgetedPrev-totalSpentPrev), 0),
+		Month:               month,
+		TotalBudgeted:       totalBudgeted,
+		ReadyToAssign:       balance - totalAvailable,
+		Income:              income,
+		AvailableToSpend:    totalAvailable,
+		Overspent:           overspent * -1,
+		NeedsRows:           needs,
+		WantsRows:           wants,
+		SavingsRows:         savings,
+		CategoriesCarryover: categoriesCarryover,
+		UnassignCarryover:   max(balance-income-categoriesCarryover, 0),
 
 		NeedsBudget: needsBudget,
 		NeedsLeft:   needsBudget - needsSpent,
