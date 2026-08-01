@@ -180,14 +180,49 @@
 }
 
 @scope (.budget-table__row ) {
-  > span:first-child {
+  > div:first-child {
     text-align: left;
   }
 
-  > span:last-child {
+  > div:last-child {
     font-size: var(--font-size-md);
     font-family: var(--font-mono);
   }
+}
+
+.budget-carryover {
+  cursor: default;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xxs);
+  height: 100%;
+  font-weight: 500;
+  width: fit-content;
+  display: flex;
+  place-items: center center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  > span {
+    margin-left: 3px;
+    font-size: var(--font-size-sm);
+    margin-bottom: 3px;
+    height: 0;
+    line-height: 0;
+  }
+}
+
+.budget-carryover--positive {
+  color: var(--color-positive);
+  background-color: var(--color-on-positive);
+}
+
+.budget-carryover--savings {
+  color: var(--color-ambivalent);
+  background-color: var(--color-on-ambivalent);
+}
+
+.budget-carryover--negative {
+  color: var(--color-negative);
+  background-color: var(--color-on-negative);
 }
 
 .budget-table__total-row {

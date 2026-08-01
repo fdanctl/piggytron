@@ -19,14 +19,14 @@ templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.Bu
 	if view.TotalBudgeted == 0 {
 		@lastMonthImport(view.Month)
 	}
-	@BudgetStats(view.TotalBudgeted, view.LeftToBudget, view.Income, view.LeftToSpend, view.Overspent, nil)
+	@BudgetStats(view.TotalBudgeted, view.ReadyToAssign, view.Income, view.UnassignCarryover, view.AvailableToSpend, view.Overspent, nil)
 	<div
 		id="budget-sankey"
 		class="chart-container mt-xl mb-xl"
-		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s", view.Month) }
+		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s?unassign=%d", view.Month, view.UnassignCarryover) }
 		hx-trigger="load"
 	>
-		@components.Loader("htmx-indicator", nil)
+		@components.Loader("htmx-indicator h-full", nil)
 	</div>
 	<div class="budget-table-container">
 		@budgetTable("needs", view.NeedsBudget, view.NeedsLeft, view.NeedsPct, view.NeedsRows)
@@ -53,22 +53,26 @@ templ lastMonthImport(month budget.Month) {
 	</div>
 }
 
-templ BudgetStats(totalBudgeted, leftToBudget, income, leftToSpend, overspent int, attrs templ.Attributes) {
+templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftToSpend, overspent int, attrs templ.Attributes) {
 	<div id="budget-stats" class="budget-stats mt-lg" { attrs... }>
 		<div class="card">
-			<h6 class="card__title">Left to budget</h6>
+			<h6 class="card__title">Ready to assign</h6>
 			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToBudget < 0) }>
 				{ views.FormatMoney(float64(leftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="ltb-input" type="hidden" name="ltb" value={ leftToBudget }/>
 				<input id="total-budgeted" type="hidden" name="total-budgeted" value={ totalBudgeted }/>
 			</p>
 			<p class="metric__sub metric__sub--xl mt-xs">
-				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income
+				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income 
+				if unassignCarryover > 0 {
+					+ {  views.FormatMoney(float64(unassignCarryover) / 100, currency.EUR, language.AmericanEnglish) } unassign
+				}
 				<input id="income-input" type="hidden" name="income" value={ income }/>
+				<input id="unassign-input" type="hidden" name="unassign" value={ unassignCarryover }/>
 			</p>
 		</div>
 		<div class="card">
-			<h6 class="card__title">Left to spend</h6>
+			<h6 class="card__title">Available to spend</h6>
 			<p id="left-to-spent" class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToSpend < 0) }>
 				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="lts-input" type="hidden" name="lts" value={ leftToSpend }/>
@@ -99,11 +103,16 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 		<div class="budget-table__head">
 			<span class="capitalize">{ string(eType) } <span id={ fmt.Sprintf("%s-pct", eType) } class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
 			<span>Budget</span>
-			<span>Left</span>
+			<span>Available</span>
 		</div>
 		for _, c := range rows {
 			<div class="budget-table__row" hx-include="inherit, find [name='cat-left']">
-				<span>{ c.Name }</span>
+				<div class="flex gap-xs items-center">
+					<span>{ c.Name }</span>
+					if c.Carryover != 0 {
+						@Carryover(eType, c.Carryover)
+					}
+				</div>
 				<div class="flex items-center gap-xs">
 					€
 					@components.Input(
@@ -122,15 +131,31 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 							"hx-swap":            "outerHTML",
 							"hx-post":            "/partials/budget",
 							"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
-							"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
+							"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
 						})
 					@BudgetInfoInputs(c.Budgeted, c.Month.String(), c.CategoryID)
 				</div>
-				@CatRowLeftCell(c.CategoryID, c.Left, nil)
+				@CatRowLeftCell(c.CategoryID, c.Available, nil)
 			</div>
 		}
 		@TotalRow(eType, totalBudget, totalLeft, nil)
 	</div>
+}
+
+templ Carryover(etype string, value int) {
+	{{
+		posneg := "positive"
+		if value < 0 {
+			posneg = "negative"
+		}
+	}}
+	<span class={ "budget-carryover", fmt.Sprint("budget-carryover--", etype), fmt.Sprint("budget-carryover--", posneg) }>
+		if value > 0 {
+			+{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) } <span>↺</span>
+		} else {
+			{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) } <span>↺</span>
+		}
+	</span>
 }
 
 templ CatRowLeftCell(catID string, left int, attrs templ.Attributes) {

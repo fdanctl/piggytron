@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 	"time"
+
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 )
 
 type CategoryNameDTO struct {
@@ -16,13 +18,15 @@ type CategoryDTO struct {
 	Type string // this is the "category type" — "income", "needs", "wants", "savings"
 }
 
-type ExpenseCategoryBudgetSpent struct {
-	CategoryID string
-	Month      time.Time
-	Type       string
-	Name       string
-	Budgeted   int
-	Spent      int
+type CategoryBudgetValue struct {
+	CategoryID      string
+	Month           time.Time
+	Type            string
+	Name            string
+	Budgeted        int
+	Value           int // spent or income
+	PrevTotalBudget int
+	PrevTotalSpent  int
 }
 
 type CategoryBudget struct {
@@ -38,16 +42,21 @@ type CategoryMonthlyValue struct {
 	Value int
 }
 
+type MonthExpenseCategoryBudgetSpentWithBalance struct {
+	Data     []CategoryBudgetValue
+	MonthNet int
+	Balance  int
+}
+
 type CategoryQueryService interface {
 	FindByID(ctx context.Context, id string) (*CategoryDTO, error)
 	FindAllCategories(ctx context.Context, uid string) ([]CategoryDTO, error)
 	FindCategoriesIDIncludes(ctx context.Context, ids []string) ([]CategoryNameDTO, error)
-	GetExpenseCategoriesBudgetSpent(
+	GetCategoriesBudgetSpentValue(
 		ctx context.Context,
 		uid string,
-		minDate time.Time,
-		maxDate time.Time,
-	) ([]ExpenseCategoryBudgetSpent, error)
+		month budget.Month,
+	) (*MonthExpenseCategoryBudgetSpentWithBalance, error)
 	GetCategoriesBudgetSpent(
 		ctx context.Context,
 		uid string,

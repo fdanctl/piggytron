@@ -158,7 +158,11 @@ input[type="number"] {
   --color-savings: var(--purple-200);
   --color-on-savings: var(--purple-600);
   --color-positive: #1d9e75;
+  --color-on-positive: rgb(29 158 117 / 12%);
   --color-negative: #ef5350;
+  --color-on-negative: rgb(239 83 80 / 12%);
+  --color-ambivalent: #f1ab11;
+  --color-on-ambivalent: rgb(241 171 17 / 12%);
 
   /* Typography */
 

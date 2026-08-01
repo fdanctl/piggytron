@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
@@ -144,66 +145,143 @@ func (s *CategoryQueryService) FindCategoriesIDIncludes(
 	return results, nil
 }
 
-func (s *CategoryQueryService) GetExpenseCategoriesBudgetSpent(
+func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 	ctx context.Context,
 	uid string,
-	minDate, maxDate time.Time,
-) ([]query.ExpenseCategoryBudgetSpent, error) {
+	month budget.Month,
+) (*query.MonthExpenseCategoryBudgetSpentWithBalance, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
 		`
-        SELECT
-          c.id as cid,
-          COALESCE(b.month, $1) AS month,
-          c.type,
-          c.name,
-          COALESCE(b.amount, 0),
-          COALESCE(SUM(t.amount), 0)
-        FROM
-          expense_categories c
-          LEFT JOIN ledger t ON c.id = t.expense_category_id
-          AND t.date >= $1
-          AND t.date < $2
-          LEFT JOIN monthly_budgets b ON c.id = b.category_id
-          AND b.month >= $1
-          AND b.month < $2
-        WHERE
-          c.user_id = $3
-        GROUP BY
-          c.id,
-		  b.category_id,
-          b.month
+		WITH
+		  month_net AS (
+		    SELECT
+		      COALESCE(ms.month, $2) as month,
+		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS net,
+		      SUM(SUM(ms.money_in - ms.money_out)) OVER (
+		        ORDER BY
+		          month
+		      ) AS running_total
+		    FROM
+		      accounts a
+		      LEFT JOIN monthly_summary ms ON a.id = ms.account_id
+		      AND ms.month <= $2 -- $2
+		    WHERE
+		      user_id = $1 -- $1
+		      AND type = 'bank'
+		      AND is_saving = FALSE
+		    GROUP BY
+		      ms.month
+		  ),
+		  categories as (
+		    SELECT
+		      c.id as cid,
+		      COALESCE(b.month, $2) AS month, -- $2
+		      c.type,
+		      c.name,
+		      COALESCE(b.amount, 0) as budgeted,
+		      COALESCE(SUM(t.amount), 0) as spent_income,
+		      (
+		        SELECT
+		          COALESCE(SUM(mb.amount), 0)
+		        FROM
+		          monthly_budgets mb
+		        WHERE
+		          mb.category_id = c.id
+		          AND mb.month < COALESCE(b.month, $2) -- $2
+		      ) as total_budgeted_prev,
+		      (
+		        SELECT
+		          COALESCE(SUM(l.amount), 0)
+		        FROM
+		          ledger l
+		        WHERE
+		          l.expense_category_id = c.id
+		          AND l.date < COALESCE(b.month, $2) -- $2
+		      ) as total_spent_prev
+		    FROM
+		      expense_categories c
+		      LEFT JOIN ledger t ON c.id = t.expense_category_id
+		      AND t.date >= $2 -- $2
+		      AND t.date < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month'
+		      LEFT JOIN monthly_budgets b ON c.id = b.category_id
+		      AND b.month >= $2 -- $2
+		      AND b.month < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month'
+		    WHERE
+		      c.user_id = $1 -- $1
+		    GROUP BY
+		      c.id,
+		      b.category_id,
+		      b.month
+		    UNION ALL
+		    SELECT
+		      c.id as cid,
+		      $2 AS month, -- $2
+		      'income' AS type,
+		      c.name as name,
+		      0 as budgeted,
+		      COALESCE(SUM(t.amount), 0) as spent_income,
+		      0 as total_budgeted_prev,
+		      0 as total_spent_prev
+		    FROM
+		      income_categories c
+		      LEFT JOIN ledger t ON c.id = t.income_category_id
+		      AND t.date >= $2 -- $2
+		      AND t.date < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month' -- $2
+		    WHERE
+		      c.user_id = $1 -- $1
+		    GROUP BY
+		      c.id
+		  )
+		SELECT
+		  c.*,
+		  COALESCE(n.net, 0) as net,
+		  COALESCE(n.running_total, 0) as balance
+		FROM
+		  categories c
+		  LEFT JOIN month_net n ON n.month = $2 -- $2
+		ORDER BY c.type
 		`,
-		minDate,
-		maxDate,
 		uid,
+		month.Time(),
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var results []query.ExpenseCategoryBudgetSpent
+	var data []query.CategoryBudgetValue
+	var monthNet int
+	var balance int
 
 	for rows.Next() {
-		var dto query.ExpenseCategoryBudgetSpent
-		if err := rows.Scan(
-			&dto.CategoryID,
-			&dto.Month,
-			&dto.Type,
-			&dto.Name,
-			&dto.Budgeted,
-			&dto.Spent,
-		); err != nil {
+		var r query.CategoryBudgetValue
+		err := rows.Scan(
+			&r.CategoryID,
+			&r.Month,
+			&r.Type,
+			&r.Name,
+			&r.Budgeted,
+			&r.Value,
+			&r.PrevTotalBudget,
+			&r.PrevTotalSpent,
+			&monthNet,
+			&balance,
+		)
+		if err != nil {
 			return nil, err
 		}
-		results = append(results, dto)
+		data = append(data, r)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return results, nil
+	return &query.MonthExpenseCategoryBudgetSpentWithBalance{
+		Data:     data,
+		MonthNet: monthNet,
+		Balance:  balance,
+	}, nil
 }
 
 func (s *CategoryQueryService) GetCategoriesBudgetSpent(

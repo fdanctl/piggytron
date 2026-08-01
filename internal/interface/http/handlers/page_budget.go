@@ -62,41 +62,22 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	filters := query.NewLedgerFilters([]string{"income"}, nil, nil, "", "", "", "")
-	minD := bm.Time()
-	maxD := time.Date(bm.Time().Year(), bm.Time().Month()+1, 1, 0, 0, 0, 0, time.UTC)
-	filters.MinDate = &minD
-	filters.MaxDate = &maxD
-
-	incomes, err := h.transactionQuery.FindFiltered(
+	categoryBudgetSpent, err := h.categoryQuery.GetCategoriesBudgetSpentValue(
 		r.Context(),
 		sessionInfo.UserID,
-		filters,
-		0,
-		0,
-	)
-	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find filtered ledger entries: %w", err))
-		return
-	}
-
-	var totalIncome int
-	for _, v := range incomes {
-		totalIncome += v.Amount
-	}
-
-	categoryBudgetSpent, err := h.categoryQuery.GetExpenseCategoriesBudgetSpent(
-		r.Context(),
-		sessionInfo.UserID,
-		minD,
-		maxD,
+		bm,
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("error geting category budget-spent: %w", err))
 		return
 	}
 
-	pageView := views.NewBudgetPageView(bm, totalIncome, categoryBudgetSpent)
+	pageView := views.NewBudgetPageView(
+		bm,
+		categoryBudgetSpent.MonthNet,
+		categoryBudgetSpent.Balance,
+		categoryBudgetSpent.Data,
+	)
 	d, err := h.transactionQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		httperror.SendError(w, r, errs.NewInternalAppError(err, "BudgetPageHandler.Get"))

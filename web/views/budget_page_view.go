@@ -8,15 +8,17 @@ import (
 )
 
 type BudgetPageView struct {
-	Month         budget.Month
-	TotalBudgeted int
-	LeftToBudget  int
-	Income        int
-	LeftToSpend   int
-	Overspent     int
-	NeedsRows     []BudgetRowView
-	WantsRows     []BudgetRowView
-	SavingsRows   []BudgetRowView
+	Month             budget.Month
+	TotalBudgeted     int
+	ReadyToAssign     int
+	Income            int
+	AvailableToSpend  int
+	Overspent         int
+	NeedsRows         []BudgetRowView
+	WantsRows         []BudgetRowView
+	SavingsRows       []BudgetRowView
+	TotalCarryover    int
+	UnassignCarryover int
 
 	NeedsLeft   int
 	NeedsBudget int
@@ -35,17 +37,24 @@ type BudgetRowView struct {
 	CategoryID string
 	Month      budget.Month
 	Name       string
+	Carryover  int
 	Budgeted   int
-	Left       int
+	Available  int
 }
 
 func NewBudgetPageView(
 	month budget.Month,
-	income int,
-	catBudgetSpent []query.ExpenseCategoryBudgetSpent,
+	net int,
+	balance int,
+	catBudgetSpent []query.CategoryBudgetValue,
 ) BudgetPageView {
+	var income int
+	var totalBudgetedPrev int
+	var totalSpentPrev int
+
 	var totalBudgeted int
 	var totalSpent int
+	var totalAvailable int
 	var overspent int
 
 	var needsBudget int
@@ -59,34 +68,44 @@ func NewBudgetPageView(
 	var needs, wants, savings []BudgetRowView
 
 	for _, v := range catBudgetSpent {
+		if v.Type == "income" {
+			income += v.Value
+			continue
+		}
+		totalBudgetedPrev += v.PrevTotalBudget
+		totalSpentPrev += v.PrevTotalSpent
+
 		totalBudgeted += v.Budgeted
-		totalSpent += v.Spent
-		left := v.Budgeted - v.Spent
-		if left < 0 {
-			overspent += left
+		totalSpent += v.Value
+		carryover := v.PrevTotalBudget - v.PrevTotalSpent
+		available := v.Budgeted - v.Value + carryover
+		totalAvailable += available
+		if available < 0 {
+			overspent += available
 		}
 
 		row := BudgetRowView{
 			CategoryID: v.CategoryID,
 			Month:      budget.Month(v.Month),
 			Name:       v.Name,
+			Carryover:  carryover,
 			Budgeted:   v.Budgeted,
-			Left:       left,
+			Available:  available,
 		}
 
 		switch v.Type {
 		case "needs":
 			needs = append(needs, row)
 			needsBudget += v.Budgeted
-			needsSpent += v.Spent
+			needsSpent += v.Value
 		case "wants":
 			wants = append(wants, row)
 			wantsBudget += v.Budgeted
-			wantsSpent += v.Spent
+			wantsSpent += v.Value
 		case "savings":
 			savings = append(savings, row)
 			savingsBudget += v.Budgeted
-			savingsSpent += v.Spent
+			savingsSpent += v.Value
 		}
 	}
 
@@ -104,15 +123,17 @@ func NewBudgetPageView(
 	}
 
 	return BudgetPageView{
-		Month:         month,
-		TotalBudgeted: totalBudgeted,
-		LeftToBudget:  income - totalBudgeted,
-		Income:        income,
-		LeftToSpend:   totalBudgeted - totalSpent,
-		Overspent:     overspent * -1,
-		NeedsRows:     needs,
-		WantsRows:     wants,
-		SavingsRows:   savings,
+		Month:             month,
+		TotalBudgeted:     totalBudgeted,
+		ReadyToAssign:     balance - totalAvailable,
+		Income:            income,
+		AvailableToSpend:  totalAvailable,
+		Overspent:         overspent * -1,
+		NeedsRows:         needs,
+		WantsRows:         wants,
+		SavingsRows:       savings,
+		TotalCarryover:    totalBudgetedPrev - totalSpentPrev,
+		UnassignCarryover: max((balance-net)-(totalBudgetedPrev-totalSpentPrev), 0),
 
 		NeedsBudget: needsBudget,
 		NeedsLeft:   needsBudget - needsSpent,

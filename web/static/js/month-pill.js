@@ -56,7 +56,7 @@ export function prevBudgetMonth() {
   const params = new URLSearchParams(window.location.search);
 
   let prev = new Date();
-  prev.setMonth(prev.getMonth() - 1);
+  prev = new Date(prev.getFullYear(), prev.getMonth() - 1, 1);
   const qmonth = params.get("month");
   if (qmonth) {
     const [year, month] = qmonth.split("-").map(Number);
@@ -78,7 +78,7 @@ export function nextBudgetMonth() {
   const params = new URLSearchParams(window.location.search);
 
   let next = new Date();
-  next.setMonth(next.getMonth() + 1);
+  next = new Date(next.getFullYear(), next.getMonth() + 1, 1);
   const qmonth = params.get("month");
   if (qmonth) {
     const [year, month] = qmonth.split("-").map(Number);

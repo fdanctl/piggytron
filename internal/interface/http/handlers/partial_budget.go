@@ -71,6 +71,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	pleftToBudget := params.Get("ltb")
 	pleftToSpent := params.Get("lts")
 	pincome := params.Get("income")
+	punassign := params.Get("unassign")
 	poverspent := params.Get("overspent")
 
 	prev, err := strconv.Atoi(ps)
@@ -136,6 +137,12 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	leftToBudget -= addedAmount
 
 	income, err := strconv.Atoi(pincome)
+	if err != nil {
+		httperror.SendFormError(w, r, err, budgetInfoInputs)
+		return
+	}
+
+	unassign, err := strconv.Atoi(punassign)
 	if err != nil {
 		httperror.SendFormError(w, r, err, budgetInfoInputs)
 		return
@@ -251,6 +258,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			totalBudgeted,
 			leftToBudget,
 			income,
+			unassign,
 			leftToSpent,
 			overspent,
 			templ.Attributes{

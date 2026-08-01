@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
@@ -49,6 +50,16 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(w, r, err)
 		return
 	}
+	punassign := r.URL.Query().Get("unassign")
+
+	var unassignCarry int
+	if punassign != "" {
+		unassignCarry, err = strconv.Atoi(punassign)
+		if err != nil {
+			httperror.SendError(w, r, err)
+			return
+		}
+	}
 
 	bm := budget.NewMonth(time.Now())
 	if month != "" {
@@ -86,13 +97,52 @@ func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	var links []opts.SankeyLink
+	if unassignCarry > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "Unassigned Carryover",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Unassigned Carryover",
+				Target: "Budget",
+				Value:  float32(unassignCarry) / float32(100),
+			},
+		)
+	}
 
+	budget := unassignCarry
+	var budgeted int
 	for _, v := range categoryBudget {
+		if v.Type == "income" {
+			budget += v.Value
+		} else {
+			budgeted += v.Value
+		}
 		if v.Value > 0 {
 			node, link := h.chartsService.MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
 			nodes = append(nodes, node)
 			links = append(links, link)
 		}
+	}
+
+	ltb := budget - budgeted
+	if ltb > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "Unassigned",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Budget",
+				Target: "Unassigned",
+				Value:  float32(ltb) / float32(100),
+			},
+		)
 	}
 
 	component := components.NoData()
