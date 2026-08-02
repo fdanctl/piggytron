@@ -7,6 +7,65 @@ import (
 	"slices"
 )
 
+templ TransactionFormTabs() {
+	@components.DialogHeader("", "New Entry", nil) {
+		<div class="tabs-list">
+			<button
+				class="reset-btn tab-trigger tab-trigger--active"
+				data-tab="income"
+				data-action="ui.tab.change"
+				data-tab-trigger="transaction"
+			>
+				Income
+			</button>
+			<button
+				class="reset-btn tab-trigger"
+				data-tab="expense"
+				data-action="ui.tab.change"
+				data-tab-trigger="transaction"
+			>
+				Expense
+			</button>
+			<button
+				class="reset-btn tab-trigger"
+				data-tab="transfer"
+				data-action="ui.tab.change"
+				data-tab-trigger="transaction"
+			>
+				Transfer
+			</button>
+		</div>
+	}
+}
+
+templ TransactionFormActionBtnsTab() {
+	<div class="w-full flex justify-end mt-md">
+		@components.Button(
+			"Confirm",
+			"mt-md",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"onclick": "this.closest('.dialog').querySelector('.tab-content:not(.hidden) .btn[type=submit]').click()",
+			},
+		)
+	</div>
+}
+
+templ FormActionBtns(text string) {
+	<div class="w-full flex justify-end mt-md">
+		@components.Button(
+			text,
+			"mt-md",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"onclick": "this.closest('.dialog').querySelector('form .btn[type=submit]').click()",
+			},
+		)
+	</div>
+}
+
 templ TransactionForm(
 	vi views.IncomeForm,
 	ve views.ExpenseForm,
@@ -16,32 +75,6 @@ templ TransactionForm(
 	accounts []components.SelectOption,
 	accountsNoGoals []components.SelectOption,
 ) {
-	<div class="tabs-list">
-		<button
-			class="reset-btn tab-trigger tab-trigger--active"
-			data-tab="income"
-			data-action="ui.tab.change"
-			data-tab-trigger="transaction"
-		>
-			Income
-		</button>
-		<button
-			class="reset-btn tab-trigger"
-			data-tab="expense"
-			data-action="ui.tab.change"
-			data-tab-trigger="transaction"
-		>
-			Expense
-		</button>
-		<button
-			class="reset-btn tab-trigger"
-			data-tab="transfer"
-			data-action="ui.tab.change"
-			data-tab-trigger="transaction"
-		>
-			Transfer
-		</button>
-	</div>
 	<div class="tab-content" id="income-content" data-tab-content="transaction">
 		@IncomeForm(vi, incomeCategories, accountsNoGoals, "")
 	</div>
@@ -162,7 +195,7 @@ templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOpt
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Confirm",
-				"mt-md",
+				"mt-md hidden",
 				components.BtnPrimary,
 				components.BtnMedium,
 				templ.Attributes{
@@ -282,7 +315,7 @@ templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectO
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Confirm",
-				"mt-md",
+				"mt-md hidden",
 				components.BtnPrimary,
 				components.BtnMedium,
 				templ.Attributes{
@@ -417,7 +450,7 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Confirm",
-				"mt-md",
+				"mt-md hidden",
 				components.BtnPrimary,
 				components.BtnMedium,
 				templ.Attributes{

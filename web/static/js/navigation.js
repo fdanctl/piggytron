@@ -68,12 +68,6 @@ export const closeDialog = (ele) => {
   );
 };
 
-dialogRoot?.lastChild.addEventListener("toggle", (e) => {
-  if (e.target === dialogRoot.lastChild) {
-    dialogRoot.lastChild.focus();
-  }
-});
-
 export function overlayClose({ evt }) {
   if (
     (evt.type === "click" || evt.key === "Escape") &&
@@ -83,59 +77,71 @@ export function overlayClose({ evt }) {
   }
 }
 
-let startY = 0;
-let currentDialog = null;
-let dragging = false;
+// let startY = 0;
+// let currentDialog = null;
+// let dragging = false;
 
-document.addEventListener("touchstart", (e) => {
-  const dialog = e.target.closest(".dialog");
+let ddragState = {
+  startY: 0,
+  delta: 0,
+  currentDialog: null,
+  dragging: false,
+};
 
-  if (dialog?.parentElement !== dialogRoot?.lastElementChild) return;
-  if (dialog.scrollTop > 0) return;
+export function startDialogDrag({ ele, evt }) {
+  if (ele !== dialogRoot?.lastElementChild) return;
+  if (ele.firstElementChild.scrollTop > 0) return;
+  if (ddragState.dragging || ddragState.currentDialog) return;
+  if (evt.pointerType !== "touch") return;
 
-  currentDialog = dialog;
-  startY = e.touches[0].clientY;
-  dragging = true;
-});
+  ddragState.startY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+  ddragState.delta = 0;
+  ddragState.currentDialog = ele.firstElementChild;
+  ddragState.dragging = true;
 
-document.addEventListener(
-  "touchmove",
-  (e) => {
-    if (!dragging || !currentDialog) return;
+  document.addEventListener("pointermove", moveDialogDrag);
+  document.addEventListener("pointerup", endDialogDrag);
+  document.addEventListener("pointercancel", cancelDialogDrag);
+}
 
-    const deltaY = e.touches[0].clientY - startY;
+function moveDialogDrag(evt) {
+  if (!ddragState.currentDialog || !ddragState.dragging) return;
 
-    // allow normal scrolling
-    if (currentDialog.scrollTop > 0) return;
+  const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
 
-    // only handle pull-down
-    if (deltaY <= 0) return;
+  const deltaY = clientY - ddragState.startY;
 
-    e.preventDefault();
+  // allow normal scrolling
+  if (ddragState.currentDialog.scrollTop > 0) return;
 
-    currentDialog.style.transform = `translateY(${deltaY}px)`;
-  },
-  { passive: false },
-);
+  // only handle pull-down
+  if (deltaY <= 0) return;
 
-document.addEventListener("touchend", (e) => {
-  if (!dragging || !currentDialog) return;
-  if (currentDialog.scrollTop > 0) return;
+  evt.preventDefault();
+  ddragState.delta = deltaY;
+  ddragState.currentDialog.style.transform = `translateY(${deltaY}px)`;
+}
 
-  const deltaY = e.changedTouches[0].clientY - startY;
+function endDialogDrag(evt) {
+  if (!ddragState.dragging || !ddragState.currentDialog) return;
+  if (ddragState.currentDialog.scrollTop > 0) return;
+
+  const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+
+  const deltaY = clientY - ddragState.startY;
   const shouldClose = deltaY > window.innerHeight * 0.2;
 
-  currentDialog.style.transition = "transform 200ms ease";
+  ddragState.currentDialog.style.transition = "transform 200ms ease";
 
   if (shouldClose) {
-    currentDialog
+    ddragState.currentDialog
       .closest(".is-dialog-open")
       ?.classList.remove("is-dialog-open");
-    currentDialog.classList.add("dialog--closing");
+    ddragState.currentDialog.classList.add("dialog--closing");
 
-    let toClose = currentDialog;
+    let toClose = ddragState.currentDialog;
 
-    currentDialog.addEventListener(
+    ddragState.currentDialog.addEventListener(
       "transitionend",
       () => {
         toClose.style.transform = "translateY(0)";
@@ -149,12 +155,22 @@ document.addEventListener("touchend", (e) => {
       { once: true },
     );
   } else {
-    currentDialog.style.transform = "";
+    ddragState.currentDialog.style.transform = "";
   }
 
-  dragging = false;
-  currentDialog = null;
-});
+  ddragState.dragging = false;
+  ddragState.currentDialog = null;
+}
+
+function cancelDialogDrag() {
+  if (!ddragState.dragging || !ddragState.currentDialog) return;
+  ddragState.currentDialog.style.transform = "";
+  ddragState.dragging = false;
+  ddragState.currentDialog = null;
+  document.removeEventListener("pointermove", moveDialogDrag);
+  document.removeEventListener("pointerup", endDialogDrag);
+  document.removeEventListener("pointercancel", cancelDialogDrag);
+}
 
 // === nav === //
 const path = window.location.pathname;

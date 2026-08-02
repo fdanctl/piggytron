@@ -158,10 +158,16 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 		r.URL.Query(),
 		minA, maxA,
 		int(minD.Unix()), int(maxD.Unix()),
-		resCount,
 	)
-	ctx := templ.WithChildren(r.Context(), content)
-	components.DialogWrapper("dialog--right-sheet", "Filters", nil).Render(ctx, w)
+	bottom := partials.LedgerFiltersBtns(resCount)
+
+	components.DialogWrapperForm(
+		"dialog--right-sheet",
+		components.DialogHeader("", "Filters", nil),
+		content,
+		bottom,
+		templ.Attributes{"id": "transactions-filters"},
+	).Render(r.Context(), w)
 }
 
 func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {

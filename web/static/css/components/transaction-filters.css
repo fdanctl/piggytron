@@ -1,15 +1,15 @@
 #transactions-filters {
-  height: 100%;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: var(--spacing-md);
+  /* height: 100%; */
+  /* display: grid; */
+  /* grid-template-rows: 1fr auto; */
+  /* gap: var(--spacing-md); */
 }
 
 .transactions-filters__body {
-  height: 100%;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border) transparent;
+  /* height: 100%; */
+  /* overflow-x: hidden; */
+  /* scrollbar-width: thin; */
+  /* scrollbar-color: var(--color-border) transparent; */
 }
 
 .curr-filters__wrapper:has(#curr-filters:empty) {

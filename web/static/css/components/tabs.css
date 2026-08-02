@@ -24,6 +24,10 @@
   border-bottom: 2px solid var(--color-primary);
 }
 
+.tab-trigger--active:hover {
+  border-bottom: 2px solid var(--color-primary);
+}
+
 .tab-content {
   margin-top: var(--spacing-md);
 }

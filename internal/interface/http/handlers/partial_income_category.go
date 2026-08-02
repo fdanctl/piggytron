@@ -39,8 +39,13 @@ func (h *IncomeCategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 func (h *IncomeCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.IncomeCategoryForm(*views.NewIncomeCategoryForm())
-	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", "New income category", nil).Render(ctx, w)
+	components.DialogWrapper(
+		"",
+		components.DialogHeader("", "New Income Category", nil),
+		form,
+		nil,
+		nil,
+	).Render(r.Context(), w)
 }
 
 func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {

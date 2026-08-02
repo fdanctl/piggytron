@@ -101,8 +101,8 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		append(noSavingsBanksOpts, goalSavingsOpts...),
 	)
 
-	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", "New Contribution", nil).Render(ctx, w)
+	components.DialogWrapper("", components.DialogHeader("", "New Contribution", nil), form, nil, nil).
+		Render(r.Context(), w)
 }
 
 func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {

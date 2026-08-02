@@ -1,23 +1,62 @@
 package components
 
-templ DialogWrapper(class string, title string, attrs templ.Attributes) {
+templ DialogWrapper(class string, header, body, bottom templ.Component, attrs templ.Attributes) {
 	<div
 		class="dialog__overlay"
 		tabindex="-1"
+		data-pointerdown="ui.dialog.start-drag"
 		hx-on::load="document.getElementById('dialog-root').classList.add('is-dialog-open'); this.focus()"
 	>
 		<div
 			class={ "dialog", templ.KV(class, class != "") }
 			{ attrs... }
 		>
-			<div class="dialog__bar">
-				<div></div>
+			@header
+			<div class="dialog__body">
+				@body
 			</div>
-			<button class="reset-btn dialog__x" data-action="ui.dialog.close-last">
-				@XSvg(16, "", "")
-			</button>
-			<h4 class="mb-md">{ title }</h4>
-			{ children... }
+			if bottom != nil {
+				<div class="dialog__bottom">
+					@bottom
+				</div>
+			}
 		</div>
+	</div>
+}
+
+templ DialogHeader(class string, title string, attrs templ.Attributes) {
+	<div class="dialog__header" { attrs... }>
+		<div class="dialog__bar">
+			<div></div>
+		</div>
+		<button type="button" class="reset-btn dialog__x" data-action="ui.dialog.close-last">
+			@XSvg(16, "", "")
+		</button>
+		<h4 class="mb-md">{ title }</h4>
+		{ children... }
+	</div>
+}
+
+templ DialogWrapperForm(class string, header, body, bottom templ.Component, attrs templ.Attributes) {
+	<div
+		class="dialog__overlay"
+		tabindex="-1"
+		data-pointerdown="ui.dialog.start-drag"
+		hx-on::load="document.getElementById('dialog-root').classList.add('is-dialog-open'); this.focus()"
+	>
+		<form
+			class={ "dialog", templ.KV(class, class != "") }
+			{ attrs... }
+		>
+			@header
+			<div class="dialog__body">
+				@body
+			</div>
+			if bottom != nil {
+				<div class="dialog__bottom">
+					@bottom
+				</div>
+			}
+		</form>
 	</div>
 }

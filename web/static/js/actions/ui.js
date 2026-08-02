@@ -45,6 +45,7 @@ import {
   overlayClose,
   sidebarHidePopover,
   sidebarShowPopover,
+  startDialogDrag,
   toggleSublinks,
 } from "../navigation";
 import { changeTab } from "../tabs";
@@ -161,6 +162,8 @@ export const uiActions = {
   "ui.nav-sheet.open": openNavSheet,
 
   "ui.dialog.close-last": closeLastDialog,
+
+  "ui.dialog.start-drag": startDialogDrag,
 
   "ui.nav.navigate": navigate,
 

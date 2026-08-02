@@ -85,8 +85,13 @@ func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 		noSavingsBanksOpts,
 	)
 
-	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", "New Entry", nil).Render(ctx, w)
+	components.DialogWrapper(
+		"",
+		partials.TransactionFormTabs(),
+		form,
+		partials.TransactionFormActionBtnsTab(),
+		nil,
+	).Render(r.Context(), w)
 }
 
 func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {

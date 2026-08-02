@@ -101,8 +101,8 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := partials.GoalForm(*view, ecatOpts, id)
-	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", title, nil).Render(ctx, w)
+	components.DialogWrapper("", components.DialogHeader("", title, nil), form, nil, nil).
+		Render(r.Context(), w)
 }
 
 func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {

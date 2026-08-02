@@ -52,7 +52,6 @@ templ LedgerFilters(
 	q url.Values,
 	minAmountPossible, maxAmountPossible int,
 	minDatePossible, maxDatePossible int,
-	count int,
 ) {
 	{{
 		loAmount := minAmountPossible
@@ -104,137 +103,113 @@ templ LedgerFilters(
 			loDate = minDatePossible
 		}
 	}}
-	<form id="transactions-filters">
-		<div
-			class="transactions-filters__body"
-			hx-include="input"
-		>
-			<div class="curr-filters__wrapper">
-				<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
-					for _, v := range q["types"] {
-						@Pill(
-							views.CapitalizeFirst(v),
-							templ.Attributes{
-								"data-id":     v,
-								"data-action": "ui.filters.remove",
-							},
-						)
-					}
-					for _, v := range currAcc {
-						@Pill(
-							v.Name,
-							templ.Attributes{
-								"data-id":     string(v.ID),
-								"data-action": "ui.filters.remove",
-							},
-						)
-					}
-					for _, v := range currCats {
-						@Pill(
-							v.Name,
-							templ.Attributes{
-								"data-id":     string(v.ID),
-								"data-action": "ui.filters.remove",
-							},
-						)
-					}
-					if len(q["minamount"]) > 0 || len(q["maxamount"]) > 0 {
-						@Pill(
-							fmt.Sprintf("%d€ - %d€", loAmount, hiAmount),
-							templ.Attributes{
-								"data-id":     "amount-range",
-								"data-action": "ui.filters.remove",
-							},
-						)
-					}
-					if len(q["mindate"]) > 0 || len(q["maxdate"]) > 0 {
-						@Pill(
-							fmt.Sprintf("%s - %s", views.FormatDate(time.Unix(int64(loDate), 0)), views.FormatDate(time.Unix(int64(hiDate), 0))),
-							templ.Attributes{
-								"data-id":     "date-range",
-								"data-action": "ui.filters.remove",
-							},
-						)
-					}
-				</ul>
-			</div>
-			<div class="space-y-md">
-				@filterList("Type", "types", q, typeOptions)
-				@filterList("Accounts/Goals", "accounts", q, accOptions)
-				@filterList("Categories", "categories", q, catOptions)
-				<div class="">
-					<div class="flex justify-between items-center mb-sm">
-						<h6>Amount</h6>
-						<div class="text-sm font-light">
-							<span id="minamount-chip">{ loAmount }</span>€ - <span id="maxamount-chip">{ hiAmount }</span>€
-						</div>
-					</div>
-					@components.DoubleSliderInput(minAmountPossible, maxAmountPossible, loAmount, hiAmount, "minamount", "maxamount",
+	<div
+		class="transactions-filters__body"
+		hx-include="input"
+	>
+		<div class="curr-filters__wrapper">
+			<ul id="curr-filters" class="flex gap-xs flex-wrap mb-sm">
+				for _, v := range q["types"] {
+					@Pill(
+						views.CapitalizeFirst(v),
 						templ.Attributes{
-							"data-id":    "amount-range",
-							"data-input": "ui.amount-chip.update-min",
-							"hx-post":    "/partials/ledger-filters",
-							"hx-target":  "#filters-result-btn",
-							"hx-trigger": "input changed delay:300ms",
-						},
-						templ.Attributes{
-							"data-id":    "amount-range",
-							"data-input": "ui.amount-chip.update-max",
-							"hx-post":    "/partials/ledger-filters",
-							"hx-target":  "#filters-result-btn",
-							"hx-trigger": "input changed delay:300ms",
+							"data-id":     v,
+							"data-action": "ui.filters.remove",
 						},
 					)
-				</div>
-				<div class="">
-					<div class="flex justify-between items-center mb-sm">
-						<h6>Date</h6>
-						<div class="text-sm font-light">
-							<span id="mindate-chip">{ views.FormatDate(time.Unix(int64(loDate), 0)) }</span> - <span id="maxdate-chip">{ views.FormatDate(time.Unix(int64(hiDate), 0)) }</span>
-						</div>
-					</div>
-					@components.DoubleSliderInput(minDatePossible, maxDatePossible, loDate, hiDate, "mindate", "maxdate",
+				}
+				for _, v := range currAcc {
+					@Pill(
+						v.Name,
 						templ.Attributes{
-							"data-id":    "date-range",
-							"data-input": "ui.date-chip.update-min",
-							"hx-post":    "/partials/ledger-filters",
-							"hx-target":  "#filters-result-btn",
-							"hx-trigger": "input changed delay:300ms",
-						},
-						templ.Attributes{
-							"data-id":    "date-range",
-							"data-input": "ui.date-chip.update-max",
-							"hx-post":    "/partials/ledger-filters",
-							"hx-target":  "#filters-result-btn",
-							"hx-trigger": "input changed delay:300ms",
+							"data-id":     string(v.ID),
+							"data-action": "ui.filters.remove",
 						},
 					)
+				}
+				for _, v := range currCats {
+					@Pill(
+						v.Name,
+						templ.Attributes{
+							"data-id":     string(v.ID),
+							"data-action": "ui.filters.remove",
+						},
+					)
+				}
+				if len(q["minamount"]) > 0 || len(q["maxamount"]) > 0 {
+					@Pill(
+						fmt.Sprintf("%d€ - %d€", loAmount, hiAmount),
+						templ.Attributes{
+							"data-id":     "amount-range",
+							"data-action": "ui.filters.remove",
+						},
+					)
+				}
+				if len(q["mindate"]) > 0 || len(q["maxdate"]) > 0 {
+					@Pill(
+						fmt.Sprintf("%s - %s", views.FormatDate(time.Unix(int64(loDate), 0)), views.FormatDate(time.Unix(int64(hiDate), 0))),
+						templ.Attributes{
+							"data-id":     "date-range",
+							"data-action": "ui.filters.remove",
+						},
+					)
+				}
+			</ul>
+		</div>
+		<div class="space-y-md">
+			@filterList("Type", "types", q, typeOptions)
+			@filterList("Accounts/Goals", "accounts", q, accOptions)
+			@filterList("Categories", "categories", q, catOptions)
+			<div class="">
+				<div class="flex justify-between items-center mb-sm">
+					<h6>Amount</h6>
+					<div class="text-sm font-light">
+						<span id="minamount-chip">{ loAmount }</span>€ - <span id="maxamount-chip">{ hiAmount }</span>€
+					</div>
 				</div>
+				@components.DoubleSliderInput(minAmountPossible, maxAmountPossible, loAmount, hiAmount, "minamount", "maxamount",
+					templ.Attributes{
+						"data-id":    "amount-range",
+						"data-input": "ui.amount-chip.update-min",
+						"hx-post":    "/partials/ledger-filters",
+						"hx-target":  "#filters-result-btn",
+						"hx-trigger": "input changed delay:300ms",
+					},
+					templ.Attributes{
+						"data-id":    "amount-range",
+						"data-input": "ui.amount-chip.update-max",
+						"hx-post":    "/partials/ledger-filters",
+						"hx-target":  "#filters-result-btn",
+						"hx-trigger": "input changed delay:300ms",
+					},
+				)
+			</div>
+			<div class="">
+				<div class="flex justify-between items-center mb-sm">
+					<h6>Date</h6>
+					<div class="text-sm font-light">
+						<span id="mindate-chip">{ views.FormatDate(time.Unix(int64(loDate), 0)) }</span> - <span id="maxdate-chip">{ views.FormatDate(time.Unix(int64(hiDate), 0)) }</span>
+					</div>
+				</div>
+				@components.DoubleSliderInput(minDatePossible, maxDatePossible, loDate, hiDate, "mindate", "maxdate",
+					templ.Attributes{
+						"data-id":    "date-range",
+						"data-input": "ui.date-chip.update-min",
+						"hx-post":    "/partials/ledger-filters",
+						"hx-target":  "#filters-result-btn",
+						"hx-trigger": "input changed delay:300ms",
+					},
+					templ.Attributes{
+						"data-id":    "date-range",
+						"data-input": "ui.date-chip.update-max",
+						"hx-post":    "/partials/ledger-filters",
+						"hx-target":  "#filters-result-btn",
+						"hx-trigger": "input changed delay:300ms",
+					},
+				)
 			</div>
 		</div>
-		<div id="filters-result-btn" class="mt-lg space-y-xs">
-			@components.Button(
-				"Reset",
-				"w-full",
-				components.BtnOutline,
-				components.BtnMedium,
-				templ.Attributes{
-					"type":        "button",
-					"data-action": "ui.filters.reset",
-				},
-			)
-			@components.Button(
-				fmt.Sprintf("Show %d results", count),
-				"w-full",
-				components.BtnPrimary,
-				components.BtnMedium,
-				templ.Attributes{
-					"type":        "button",
-					"data-action": "ui.dialog.close-last",
-				},
-			)
-		</div>
-	</form>
+	</div>
 }
 
 templ filterList(label, inputName string, q url.Values, options []FilterOption) {
@@ -269,5 +244,30 @@ templ filterList(label, inputName string, q url.Values, options []FilterOption) 
 				)
 			}
 		</div>
+	</div>
+}
+
+templ LedgerFiltersBtns(count int) {
+	<div id="filters-result-btn" class="mt-lg space-y-xs">
+		@components.Button(
+			"Reset",
+			"w-full",
+			components.BtnOutline,
+			components.BtnMedium,
+			templ.Attributes{
+				"type":        "button",
+				"data-action": "ui.filters.reset",
+			},
+		)
+		@components.Button(
+			fmt.Sprintf("Show %d results", count),
+			"w-full",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"type":        "button",
+				"data-action": "ui.dialog.close-last",
+			},
+		)
 	</div>
 }

@@ -39,8 +39,13 @@ func (h *BankHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (h *BankHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.BankForm(*views.NewBankForm())
-	ctx := templ.WithChildren(r.Context(), form)
-	components.DialogWrapper("", "New Account", nil).Render(ctx, w)
+	components.DialogWrapper(
+		"",
+		components.DialogHeader("", "New Account", nil),
+		form,
+		nil,
+		nil,
+	).Render(r.Context(), w)
 }
 
 func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {

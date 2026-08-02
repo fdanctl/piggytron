@@ -5,6 +5,7 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -37,5 +38,12 @@ func (h *TransactionDetailsHandler) Get(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	tview := views.NewTransaction(*t)
-	partials.TransactionDetails(tview).Render(r.Context(), w)
+	components.DialogWrapper(
+		"dialog--top-right",
+		components.DialogHeader("", "Transaction Details", nil),
+		partials.TransactionDetails(tview),
+		partials.TransactionDetailsButtons(tview),
+		nil,
+	).
+		Render(r.Context(), w)
 }

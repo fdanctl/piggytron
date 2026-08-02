@@ -133,8 +133,13 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		logger.Debug("DEFAULT")
 	}
 
-	ctx := templ.WithChildren(r.Context(), content)
-	components.DialogWrapper("", title, nil).Render(ctx, w)
+	components.DialogWrapper(
+		"",
+		components.DialogHeader("", title, nil),
+		content,
+		partials.FormActionBtns("Confirm"),
+		nil,
+	).Render(r.Context(), w)
 }
 
 func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
