@@ -40,7 +40,7 @@ const eventAttributes = {
   input: "input",
   change: "change",
   focusin: "focus",
-  focusout: "focusout",
+  focusout: "blur",
   keydown: "keydown",
   pointerdown: "pointerdown",
   "htmx:beforeRequest": "beforerequest",
@@ -51,8 +51,6 @@ const eventAttributes = {
   intersect: "intersect",
   mouseover: "mouseover",
   mouseout: "mouseout",
-  focusin: "focus",
-  focusout: "blur",
 };
 
 document.addEventListener("focusout", (evt) => {
