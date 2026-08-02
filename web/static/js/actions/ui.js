@@ -36,9 +36,16 @@ import {
 import {
   closeLastDialog,
   colapseSidebar,
+  collapseAllSublinks,
+  collapseSublinks,
+  expandSublinks,
+  handleSublinkFocus,
   navigate,
   openNavSheet,
   overlayClose,
+  sidebarHidePopover,
+  sidebarShowPopover,
+  toggleSublinks,
 } from "../navigation";
 import { changeTab } from "../tabs";
 import {
@@ -172,4 +179,18 @@ export const uiActions = {
   "ui.month-pill.prev-budget": prevBudgetMonth,
 
   "ui.month-pill.next-budget": nextBudgetMonth,
+
+  "ui.sidebar.show-popover": sidebarShowPopover,
+
+  "ui.sidebar.hide-popover": sidebarHidePopover,
+
+  "ui.nav.toggle-sublinks": toggleSublinks,
+
+  "ui.nav.expand-sublinks": expandSublinks,
+
+  "ui.nav.collapse-sublinks": collapseSublinks,
+
+  "ui.nav.collapse-all-sublinks": collapseAllSublinks,
+
+  "ui.nav.sublinks-focus": handleSublinkFocus,
 };

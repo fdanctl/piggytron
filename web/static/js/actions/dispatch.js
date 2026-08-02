@@ -49,6 +49,10 @@ const eventAttributes = {
   animationend: "animationend",
   submit: "submit",
   intersect: "intersect",
+  mouseover: "mouseover",
+  mouseout: "mouseout",
+  focusin: "focus",
+  focusout: "blur",
 };
 
 document.addEventListener("focusout", (evt) => {

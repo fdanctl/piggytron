@@ -11,26 +11,22 @@ export const colapseSidebar = () => {
     .forEach((e) => e.classList.remove("sublinks--open"));
 };
 
-const sidebarTogglePopover = (ele) => {
-  if (colapsed) {
-    document.getElementById(ele.dataset.name + "-popover").togglePopover();
-  } else {
-    document.getElementById(ele.dataset.name + "-popover").hidePopover();
-  }
-};
-
-const sidebarShowPopover = (ele) => {
+export function sidebarShowPopover({ ele }) {
   if (colapsed) {
     document.getElementById(ele.dataset.name + "-popover").showPopover();
   }
-};
+}
 
-const sidebarHidePopover = (ele) => {
-  const sub = document.getElementById(ele.dataset.name + "-popover");
-  if (colapsed || sub.matches(":popover-open")) {
+export function sidebarHidePopover({ evt, ele, data }) {
+  const sub = document.getElementById(data.name + "-popover");
+
+  if (
+    !(ele.contains(evt.toElement) || sub.contains(evt.toElement)) &&
+    (colapsed || sub.matches(":popover-open"))
+  ) {
     sub.hidePopover();
   }
-};
+}
 
 // === dialog x nav sheet === //
 const dialogRoot = document.querySelector("#dialog-root");
@@ -184,39 +180,89 @@ const handleActiveLink = (ele) => {
   ele?.classList.add("active");
 };
 
-const handleCloseAllSublinks = (ev) => {
-  const allSublinks = ev.target.closest("nav").querySelectorAll(".sublinks");
+export function collapseAllSublinks({ ele }) {
+  const allSublinks = ele.closest("nav").querySelectorAll(".sublinks");
 
   for (let i = 0; i < allSublinks.length; i++) {
     allSublinks[i].classList.remove("sublinks--open");
   }
-};
+}
 
-const handleExpandToggle = (ele) => {
-  if (
-    document.documentElement.classList.contains("is-sidebar-collapsed") &&
-    ele.closest("#sidebar")
-  ) {
+export function toggleSublinks({ ele, data }) {
+  const sb = ele.closest("#sidebar");
+  const ns = ele.closest("#nav-sheet");
+
+  if (!sb && !ns) {
     return;
   }
-  ele.classList.toggle("sublinks--open");
-};
 
-const handleExpandOpen = (ele) => {
+  let sub;
   if (
-    document.documentElement.classList.contains("is-sidebar-collapsed") &&
-    ele.closest("#sidebar")
+    sb &&
+    !document.documentElement.classList.contains("is-sidebar-collapsed")
   ) {
+    sub = sb.querySelector(`#${data.name}-sublinks`);
+  }
+  if (ns) {
+    sub = ns.querySelector(`#${data.name}-sublinks`);
+  }
+
+  if (!sub) {
     return;
   }
-  ele.classList.add("sublinks--open");
-};
 
-const handleExpandRemove = (ele) => {
-  ele.classList.remove("sublinks--open");
-};
+  const isOpen = sub.classList.contains("sublinks--open");
+  collapseAllSublinks({ ele });
+  sub.classList.toggle("sublinks--open", !isOpen);
+  return;
+}
 
-const handleSublinkFocus = (ele) => {
+export function expandSublinks({ ele, data }) {
+  collapseAllSublinks({ ele });
+  const sb = ele.closest("#sidebar");
+  const ns = ele.closest("#nav-sheet");
+
+  if (!sb && !ns) {
+    return;
+  }
+  if (
+    sb &&
+    !document.documentElement.classList.contains("is-sidebar-collapsed")
+  ) {
+    sb.querySelector(`#${data.name}-sublinks`)?.classList.add("sublinks--open");
+    return;
+  }
+  if (ns) {
+    ns.querySelector(`#${data.name}-sublinks`)?.classList.add("sublinks--open");
+    return;
+  }
+}
+
+export function collapseSublinks({ ele, data }) {
+  const sb = ele.closest("#sidebar");
+  const ns = ele.closest("#nav-sheet");
+
+  if (!sb && !ns) {
+    return;
+  }
+  if (
+    sb &&
+    !document.documentElement.classList.contains("is-sidebar-collapsed")
+  ) {
+    sb.querySelector(`#${data.name}-sublinks`)?.classList.remove(
+      "sublinks--open",
+    );
+    return;
+  }
+  if (ns) {
+    ns.querySelector(`#${data.name}-sublinks`)?.classList.remove(
+      "sublinks--open",
+    );
+    return;
+  }
+}
+
+export function handleSublinkFocus({ ele }) {
   const a = document.querySelectorAll(`#${ele.dataset.name}-popover a`);
   for (let i = 0; i < a.length; i++) {
     a[i].classList.remove("focus");
@@ -224,93 +270,10 @@ const handleSublinkFocus = (ele) => {
       a[i].classList.add("focus");
     }
   }
-};
-
-const sidebarLinks = document.querySelectorAll("#sidebar [data-name]");
-
-for (let i = 0; i < sidebarLinks.length; i++) {
-  sidebarLinks[i];
-}
-
-for (let i = 0; i < sidebarLinks.length; i++) {
-  const link = sidebarLinks[i];
-  link.addEventListener("mouseenter", (evt) => {
-    sidebarShowPopover(link);
-  });
-
-  link.addEventListener("mouseleave", (evt) => {
-    sidebarHidePopover(link);
-  });
-
-  link.addEventListener("blur", (evt) => {
-    sidebarHidePopover(link);
-    if (link.closest(".sublinks") && !link.nextElementSibling) {
-      handleExpandRemove(link.closest(".sublinks"));
-    }
-  });
-
-  link.addEventListener("mousedown", (evt) => {
-    const nextSibling = link.nextElementSibling;
-    if (nextSibling?.classList.contains("sublinks")) {
-      evt.preventDefault();
-      handleExpandOpen(link);
-    }
-  });
-
-  link.addEventListener("focus", (evt) => {
-    const nextSibling = link.nextElementSibling;
-    if (nextSibling?.classList.contains("sublinks")) {
-      handleExpandOpen(nextSibling);
-    } else if (link.closest(".sublinks")) {
-      handleSublinkFocus(link);
-      handleExpandOpen(link.closest(".sublinks"));
-    }
-    sidebarShowPopover(link);
-  });
-
-  link.addEventListener("click", (evt) => {
-    const nextSibling = link.nextElementSibling;
-    if (nextSibling?.classList.contains("sublinks")) {
-      handleExpandToggle(nextSibling);
-      sidebarShowPopover(link);
-    } else if (link.closest(".sublinks")) {
-      handleExpandRemove(link.closest(".sublinks"));
-    } else {
-      evt.stopPropagation();
-    }
-    const popover = link.closest(".popover");
-    if (popover) {
-      sidebarHidePopover(popover);
-    }
-  });
 }
 
 export function navigate() {
   closeLastDialog();
   handleActiveLink();
   document.getElementsByTagName("main")[0].focus();
-}
-
-const navSheetLinks = document.querySelectorAll("#nav-sheet [data-name]");
-
-for (let i = 0; i < navSheetLinks.length; i++) {
-  const link = navSheetLinks[i];
-
-  link.addEventListener("click", (evt) => {
-    const nextSibling = link.nextElementSibling;
-    if (nextSibling?.classList.contains("sublinks")) {
-      handleExpandToggle(nextSibling);
-    } else if (link.closest(".sublinks")) {
-      handleExpandRemove(link.closest(".sublinks"));
-      handleActiveLink(link);
-    } else {
-      evt.stopPropagation();
-      handleActiveLink(link);
-      handleCloseAllSublinks(evt);
-    }
-    const popover = link.closest(".popover");
-    if (popover) {
-      sidebarHidePopover(popover);
-    }
-  });
 }

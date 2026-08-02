@@ -1,5 +1,7 @@
 package components
 
+import "fmt"
+
 type navLink struct {
 	name string
 	href string
@@ -16,6 +18,11 @@ var NavLinks = [3][]navLink{
 		{"Goals", "/goals", PiggyBankSvg(0, "", ""), nil},
 		{"Banks", "/banks", LandmarkSvg(0, "", ""), nil},
 		{"Ledger", "/ledger", NotebookSvg(0, "", ""), nil},
+		{"test", "", FileChartColumnSvg(0, "", ""), []navLink{
+			{"Expenses", "/reports/expenses", nil, nil},
+			{"Income", "/reports/income", nil, nil},
+			{"Transfers", "/reports/transfers", nil, nil},
+		}},
 	},
 	{
 		{"Categories", "/categories", TagSvg(0, "", ""), nil},
@@ -55,8 +62,15 @@ templ navLi(v navLink) {
 		<a
 			data-name={ v.name }
 			onkeydown="event.key === 'Enter' && event.target.click()"
+			data-mouseover="ui.sidebar.show-popover"
+			data-mouseout="ui.sidebar.hide-popover"
+			data-focus="ui.sidebar.show-popover"
+			data-blur="ui.sidebar.hide-popover"
 			if v.href != "" {
+				data-action="ui.nav.collapse-all-sublinks"
 				href={ v.href }
+			} else {
+				data-action="ui.nav.toggle-sublinks"
 			}
 		>
 			<i class="flex justify-center">
@@ -70,17 +84,21 @@ templ navLi(v navLink) {
 			}
 		</a>
 		if len(v.sub) > 0 {
-			<div class="sublinks">
+			<div id={ fmt.Sprintf("%s-sublinks", v.name) } class="sublinks">
 				<ul>
-					for _, sub := range v.sub {
+					for i, s := range v.sub {
 						<li>
 							<a
 								data-name={ v.name }
-								href={ sub.href }
+								href={ s.href }
+								data-focus="ui.nav.sublinks-focus ui.nav.expand-sublinks ui.sidebar.show-popover"
+								if len(v.sub) - 1 == i {
+									data-blur="ui.nav.collapse-sublinks ui.sidebar.hide-popover"
+								}
 							>
 								@ChevronRightSvg(16, "", "")
 								<span>
-									{ sub.name }
+									{ s.name }
 								</span>
 							</a>
 						</li>

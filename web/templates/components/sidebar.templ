@@ -20,6 +20,7 @@ templ Sidebar() {
 					id={ link.name + "-popover" }
 					popover="auto"
 					style={ getAnchorName(link.name) }
+					data-mouseout="ui.sidebar.hide-popover"
 				>
 					<div>
 						<span>{ link.name }</span>
