@@ -1,0 +1,202 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ Dashboard(
+	bview views.BreadcrumbsView,
+	mockTransactions []views.Transaction,
+) {
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+	</div>
+	<a href="/budget" class="to-budget w-full mb-lg">
+		<span class="to-budget__icon">
+			@components.InfoSvg(16, "", "")
+		</span>
+		<p class="to-budget__p">
+			<strong class="font-medium">170€ left to budget.</strong> Assign it to categories before it goes untracked.
+		</p>
+		@components.Button("Go to budget", "", components.BtnOutline, components.BtnSmall, nil)
+	</a>
+	<div id="dashboard-container">
+		<div id="dashboard-stats" class="dashboard-stats">
+			<div class="card">
+				<h6 class="card__title">Income</h6>
+				<p class="metric__value metric__value--xl">
+					$7,250.00
+				</p>
+				<p class="metric__sub mt-sm">
+					this month
+				</p>
+			</div>
+			<div class="card">
+				<h6 class="card__title">Spent</h6>
+				<p class="metric__value metric__value--xl">
+					$3,572.31
+				</p>
+				<p class="metric__sub mt-sm">
+					65% of budget
+				</p>
+			</div>
+			<div class="card">
+				<h6 class="card__title">Balance</h6>
+				<p class="metric__value metric__value--xl">
+					$4,016.45
+				</p>
+				<p class="metric__sub mt-sm">
+					across checking accounts
+				</p>
+			</div>
+			<div class="card">
+				<h6 class="card__title">Savings</h6>
+				<p class="metric__value metric__value--xl">
+					$1,747.00
+				</p>
+				<p class="metric__sub mt-sm">
+					across savings accounts
+				</p>
+			</div>
+		</div>
+		<div id="dashboard-bs">
+			<div class="card">
+				<div>
+					<h6 class="card__title">Budget-spent by category</h6>
+					// last 30 days, change
+				</div>
+				<div
+					class="chart-container"
+					style="margin-top: calc(-1 * var(--spacing-lg));"
+					hx-get="/partials/charts/cat-hist/5d73ddb6-f839-4b83-8457-ac238ca66bec"
+					hx-trigger="load"
+				>
+					@components.Loader("htmx-indicator", nil)
+				</div>
+			</div>
+		</div>
+		<div id="dashboard-st">
+			<div class="card">
+				<h6 class="card__title">Spent by type</h6>
+				<div
+					class="chart-container"
+					hx-get="/partials/charts/banks"
+					hx-trigger="load"
+				>
+					@components.Loader("h-full", nil)
+				</div>
+			</div>
+		</div>
+		<div id="dashboard-ah">
+			<div class="card">
+				<div>
+					<h6 class="card__title">Account history</h6>
+					// last 30 days, change
+				</div>
+				<div
+					id="account-history-chart"
+					class="chart-container"
+				>
+					@components.Loader("h-full", nil)
+				</div>
+			</div>
+		</div>
+		<div id="dashboard-mp">
+			<div class="card">
+				<h6 class="card__title">Month progress</h6>
+				<div>
+					// copied
+					<div class="mb-xs">
+						<div class="flex justify-between items-end">
+							<p class="goal-card__amount text-sm">
+								Day 3 of 31
+							</p>
+							<p class="goal-card__percentage text-sm">
+								28d left
+							</p>
+						</div>
+						@components.ProgressBar("", 3)
+					</div>
+					<div class="mb-xs">
+						<div class="flex justify-between items-end">
+							<p class="goal-card__amount text-sm">
+								Spent so far 65%
+							</p>
+							<p class="goal-card__percentage text-sm">
+								65%
+							</p>
+						</div>
+						@components.ProgressBar("", 65)
+					</div>
+					// copied
+				</div>
+				<p class="mt-sm">
+					At this pace you'll spend $36,913.87 by month end.
+				</p>
+				<div class="flex gap-md mt-sm">
+					<div>
+						<div style="font-size: 12px; color: var(--text-muted); margin-bottom: 2px;">
+							Avg spent
+						</div>
+						<div style="font-family: var(--font-mono); font-size: 14px; color: var(--text);">
+							$3,465.14/day
+						</div>
+					</div>
+					<div>
+						<div style="font-size: 12px; color: var(--text-muted); margin-bottom: 2px;">
+							Avg left
+						</div>
+						<div style="font-family: var(--font-mono); font-size: 14px; color: var(--text);">
+							$3,465.14/day
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="dashboard-rt">
+			<div class="card">
+				<h6 class="card__title">Recent transactions</h6>
+				<div>
+					<ul>
+						for i, t := range mockTransactions {
+							@partials.TransactionItem(t, templ.Attributes{
+								"style": fmt.Sprintf("animation-delay: %dms", i*30),
+							})
+						}
+					</ul>
+					<a href="/ledger" class="text-center" style="display: block;">view all transactions</a>
+				</div>
+			</div>
+		</div>
+		<div id="dashboard-gp">
+			<div class="card">
+				<h6 class="card__title">Goals</h6>
+				<div class="mb-xs">
+					<div class="flex justify-between items-end">
+						<p class="goal-card__amount text-sm">
+							Day 3 of 31
+						</p>
+						<p class="goal-card__percentage text-sm">
+							28d left
+						</p>
+					</div>
+					@components.ProgressBar("", 3)
+				</div>
+				<div class="mb-xs">
+					<div class="flex justify-between items-end">
+						<p class="goal-card__amount text-sm">
+							Spent so far 65%
+						</p>
+						<p class="goal-card__percentage text-sm">
+							65%
+						</p>
+					</div>
+					@components.ProgressBar("", 65)
+				</div>
+			</div>
+		</div>
+	</div>
+}

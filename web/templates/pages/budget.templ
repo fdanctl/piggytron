@@ -36,25 +36,23 @@ templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.Bu
 }
 
 templ lastMonthImport(month budget.Month) {
-	<div class="flex">
-		<div class="last-month-import">
-			<div class="last-month-import__icon">
-				@components.CalendarArrowUp(0, "", "")
-			</div>
-			<div>
-				<p class="last-month-import__h">Import { time.Date(month.Time().Year(), month.Time().Month()-1, 1, 0, 0, 0, 0, time.UTC).Month() }'s budget</p>
-				<p class="last-month-import__p">Copy last month's category amounts as a starting point</p>
-			</div>
-			<div class="last-month-import__btns">
-				@components.Button("Dismiss", "last-month-import__dismiss", components.BtnSecondary, components.BtnMedium, templ.Attributes{"data-action": "ui.element.remove", "data-target": "closest .last-month-import"})
-				@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"hx-post": fmt.Sprintf("/partials/budget/import?month=%s", month.String()), "hx-target": "closest .last-month-import", "hx-swap": "delete"}, components.IconLeft, components.DownloadSvg(0, "", ""))
-			</div>
+	<div class="last-month-import w-fit mb-lg">
+		<div class="last-month-import__icon">
+			@components.CalendarArrowUp(0, "", "")
+		</div>
+		<div>
+			<p class="last-month-import__h">Import { time.Date(month.Time().Year(), month.Time().Month()-1, 1, 0, 0, 0, 0, time.UTC).Month() }'s budget</p>
+			<p class="last-month-import__p">Copy last month's category amounts as a starting point</p>
+		</div>
+		<div class="last-month-import__btns">
+			@components.Button("Dismiss", "last-month-import__dismiss", components.BtnSecondary, components.BtnMedium, templ.Attributes{"data-action": "ui.element.remove", "data-target": "closest .last-month-import"})
+			@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"hx-post": fmt.Sprintf("/partials/budget/import?month=%s", month.String()), "hx-target": "closest .last-month-import", "hx-swap": "delete"}, components.IconLeft, components.DownloadSvg(0, "", ""))
 		</div>
 	</div>
 }
 
 templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftToSpend, overspent int, attrs templ.Attributes) {
-	<div id="budget-stats" class="budget-stats mt-lg" { attrs... }>
+	<div id="budget-stats" class="budget-stats" { attrs... }>
 		<div class="card">
 			<h6 class="card__title">Ready to assign</h6>
 			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToBudget < 0) }>
@@ -62,7 +60,7 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftTo
 				<input id="ltb-input" type="hidden" name="ltb" value={ leftToBudget }/>
 				<input id="total-budgeted" type="hidden" name="total-budgeted" value={ totalBudgeted }/>
 			</p>
-			<p class="metric__sub metric__sub--xl mt-xs">
+			<p class="metric__sub metric__sub--xl mt-sm">
 				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income 
 				if unassignCarryover > 0 {
 					+ {  views.FormatMoney(float64(unassignCarryover) / 100, currency.EUR, language.AmericanEnglish) } unassign
@@ -77,7 +75,7 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftTo
 				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="lts-input" type="hidden" name="lts" value={ leftToSpend }/>
 			</p>
-			<p class="metric__sub metric__sub--xl mt-xs">
+			<p class="metric__sub metric__sub--xl mt-sm">
 				budgeted but unspent
 			</p>
 		</div>
@@ -86,7 +84,7 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftTo
 			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", overspent != 0) }>
 				{ views.FormatMoney(float64(overspent) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
-			<p class="metric__sub metric__sub--xl mt-xs">
+			<p class="metric__sub metric__sub--xl mt-sm">
 				across all categories
 				<input id="overspent" type="hidden" name="overspent" value={ overspent }/>
 			</p>
@@ -145,11 +143,14 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 templ Carryover(id string, etype string, value int) {
 	{{
 		vstring := views.FormatMoney(float64(value)/100, currency.EUR, language.AmericanEnglish)
+		var tooltipMsg string
 		posneg := "positive"
 		if value < 0 {
 			posneg = "negative"
+			tooltipMsg = fmt.Sprintf("%s overspent last month", vstring)
 		} else {
 			vstring = "+" + vstring
+			tooltipMsg = fmt.Sprintf("%s not spent last month", vstring)
 		}
 	}}
 	<span
@@ -164,7 +165,7 @@ templ Carryover(id string, etype string, value int) {
 		<i>
 			@components.RotateCcwSvg(10, "", "")
 		</i>
-		@components.Tooltip("", vstring, id, components.TopLeft, nil)
+		@components.Tooltip("", tooltipMsg, id, components.TopLeft, nil)
 	</span>
 }
 

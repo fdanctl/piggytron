@@ -15,7 +15,7 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetID()) }
 		hx-trigger="load"
 	>
-		@components.Loader("htmx-indicator", nil)
+		@components.Loader("htmx-indicator h-full", nil)
 	</div>
 	<section id="transactions">
 		<div class="flex justify-between">

@@ -125,8 +125,8 @@ func main() {
 		http.ServeFile(w, r, "web/static/assets/favicon.ico")
 	})
 
-	hh := handlers.HomeHandler{}
-	webMux.Handle("/", middleware.AuthProtectedRoute(&hh))
+	dashboardHandler := handlers.NewDashboardHandler(ledgerQueryService)
+	webMux.Handle("/", middleware.AuthProtectedRoute(dashboardHandler))
 
 	bh := handlers.NewBudgetPageHandler(catQueryService, ledgerQueryService)
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(bh))

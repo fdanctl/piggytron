@@ -13,9 +13,10 @@
   letter-spacing: 0.05em;
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-sm);
+  position: relative;
 
   i {
-    position: fixed;
+    position: absolute;
     height: var(--font-size-xs);
     margin-left: var(--spacing-xs);
   }

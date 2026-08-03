@@ -1,0 +1,104 @@
+.to-budget {
+  background: var(--color-on-ambivalent);
+  border: 0.5px solid var(--color-ambivalent);
+  border-radius: var(--radius-lg);
+  padding: calc(var(--spacing-sm) + var(--spacing-xs))
+    calc(var(--spacing-md) + var(--spacing-xs));
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+
+  @container main (max-width: 600px) {
+    .btn {
+      display: none;
+    }
+  }
+}
+
+.to-budget__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ambivalent);
+  height: fit-content;
+  width: fit-content;
+  aspect-ratio: 1/1;
+}
+
+.to-budget__p {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-ambivalent);
+}
+
+.to-budget {
+  justify-self: end;
+}
+
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xs);
+
+  @container main (min-width: 800px) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-sm);
+  }
+}
+
+@scope (.dashboard-stats) {
+  .card {
+    width: 100%;
+  }
+}
+
+/* layout */
+#dashboard-container {
+  display: grid;
+  gap: var(--spacing-sm);
+  grid-template-areas:
+    "dashboard-stats"
+    "dashboard-bs"
+    "dashboard-st"
+    "dashboard-ah"
+    "dashboard-mp"
+    "dashboard-gp"
+    "dashboard-rt";
+
+  @container main (min-width: 800px) {
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-areas:
+      "dashboard-stats dashboard-stats dashboard-stats dashboard-stats dashboard-stats dashboard-stats"
+      "dashboard-bs dashboard-bs dashboard-bs dashboard-bs dashboard-st dashboard-st"
+      "dashboard-ah dashboard-ah dashboard-ah dashboard-ah dashboard-mp dashboard-mp"
+      "dashboard-rt dashboard-rt dashboard-rt dashboard-gp dashboard-gp dashboard-gp";
+  }
+}
+
+#dashboard-stats {
+  grid-area: dashboard-stats;
+}
+
+#dashboard-bs {
+  grid-area: dashboard-bs;
+}
+
+#dashboard-st {
+  grid-area: dashboard-st;
+}
+
+#dashboard-ah {
+  grid-area: dashboard-ah;
+}
+
+#dashboard-mp {
+  grid-area: dashboard-mp;
+}
+
+#dashboard-rt {
+  grid-area: dashboard-rt;
+}
+
+#dashboard-gp {
+  grid-area: dashboard-gp;
+}

@@ -18,6 +18,10 @@
   padding: var(--spacing-sm);
   aspect-ratio: 1/1;
   margin-right: var(--spacing-sm);
+
+  @container main (min-width: 600px) {
+    display: flex;
+  }
 }
 
 .last-month-import__h {
@@ -27,10 +31,6 @@
 .last-month-import__p {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-
-  @container main (min-width: 600px) {
-    display: flex;
-  }
 }
 
 .last-month-import__btns {
