@@ -110,7 +110,7 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 				<div class="flex gap-xs items-center">
 					<span>{ c.Name }</span>
 					if c.Carryover != 0 {
-						@Carryover(eType, c.Carryover)
+						@Carryover(c.CategoryID, eType, c.Carryover)
 					}
 				</div>
 				<div class="flex items-center gap-xs">
@@ -142,25 +142,29 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 	</div>
 }
 
-templ Carryover(etype string, value int) {
+templ Carryover(id string, etype string, value int) {
 	{{
+		vstring := views.FormatMoney(float64(value)/100, currency.EUR, language.AmericanEnglish)
 		posneg := "positive"
 		if value < 0 {
 			posneg = "negative"
+		} else {
+			vstring = "+" + vstring
 		}
 	}}
-	<span class={ "budget-carryover", fmt.Sprint("budget-carryover--", etype), fmt.Sprint("budget-carryover--", posneg) }>
-		if value > 0 {
-			<span>+{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) }</span>
-			<i>
-				@components.RotateCcwSvg(10, "", "")
-			</i>
-		} else {
-			<span>{ views.FormatMoney(float64(value)/100,currency.EUR, language.AmericanEnglish ) }</span>
-			<i>
-				@components.RotateCcwSvg(10, "", "")
-			</i>
-		}
+	<span
+		class={ "budget-carryover", fmt.Sprint("budget-carryover--", etype), fmt.Sprint("budget-carryover--", posneg) }
+		style={ fmt.Sprintf("anchor-name: --%s;", id) }
+		data-name={ id }
+		data-delay="500"
+		data-mouseover="ui.popover.show"
+		data-mouseout="ui.popover.hide"
+	>
+		<span>{ vstring }</span>
+		<i>
+			@components.RotateCcwSvg(10, "", "")
+		</i>
+		@components.Tooltip("", vstring, id, components.TopLeft, nil)
 	</span>
 }
 

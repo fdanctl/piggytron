@@ -160,6 +160,10 @@ function endDialogDrag(evt) {
 
   ddragState.dragging = false;
   ddragState.currentDialog = null;
+
+  document.removeEventListener("pointermove", moveDialogDrag);
+  document.removeEventListener("pointerup", endDialogDrag);
+  document.removeEventListener("pointercancel", cancelDialogDrag);
 }
 
 function cancelDialogDrag() {

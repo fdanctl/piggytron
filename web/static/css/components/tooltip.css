@@ -1,0 +1,72 @@
+.tooltip {
+  margin: 0;
+  inset: auto;
+  position: fixed;
+  position-try-fallbacks: flip-block;
+  border: none;
+
+  background: #1a1a22;
+  color: #e4e4e7;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-xs);
+  border: 0.5px solid var(--color-border-secondary);
+  font-size: var(--font-size-xs);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+  transition:
+    opacity 0.2s,
+    translate 0.2s;
+  transition-behavior: allow-discrete;
+}
+
+.tooltip--top-left {
+  bottom: anchor(top);
+  left: anchor(left);
+  margin-bottom: 2px;
+}
+
+.tooltip--top {
+  bottom: anchor(top);
+  left: anchor(center);
+  transform: translateX(-50%);
+  margin-bottom: 2px;
+}
+
+.tooltip--top-right {
+  bottom: anchor(top);
+  left: anchor(right);
+  margin-bottom: 2px;
+}
+
+.tooltip--left {
+  top: anchor(center);
+  right: anchor(left);
+  transform: translateY(-50%);
+  margin-left: 2px;
+}
+
+.tooltip--right {
+  top: anchor(center);
+  left: anchor(right);
+  transform: translateY(-50%);
+  margin-right: 2px;
+}
+
+.tooltip--bottom-left {
+  top: anchor(top);
+  left: anchor(left);
+  margin-top: 2px;
+}
+
+.tooltip--bottom {
+  top: anchor(top);
+  left: anchor(center);
+  transform: translateX(-50%);
+  margin-top: 2px;
+}
+
+.tooltip--bottom-right {
+  top: anchor(top);
+  left: anchor(right);
+  margin-top: 2px;
+}

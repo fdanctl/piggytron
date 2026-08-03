@@ -16,7 +16,19 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 			<div class="card">
 				<div class="flex justify-between gap-lg">
 					<div>
-						<h6 class="card__title">Net Worth</h6>
+						<h6 class="card__title">
+							Net Worth
+							<i
+								style="anchor-name: --net-worth-info"
+								data-name="net-worth-info"
+								data-delay="200"
+								data-mouseover="ui.popover.show"
+								data-mouseout="ui.popover.hide"
+							>
+								@components.CircleQuestionMarkSvg(14, "", "")
+							</i>
+						</h6>
+						@components.Tooltip("", "hello", "net-worth-info", components.TopRight, nil)
 						<div>
 							<div class="metric__value metric__value--xl">
 								{ views.FormatMoney(float64(view.NetWorth) / 100, currency.EUR, language.AmericanEnglish) }
@@ -62,7 +74,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 					hx-get="/partials/charts/banks"
 					hx-trigger="load"
 				>
-					@components.Loader("", nil)
+					@components.Loader("h-full", nil)
 				</div>
 			</div>
 		</section>
@@ -76,7 +88,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 					id="account-history-chart"
 					class="chart-container"
 				>
-					@components.Loader("", nil)
+					@components.Loader("h-full", nil)
 				</div>
 			</div>
 		</section>

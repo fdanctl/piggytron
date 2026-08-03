@@ -1,0 +1,28 @@
+package components
+
+import "fmt"
+
+type position string
+
+const (
+	TopLeft     position = "top-left"
+	TopRight    position = "top-right"
+	Top         position = "top"
+	Left        position = "left"
+	Right       position = "right"
+	BottomLeft  position = "bottom-left"
+	BottomRight position = "bottom-right"
+	Bottom      position = "bottom"
+)
+
+templ Tooltip(class string, info string, anchor string, position position, attrs templ.Attributes) {
+	<div
+		id={ fmt.Sprintf("%s-popover", anchor) }
+		class={ "tooltip", fmt.Sprint("tooltip--", position), templ.KV(class, class != "") }
+		style={ fmt.Sprintf("position-anchor: --%s;", anchor) }
+		popover="hint"
+		{ attrs... }
+	>
+		{ info }
+	</div>
+}

@@ -54,6 +54,7 @@ import {
   nextBudgetMonth,
   prevBudgetMonth,
 } from "../month-pill";
+import { hidePopover, showPopover } from "../tooltip";
 
 function queryNextSelector(ele, selector) {
   const results = ele.parentElement.querySelectorAll(selector);
@@ -196,4 +197,8 @@ export const uiActions = {
   "ui.nav.collapse-all-sublinks": collapseAllSublinks,
 
   "ui.nav.sublinks-focus": handleSublinkFocus,
+
+  "ui.popover.show": showPopover,
+
+  "ui.popover.hide": hidePopover,
 };
