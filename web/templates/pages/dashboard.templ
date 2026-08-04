@@ -44,7 +44,7 @@ templ Dashboard(
 					{ views.FormatMoney(float64(view.Spent)/100,currency.EUR, language.AmericanEnglish) }
 				</p>
 				<p class="metric__sub mt-xs">
-					{ view.SpentPct }% of budget
+					{ views.FormatFloat(view.SpentPct) }% of budget
 				</p>
 			</div>
 			<div class="card">
@@ -71,10 +71,10 @@ templ Dashboard(
 				<h6 class="card__title">Budget-spent by category</h6>
 				<div
 					class="chart-container"
-					hx-get="/partials/charts/cat-hist/5d73ddb6-f839-4b83-8457-ac238ca66bec"
+					hx-get="/partials/charts/dashboard-budget-spent"
 					hx-trigger="load"
 				>
-					@components.Loader("htmx-indicator h-full", nil)
+					@components.Loader("h-full", nil)
 				</div>
 			</div>
 		</div>
@@ -82,9 +82,8 @@ templ Dashboard(
 			<div class="card">
 				<h6 class="card__title">Spent by type</h6>
 				<div
+					id="spent-by-type"
 					class="chart-container"
-					hx-get="/partials/charts/banks"
-					hx-trigger="load"
 				>
 					@components.Loader("h-full", nil)
 				</div>
@@ -94,11 +93,11 @@ templ Dashboard(
 			<div class="card">
 				<div>
 					<h6 class="card__title">Account history</h6>
-					// last 30 days, change
 				</div>
 				<div
-					id="account-history-chart"
 					class="chart-container"
+					hx-get="/partials/charts/accounts-history?period=ytd"
+					hx-trigger="load"
 				>
 					@components.Loader("h-full", nil)
 				</div>
@@ -135,7 +134,7 @@ templ Dashboard(
 								</span>
 							</p>
 							<p class="">
-								{ view.SpentPct }%
+								{ views.FormatFloat(view.SpentPct) }%
 							</p>
 						</div>
 						if view.SpentPct < 100 {

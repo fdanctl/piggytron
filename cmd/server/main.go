@@ -235,6 +235,18 @@ func main() {
 	)
 	partialsMux.Handle("/partials/charts/account-hist/{id}", accountChartHandler)
 
+	accountsHistChartHandler := handlers.NewAccountsHistoryChartHandler(
+		chartsService,
+		accountQueryService,
+	)
+	partialsMux.Handle("/partials/charts/accounts-history", accountsHistChartHandler)
+
+	dashboardBudgetCharts := handlers.NewDashboardBudgetCharts(
+		chartsService,
+		catQueryService,
+	)
+	partialsMux.Handle("/partials/charts/dashboard-budget-spent", dashboardBudgetCharts)
+
 	bankChartHandler := handlers.NewBankChartHandler(
 		chartsService,
 		accountQueryService,
@@ -243,7 +255,6 @@ func main() {
 
 	banksChartsHandler := handlers.NewBanksChartsHandler(
 		chartsService,
-		ledgerQueryService,
 		accountQueryService,
 	)
 	partialsMux.Handle("/partials/charts/banks", banksChartsHandler)

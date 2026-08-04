@@ -8,7 +8,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeAssetsPieItems(acc []query.AccountWithSum, count int) []opts.PieData {
+func (s *Service) MakeAssetsPieAccItems(acc []query.AccountWithSum, count int) []opts.PieData {
 	// var othersValue int
 	slices.SortFunc(acc, func(a, b query.AccountWithSum) int {
 		return b.Sum - a.Sum
@@ -41,7 +41,7 @@ func (s *Service) PieRadius(items []opts.PieData) *charts.Pie {
 		// 	Orient: "vertical",
 		// }),
 		charts.WithColorsOpts(opts.Colors{
-			"#b185a7", "#95bf98", "#d9725b", "#297373",
+			"#95bf98", "#d9725b", "#b185a7", "#297373",
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
 			BackgroundColor: "rgba(0, 0, 0, 0.7)",

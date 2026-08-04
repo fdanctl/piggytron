@@ -4,31 +4,28 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/templates/layouts"
 )
 
-type BanksChartsHandler struct {
+type AccountsHistoryChartHandler struct {
 	chartsService *appcharts.Service
 	accountQuery  query.AccountQueryService
 }
 
-func NewBanksChartsHandler(
+func NewAccountsHistoryChartHandler(
 	cs *appcharts.Service,
 	aq query.AccountQueryService,
-) *BanksChartsHandler {
-	return &BanksChartsHandler{
+) *AccountsHistoryChartHandler {
+	return &AccountsHistoryChartHandler{
 		chartsService: cs,
 		accountQuery:  aq,
 	}
 }
 
-func (h *BanksChartsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *AccountsHistoryChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -38,25 +35,15 @@ func (h *BanksChartsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return
 	}
-
-	// TODO: optimize could easily be just one query
-	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", err))
-		return
-	}
-
-	pieItems := h.chartsService.MakeAssetsPieAccItems(accounts, 5)
-	pie := components.NoData()
-	if len(pieItems) > 0 {
-		c := h.chartsService.PieRadius(pieItems)
-		pie = h.chartsService.ConvertChartToTemplComponent(c)
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = "ytd"
 	}
 
 	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
@@ -67,13 +54,5 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	histMap, min, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)
 	line := h.chartsService.LineTime(histMap, min, max)
 
-	templ.Join(
-		pie,
-		layouts.OOBWraper(
-			"account-history-chart",
-			"innerHTML",
-			nil,
-			h.chartsService.ConvertChartToTemplComponent(line),
-		),
-	).Render(r.Context(), w)
+	h.chartsService.ConvertChartToTemplComponent(line).Render(r.Context(), w)
 }

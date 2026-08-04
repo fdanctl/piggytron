@@ -6,7 +6,7 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeBarItems(mvalues []query.CategoryMonthlyValue) []opts.BarData {
+func (s *Service) MakeCatBarItems(mvalues []query.CategoryMonthlyValue) []opts.BarData {
 	if len(mvalues) == 0 {
 		return []opts.BarData{}
 	}

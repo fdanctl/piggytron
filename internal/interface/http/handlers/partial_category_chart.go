@@ -46,7 +46,7 @@ func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bItems := h.chartsService.MakeBarItems(mvalues)
+	bItems := h.chartsService.MakeCatBarItems(mvalues)
 	chart := h.chartsService.CreateMonthlyBarChart(bItems)
 	h.chartsService.ConvertChartToTemplComponent(chart).Render(r.Context(), w)
 }
