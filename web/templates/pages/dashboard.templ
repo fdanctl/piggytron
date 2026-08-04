@@ -26,55 +26,51 @@ templ Dashboard(
 	<div id="dashboard-container">
 		<div id="dashboard-stats" class="dashboard-stats">
 			<div class="card">
-				<h6 class="card__title">Income</h6>
+				<h6 class="card__title mb-xs" style="margin-bottom: var(--spacing-xs);">Income</h6>
 				<p class="metric__value metric__value--xl">
 					$7,250.00
 				</p>
-				<p class="metric__sub mt-sm">
+				<p class="metric__sub mt-xs">
 					this month
 				</p>
 			</div>
 			<div class="card">
-				<h6 class="card__title">Spent</h6>
+				<h6 class="card__title mb-xs">Spent</h6>
 				<p class="metric__value metric__value--xl">
 					$3,572.31
 				</p>
-				<p class="metric__sub mt-sm">
+				<p class="metric__sub mt-xs">
 					65% of budget
 				</p>
 			</div>
 			<div class="card">
-				<h6 class="card__title">Balance</h6>
-				<p class="metric__value metric__value--xl">
-					$4,016.45
-				</p>
-				<p class="metric__sub mt-sm">
-					across checking accounts
-				</p>
-			</div>
-			<div class="card">
-				<h6 class="card__title">Savings</h6>
+				<h6 class="card__title mb-xs">Savings</h6>
 				<p class="metric__value metric__value--xl">
 					$1,747.00
 				</p>
-				<p class="metric__sub mt-sm">
+				<p class="metric__sub mt-xs">
 					across savings accounts
+				</p>
+			</div>
+			<div class="card">
+				<h6 class="card__title mb-xs">Balance</h6>
+				<p class="metric__value metric__value--xl">
+					$4,016.45
+				</p>
+				<p class="metric__sub mt-xs">
+					across checking accounts
 				</p>
 			</div>
 		</div>
 		<div id="dashboard-bs">
 			<div class="card">
-				<div>
-					<h6 class="card__title">Budget-spent by category</h6>
-					// last 30 days, change
-				</div>
+				<h6 class="card__title">Budget-spent by category</h6>
 				<div
 					class="chart-container"
-					style="margin-top: calc(-1 * var(--spacing-lg));"
 					hx-get="/partials/charts/cat-hist/5d73ddb6-f839-4b83-8457-ac238ca66bec"
 					hx-trigger="load"
 				>
-					@components.Loader("htmx-indicator", nil)
+					@components.Loader("htmx-indicator h-full", nil)
 				</div>
 			</div>
 		</div>
@@ -105,51 +101,49 @@ templ Dashboard(
 			</div>
 		</div>
 		<div id="dashboard-mp">
-			<div class="card">
+			<div class="card" style="display: grid; grid-template-rows: auto 1fr auto;">
 				<h6 class="card__title">Month progress</h6>
 				<div>
-					// copied
-					<div class="mb-xs">
-						<div class="flex justify-between items-end">
-							<p class="goal-card__amount text-sm">
+					<div class="mb-md">
+						<div class="flex justify-between items-end mb-xs">
+							<p class="">
 								Day 3 of 31
 							</p>
-							<p class="goal-card__percentage text-sm">
+							<p class="">
 								28d left
 							</p>
 						</div>
-						@components.ProgressBar("", 3)
+						@components.ProgressBar("progress-bar--xs", 3)
 					</div>
-					<div class="mb-xs">
-						<div class="flex justify-between items-end">
-							<p class="goal-card__amount text-sm">
-								Spent so far 65%
+					<div>
+						<div class="flex justify-between items-end mb-xs">
+							<p class="">
+								Spent so far
 							</p>
-							<p class="goal-card__percentage text-sm">
+							<p class="">
 								65%
 							</p>
 						</div>
-						@components.ProgressBar("", 65)
+						@components.ProgressBar("progress-bar--xs", 65)
 					</div>
-					// copied
+					<p class="mt-md text-sm text-muted">
+						At this pace you'll spend <span style="color: var(--color-text);">$36,913.87</span> by month end.
+					</p>
 				</div>
-				<p class="mt-sm">
-					At this pace you'll spend $36,913.87 by month end.
-				</p>
-				<div class="flex gap-md mt-sm">
+				<div class="flex gap-md mt-md" style="padding-top: var(--spacing-md); justify-content: space-around; border-top: 0.5px solid var(--color-border);">
 					<div>
-						<div style="font-size: 12px; color: var(--text-muted); margin-bottom: 2px;">
+						<div class="" style="text-align: center;">
 							Avg spent
 						</div>
-						<div style="font-family: var(--font-mono); font-size: 14px; color: var(--text);">
+						<div class=" font-mono" style="color: var(--color-primary);">
 							$3,465.14/day
 						</div>
 					</div>
 					<div>
-						<div style="font-size: 12px; color: var(--text-muted); margin-bottom: 2px;">
+						<div class="" style="text-align: center;">
 							Avg left
 						</div>
-						<div style="font-family: var(--font-mono); font-size: 14px; color: var(--text);">
+						<div class=" font-mono" style="color: var(--color-primary);">
 							$3,465.14/day
 						</div>
 					</div>
@@ -174,27 +168,73 @@ templ Dashboard(
 		<div id="dashboard-gp">
 			<div class="card">
 				<h6 class="card__title">Goals</h6>
-				<div class="mb-xs">
-					<div class="flex justify-between items-end">
-						<p class="goal-card__amount text-sm">
-							Day 3 of 31
-						</p>
-						<p class="goal-card__percentage text-sm">
-							28d left
-						</p>
+				<div class="space-y-md">
+					<div>
+						<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+							<span class="">Emergency Fund</span>
+							<div class="flex gap-xs" style="align-items: baseline;">
+								<span class="text-sm font-mono">
+									$1,500.00
+								</span>
+								<span class="text-xs text-muted font-mono">
+									/ $5,000.00
+								</span>
+							</div>
+						</div>
+						@components.ProgressBar("progress-bar--xs", 66)
+						<div class="mt-xs flex justify-between">
+							<span class="text-xs text-muted">
+								66% funded
+							</span>
+							<span class="text-xs text-muted">
+								$3,500.00 to go
+							</span>
+						</div>
 					</div>
-					@components.ProgressBar("", 3)
-				</div>
-				<div class="mb-xs">
-					<div class="flex justify-between items-end">
-						<p class="goal-card__amount text-sm">
-							Spent so far 65%
-						</p>
-						<p class="goal-card__percentage text-sm">
-							65%
-						</p>
+					<div>
+						<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+							<span class="">Emergency Fund</span>
+							<div class="flex gap-xs" style="align-items: baseline;">
+								<span class="text-sm font-mono">
+									$1,500.00
+								</span>
+								<span class="text-xs text-muted font-mono">
+									/ $5,000.00
+								</span>
+							</div>
+						</div>
+						@components.ProgressBar("progress-bar--xs", 66)
+						<div class="mt-xs flex justify-between">
+							<span class="text-xs text-muted">
+								66% funded
+							</span>
+							<span class="text-xs text-muted">
+								$3,500.00 to go
+							</span>
+						</div>
 					</div>
-					@components.ProgressBar("", 65)
+					<div>
+						<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+							<span class="">Emergency Fund</span>
+							<div class="flex gap-xs" style="align-items: baseline;">
+								<span class="text-sm font-mono">
+									$1,500.00
+								</span>
+								<span class="text-xs text-muted font-mono">
+									/ $5,000.00
+								</span>
+							</div>
+						</div>
+						@components.ProgressBar("progress-bar--xs", 66)
+						<div class="mt-xs flex justify-between">
+							<span class="text-xs text-muted">
+								66% funded
+							</span>
+							<span class="text-xs text-muted">
+								$3,500.00 to go
+							</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

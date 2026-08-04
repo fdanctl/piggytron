@@ -41,19 +41,27 @@
   position: relative;
   height: var(--spacing-sm);
   width: 100%;
+
+  > span {
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: var(--spacing-sm);
+    background-color: var(--color-primary);
+    border-radius: var(--radius-xl);
+  }
+
+  > span:first-child {
+    opacity: 0.35;
+  }
 }
 
-.progress-bar > span {
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: var(--spacing-sm);
-  background-color: var(--color-primary);
-  border-radius: var(--radius-xl);
-}
+.progress-bar--xs {
+  height: var(--spacing-xs);
 
-.progress-bar > span:first-child {
-  opacity: 0.35;
+  > span {
+    height: var(--spacing-xs);
+  }
 }
 
 .goal-card__subinfo {

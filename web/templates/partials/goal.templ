@@ -29,7 +29,7 @@ templ GoalItem(g views.Goal, attrs templ.Attributes) {
 						{ views.FormatFloat(g.CompletePercentage) }%
 					</p>
 				</div>
-				@components.ProgressBar("", g.CompletePercentage)
+				@components.ProgressBar("progress-bar--xs", g.CompletePercentage)
 			</div>
 			<div class="goal-card__subinfo">
 				<div>

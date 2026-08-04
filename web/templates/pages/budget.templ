@@ -54,13 +54,13 @@ templ lastMonthImport(month budget.Month) {
 templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftToSpend, overspent int, attrs templ.Attributes) {
 	<div id="budget-stats" class="budget-stats" { attrs... }>
 		<div class="card">
-			<h6 class="card__title">Ready to assign</h6>
+			<h6 class="card__title mb-sm">Ready to assign</h6>
 			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToBudget < 0) }>
 				{ views.FormatMoney(float64(leftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="ltb-input" type="hidden" name="ltb" value={ leftToBudget }/>
 				<input id="total-budgeted" type="hidden" name="total-budgeted" value={ totalBudgeted }/>
 			</p>
-			<p class="metric__sub metric__sub--xl mt-sm">
+			<p class="metric__sub mt-xs">
 				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income 
 				if unassignCarryover > 0 {
 					+ {  views.FormatMoney(float64(unassignCarryover) / 100, currency.EUR, language.AmericanEnglish) } unassign
@@ -70,21 +70,21 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftTo
 			</p>
 		</div>
 		<div class="card">
-			<h6 class="card__title">Available to spend</h6>
+			<h6 class="card__title mb-sm">Available to spend</h6>
 			<p id="left-to-spent" class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToSpend < 0) }>
 				{ views.FormatMoney(float64(leftToSpend) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="lts-input" type="hidden" name="lts" value={ leftToSpend }/>
 			</p>
-			<p class="metric__sub metric__sub--xl mt-sm">
+			<p class="metric__sub mt-xs">
 				budgeted but unspent
 			</p>
 		</div>
 		<div class="card">
-			<h6 class="card__title">Overspent</h6>
+			<h6 class="card__title mb-sm">Overspent</h6>
 			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", overspent != 0) }>
 				{ views.FormatMoney(float64(overspent) / 100, currency.EUR, language.AmericanEnglish) }
 			</p>
-			<p class="metric__sub metric__sub--xl mt-sm">
+			<p class="metric__sub mt-xs">
 				across all categories
 				<input id="overspent" type="hidden" name="overspent" value={ overspent }/>
 			</p>

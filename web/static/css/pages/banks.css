@@ -57,7 +57,8 @@
   min-width: 0;
 }
 
-#recent-transactions .transaction {
+#recent-transactions .transaction,
+#dashboard-rt .transaction {
   border: none;
   padding-left: 0;
   padding-right: 0;
@@ -65,11 +66,13 @@
   border-bottom: 1px solid var(--color-border-secondary);
 }
 
-#recent-transactions .transaction:last-child {
+#recent-transactions .transaction:last-child,
+#dashboard-rt .transaction:last-child {
   border-bottom: none;
 }
 
-#recent-transactions .transaction:hover {
+#recent-transactions .transaction:hover,
+#dashboard-rt .transaction:hover {
   background-color: transparent;
 }
 
