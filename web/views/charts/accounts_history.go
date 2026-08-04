@@ -1,4 +1,4 @@
-package appcharts
+package charts
 
 import (
 	"math"
@@ -9,7 +9,10 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) GenerateYearAccountsHistLine(
+// GenerateYearAccountsHistLine computes, per account, the running total of
+// the daily changes in hist and returns the resulting time series, plus the
+// rounded min and max y-axis bounds for the chart.
+func GenerateYearAccountsHistLine(
 	hist []query.AccountDailyChange,
 ) (map[string][]opts.LineData, int, int) {
 	var min, max float64
@@ -55,7 +58,9 @@ func (s *Service) GenerateYearAccountsHistLine(
 	return datas, int(math.Min(0, float64(rmin))), rmax
 }
 
-func (s *Service) LineTime(m map[string][]opts.LineData, min, max int) *charts.Line {
+// LineTime builds a smooth multi-series line chart with a time x axis and
+// its y axis bounded by [min, max].
+func LineTime(m map[string][]opts.LineData, min, max int) *charts.Line {
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
@@ -88,7 +93,9 @@ func (s *Service) LineTime(m map[string][]opts.LineData, min, max int) *charts.L
 	return line
 }
 
-func (s *Service) LineTimeAccount(
+// LineTimeAccount is like LineTime but accepts fractional y-axis bounds and
+// draws each series as a filled area starting from the given date.
+func LineTimeAccount(
 	m map[string][]opts.LineData,
 	min, max float64,
 	since time.Time,

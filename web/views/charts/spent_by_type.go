@@ -1,11 +1,13 @@
-package appcharts
+package charts
 
 import (
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeAssetsPieSpentItems(cats []query.CategoryBudgetValue) []opts.PieData {
+// MakeSpentByTypePieItems aggregates the spent value per budget category
+// type (needs, wants, savings) into pie chart data.
+func MakeSpentByTypePieItems(cats []query.CategoryBudgetValue) []opts.PieData {
 	var needs, wants, savings int
 	for _, v := range cats {
 		switch v.Type {

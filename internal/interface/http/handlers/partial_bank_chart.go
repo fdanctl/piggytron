@@ -5,25 +5,22 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
 type BankChartHandler struct {
-	chartsService *appcharts.Service
-	accountQuery  query.AccountQueryService
+	accountQuery query.AccountQueryService
 }
 
 func NewBankChartHandler(
-	cs *appcharts.Service,
 	aq query.AccountQueryService,
 ) *BankChartHandler {
 	return &BankChartHandler{
-		chartsService: cs,
-		accountQuery:  aq,
+		accountQuery: aq,
 	}
 }
 
@@ -70,13 +67,13 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		startDate = time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
 	}
 
-	histMap, _, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)
-	line := h.chartsService.LineTimeAccount(
+	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist)
+	line := charts.LineTimeAccount(
 		histMap,
 		0,
 		float64(max),
 		startDate,
 	)
-	chartComponent := h.chartsService.ConvertChartToTemplComponent(line)
+	chartComponent := charts.ConvertChartToTemplComponent(line)
 	partials.BankChartCard(chartComponent).Render(r.Context(), w)
 }

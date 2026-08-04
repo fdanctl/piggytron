@@ -1,4 +1,5 @@
-package appcharts
+// Package appcharts builds ECharts-based chart components from query read models.
+package charts
 
 import (
 	"bytes"
@@ -10,19 +11,15 @@ import (
 	"github.com/a-h/templ"
 )
 
-type Service struct{}
-
-func NewService() *Service {
-	return &Service{}
-}
-
+// Renderable is any chart that can render its HTML representation to a
+// writer. It is satisfied by the chart types of the go-echarts library.
 type Renderable interface {
 	Render(w io.Writer) error
 }
 
 // ConvertChartToTemplComponent cuts unnecessary html code from echarts
-// (only get what's inside <body></body>) and makes it templ component
-func (s *Service) ConvertChartToTemplComponent(chart Renderable) templ.Component {
+// (only get what's inside <body></body>) and makes it templ component.
+func ConvertChartToTemplComponent(chart Renderable) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		buf := bytes.NewBuffer(nil)
 		err := chart.Render(buf)

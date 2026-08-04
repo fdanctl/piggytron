@@ -5,26 +5,23 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
 type BanksChartsHandler struct {
-	chartsService *appcharts.Service
-	accountQuery  query.AccountQueryService
+	accountQuery query.AccountQueryService
 }
 
 func NewBanksChartsHandler(
-	cs *appcharts.Service,
 	aq query.AccountQueryService,
 ) *BanksChartsHandler {
 	return &BanksChartsHandler{
-		chartsService: cs,
-		accountQuery:  aq,
+		accountQuery: aq,
 	}
 }
 
@@ -52,11 +49,11 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pieItems := h.chartsService.MakeAssetsPieAccItems(accounts, 5)
+	pieItems := charts.MakeAccountsPieItems(accounts)
 	pie := components.NoData()
 	if len(pieItems) > 0 {
-		c := h.chartsService.PieRadius(pieItems)
-		pie = h.chartsService.ConvertChartToTemplComponent(c)
+		c := charts.PieRadius(pieItems)
+		pie = charts.ConvertChartToTemplComponent(c)
 	}
 
 	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
@@ -64,8 +61,8 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
-	histMap, min, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)
-	line := h.chartsService.LineTime(histMap, min, max)
+	histMap, min, max := charts.GenerateYearAccountsHistLine(changeHist)
+	line := charts.LineTime(histMap, min, max)
 
 	templ.Join(
 		pie,
@@ -73,7 +70,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 			"account-history-chart",
 			"innerHTML",
 			nil,
-			h.chartsService.ConvertChartToTemplComponent(line),
+			charts.ConvertChartToTemplComponent(line),
 		),
 	).Render(r.Context(), w)
 }

@@ -1,11 +1,14 @@
-package appcharts
+package charts
 
 import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeBudgetSankeyNodeLink(
+// MakeBudgetSankeyNodeLink maps a category of the given type to the node and
+// link it contributes to the budget sankey diagram. Income flows into the
+// budget, while needs, wants and savings flow out of it.
+func MakeBudgetSankeyNodeLink(
 	name, catType string,
 	value int,
 ) (opts.SankeyNode, opts.SankeyLink) {
@@ -43,7 +46,9 @@ func (s *Service) MakeBudgetSankeyNodeLink(
 		}
 }
 
-func (s *Service) MakeSankey(
+// MakeSankey builds a sankey diagram from the given nodes and links, with
+// optional entry animation.
+func MakeSankey(
 	sankeyNodes []opts.SankeyNode,
 	sankeyLinks []opts.SankeyLink,
 	animation bool,

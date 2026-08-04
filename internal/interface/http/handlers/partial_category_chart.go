@@ -4,22 +4,19 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
 type CategoryChartHandler struct {
-	chartsService *appcharts.Service
 	categoryQuery query.CategoryQueryService
 }
 
 func NewCategoryChartHandler(
-	cs *appcharts.Service,
 	cq query.CategoryQueryService,
 ) *CategoryChartHandler {
 	return &CategoryChartHandler{
-		chartsService: cs,
 		categoryQuery: cq,
 	}
 }
@@ -46,7 +43,7 @@ func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bItems := h.chartsService.MakeCatBarItems(mvalues)
-	chart := h.chartsService.CreateMonthlyBarChart(bItems)
-	h.chartsService.ConvertChartToTemplComponent(chart).Render(r.Context(), w)
+	bItems := charts.MakeCatBarItems(mvalues)
+	chart := charts.CreateMonthlyBarChart(bItems)
+	charts.ConvertChartToTemplComponent(chart).Render(r.Context(), w)
 }

@@ -1,4 +1,4 @@
-package appcharts
+package charts
 
 import (
 	"github.com/fdanctl/piggytron/internal/query"
@@ -6,27 +6,23 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeCatBarItems(mvalues []query.CategoryMonthlyValue) []opts.BarData {
-	if len(mvalues) == 0 {
-		return []opts.BarData{}
+// MakeCatBarItems maps the per-month category values to a fixed 12-month
+// slice of bar data (one entry per month, zero-filled for missing months).
+func MakeCatBarItems(mvalues []query.CategoryMonthlyValue) []opts.BarData {
+	byMonth := make(map[int]int, len(mvalues))
+	for _, v := range mvalues {
+		byMonth[v.Month] = v.Value
 	}
-
 	items := make([]opts.BarData, 0, 12)
-outerLoop:
 	for m := 1; m <= 12; m++ {
-		for i, v := range mvalues {
-			if m == v.Month {
-				items = append(items, opts.BarData{Value: float64(v.Value) / float64(100)})
-				mvalues = append(mvalues[:i], mvalues[i+1:]...)
-				continue outerLoop
-			}
-		}
-		items = append(items, opts.BarData{Value: 0})
+		items = append(items, opts.BarData{Value: float64(byMonth[m]) / 100})
 	}
 	return items
 }
 
-func (s *Service) CreateMonthlyBarChart(items []opts.BarData) *charts.Bar {
+// CreateMonthlyBarChart builds a bar chart of the 12 months of the year
+// from the given bar data.
+func CreateMonthlyBarChart(items []opts.BarData) *charts.Bar {
 	bar := charts.NewBar()
 	bar.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),

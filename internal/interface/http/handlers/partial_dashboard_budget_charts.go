@@ -5,26 +5,23 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
 type DashboardBudgetCharts struct {
-	chartsService *appcharts.Service
 	categoryQuery query.CategoryQueryService
 }
 
 func NewDashboardBudgetCharts(
-	cs *appcharts.Service,
 	cq query.CategoryQueryService,
 ) *DashboardBudgetCharts {
 	return &DashboardBudgetCharts{
-		chartsService: cs,
 		categoryQuery: cq,
 	}
 }
@@ -57,19 +54,19 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pieItems := h.chartsService.MakeAssetsPieSpentItems(categoryBudgetSpent.Data)
+	pieItems := charts.MakeSpentByTypePieItems(categoryBudgetSpent.Data)
 
 	pie := components.NoData()
 	if len(pieItems) > 0 {
-		c := h.chartsService.PieRadius(pieItems)
-		pie = h.chartsService.ConvertChartToTemplComponent(c)
+		c := charts.PieRadius(pieItems)
+		pie = charts.ConvertChartToTemplComponent(c)
 	}
 
-	budgetItems, spentItems, categories := h.chartsService.MakeBudgetSpentBarItems(
+	budgetItems, spentItems, categories := charts.MakeBudgetSpentBarItems(
 		categoryBudgetSpent.Data,
 	)
-	bar := h.chartsService.ConvertChartToTemplComponent(
-		h.chartsService.CreateCategoryBudgetSpentBarChart(budgetItems, spentItems, categories),
+	bar := charts.ConvertChartToTemplComponent(
+		charts.CreateCategoryBudgetSpentBarChart(budgetItems, spentItems, categories),
 	)
 
 	templ.Join(

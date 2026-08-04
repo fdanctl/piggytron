@@ -4,24 +4,21 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
 type AccountsHistoryChartHandler struct {
-	chartsService *appcharts.Service
-	accountQuery  query.AccountQueryService
+	accountQuery query.AccountQueryService
 }
 
 func NewAccountsHistoryChartHandler(
-	cs *appcharts.Service,
 	aq query.AccountQueryService,
 ) *AccountsHistoryChartHandler {
 	return &AccountsHistoryChartHandler{
-		chartsService: cs,
-		accountQuery:  aq,
+		accountQuery: aq,
 	}
 }
 
@@ -51,8 +48,8 @@ func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
-	histMap, min, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)
-	line := h.chartsService.LineTime(histMap, min, max)
+	histMap, min, max := charts.GenerateYearAccountsHistLine(changeHist)
+	line := charts.LineTime(histMap, min, max)
 
-	h.chartsService.ConvertChartToTemplComponent(line).Render(r.Context(), w)
+	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)
 }

@@ -8,7 +8,6 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appbudget"
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
@@ -17,23 +16,21 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/pages"
+	"github.com/fdanctl/piggytron/web/views/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
 type BudgetHandler struct {
 	service       *appbudget.Service
-	chartsService *appcharts.Service
 	categoryQuery query.CategoryQueryService
 }
 
 func NewBudgetHandler(
 	s *appbudget.Service,
-	cs *appcharts.Service,
 	cq query.CategoryQueryService,
 ) *BudgetHandler {
 	return &BudgetHandler{
 		service:       s,
-		chartsService: cs,
 		categoryQuery: cq,
 	}
 }
@@ -237,7 +234,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	for _, v := range categoryBudget {
 		if v.Value > 0 {
-			node, link := h.chartsService.MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
+			node, link := charts.MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
 			nodes = append(nodes, node)
 			links = append(links, link)
 		}
@@ -245,8 +242,8 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	component := components.NoData()
 	if len(links) > 0 {
-		sankey := h.chartsService.MakeSankey(nodes, links, true)
-		component = h.chartsService.ConvertChartToTemplComponent(sankey)
+		sankey := charts.MakeSankey(nodes, links, true)
+		component = charts.ConvertChartToTemplComponent(sankey)
 	}
 
 	obb := templ.Join(

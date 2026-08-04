@@ -1,4 +1,4 @@
-package appcharts
+package charts
 
 import (
 	"slices"
@@ -8,8 +8,9 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeAssetsPieAccItems(acc []query.AccountWithSum, count int) []opts.PieData {
-	// var othersValue int
+// MakeAccountsPieItems converts account balances into pie chart data,
+// sorted from largest to smallest balance.
+func MakeAccountsPieItems(acc []query.AccountWithSum) []opts.PieData {
 	slices.SortFunc(acc, func(a, b query.AccountWithSum) int {
 		return b.Sum - a.Sum
 	})
@@ -20,7 +21,8 @@ func (s *Service) MakeAssetsPieAccItems(acc []query.AccountWithSum, count int) [
 	return data
 }
 
-func (s *Service) PieRadius(items []opts.PieData) *charts.Pie {
+// PieRadius builds a donut chart (40%-75% radius) from the given pie data.
+func PieRadius(items []opts.PieData) *charts.Pie {
 	pie := charts.NewPie()
 	const formatterJS = `
 		function  myTooltipFormatter(p) {
@@ -33,7 +35,7 @@ func (s *Service) PieRadius(items []opts.PieData) *charts.Pie {
 }`
 
 	pie.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Width: "300%", Height: "100%"}),
+		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
 		// charts.WithLegendOpts(opts.Legend{
 		// 	Show:   opts.Bool(false),
 		// 	Top:    "center",

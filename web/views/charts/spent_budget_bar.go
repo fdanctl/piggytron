@@ -1,4 +1,4 @@
-package appcharts
+package charts
 
 import (
 	"github.com/fdanctl/piggytron/internal/query"
@@ -6,7 +6,10 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-func (s *Service) MakeBudgetSpentBarItems(
+// MakeBudgetSpentBarItems splits the category budget/spent data into the
+// budget and spent series (excluding income categories) and the x-axis
+// category names.
+func MakeBudgetSpentBarItems(
 	data []query.CategoryBudgetValue,
 ) (budget, spent []opts.BarData, xAxis []string) {
 	for _, v := range data {
@@ -21,7 +24,9 @@ func (s *Service) MakeBudgetSpentBarItems(
 	return
 }
 
-func (s *Service) CreateCategoryBudgetSpentBarChart(
+// CreateCategoryBudgetSpentBarChart builds a grouped bar chart comparing the
+// budgeted and spent amounts for the given categories.
+func CreateCategoryBudgetSpentBarChart(
 	budget, spent []opts.BarData,
 	categories []string,
 ) *charts.Bar {

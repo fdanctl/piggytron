@@ -14,7 +14,6 @@ import (
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/application/appbudget"
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
 	"github.com/fdanctl/piggytron/internal/application/appledger"
@@ -110,7 +109,6 @@ func main() {
 	incomeCatService := appincomecategory.NewService(incomeCatRepo)
 	userService := appuser.NewService(userRepo, hasher, sessionStore)
 	budgetService := appbudget.NewService(budgetRepo)
-	chartsService := appcharts.NewService()
 
 	// web mux - returns full HTML page (or, in most cases, just the main element if Hx-Request)
 	webMux := http.NewServeMux()
@@ -182,7 +180,6 @@ func main() {
 
 	budgetHandler := handlers.NewBudgetHandler(
 		budgetService,
-		chartsService,
 		catQueryService,
 	)
 	partialsMux.Handle("/partials/budget", budgetHandler)
@@ -226,41 +223,35 @@ func main() {
 	goalContributions := handlers.NewGoalContributionsHandler(ledgerQueryService)
 	partialsMux.Handle("/partials/contributions", goalContributions)
 
-	catHistChartHandler := handlers.NewCategoryChartHandler(chartsService, catQueryService)
+	catHistChartHandler := handlers.NewCategoryChartHandler(catQueryService)
 	partialsMux.Handle("/partials/charts/cat-hist/{id}", catHistChartHandler)
 
 	accountChartHandler := handlers.NewAccountChartHandler(
-		chartsService,
 		accountQueryService,
 	)
 	partialsMux.Handle("/partials/charts/account-hist/{id}", accountChartHandler)
 
 	accountsHistChartHandler := handlers.NewAccountsHistoryChartHandler(
-		chartsService,
 		accountQueryService,
 	)
 	partialsMux.Handle("/partials/charts/accounts-history", accountsHistChartHandler)
 
 	dashboardBudgetCharts := handlers.NewDashboardBudgetCharts(
-		chartsService,
 		catQueryService,
 	)
 	partialsMux.Handle("/partials/charts/dashboard-budget-spent", dashboardBudgetCharts)
 
 	bankChartHandler := handlers.NewBankChartHandler(
-		chartsService,
 		accountQueryService,
 	)
 	partialsMux.Handle("/partials/charts/bank-hist/{id}", bankChartHandler)
 
 	banksChartsHandler := handlers.NewBanksChartsHandler(
-		chartsService,
 		accountQueryService,
 	)
 	partialsMux.Handle("/partials/charts/banks", banksChartsHandler)
 
 	budgetChartHandler := handlers.NewBudgetChartHandler(
-		chartsService,
 		catQueryService,
 	)
 	partialsMux.Handle("/partials/charts/budget-chart/{month}", budgetChartHandler)

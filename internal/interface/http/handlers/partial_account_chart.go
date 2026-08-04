@@ -7,24 +7,21 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/fdanctl/piggytron/internal/application/appcharts"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
 type AccountChartHandler struct {
-	chartsService *appcharts.Service
-	accountQuery  query.AccountQueryService
+	accountQuery query.AccountQueryService
 }
 
 func NewAccountChartHandler(
-	cs *appcharts.Service,
 	aq query.AccountQueryService,
 ) *AccountChartHandler {
 	return &AccountChartHandler{
-		chartsService: cs,
-		accountQuery:  aq,
+		accountQuery: aq,
 	}
 }
 
@@ -69,12 +66,12 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	}
 
-	histMap, _, max := h.chartsService.GenerateYearAccountsHistLine(changeHist)
-	line := h.chartsService.LineTimeAccount(
+	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist)
+	line := charts.LineTimeAccount(
 		histMap,
 		0,
 		math.Max(float64(qmax)/100, float64(max)),
 		startDate,
 	)
-	h.chartsService.ConvertChartToTemplComponent(line).Render(r.Context(), w)
+	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)
 }
