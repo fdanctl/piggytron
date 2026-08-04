@@ -1,8 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -11,12 +14,20 @@ import (
 )
 
 type DashboardHandler struct {
-	ledger query.LedgerQueryService
+	ledgerQuery   query.LedgerQueryService
+	accountQuery  query.AccountQueryService
+	categoryQuery query.CategoryQueryService
 }
 
-func NewDashboardHandler(lq query.LedgerQueryService) *DashboardHandler {
+func NewDashboardHandler(
+	lq query.LedgerQueryService,
+	aq query.AccountQueryService,
+	cq query.CategoryQueryService,
+) *DashboardHandler {
 	return &DashboardHandler{
-		ledger: lq,
+		ledgerQuery:   lq,
+		accountQuery:  aq,
+		categoryQuery: cq,
 	}
 }
 
@@ -41,7 +52,7 @@ func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	transactions, err := h.ledger.GetRecentEntries(
+	transactions, err := h.ledgerQuery.GetRecentEntries(
 		r.Context(),
 		sessionInfo.UserID,
 		5,
@@ -51,11 +62,24 @@ func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tviews []views.Transaction
-	for _, v := range transactions {
-		tviews = append(tviews, views.NewTransaction(v))
+	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", err))
+		return
 	}
 
+	bm := budget.NewMonth(time.Now())
+	categoryBudgetSpent, err := h.categoryQuery.GetCategoriesBudgetSpentValue(
+		r.Context(),
+		sessionInfo.UserID,
+		bm,
+	)
+	if err != nil {
+		httperror.SendError(w, r, fmt.Errorf("error geting category budget-spent: %w", err))
+		return
+	}
+
+	pageView := views.NewDashboardPage(accounts, transactions, categoryBudgetSpent.Data)
 	content := pages.Dashboard(
 		views.BreadcrumbsView{
 			Items: []views.BreadcrumbsLink{
@@ -63,7 +87,7 @@ func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 			},
 			Options: nil,
 		},
-		tviews,
+		pageView,
 	)
 
 	renderWithMainLayout(w, r, "Dashboard", content)

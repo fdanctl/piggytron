@@ -52,14 +52,9 @@ func NewGoal(
 		Name:         g.Name,
 		Type:         g.Type,
 		TargetAmount: *g.TargetAmount,
-		// TargetAmount: FormatMoney(
-		// 	float64(*g.TargetAmount)/100,
-		// 	currency.EUR,
-		// 	language.AmericanEnglish,
-		// ),
-		StartDate:  *g.StartDate,
-		TargetDate: g.TargetDate,
-		Category:   g.Category.Name,
+		StartDate:    *g.StartDate,
+		TargetDate:   g.TargetDate,
+		Category:     g.Category.Name,
 		Amount: FormatMoney(
 			float64(g.Sum)/100,
 			currency.EUR,

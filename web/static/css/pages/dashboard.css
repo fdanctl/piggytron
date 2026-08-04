@@ -38,11 +38,10 @@
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-xs);
+  gap: var(--spacing-sm);
 
   @container main (min-width: 800px) {
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-sm);
   }
 }
 

@@ -64,6 +64,12 @@
   }
 }
 
+.progress-bar--negative {
+  > span {
+    background-color: var(--color-negative);
+  }
+}
+
 .goal-card__subinfo {
   display: flex;
   justify-content: space-between;

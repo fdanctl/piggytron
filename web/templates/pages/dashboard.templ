@@ -5,30 +5,34 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
 )
 
 templ Dashboard(
 	bview views.BreadcrumbsView,
-	mockTransactions []views.Transaction,
+	view views.DashboardPage,
 ) {
 	<div class="flex justify-between">
 		@components.Breadcrumbs(bview)
 	</div>
-	<a href="/budget" class="to-budget w-full mb-lg">
-		<span class="to-budget__icon">
-			@components.InfoSvg(16, "", "")
-		</span>
-		<p class="to-budget__p">
-			<strong class="font-medium">170€ left to budget.</strong> Assign it to categories before it goes untracked.
-		</p>
-		@components.Button("Go to budget", "", components.BtnOutline, components.BtnSmall, nil)
-	</a>
+	if view.BudgetReadyToAssign > 0 {
+		<a href="/budget" class="to-budget w-full mb-lg">
+			<span class="to-budget__icon">
+				@components.InfoSvg(16, "", "")
+			</span>
+			<p class="to-budget__p">
+				<strong class="font-medium">{ views.FormatMoney(float64(view.BudgetReadyToAssign)/100,currency.EUR, language.AmericanEnglish) } left to budget.</strong> Assign it to categories before it goes untracked.
+			</p>
+			@components.Button("Go to budget", "", components.BtnOutline, components.BtnSmall, nil)
+		</a>
+	}
 	<div id="dashboard-container">
 		<div id="dashboard-stats" class="dashboard-stats">
 			<div class="card">
 				<h6 class="card__title mb-xs" style="margin-bottom: var(--spacing-xs);">Income</h6>
 				<p class="metric__value metric__value--xl">
-					$7,250.00
+					{ views.FormatMoney(float64(view.Income)/100,currency.EUR, language.AmericanEnglish) }
 				</p>
 				<p class="metric__sub mt-xs">
 					this month
@@ -37,16 +41,16 @@ templ Dashboard(
 			<div class="card">
 				<h6 class="card__title mb-xs">Spent</h6>
 				<p class="metric__value metric__value--xl">
-					$3,572.31
+					{ views.FormatMoney(float64(view.Spent)/100,currency.EUR, language.AmericanEnglish) }
 				</p>
 				<p class="metric__sub mt-xs">
-					65% of budget
+					{ view.SpentPct }% of budget
 				</p>
 			</div>
 			<div class="card">
 				<h6 class="card__title mb-xs">Savings</h6>
 				<p class="metric__value metric__value--xl">
-					$1,747.00
+					{ views.FormatMoney(float64(view.Savings)/100,currency.EUR, language.AmericanEnglish) }
 				</p>
 				<p class="metric__sub mt-xs">
 					across savings accounts
@@ -55,7 +59,7 @@ templ Dashboard(
 			<div class="card">
 				<h6 class="card__title mb-xs">Balance</h6>
 				<p class="metric__value metric__value--xl">
-					$4,016.45
+					{ views.FormatMoney(float64(view.Balance)/100,currency.EUR, language.AmericanEnglish) }
 				</p>
 				<p class="metric__sub mt-xs">
 					across checking accounts
@@ -107,27 +111,52 @@ templ Dashboard(
 					<div class="mb-md">
 						<div class="flex justify-between items-end mb-xs">
 							<p class="">
-								Day 3 of 31
+								Day { view.CurrDay } of { view.MonthDayLength }
 							</p>
 							<p class="">
-								28d left
+								{ view.MonthDayLength-view.CurrDay }d left
 							</p>
 						</div>
-						@components.ProgressBar("progress-bar--xs", 3)
+						@components.ProgressBar("progress-bar--xs", float64(view.CurrDay)/float64(view.MonthDayLength)*100)
 					</div>
 					<div>
 						<div class="flex justify-between items-end mb-xs">
-							<p class="">
+							<p class="flex items-center gap-xs">
 								Spent so far
+								<span
+									class="flex h-full item-end"
+									style="anchor-name: --spent-so-far-info"
+									data-name="spent-so-far-info"
+									data-delay="200"
+									data-mouseover="ui.popover.show"
+									data-mouseout="ui.popover.hide"
+								>
+									@components.CircleQuestionMarkSvg(14, "", "")
+								</span>
 							</p>
 							<p class="">
-								65%
+								{ view.SpentPct }%
 							</p>
 						</div>
-						@components.ProgressBar("progress-bar--xs", 65)
+						if view.SpentPct < 100 {
+							@components.ProgressBar("progress-bar--xs", view.SpentPct)
+						} else {
+							@components.ProgressBar("progress-bar--xs progress-bar--negative", view.SpentPct)
+						}
+						@components.Tooltip(
+							"",
+							fmt.Sprintf(
+								"Spent %s of %s budgeted",
+								views.FormatMoney(float64(view.Spent)/100, currency.EUR, language.AmericanEnglish),
+								views.FormatMoney(float64(view.Budget)/100, currency.EUR, language.AmericanEnglish),
+							),
+							"spent-so-far-info",
+							components.TopRight,
+							nil,
+						)
 					</div>
 					<p class="mt-md text-sm text-muted">
-						At this pace you'll spend <span style="color: var(--color-text);">$36,913.87</span> by month end.
+						At this pace you'll spend <span style="color: var(--color-text);">{  views.FormatMoney(float64(view.AvgSpent*(view.MonthDayLength-view.CurrDay))/100,currency.EUR, language.AmericanEnglish) }</span> by month end.
 					</p>
 				</div>
 				<div class="flex gap-md mt-md" style="padding-top: var(--spacing-md); justify-content: space-around; border-top: 0.5px solid var(--color-border);">
@@ -136,7 +165,7 @@ templ Dashboard(
 							Avg spent
 						</div>
 						<div class=" font-mono" style="color: var(--color-primary);">
-							$3,465.14/day
+							{  views.FormatMoney(float64(view.AvgSpent)/100,currency.EUR, language.AmericanEnglish) }/day
 						</div>
 					</div>
 					<div>
@@ -144,7 +173,7 @@ templ Dashboard(
 							Avg left
 						</div>
 						<div class=" font-mono" style="color: var(--color-primary);">
-							$3,465.14/day
+							{  views.FormatMoney(float64(view.AvgLeft)/100,currency.EUR, language.AmericanEnglish) }/day
 						</div>
 					</div>
 				</div>
@@ -155,7 +184,7 @@ templ Dashboard(
 				<h6 class="card__title">Recent transactions</h6>
 				<div>
 					<ul>
-						for i, t := range mockTransactions {
+						for i, t := range view.RecentTransactions {
 							@partials.TransactionItem(t, templ.Attributes{
 								"style": fmt.Sprintf("animation-delay: %dms", i*30),
 							})
@@ -168,75 +197,42 @@ templ Dashboard(
 		<div id="dashboard-gp">
 			<div class="card">
 				<h6 class="card__title">Goals</h6>
-				<div class="space-y-md">
-					<div>
-						<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-							<span class="">Emergency Fund</span>
-							<div class="flex gap-xs" style="align-items: baseline;">
-								<span class="text-sm font-mono">
-									$1,500.00
-								</span>
-								<span class="text-xs text-muted font-mono">
-									/ $5,000.00
-								</span>
-							</div>
-						</div>
-						@components.ProgressBar("progress-bar--xs", 66)
-						<div class="mt-xs flex justify-between">
-							<span class="text-xs text-muted">
-								66% funded
-							</span>
-							<span class="text-xs text-muted">
-								$3,500.00 to go
-							</span>
-						</div>
-					</div>
-					<div>
-						<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-							<span class="">Emergency Fund</span>
-							<div class="flex gap-xs" style="align-items: baseline;">
-								<span class="text-sm font-mono">
-									$1,500.00
-								</span>
-								<span class="text-xs text-muted font-mono">
-									/ $5,000.00
-								</span>
-							</div>
-						</div>
-						@components.ProgressBar("progress-bar--xs", 66)
-						<div class="mt-xs flex justify-between">
-							<span class="text-xs text-muted">
-								66% funded
-							</span>
-							<span class="text-xs text-muted">
-								$3,500.00 to go
-							</span>
-						</div>
-					</div>
-					<div>
-						<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-							<span class="">Emergency Fund</span>
-							<div class="flex gap-xs" style="align-items: baseline;">
-								<span class="text-sm font-mono">
-									$1,500.00
-								</span>
-								<span class="text-xs text-muted font-mono">
-									/ $5,000.00
-								</span>
-							</div>
-						</div>
-						@components.ProgressBar("progress-bar--xs", 66)
-						<div class="mt-xs flex justify-between">
-							<span class="text-xs text-muted">
-								66% funded
-							</span>
-							<span class="text-xs text-muted">
-								$3,500.00 to go
-							</span>
-						</div>
-					</div>
+				<div
+					class="space-y-md"
+					hx-target="#content"
+					hx-boost="true"
+					hx-swap="innerHTML transition:true"
+				>
+					for _, g := range view.Goals {
+						@GoalProgress(g)
+					}
 				</div>
 			</div>
 		</div>
 	</div>
+}
+
+templ GoalProgress(g views.Goal) {
+	<a href={ fmt.Sprintf("/goals/%s", g.ID) }>
+		<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+			<span>{ g.Name }</span>
+			<div class="flex gap-xs" style="align-items: baseline;">
+				<span class="text-sm font-mono">
+					{ g.Amount }
+				</span>
+				<span class="text-xs text-muted font-mono">
+					/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+				</span>
+			</div>
+		</div>
+		@components.ProgressBar("progress-bar--xs", g.CompletePercentage)
+		<div class="mt-xs flex justify-between">
+			<span class="text-xs text-muted">
+				{  views.FormatFloat(g.CompletePercentage) }% funded
+			</span>
+			<span class="text-xs text-muted">
+				{ g.AmountLeft } to go
+			</span>
+		</div>
+	</a>
 }

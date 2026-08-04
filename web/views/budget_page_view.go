@@ -1,8 +1,6 @@
 package views
 
 import (
-	"math"
-
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/query"
 )
@@ -109,17 +107,19 @@ func NewBudgetPageView(
 		}
 	}
 
-	needsPct := (float64(needsBudget) / float64(totalBudgeted)) * 100
-	wantsPct := (float64(wantsBudget) / float64(totalBudgeted)) * 100
-	savingsPct := (float64(savingsBudget) / float64(totalBudgeted)) * 100
-	if math.IsNaN(needsPct) {
-		needsPct = 0
+	var needsPct float64
+	if totalBudgeted > 0 {
+		needsPct = (float64(needsBudget) / float64(totalBudgeted)) * 100
 	}
-	if math.IsNaN(wantsPct) {
-		wantsPct = 0
+
+	var wantsPct float64
+	if totalBudgeted > 0 {
+		wantsPct = (float64(wantsBudget) / float64(totalBudgeted)) * 100
 	}
-	if math.IsNaN(savingsPct) {
-		savingsPct = 0
+
+	var savingsPct float64
+	if totalBudgeted > 0 {
+		savingsPct = (float64(savingsBudget) / float64(totalBudgeted)) * 100
 	}
 
 	categoriesCarryover := totalBudgetedPrev - totalSpentPrev

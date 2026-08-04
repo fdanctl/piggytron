@@ -2,8 +2,10 @@
   margin: 0;
   inset: auto;
   position: fixed;
-  position-try-fallbacks: flip-block;
+  position-try: flip-block;
+  position-try-fallbacks: flip-block, flip-inline;
   border: none;
+  white-space: nowrap;
 
   background: #1a1a22;
   color: #e4e4e7;
