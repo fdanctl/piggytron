@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -12,10 +13,7 @@ import (
 )
 
 templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.BudgetPageView) {
-	<div class="flex justify-between">
-		@components.Breadcrumbs(bview)
-		@components.MonthPill("", view.Month.Label(), datePillSince)
-	</div>
+	@partials.BreadcrumbsWithMonthPill(bview, view.Month.Label(), datePillSince)
 	if view.TotalBudgeted == 0 {
 		@lastMonthImport(view.Month)
 	}

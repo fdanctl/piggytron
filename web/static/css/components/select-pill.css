@@ -57,12 +57,12 @@
 
 @scope (.select-pill--left) {
   .select-pill--popover {
-    flex-direction: row-reverse;
     top: anchor(top);
     right: anchor(left);
     bottom: anchor(bottom);
 
     .select-pill {
+      flex-direction: row-reverse;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
       border-right: none;

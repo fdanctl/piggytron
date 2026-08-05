@@ -155,6 +155,90 @@ func (s *LedgerQueryService) FindFiltered(
 	return entries, nil
 }
 
+func (s *LedgerQueryService) FindAllWithExpenseCategoryWithCount(
+	ctx context.Context,
+	uid string,
+	minDate, maxDate time.Time,
+	limit, offset uint,
+) (*query.EntriesWithTotalCount, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+		SELECT
+		  t.id,
+		  t.user_id,
+		  t.type,
+		  fa.name,
+		  ta.name,
+		  NULL,
+		  ec.name,
+		  t.amount,
+		  t.description,
+		  t.date,
+		  t.created_at,
+		  COUNT(*) OVER () AS total_count
+		FROM
+		  ledger t
+		  LEFT JOIN accounts fa ON t.from_account_id = fa.id
+		  LEFT JOIN accounts ta ON t.to_account_id = ta.id
+		  LEFT JOIN expense_categories ec ON t.expense_category_id = ec.id
+		WHERE
+		  t.user_id = $1
+		  AND t.expense_category_id IS NOT NULL
+		  AND t.date >= $2
+		  AND t.date < $3
+		ORDER BY
+		  date DESC,
+		  created_at DESC
+		 LIMIT NULLIF($4, 0)
+		 OFFSET $5`,
+		uid,
+		minDate,
+		maxDate,
+		limit,
+		offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entries []query.LedgerEntryDTO
+	var totalCount int
+
+	for rows.Next() {
+		var dto query.LedgerEntryDTO
+		var count int
+		err := rows.Scan(
+			&dto.ID,
+			&dto.UserID,
+			&dto.Type,
+			&dto.FromAccount,
+			&dto.ToAccount,
+			&dto.IncomeCategory,
+			&dto.ExpenseCategory,
+			&dto.Amount,
+			&dto.Description,
+			&dto.Date,
+			&dto.CreatedAt,
+			&count,
+		)
+		if err != nil {
+			return nil, err
+		}
+		totalCount = count
+		entries = append(entries, dto)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &query.EntriesWithTotalCount{
+		Data:  entries,
+		Total: totalCount,
+	}, nil
+}
+
 func (s *LedgerQueryService) FindFilteredWithCount(
 	ctx context.Context,
 	uid string,

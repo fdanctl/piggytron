@@ -95,6 +95,8 @@ func NewLedgerFilters(
 			pminD = nil
 		} else {
 			mind := time.Unix(minD, 0)
+			// make it the start of the day for the db include this date
+			mind = time.Date(mind.Year(), mind.Month(), mind.Day(), 0, 0, 0, 0, mind.Location())
 			pminD = &mind
 		}
 	}
@@ -105,6 +107,7 @@ func NewLedgerFilters(
 			pmaxD = nil
 		} else {
 			maxd := time.Unix(maxD, 0)
+			// don't make it the start of the day for the db include this date
 			pmaxD = &maxd
 		}
 	}

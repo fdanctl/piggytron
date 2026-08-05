@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/budget"
@@ -14,19 +15,19 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-type ExpensesHandler struct {
+type IncomeHandler struct {
 	ledgerQuery query.LedgerQueryService
 }
 
-func NewExpensesHandler(
+func NewIncomeHandler(
 	lq query.LedgerQueryService,
-) *ExpensesHandler {
-	return &ExpensesHandler{
+) *IncomeHandler {
+	return &IncomeHandler{
 		ledgerQuery: lq,
 	}
 }
 
-func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *IncomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -35,7 +36,7 @@ func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *IncomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -52,7 +53,7 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 				errs.KindBadRequest,
 				fmt.Sprintf("%s is not a valid month", month),
 				fmt.Errorf("failed to parse month '%s': %w", month, err),
-				"ExpensesHandler.Post",
+				"IncomeHandler.Post",
 			)
 			httperror.SendError(w, r, err)
 			return
@@ -69,12 +70,38 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		0,
 		bm.Time().Location(),
 	)
+	monthLast := time.Date(
+		nextMonthFirst.Year(),
+		nextMonthFirst.Month(),
+		nextMonthFirst.Day()-1,
+		0,
+		0,
+		0,
+		0,
+		nextMonthFirst.Location(),
+	)
 
-	transactions, err := h.ledgerQuery.FindAllWithExpenseCategoryWithCount(
+	// TODO cache it in redis
+	d, err := h.ledgerQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, errs.NewInternalAppError(err, "IncomeHandler.Get"))
+		return
+	}
+
+	filters := query.NewLedgerFilters(
+		[]string{"income"},
+		nil,
+		nil,
+		"",
+		"",
+		strconv.Itoa(int(bm.Time().Unix())),
+		strconv.Itoa(int(monthLast.Unix())),
+	)
+
+	transactions, err := h.ledgerQuery.FindFilteredWithCount(
 		r.Context(),
 		sessionInfo.UserID,
-		bm.Time(),
-		nextMonthFirst,
+		filters,
 		0,
 		0,
 	)
@@ -83,28 +110,26 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var totalSpent int
+	var total int
+	sources := make(map[string]interface{}, 0)
 	var transactionsView []views.Transaction
 	for _, t := range transactions.Data {
-		totalSpent += t.Amount
+		_, ok := sources[t.ID]
+		if !ok {
+			sources[t.ID] = nil
+		}
+		total += t.Amount
 		transactionsView = append(
 			transactionsView,
 			views.NewTransaction(t),
 		)
 	}
 
-	// TODO cache it in redis
-	d, err := h.ledgerQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		httperror.SendError(w, r, errs.NewInternalAppError(err, "ExpensesPageHandler.Get"))
-		return
-	}
-
-	content := pages.Expenses(
+	content := pages.Income(
 		views.BreadcrumbsView{
 			Items: []views.BreadcrumbsLink{
 				{Href: "", Name: "Reports"},
-				{Href: "", Name: "Expenses"},
+				{Href: "", Name: "Income"},
 			},
 			Options: []views.BreadcrumbsLink{
 				{Href: "/reports/expenses", Name: "Expenses"},
@@ -114,8 +139,9 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		bm.Label(),
 		d,
 		transactionsView, transactions.Total,
-		totalSpent,
+		total,
+		len(sources),
 	)
 
-	renderWithMainLayout(w, r, "Expenses", content)
+	renderWithMainLayout(w, r, "Income", content)
 }

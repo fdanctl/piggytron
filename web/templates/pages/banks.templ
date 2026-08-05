@@ -28,7 +28,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 								@components.CircleQuestionMarkSvg(14, "", "")
 							</i>
 						</h6>
-						@components.Tooltip("", "hello", "net-worth-info", components.TopRight, nil)
+						@components.Tooltip("", "Total value of your savings, available accounts and goals combined.", "net-worth-info", components.TopRight, nil)
 						<div>
 							<div class="metric__value metric__value--xl">
 								{ views.FormatMoney(float64(view.NetWorth) / 100, currency.EUR, language.AmericanEnglish) }

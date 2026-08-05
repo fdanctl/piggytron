@@ -1,0 +1,14 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"time"
+)
+
+templ BreadcrumbsWithMonthPill(bview views.BreadcrumbsView, currMonth string, datePillSince time.Time) {
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+		@components.MonthPill("", currMonth, datePillSince)
+	</div>
+}

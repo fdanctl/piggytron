@@ -1,0 +1,70 @@
+package pages
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"time"
+)
+
+templ Expenses(
+	bview views.BreadcrumbsView,
+	currMonth string,
+	datePillSince time.Time,
+	transactions []views.Transaction,
+	ttCount int,
+	totalSpent int,
+) {
+	@partials.BreadcrumbsWithMonthPill(bview, currMonth, datePillSince)
+	<div class="to-budget w-full mb-lg">
+		<span class="to-budget__icon">
+			@components.InfoSvg(16, "", "")
+		</span>
+		<p class="to-budget__p">
+			<strong class="font-medium">Work in progress.</strong>
+		</p>
+	</div>
+	<div class="mb-lg">
+		<h1 class="card__title mb-xs">Total spent</h1>
+		<h2>{  views.FormatMoney(float64(totalSpent)/100,currency.EUR, language.AmericanEnglish) }</h2>
+		<p class="hidden text-xs text-muted mt-xs">of 800€ budgeted · 92€ over</p>
+	</div>
+	<div class="grid gap-sm" style="grid-template-columns: 2fr 1fr;">
+		<div>
+			<div class="card">
+				<h6 class="card__title">Budget-spent by category</h6>
+				<div
+					class="chart-container"
+					hx-get="/partials/charts/dashboard-budget-spent"
+					hx-trigger="load"
+				>
+					@components.Loader("h-full", nil)
+				</div>
+			</div>
+		</div>
+		<div>
+			<div class="card">
+				<h6 class="card__title">Spent by type</h6>
+				<div
+					id="spent-by-type"
+					class="chart-container"
+				>
+					@components.Loader("h-full", nil)
+				</div>
+			</div>
+		</div>
+	</div>
+	<section id="transactions" class="mt-lg">
+		<div class="flex justify-between">
+			<h4 class="card__title">Transactions</h4>
+			<div class="flex items-start gap-xs">
+				<span class="text-muted text-xs">
+					{ ttCount } movements
+				</span>
+			</div>
+		</div>
+		@partials.TransactionsList(transactions, "", false)
+	</section>
+}

@@ -46,6 +46,12 @@ type LedgerQueryService interface {
 		filters *LedgerFilters,
 		limit, offset uint,
 	) ([]LedgerEntryDTO, error)
+	FindAllWithExpenseCategoryWithCount(
+		ctx context.Context,
+		uid string,
+		minDate, maxDate time.Time,
+		limit, offset uint,
+	) (*EntriesWithTotalCount, error)
 	FindFilteredWithCount(
 		ctx context.Context,
 		uid string,

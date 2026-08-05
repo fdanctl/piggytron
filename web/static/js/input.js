@@ -59,7 +59,6 @@ export function selectPillSelect({ ele, data }) {
   let drop = ele.closest(".select.select-pill");
   if (drop) {
     drop.querySelector("button").innerText = ele.innerText;
-    ele.parentElement.prepend(ele);
   }
 }
 

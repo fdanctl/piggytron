@@ -47,6 +47,10 @@
 
 .dialog__body {
   overflow-y: scroll;
+  margin-left: calc(-1 * var(--spacing-md));
+  margin-right: calc(-1 * var(--spacing-md));
+  padding-left: var(--spacing-md);
+  padding-right: var(--spacing-md);
 
   @media (width >= 600px) {
     scrollbar-width: none;

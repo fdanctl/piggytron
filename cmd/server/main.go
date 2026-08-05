@@ -154,8 +154,11 @@ func main() {
 	)
 	webMux.Handle("/ledger", middleware.AuthProtectedRoute(ledgerPageHandler))
 
-	eh := handlers.ExpensesHandler{}
-	webMux.Handle("/reports/expenses", middleware.AuthProtectedRoute(&eh))
+	eh := handlers.NewExpensesHandler(ledgerQueryService)
+	webMux.Handle("/reports/expenses", middleware.AuthProtectedRoute(eh))
+
+	ih := handlers.NewIncomeHandler(ledgerQueryService)
+	webMux.Handle("/reports/income", middleware.AuthProtectedRoute(ih))
 
 	categoriesHandler := handlers.NewCategoriesHandler(
 		expenseCatService,
@@ -171,6 +174,11 @@ func main() {
 
 	sh := handlers.SignupHandler{}
 	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
+
+	if cfg.IsDev {
+		th := handlers.TestHandler{}
+		webMux.Handle("/test", &th)
+	}
 
 	// partials mux - returns HTMX fragments
 	partialsMux := http.NewServeMux()
