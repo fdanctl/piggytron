@@ -98,13 +98,19 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}`, bank.ID()),
 	)
 
+	var isSaving bool
+	if *bank.IsSaving() {
+		isSaving = true
+	}
+
+	bview := views.NewBank(string(bank.ID()), bank.Name(), string(bank.Type()), isSaving, 0)
 	templ.Join(
 		partials.BankForm(view),
 		layouts.OOBWraper(
 			"accounts-list",
 			"beforeend",
 			nil,
-			partials.AccountItem(string(bank.ID()), bank.Name()),
+			partials.AccountItem(bview),
 		),
 	).Render(r.Context(), w)
 }

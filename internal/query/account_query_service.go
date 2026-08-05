@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"time"
+
+	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 )
 
 var ErrNoHistory = errors.New("no history found")
@@ -35,6 +37,12 @@ type AccountWithSum struct {
 	Sum int
 }
 
+type AccountWithSumAndMonthChange struct {
+	AccountWithSum
+	MoneyIn  int
+	MoneyOut int
+}
+
 type AccountWithMinRunningBalance struct {
 	AccountWithCategory
 	MinRunningBalance int
@@ -54,6 +62,11 @@ type AccountQueryService interface {
 	FindGoalsIDNames(ctx context.Context, uid string) ([]AccountIDName, error)
 	FindWithSum(ctx context.Context, id string) (*AccountWithSum, error)
 	FindAllWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
+	FindAllWithSumAndMonthChange(
+		ctx context.Context,
+		uid string,
+		month monthlysummary.Month,
+	) ([]AccountWithSumAndMonthChange, error)
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
 	GetAccountDailyChange(ctx context.Context, id string) ([]AccountDailyChange, error)

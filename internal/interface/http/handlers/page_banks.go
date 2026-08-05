@@ -3,8 +3,10 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -62,7 +64,11 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
+	accounts, err := h.accountQuery.FindAllWithSumAndMonthChange(
+		r.Context(),
+		sessionInfo.UserID,
+		monthlysummary.NewMonth(time.Now()),
+	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", err))
 		return

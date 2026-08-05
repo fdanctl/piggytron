@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
 )
@@ -252,6 +253,81 @@ func (s *AccountQueryService) FindAllWithSum(
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
+		); err != nil {
+			return nil, err
+		}
+		g.Category = &c
+		results = append(results, g)
+	}
+	return results, nil
+}
+
+func (s *AccountQueryService) FindAllWithSumAndMonthChange(
+	ctx context.Context,
+	uid string,
+	month monthlysummary.Month,
+) ([]query.AccountWithSumAndMonthChange, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`SELECT 
+			a.id, 
+			a.user_id, 
+			a.type, 
+			a.name, 
+			a.is_saving, 
+			a.currency, 
+			a.target_amount, 
+			a.start_date, 
+			a.target_date, 
+			COALESCE(c.id, $1),
+			COALESCE(c.name,''),
+			COALESCE(c.type,'income'),
+			a.created_at, 
+			a.updated_at, 
+			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum,
+			COALESCE(SUM(ms.money_in)  FILTER (WHERE ms.month = $3), 0) AS month_money_in,
+			COALESCE(SUM(ms.money_out) FILTER (WHERE ms.month = $3), 0) AS month_money_out
+		 FROM accounts a
+		 LEFT JOIN expense_categories c
+			ON a.category_id = c.id
+		 LEFT JOIN monthly_summary ms
+			ON a.id = ms.account_id and ms.month <= $3
+		 WHERE
+			a.user_id = $2
+		 GROUP BY
+			a.id, c.id`,
+		util.ZeroUUID,
+		uid,
+		month.Time(),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountWithSumAndMonthChange
+
+	for rows.Next() {
+		var g query.AccountWithSumAndMonthChange
+		var c query.CategoryDTO
+		if err := rows.Scan(
+			&g.ID,
+			&g.UserID,
+			&g.Type,
+			&g.Name,
+			&g.IsSaving,
+			&g.Currency,
+			&g.TargetAmount,
+			&g.StartDate,
+			&g.TargetDate,
+			&c.ID,
+			&c.Name,
+			&c.Type,
+			&g.CreatedAt,
+			&g.UpdatedAt,
+			&g.Sum,
+			&g.MoneyIn,
+			&g.MoneyOut,
 		); err != nil {
 			return nil, err
 		}

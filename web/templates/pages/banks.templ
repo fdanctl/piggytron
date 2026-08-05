@@ -33,9 +33,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value metric__value--xl">
 								{ views.FormatMoney(float64(view.NetWorth) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<div class={ "metric__sub", templ.KV("text-positive", true) }>
-								+0.00% this month
-							</div>
+							@percentChange(view.NetWorthIncPct, "% this month")
 						</div>
 					</div>
 					<div class="metric-container">
@@ -44,23 +42,21 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Savings) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<div class={ "metric__sub", templ.KV("text-positive", true) }>
-								+0.00%
-							</div>
+							@percentChange(view.SavingsIncPct, "%")
 						</div>
 						<div class="metric">
 							<div class="metric__title">Available</div>
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Available) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<div class={ "metric__sub", templ.KV("text-positive", true) }>+0.00%</div>
+							@percentChange(view.AvailableIncPct, "%")
 						</div>
 						<div class="metric">
 							<div class="metric__title">Goals</div>
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Goals) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<div class={ "metric__sub",  templ.KV("text-negative", true) } style={  }>-0.00%</div>
+							@percentChange(view.GoalsIncPct, "%")
 						</div>
 					</div>
 				</div>
@@ -115,7 +111,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 					hx-swap="innerHTML transition:true"
 				>
 					for _, v := range view.Banks {
-						@partials.AccountItem(v.ID, v.Name)
+						@partials.AccountItem(v)
 					}
 				</ul>
 			</div>
@@ -135,5 +131,15 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 				</div>
 			</div>
 		</section>
+	</div>
+}
+
+templ percentChange(pct float64, suffix string) {
+	<div class={ "metric__sub", templ.KV("text-positive", pct >= 0), templ.KV("text-negative", pct < 0) }>
+		if pct >= 0 {
+			+{ views.FormatFloat(pct) }{ suffix }
+		} else {
+			{ views.FormatFloat(pct) }{ suffix }
+		}
 	</div>
 }

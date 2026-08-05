@@ -94,10 +94,6 @@
   background-color: var(--color-secondary);
 }
 
-.account-card:hover svg {
-  transform: translateX(2px);
-}
-
 #accounts .card__title {
   margin-bottom: var(--spacing-md);
 }
