@@ -32,6 +32,7 @@ import {
   centerSelected,
   timeOnChange,
   budgetInputScan,
+  selectPillSelect,
 } from "../input";
 import {
   closeLastDialog,
@@ -133,6 +134,8 @@ export const uiActions = {
   "ui.checkbox-pill.toggle": checkboxPillToggle,
 
   "ui.select.option": selectSelect,
+
+  "ui.select-pill.option": selectPillSelect,
 
   "ui.date-input.toggle": openCalendar,
 

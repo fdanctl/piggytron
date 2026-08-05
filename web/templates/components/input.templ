@@ -244,7 +244,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 				data-action="ui.time-input.toggle"
 				data-target={ id }
 				popovertarget={ id }
-				style={ fmt.Sprintf("anchor-name: %s;", id) }
+				style={ fmt.Sprintf("anchor-name: --%s;", id) }
 			>
 				@ClockSvg(16, "", "")
 			</button>
@@ -253,7 +253,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 	<div
 		id={ id }
 		class="popover date-input__popover"
-		style={ fmt.Sprintf("position-anchor: %s;", id) }
+		style={ fmt.Sprintf("position-anchor: --%s;", id) }
 		popover
 	>
 		<div class="date-input__time">

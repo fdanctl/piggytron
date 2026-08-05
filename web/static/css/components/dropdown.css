@@ -9,6 +9,20 @@
   margin-left: var(--spacing-xs);
 }
 
+.popover {
+  display: none;
+  margin: 0;
+  inset: auto;
+  position-try-fallbacks: flip-block, flip-inline;
+  position-try: flip-block;
+  border: none;
+  background-color: transparent;
+}
+
+.popover:popover-open {
+  display: block;
+}
+
 @scope (.dropdown) {
   .popover {
     display: none;
@@ -22,14 +36,21 @@
     padding-top: 4px;
     background-color: transparent;
     box-shadow: var(--shadow-lg);
+
+    opacity: 0;
+    transform: translateY(-8px);
+
+    transition:
+      opacity 200ms,
+      transform 200ms,
+      display 200ms allow-discrete,
+      overlay 200ms allow-discrete;
+
+    transition-behavior: allow-discrete;
   }
 
   .popover.min-w {
     min-width: anchor-size(width);
-  }
-
-  .popover:popover-open {
-    display: block;
   }
 
   .popover > div {
@@ -42,5 +63,15 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--color-border) transparent;
+  }
+
+  .popover:popover-open {
+    opacity: 1;
+    transform: translateY(0);
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
   }
 }

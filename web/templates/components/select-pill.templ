@@ -1,0 +1,66 @@
+package components
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+)
+
+type SelectPillDirection string
+
+const (
+	SelectPillLeft  SelectPillDirection = "left"
+	SelectPillRight SelectPillDirection = "right"
+)
+
+templ SelectPill(
+	class string,
+	placeholder string,
+	value string,
+	direction SelectPillDirection,
+	options []SelectOption,
+	attrs templ.Attributes,
+) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := hex.EncodeToString(b)
+	}}
+	<div
+		class={ "select select-pill unselectable", fmt.Sprintf("select-pill--%s", direction) }
+		style={ fmt.Sprintf("anchor-name: --%s;", id) }
+		onmouseenter="this.querySelector('.popover').showPopover()"
+		onmouseleave="this.querySelector('.popover').hidePopover()"
+	>
+		<button
+			class={ "reset-btn select-pill__option select-pill__option--selected", templ.KV(class, class != "") }
+			type="button"
+		>
+			<span>
+				{ placeholder }
+			</span>
+		</button>
+		<div
+			class={ "select-pill--popover popover" }
+			style={ fmt.Sprintf("position-anchor: --%s;", id), fmt.Sprintf("--count: %d;", len(options) -1) }
+			popover
+		>
+			<ul class="select-pill">
+				for _, v := range options {
+					<li
+						class={ "select-pill__option", templ.KV("select-pill__option--selected", v.Value == value || v.Label == placeholder) }
+						data-action="ui.select-pill.option"
+						data-value={ v.Value }
+						onclick=""
+					>
+						{ v.Label }
+					</li>
+				}
+			</ul>
+			<input class="hidden" type="text" value={ value } { attrs... }/>
+		</div>
+	</div>
+}

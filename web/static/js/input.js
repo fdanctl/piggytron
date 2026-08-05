@@ -39,9 +39,27 @@ export function selectSelect({ ele, data }) {
   ele.closest(".popover").hidePopover();
   let drop = ele.closest(".dropdown");
   if (drop) {
-    drop.querySelector("button > span").innerText = ele.firstChild.innerText;
+    drop.querySelector("button").innerText = ele.firstChild.innerText;
     drop.querySelector("button").classList.remove("input--error");
     ele.closest(".input-group")?.classList.remove("input-group--error");
+  }
+}
+
+export function selectPillSelect({ ele, data }) {
+  ele.closest(".popover").hidePopover();
+  const input = ele.parentElement.nextElementSibling;
+  input.value = data.value;
+  input.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
+
+  const opts = ele.parentElement.querySelectorAll("li");
+  for (let i = 0; i < opts.length; i++) {
+    opts[i].classList.remove("select-pill__option--selected");
+  }
+  ele.classList.add("select-pill__option--selected");
+  let drop = ele.closest(".select.select-pill");
+  if (drop) {
+    drop.querySelector("button").innerText = ele.innerText;
+    ele.parentElement.prepend(ele);
   }
 }
 

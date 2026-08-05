@@ -1,0 +1,115 @@
+.select-pill {
+  display: flex;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  align-items: center;
+  z-index: 10;
+  border: 1px solid var(--color-border);
+  border-radius: 1000px;
+  height: fit-content;
+  width: fit-content;
+}
+
+.select-pill--right:has(.popover:popover-open) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none;
+}
+
+.select-pill--left:has(.popover:popover-open) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: none;
+}
+
+.select-pill--popover {
+  background-color: var(--color-bg);
+  margin: 0;
+
+  /* padding + pill width + gap */
+  width: calc(
+    var(--count) * var(--spacing-xs) + 2 * var(--spacing-xs) + var(--count) *
+      45px - var(--spacing-xs) + 1px
+  );
+  overflow: hidden;
+
+  transition:
+    opacity 200ms,
+    width 200ms;
+
+  transition-behavior: allow-discrete;
+
+  .select-pill__option--selected {
+    display: none;
+  }
+
+  &:popover-open {
+    width: calc(
+      var(--count) * var(--spacing-xs) + 2 * var(--spacing-xs) + var(--count) *
+        45px - var(--spacing-xs) + 1px
+    );
+
+    @starting-style {
+      width: calc(45px + 2 * var(--spacing-xs));
+    }
+  }
+}
+
+@scope (.select-pill--left) {
+  .select-pill--popover {
+    flex-direction: row-reverse;
+    top: anchor(top);
+    right: anchor(left);
+    bottom: anchor(bottom);
+
+    .select-pill {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right: none;
+    }
+  }
+}
+
+@scope (.select-pill--right) {
+  .select-pill--popover {
+    top: anchor(top);
+    left: anchor(right);
+    bottom: anchor(bottom);
+
+    .select-pill {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      border-left: none;
+    }
+  }
+}
+
+.select-pill__option {
+  text-align: center;
+  width: 45px;
+  border: none;
+  color: var(--color-text);
+  background-color: transparent;
+  font-weight: 400;
+  border-radius: 1000px;
+  font-size: var(--font-size-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+
+  &:hover,
+  &:focus {
+    background-color: rgb(var(--color-primary-rgb), 0.1);
+  }
+}
+
+.select-pill__option--selected {
+  color: var(--color-primary);
+  background-color: rgb(var(--color-primary-rgb), 0.1);
+  font-weight: 500;
+
+  &:hover,
+  &:focus {
+    box-shadow: none;
+    background-color: rgb(var(--color-primary-rgb), 0.2);
+  }
+}

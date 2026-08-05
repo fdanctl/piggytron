@@ -26,7 +26,7 @@ templ Dropdown(class, name string, minWFull bool, attrs templ.Attributes) {
 			type="button"
 			data-target={ id }
 			popovertarget={ id }
-			style={ fmt.Sprintf("anchor-name: %s;", id) }
+			style={ fmt.Sprintf("anchor-name: --%s;", id) }
 			{ attrs... }
 		>
 			<span>
@@ -39,7 +39,7 @@ templ Dropdown(class, name string, minWFull bool, attrs templ.Attributes) {
 		<span
 			id={ id }
 			class={ "popover", templ.KV("min-w", minWFull) }
-			style={ fmt.Sprintf("position-anchor: %s;", id) }
+			style={ fmt.Sprintf("position-anchor: --%s;", id) }
 			popover
 		>
 			<div>

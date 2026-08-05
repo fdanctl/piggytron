@@ -266,6 +266,23 @@ templ Test() {
 					</ul>
 				}
 			</div>
+			<div></div>
+			<h3 class="font-medium mb-sm">Select Pill</h3>
+			@components.SelectPill("text-xs", "YTD", "ytd", components.SelectPillRight, []components.SelectOption{
+				{Label: "YTD", Value: "ytd"},
+				{Label: "6M", Value: "6m"},
+				{Label: "1Y", Value: "1y"},
+				{Label: "All", Value: "all"},
+			}, templ.Attributes{"name": "basic-select"})
+			<div>
+				<h3 class="font-medium mb-sm">Select Pill</h3>
+				@components.SelectPill("text-xs", "YTD", "ytd", components.SelectPillLeft, []components.SelectOption{
+					{Label: "YTD", Value: "ytd"},
+					{Label: "6M", Value: "6m"},
+					{Label: "1Y", Value: "1y"},
+					{Label: "All", Value: "all"},
+				}, templ.Attributes{"name": "basic-select"})
+			</div>
 		</div>
 	</section>
 	<!-- ============================================================ -->
