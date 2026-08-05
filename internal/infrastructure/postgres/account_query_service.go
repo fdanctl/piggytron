@@ -522,6 +522,104 @@ func (s *AccountQueryService) GetAccountDailyChange(
 	return results, nil
 }
 
+func (s *AccountQueryService) GetAccountDailyChangesAndStatsSince(
+	ctx context.Context,
+	id string,
+	since time.Time,
+) (*query.AccountDailyChangesWithStatsSince, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+		SELECT
+		  a.id,
+		  a.name,
+		  DATE (date) AS day,
+		  SUM(
+		    CASE
+		      WHEN t.from_account_id = a.id THEN t.amount * -1
+		      ELSE t.amount
+		    END
+		  ) AS change,
+		  SUM(
+		    CASE
+		      WHEN t.date >= $2
+		      AND t.to_account_id = a.id THEN t.amount
+		      ELSE 0
+		    END
+		  ) AS money_in,
+		  SUM(
+		    CASE
+		      WHEN t.date >= $2
+		      AND t.from_account_id = a.id THEN t.amount
+		      ELSE 0
+		    END
+		  ) AS money_out,
+		  SUM(
+		    CASE
+		      WHEN t.date >= $2 THEN 1
+		      ELSE 0
+		    END
+		  ) AS transaction
+		FROM
+		  accounts a
+		  LEFT JOIN ledger t ON a.id = t.to_account_id
+		  OR a.id = t.from_account_id
+		WHERE
+		  a.id = $1
+		GROUP BY
+		  DATE (date),
+		  a.id
+		ORDER BY
+		  day`,
+		id,
+		since,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, query.ErrNoHistory
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountDailyChange
+	var moneyInSince, moneyOutSince, transactionsSince int
+
+	for rows.Next() {
+		var r query.AccountDailyChange
+		var mi, mo, t int
+		var date *time.Time = nil
+		var change *int = nil
+		if err := rows.Scan(
+			&r.ID,
+			&r.Name,
+			&date,
+			&change,
+			&mi,
+			&mo,
+			&t,
+		); err != nil {
+			return nil, err
+		}
+
+		if date == nil || change == nil {
+			continue
+		}
+		r.Date = *date
+		r.Change = *change
+		results = append(results, r)
+		moneyInSince += mi
+		moneyOutSince += mo
+		transactionsSince += t
+	}
+	return &query.AccountDailyChangesWithStatsSince{
+		Data:         results,
+		MoneyIn:      moneyInSince,
+		MoneyOut:     moneyOutSince,
+		Transactions: transactionsSince,
+	}, nil
+}
+
 func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 	ctx context.Context,
 	id string,

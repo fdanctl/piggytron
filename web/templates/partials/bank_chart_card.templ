@@ -1,10 +1,20 @@
 package partials
 
-import "github.com/fdanctl/piggytron/web/templates/components"
-import "time"
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+)
 
-templ BankChartCard(chart templ.Component) {
-	@components.MonthPill("", "Jul 2026", time.Now())
+templ BankChartCard(chart templ.Component, moneyIn, moneyOut int, transactions int) {
+	@components.SelectPill("", "MTD", "mtd", components.SelectPillLeft, []components.SelectOption{
+		{Label: "MTD", Value: "mtd"},
+		{Label: "6M", Value: "6m"},
+		{Label: "YTD", Value: "ytd"},
+		{Label: "1Y", Value: "1y"},
+		{Label: "All", Value: "all"},
+	}, nil)
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-md));"
@@ -16,16 +26,16 @@ templ BankChartCard(chart templ.Component) {
 			<div class="bank-chart__legend-item">
 				<span class="bank-chart__legend-circle bank-chart__legend-circle--in"></span>
 				<span>In</span>
-				<span class="text-positive">+3 500€</span>
+				<span class="text-positive">+{  views.FormatMoney(float64(moneyIn)/100,currency.EUR, language.AmericanEnglish) }</span>
 			</div>
 			<div class="bank-chart__legend-item">
 				<span class="bank-chart__legend-circle bank-chart__legend-circle--out"></span>
 				<span>Out</span>
-				<span class="text-negative">–892€</span>
+				<span class="text-negative">–{  views.FormatMoney(float64(moneyOut)/100,currency.EUR, language.AmericanEnglish) }</span>
 			</div>
 		</div>
 		<div>
-			24 transactions
+			{ transactions } transactions
 		</div>
 	</div>
 }

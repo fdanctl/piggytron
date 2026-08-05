@@ -43,7 +43,10 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
 
-	changeHist, err := h.accountQuery.GetAccountDailyChange(r.Context(), id)
+	now := time.Now()
+	fotm := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+
+	changeHist, err := h.accountQuery.GetAccountDailyChangesAndStatsSince(r.Context(), id, fotm)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
@@ -67,7 +70,7 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		startDate = time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
 	}
 
-	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist)
+	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist.Data)
 	line := charts.LineTimeAccount(
 		histMap,
 		0,
@@ -75,5 +78,6 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		startDate,
 	)
 	chartComponent := charts.ConvertChartToTemplComponent(line)
-	partials.BankChartCard(chartComponent).Render(r.Context(), w)
+	partials.BankChartCard(chartComponent, changeHist.MoneyIn, changeHist.MoneyOut, changeHist.Transactions).
+		Render(r.Context(), w)
 }

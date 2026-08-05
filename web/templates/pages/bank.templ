@@ -31,14 +31,22 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 					"",
 					components.BtnOutline,
 					components.BtnMedium,
-					nil,
+					templ.Attributes{
+						"hx-get":    fmt.Sprintf("/partials/ledger/entry?preset=transfer&destination=%s", b.ID),
+						"hx-target": "#dialog-root",
+						"hx-swap":   "beforeend",
+					},
 				)
 				@components.Button(
 					"Send money",
 					"",
 					components.BtnOutline,
 					components.BtnMedium,
-					nil,
+					templ.Attributes{
+						"hx-get":    fmt.Sprintf("/partials/ledger/entry?preset=transfer&source=%s", b.ID),
+						"hx-target": "#dialog-root",
+						"hx-swap":   "beforeend",
+					},
 				)
 			</div>
 		</div>
@@ -53,7 +61,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 			class="chart-container"
 			style="margin-top: calc(-1 * var(--spacing-md));"
 		>
-			@components.Loader("htmx-indicator", nil)
+			@components.Loader("htmx-indicator h-full", nil)
 		</div>
 		<div class="bank-chart__legend invisible">
 			24 transactions

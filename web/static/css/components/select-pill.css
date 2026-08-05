@@ -23,7 +23,6 @@
 }
 
 .select-pill--popover {
-  background-color: var(--color-bg);
   margin: 0;
 
   /* padding + pill width + gap */
@@ -60,6 +59,8 @@
     top: anchor(top);
     right: anchor(left);
     bottom: anchor(bottom);
+    border-top-left-radius: 1000px;
+    border-bottom-left-radius: 1000px;
 
     .select-pill {
       flex-direction: row-reverse;
@@ -72,6 +73,8 @@
 
 @scope (.select-pill--right) {
   .select-pill--popover {
+    border-top-right-radius: 1000px;
+    border-bottom-right-radius: 1000px;
     top: anchor(top);
     left: anchor(right);
     bottom: anchor(bottom);
@@ -92,7 +95,7 @@
   background-color: transparent;
   font-weight: 400;
   border-radius: 1000px;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-xxs);
   padding: var(--spacing-xs) var(--spacing-sm);
   cursor: pointer;
 
@@ -111,5 +114,14 @@
   &:focus {
     box-shadow: none;
     background-color: rgb(var(--color-primary-rgb), 0.2);
+  }
+}
+
+@scope (.card) {
+  .select.select-pill {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    z-index: 10;
   }
 }

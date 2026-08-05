@@ -56,6 +56,13 @@ type AccountDailyChange struct {
 	Change int
 }
 
+type AccountDailyChangesWithStatsSince struct {
+	Data         []AccountDailyChange
+	MoneyIn      int
+	MoneyOut     int
+	Transactions int
+}
+
 type AccountQueryService interface {
 	FindIDNamesIncludes(ctx context.Context, ids []string) ([]AccountIDName, error)
 	FindBanksIDNames(ctx context.Context, uid string) ([]AccountIDName, error)
@@ -70,6 +77,11 @@ type AccountQueryService interface {
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
 	GetAccountDailyChange(ctx context.Context, id string) ([]AccountDailyChange, error)
+	GetAccountDailyChangesAndStatsSince(
+		ctx context.Context,
+		id string,
+		since time.Time,
+	) (*AccountDailyChangesWithStatsSince, error)
 	GetAccountWithMinRunningBalance(
 		ctx context.Context,
 		id string,

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -75,23 +76,62 @@ func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	form := partials.TransactionForm(
-		*views.NewIncomeForm(),
-		*views.NewExpenseForm(),
-		*views.NewTransferForm(),
-		icatOpts,
-		ecatOpts,
-		append(noSavingsBanksOpts, goalSavingsOpts...),
-		noSavingsBanksOpts,
-	)
+	preset := r.URL.Query().Get("preset")
+	fmt.Println(preset)
+	var dialog templ.Component
+	switch preset {
+	case "transfer":
+		from := r.URL.Query().Get("source")
+		to := r.URL.Query().Get("destination")
+		if from == "" && to == "" {
+			httperror.SendError(
+				w,
+				r,
+				errs.NewGenericBadRequestAppError(
+					errors.New("invalid url queries"),
+					"LedgerHandler.Get",
+				),
+			)
+			return
+		}
 
-	components.DialogWrapper(
-		"",
-		partials.TransactionFormTabs(),
-		form,
-		partials.TransactionFormActionBtnsTab(),
-		nil,
-	).Render(r.Context(), w)
+		view := views.NewTransferForm()
+		view.SourceAcc = from
+		view.DestinationAcc = to
+
+		form := partials.TransferForm(
+			*view, ecatOpts, append(noSavingsBanksOpts, goalSavingsOpts...), "",
+		)
+
+		dialog = components.DialogWrapper(
+			"",
+			components.DialogHeader("", "New Transfer", nil),
+			form,
+			partials.FormActionBtns("Transfer"),
+			nil,
+		)
+
+	default:
+		form := partials.TransactionForm(
+			*views.NewIncomeForm(),
+			*views.NewExpenseForm(),
+			*views.NewTransferForm(),
+			icatOpts,
+			ecatOpts,
+			append(noSavingsBanksOpts, goalSavingsOpts...),
+			noSavingsBanksOpts,
+		)
+
+		dialog = components.DialogWrapper(
+			"",
+			partials.TransactionFormTabs(),
+			form,
+			partials.TransactionFormActionBtnsTab(),
+			nil,
+		)
+	}
+
+	dialog.Render(r.Context(), w)
 }
 
 func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {

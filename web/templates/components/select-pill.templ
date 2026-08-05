@@ -30,13 +30,13 @@ templ SelectPill(
 		id := hex.EncodeToString(b)
 	}}
 	<div
-		class={ "select select-pill unselectable", fmt.Sprintf("select-pill--%s", direction) }
+		class={ "select select-pill unselectable", fmt.Sprintf("select-pill--%s", direction), templ.KV(class, class != "") }
 		style={ fmt.Sprintf("anchor-name: --%s;", id) }
 		onmouseenter="this.querySelector('.popover').showPopover()"
 		onmouseleave="this.querySelector('.popover').hidePopover()"
 	>
 		<button
-			class={ "reset-btn select-pill__option select-pill__option--selected", templ.KV(class, class != "") }
+			class={ "reset-btn select-pill__option select-pill__option--selected" }
 			type="button"
 		>
 			<span>
