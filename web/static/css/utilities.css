@@ -394,10 +394,6 @@
   height: 100%;
 }
 
-.rounded {
-  border-radius: 100%;
-}
-
 .rounded-sm {
   border-radius: var(--radius-sm);
 }
@@ -412,6 +408,14 @@
 
 .rounded-xl {
   border-radius: var(--radius-xl);
+}
+
+.rounded-full {
+  border-radius: var(--radius-full);
+}
+
+.object-cover {
+  object-fit: cover;
 }
 
 .unselectable {

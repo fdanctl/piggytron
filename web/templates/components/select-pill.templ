@@ -32,8 +32,9 @@ templ SelectPill(
 	<div
 		class={ "select select-pill unselectable", fmt.Sprintf("select-pill--%s", direction), templ.KV(class, class != "") }
 		style={ fmt.Sprintf("anchor-name: --%s;", id) }
-		onmouseenter="this.querySelector('.popover').showPopover()"
-		onmouseleave="this.querySelector('.popover').hidePopover()"
+		data-mouseover="ui.popover.show"
+		data-mouseout="ui.popover.hide"
+		data-name={ id }
 	>
 		<button
 			class={ "reset-btn select-pill__option select-pill__option--selected" }
@@ -44,6 +45,9 @@ templ SelectPill(
 			</span>
 		</button>
 		<div
+			id={ fmt.Sprintf("%s-popover", id) }
+			data-name={ id }
+			data-mouseout="ui.popover.hide"
 			class={ "select-pill--popover popover" }
 			style={ fmt.Sprintf("position-anchor: --%s;", id), fmt.Sprintf("--count: %d;", len(options) -1) }
 			popover

@@ -4,7 +4,7 @@
   height: fit-content;
   padding: 0 var(--spacing-sm);
   font-size: var(--font-size-xs);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-sm);
 }
 
 .badge--needs {

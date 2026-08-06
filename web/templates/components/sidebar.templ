@@ -25,6 +25,7 @@ templ Sidebar() {
 					<div>
 						<span>{ link.name }</span>
 						if len(link.sub) > 0 {
+							<hr class="hr"/>
 							<ul
 								hx-target="#content"
 								hx-boost="true"
@@ -47,9 +48,53 @@ templ Sidebar() {
 				</div>
 			}
 		}
-		<div class="avatar">
-			@ProfilePic(true)
-			<span>Fhewoifhwoahoi fewa username</span>
+		<div
+			class="sidebar__user"
+			onclick=""
+			data-name="user"
+			data-action="ui.popover.show"
+			data-mouseover="ui.popover.show"
+			data-mouseout="ui.popover.hide"
+			data-focus="ui.popover.show"
+			data-blur="ui.popover.hide"
+			style="anchor-name: --sidebar-user"
+		>
+			@ProfilePic(false)
+			<span>username</span>
+		</div>
+		<div
+			id="user-popover"
+			data-name="user"
+			class="popover"
+			popover="auto"
+			data-mouseout="ui.popover.hide"
+			style="position-anchor: --sidebar-user"
+		>
+			<ul class="user-menu">
+				<li>
+					<a
+						hx-target="#content"
+						hx-boost="true"
+						data-afterrequest="ui.nav.navigate"
+						href="/profile"
+					>Profile</a>
+				</li>
+				<li>
+					<a
+						hx-target="#content"
+						hx-boost="true"
+						data-afterrequest="ui.nav.navigate"
+						href="settings"
+					>Settings</a>
+				</li>
+				<li>
+					@ButtonWithIcon("Logout", "reset-btn", BtnGhost, BtnSmall,
+						templ.Attributes{
+							"type":   "button",
+							"hx-get": "/partials/auth/logout",
+						}, IconRigth, LogOutSvg(16, "", ""))
+				</li>
+			</ul>
 		</div>
 	</aside>
 }

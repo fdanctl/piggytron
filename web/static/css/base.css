@@ -216,6 +216,7 @@ input[type="number"] {
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
+  --radius-full: calc(infinity * 1px);
 
   /* Shadows */
   --shadow-focus: 0 0 0 3px oklch(from var(--cian-300) l c h / 40%);

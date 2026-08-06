@@ -13,11 +13,26 @@ templ Notification() {
 	</div>
 }
 
+templ Avatar(src string) {
+	if src != "" {
+		<div class="flex justify-center items-center">
+			<img
+				class="rounded-full object-cover"
+				style="width: 32px; height: 32px;"
+				src={ src }
+				alt="Rounded avatar"
+			/>
+		</div>
+	} else {
+		<span class="avatar">
+			@UserSvg(0, "", "")
+		</span>
+	}
+}
+
 templ ProfilePic(showNotification bool) {
 	<div class="pfp">
-		<div>
-			<!-- img -->
-		</div>
+		@Avatar("")
 		if showNotification {
 			@Notification()
 		}

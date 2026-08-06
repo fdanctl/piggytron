@@ -14,7 +14,11 @@ export function showPopover({ data }) {
 
 export function hidePopover({ ele, data, evt }) {
   if (!tid) return;
-  if (ele.contains(evt.target.toElement)) return;
+  const popover = document.getElementById(data.name + "-popover");
+  const toElement = evt.toElement;
+  if (ele.contains(toElement) || popover.contains(toElement)) {
+    return;
+  }
 
   clearTimeout(tid);
   document.getElementById(data.name + "-popover").hidePopover();
