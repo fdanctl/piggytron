@@ -377,9 +377,9 @@ input:focus + .checkbox__box {
   background-image: linear-gradient(
     90deg,
     transparent 20%,
-    rgb(255 255 255 / 5%) 40%,
-    rgb(94 239 239 / 35%) 50%,
-    rgb(255 255 255 / 5%) 60%,
+    oklch(from white l c h / 5%) 40%,
+    oklch(from var(--color-primary) l c h / 35%) 50%,
+    oklch(from white l c h / 5%) 60%,
     transparent 80%
   );
   background-size: 250% 100%;

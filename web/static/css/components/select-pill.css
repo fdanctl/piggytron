@@ -101,19 +101,19 @@
 
   &:hover,
   &:focus {
-    background-color: rgb(var(--color-primary-rgb), 0.1);
+    background-color: oklch(from var(--color-primary) l c h / 10%);
   }
 }
 
 .select-pill__option--selected {
   color: var(--color-primary);
-  background-color: rgb(var(--color-primary-rgb), 0.1);
+  background-color: oklch(from var(--color-primary) l c h / 10%);
   font-weight: 500;
 
   &:hover,
   &:focus {
     box-shadow: none;
-    background-color: rgb(var(--color-primary-rgb), 0.2);
+    background-color: oklch(from var(--color-primary) l c h / 20%);
   }
 }
 

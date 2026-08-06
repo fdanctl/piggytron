@@ -7,13 +7,13 @@
   border: none;
   white-space: nowrap;
 
-  background: #1a1a22;
-  color: #e4e4e7;
+  background: oklch(0.221 0.016 285.1);
+  color: oklch(0.92 0.004 286.3);
   padding: var(--spacing-xs) var(--spacing-sm);
   border-radius: var(--radius-xs);
   border: 0.5px solid var(--color-border-secondary);
   font-size: var(--font-size-xs);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 
   transition:
     opacity 0.2s,

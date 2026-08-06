@@ -30,7 +30,7 @@
   }
 
   button:hover {
-    background-color: rgb(var(--color-primary-rgb), 0.1);
+    background-color: oklch(from var(--color-primary) l c h / 10%);
   }
 
   .input {
@@ -38,7 +38,7 @@
     justify-content: space-between;
     border: none;
     color: var(--color-primary);
-    background-color: rgb(var(--color-primary-rgb), 0.1);
+    background-color: oklch(from var(--color-primary) l c h / 10%);
     width: 90px;
     border-radius: var(--radius-xl);
   }
@@ -46,7 +46,7 @@
   .input:focus,
   .input:hover {
     box-shadow: none;
-    background-color: rgb(var(--color-primary-rgb), 0.2);
+    background-color: oklch(from var(--color-primary) l c h / 20%);
   }
 
   .options > li {
