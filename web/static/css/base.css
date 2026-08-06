@@ -93,8 +93,24 @@ input[type="number"] {
   --grey-600: #262727;
   --grey-700: #101111;
   --grey-base: #666966;
+  --color-neutral-50: oklch(0.985 0 0);
+  --color-neutral-100: oklch(0.97 0 0);
+  --color-neutral-200: oklch(0.922 0 0);
+  --color-neutral-300: oklch(0.87 0 0);
+  --color-neutral-400: oklch(0.708 0 0);
+  --color-neutral-500: oklch(0.556 0 0);
+  --color-neutral-600: oklch(0.439 0 0);
+  --color-neutral-700: oklch(0.371 0 0);
+  --color-neutral-800: oklch(0.269 0 0);
+  --color-neutral-900: oklch(0.205 0 0);
+  --color-neutral-950: oklch(0.145 0 0);
 
   /* COLOR (layer 2) */
+
+  /* neutral */
+  --color-neutral-primary: white;
+  --color-on-neutral-primary: var(--color-neutral-600);
+  --color-on-neutral-primary-strong: var(--color-neutral-900);
 
   /* background */
   --color-bg: #fff; /* Main app/page background */
@@ -220,6 +236,11 @@ input[type="number"] {
 
 [data-theme="dark"] {
   /* COLOR (layer 2) */
+
+  /* neutral */
+  --color-neutral-primary: var(--color-neutral-950);
+  --color-on-neutral-primary: var(--color-neutral-300);
+  --color-on-neutral-primary-strong: white;
 
   /* background */
   --color-bg: #333; /* Main app/page background */

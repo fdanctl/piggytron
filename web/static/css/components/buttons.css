@@ -1,12 +1,3 @@
-.reset-btn {
-  background: none;
-  border: none;
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
@@ -168,4 +159,18 @@
   position: relative;
   height: fit-content;
   width: fit-content;
+}
+
+.reset-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.btn---no-focus:focus {
+  outline: none;
+  box-shadow: none !important;
 }

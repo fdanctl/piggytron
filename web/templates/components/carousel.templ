@@ -1,0 +1,72 @@
+package components
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+)
+
+templ Carousel(
+	class string,
+	items []templ.Component,
+	buttons bool,
+	indicators bool,
+	btnHoverDiscoverable bool,
+	attrs templ.Attributes,
+) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := hex.EncodeToString(b)
+
+		fmt.Println(id)
+	}}
+	<ul
+		class={ "carousel", templ.KV(class, class != ""), templ.KV("carousel--with-btns", buttons), templ.KV("carousel--with-indicators", indicators), templ.KV("carousel--btns-discoverable", btnHoverDiscoverable) }
+		style={ fmt.Sprintf("--anchor-id: --%s;", id) }
+		{ attrs... }
+	>
+		for i, v := range items {
+			<li data-label={ fmt.Sprintf("Slide %d", i) }>
+				@v
+			</li>
+		}
+	</ul>
+}
+
+templ CarouselCard(
+	class string,
+	title string,
+	items []templ.Component,
+	buttons bool,
+	indicators bool,
+	btnHoverDiscoverable bool,
+	attrs templ.Attributes,
+) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := hex.EncodeToString(b)
+
+		fmt.Println(id)
+	}}
+	<div class="carousel__card card" style={ fmt.Sprintf("--anchor-id: --%s; anchor-name: --%s;", id, id) }>
+		<h6 class="card__title">{ title }</h6>
+		<ul
+			class={ "carousel", templ.KV(class, class != ""), templ.KV("carousel--with-btns", buttons), templ.KV("carousel--with-indicators", indicators), templ.KV("carousel--btns-discoverable", btnHoverDiscoverable) }
+			{ attrs... }
+		>
+			for i, v := range items {
+				<li data-label={ fmt.Sprintf("Slide %d", i) }>
+					@v
+				</li>
+			}
+		</ul>
+	</div>
+}

@@ -6,8 +6,47 @@ import (
 	"time"
 )
 
+templ justTxt(txt string) {
+	<p>{ txt }</p>
+}
+
+templ mockCardContent(title string) {
+	<div
+		class="chart-container"
+	>
+		@components.Loader("h-full", nil)
+	</div>
+}
+
 templ Test() {
 	<h1 class="text-2xl font-bold mb-lg">Component & Icon Test Page</h1>
+	<!-- ============================================================ -->
+	<!-- Carousels                                                   -->
+	<!-- ============================================================ -->
+	<section>
+		<h2 class="text-xl font-semibold mb-md" style="border-bottom: 2px solid var(--color-primary); padding-bottom: 0.5rem;">
+			Carousels
+		</h2>
+		<div class="flex items-end gap-md mb-md">
+			@components.Carousel(
+				"card",
+				[]templ.Component{mockCardContent("item 1"), mockCardContent("item 2"), mockCardContent("item 3")},
+				true,
+				true,
+				false,
+				nil,
+			)
+			@components.CarouselCard(
+				"",
+				"Titulo",
+				[]templ.Component{mockCardContent("item 1"), mockCardContent("item 2"), mockCardContent("item 3")},
+				true,
+				true,
+				true,
+				nil,
+			)
+		</div>
+	</section>
 	<!-- ============================================================ -->
 	<!-- BUTTONS                                                        -->
 	<!-- ============================================================ -->
