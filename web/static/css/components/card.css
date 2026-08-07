@@ -22,6 +22,16 @@
   }
 }
 
+.card--danger {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background-color: oklch(from var(--color-error-lighter) l c h / 10%);
+
+  .card__title {
+    color: var(--color-error);
+  }
+}
+
 /* bank net worth card */
 .metric-container {
   display: flex;

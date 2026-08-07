@@ -8,17 +8,17 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-type ProfileHandler struct {
+type AccountHandler struct {
 	userService *appuser.Service
 }
 
-func NewProfileHandler(us *appuser.Service) *ProfileHandler {
-	return &ProfileHandler{
+func NewAccountHandler(us *appuser.Service) *AccountHandler {
+	return &AccountHandler{
 		userService: us,
 	}
 }
 
-func (h *ProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -27,10 +27,10 @@ func (h *ProfileHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *ProfileHandler) Get(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) Get(w http.ResponseWriter, r *http.Request) {
 	pf := views.NewProfileForm("User")
 	cpf := views.NewChangePasswordForm()
-	content := pages.Profile(
+	content := pages.Account(
 		views.BreadcrumbsView{
 			Items: []views.BreadcrumbsLink{
 				{Href: "", Name: "Account settings"},
@@ -40,5 +40,5 @@ func (h *ProfileHandler) Get(w http.ResponseWriter, r *http.Request) {
 		*pf,
 		*cpf,
 	)
-	renderWithMainLayout(w, r, "Categories", content)
+	renderWithMainLayout(w, r, "Account", content)
 }

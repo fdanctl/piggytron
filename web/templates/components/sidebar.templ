@@ -76,16 +76,16 @@ templ Sidebar() {
 						hx-target="#content"
 						hx-boost="true"
 						data-afterrequest="ui.nav.navigate"
-						href="/profile"
-					>Profile</a>
+						href="/account"
+					>Account</a>
 				</li>
 				<li>
 					<a
 						hx-target="#content"
 						hx-boost="true"
 						data-afterrequest="ui.nav.navigate"
-						href="settings"
-					>Settings</a>
+						href="/preferences"
+					>Preferences</a>
 				</li>
 				<li>
 					@ButtonWithIcon("Logout", "reset-btn", BtnGhost, BtnSmall,

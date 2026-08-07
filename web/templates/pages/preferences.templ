@@ -1,0 +1,118 @@
+package pages
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ Preferences(
+	bview views.BreadcrumbsView,
+	regionForm views.RegionForm,
+) {
+	@components.Breadcrumbs(bview)
+	<div class="card">
+		<h6 class="card__title">Appearance</h6>
+		<div class="grid grid-cols-3 gap-sm">
+			@themeOption("light")
+			@themeOption("dark")
+			@themeOption("system")
+		</div>
+		<p class="mt-sm text-sm text-muted">
+			Always use the light appearance.
+		</p>
+		<p class="mt-sm text-sm text-muted">
+			Always use the dark appearance.
+		</p>
+		<p class="mt-sm text-sm text-muted">
+			Matches your device's system setting.
+		</p>
+	</div>
+	<form class="card mt-md">
+		<h6 class="card__title">Region</h6>
+		<div class="grid grid-cols-3 gap-sm">
+			@components.SelectGroup(
+				"",
+				"Currency",
+				regionForm.Currency,
+				"-- Select currency --",
+				[]components.SelectOption{
+					{
+						Label: "EUR",
+						Value: "EUR",
+					},
+				},
+				views.StringArrToStr(regionForm.ValidateCurrency()),
+				regionForm.CurrencyHasError(),
+				true,
+				templ.Attributes{
+					"id":   "currency",
+					"name": "currency",
+				},
+			)
+			@components.SelectGroup(
+				"",
+				"Locale",
+				regionForm.Language,
+				"-- Select language --",
+				[]components.SelectOption{
+					{
+						Label: "English (US)",
+						Value: "en_US",
+					},
+				},
+				views.StringArrToStr(regionForm.ValidateLanguage()),
+				regionForm.LanguageHasError(),
+				true,
+				templ.Attributes{
+					"id":   "language",
+					"name": "language",
+				},
+			)
+			@components.SelectGroup(
+				"",
+				"Language",
+				regionForm.Language,
+				"-- Select language --",
+				[]components.SelectOption{
+					{
+						Label: "English (US)",
+						Value: "en_US",
+					},
+				},
+				views.StringArrToStr(regionForm.ValidateLanguage()),
+				regionForm.LanguageHasError(),
+				true,
+				templ.Attributes{
+					"id":   "language",
+					"name": "language",
+				},
+			)
+		</div>
+		<p class="mt-sm text-sm text-muted">
+			An amount like 1,234.56 will show as <span id="amount-formated">€1,234.56</span>.
+		</p>
+		<div class="flex justify-end mt-md">
+			@components.Button("Save changes", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"type": "submit"})
+		</div>
+	</form>
+}
+
+templ themeOption(theme string) {
+	<button class="reset-btn theme-option theme-option__selected" onclick="console.log(this.dataset.theme);">
+		<div class={ "theme-option__swatch", fmt.Sprintf("theme-option__swatch--%s", theme) }>
+			<div class="bar"></div>
+			if theme == "system" {
+				<div class="theme-option__swatch theme-option__swatch--dark theme-option__swatch--clip">
+					<div class="bar"></div>
+				</div>
+			}
+		</div>
+		<div class="theme-option__label">
+			<span>{ theme }</span>
+			<div class="theme-option__check">
+				@components.CheckSvg(12, "", "")
+			</div>
+		</div>
+	</button>
+}

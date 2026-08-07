@@ -105,6 +105,12 @@ input[type="number"] {
   --color-neutral-900: oklch(0.205 0 0);
   --color-neutral-950: oklch(0.145 0 0);
 
+  /* to work with the theme option */
+  --color-bg-light: oklch(1 0 0);
+  --color-bg-secondary-light: oklch(0.968 0.007 197);
+  --color-bg-dark: oklch(0.3211 0 0);
+  --color-bg-secondary-dark: oklch(0.338 0.004 197);
+
   /* COLOR (layer 2) */
 
   /* neutral */
@@ -113,8 +119,8 @@ input[type="number"] {
   --color-on-neutral-primary-strong: var(--color-neutral-900);
 
   /* background */
-  --color-bg: oklch(1 0 0); /* Main app/page background */
-  --color-bg-secondary: oklch(0.968 0.007 197); /* Sub-sections */
+  --color-bg: var(--color-bg-light); /* Main app/page background */
+  --color-bg-secondary: var(--color-bg-secondary-light); /* Sub-sections */
   --color-bg-muted: oklch(0.859 0.019 196.8); /* Subtle backgrounds */
   --color-surface: oklch(0.973 0.003 84.6); /* Cards, panels, modals */
   --color-surface-hover: oklch(0.968 0.007 197); /* Hovered card */
@@ -249,8 +255,8 @@ input[type="number"] {
   --color-on-neutral-primary-strong: white;
 
   /* background */
-  --color-bg: oklch(0.3211 0 0); /* Main app/page background */
-  --color-bg-secondary: oklch(0.338 0.004 197); /* Sub-sections */
+  --color-bg: var(--color-bg-dark); /* Main app/page background */
+  --color-bg-secondary: var(--color-bg-secondary-dark); /* Sub-sections */
   --color-bg-muted: oklch(0.445 0.017 196.5); /* Subtle backgrounds */
   --color-surface: oklch(0.3407 0 0); /* Cards, panels, modals */
   --color-surface-hover: oklch(0.33329 0 0); /* Hovered card */

@@ -21,11 +21,13 @@
 @import url("./css/components/transaction-filters.css");
 @import url("./css/components/toast.css");
 @import url("./css/components/tooltip.css");
+@import url("./css/pages/account.css");
 @import url("./css/pages/bank.css");
 @import url("./css/pages/banks.css");
 @import url("./css/pages/budget.css");
 @import url("./css/pages/categories.css");
 @import url("./css/pages/dashboard.css");
 @import url("./css/pages/goal.css");
+@import url("./css/pages/preferences.css");
 @import url("./css/layouts.css");
 @import url("./css/utilities.css");

@@ -6,40 +6,11 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ Profile(
+templ Account(
 	bview views.BreadcrumbsView,
 	profileForm views.ProfileForm,
 	changePasswordForm views.ChangePasswordForm,
 ) {
-	<style>
-		.card.mt-lg .input-group {
-			flex: 1;
-		}
-
-		.avatar__overlay {
-			position: absolute;
-			background-color: oklch(from var(--color-neutral-primary) l c h / 40%);
-			backdrop-filter: blur(1px);
-			top: 0;
-			left: 0;
-			border-radius: var(--radius-full);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			color: var(--color-on-neutral-primary);
-			opacity: 0;
-			transition: opacity 200ms;
-			cursor: pointer;
-		}
-
-		.avatar__with-overlay {
-			position: relative;
-
-			&:hover .avatar__overlay {
-				opacity: 1;
-			}
-		}
-	</style>
 	@components.Breadcrumbs(bview)
 	<div class="card">
 		<h6 class="card__title">Profile Information</h6>
@@ -82,9 +53,9 @@ templ Profile(
 			</form>
 		</div>
 	</div>
-	<form class="card mt-lg">
+	<form class="card mt-md">
 		<h6 class="card__title">Change Password</h6>
-		<div class="flex w-full gap-sm">
+		<div class="grid grid-cols-3 gap-sm">
 			@components.InputGroup(
 				"",
 				"Current Password",
@@ -129,4 +100,26 @@ templ Profile(
 			@components.Button("Update password", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"type": "submit"})
 		</div>
 	</form>
+	<div class="card card--danger mt-md">
+		<h6 class="card__title">Danger zone</h6>
+		<div class="flex items-center gap-sm">
+			@components.ShieldAlertSvg(0, "", "block")
+			<div style="flex: 1;">
+				<p>Delete account</p>
+				<p
+					class="text-muted text-sm"
+					style="margin-top: calc(-1*var(--spacing-xs)"
+				>Permanently deletes your account and all associated data.</p>
+			</div>
+			@components.Button("Delete account", "h-fit", components.BtnDestructive, components.BtnMedium, nil)
+		</div>
+	</div>
+	<div class="display flex flex-col items-center gap-xs mt-md">
+		@components.ButtonWithIcon("Logout", "btn--destructive-hover", components.BtnGhost, components.BtnMedium, templ.Attributes{
+			"hx-get": "/partials/auth/logout",
+		}, components.IconRigth, components.LogOutSvg(0, "", ""))
+		@components.ButtonWithIcon("Logout of all devices", "btn--destructive-hover", components.BtnGhost, components.BtnMedium, templ.Attributes{
+			"hx-get": "/partials/auth/logout",
+		}, components.IconRigth, components.LogOutSvg(0, "", ""))
+	</div>
 }
