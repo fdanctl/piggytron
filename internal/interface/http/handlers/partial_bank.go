@@ -49,7 +49,6 @@ func (h *BankHandler) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -67,7 +66,6 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
-		logger.Info("invalid form", "error", msgs)
 		w.WriteHeader(http.StatusUnprocessableEntity)
 		partials.BankForm(view).Render(r.Context(), w)
 		return

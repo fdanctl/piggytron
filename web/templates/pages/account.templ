@@ -3,6 +3,7 @@ package pages
 import (
 	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
@@ -14,7 +15,7 @@ templ Account(
 	@components.Breadcrumbs(bview)
 	<div class="card">
 		<h6 class="card__title">Profile Information</h6>
-		<div class="flex gap-md">
+		<div class="grid gap-md" style="grid-template-columns: auto 1fr">
 			<div class="flex flex-col items-center gap-xs">
 				<div class="avatar__with-overlay">
 					@components.Avatar("", "", components.XXL)
@@ -34,72 +35,10 @@ templ Account(
 				</div>
 				@components.Button("Edit photo", "mt-xs", components.BtnOutline, components.BtnSmall, templ.Attributes{"type": "submit", "data-action": "ui.element.click", "data-target": "#upload"})
 			</div>
-			<form style="flex: 1">
-				@components.InputGroup(
-					"",
-					"Name",
-					views.StringArrToStr(profileForm.ValidateName()),
-					profileForm.NameHasError(),
-					true,
-					templ.Attributes{"id": "name",
-						"type":        "text",
-						"name":        "name",
-						"placeholder": "Name",
-						"value":       profileForm.Name,
-					})
-				<div class="flex justify-end mt-lg">
-					@components.Button("Save profile", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"type": "submit"})
-				</div>
-			</form>
+			@partials.ProfileForm(profileForm)
 		</div>
 	</div>
-	<form class="card mt-md">
-		<h6 class="card__title">Change Password</h6>
-		<div class="grid grid-cols-3 gap-sm">
-			@components.InputGroup(
-				"",
-				"Current Password",
-				views.StringArrToStr(changePasswordForm.ValidateCurrentPassword()),
-				changePasswordForm.CurrentPasswordHasError(),
-				true,
-				templ.Attributes{
-					"id":    "current-password",
-					"type":  "password",
-					"name":  "current-password",
-					"value": changePasswordForm.CurrentPassword,
-				},
-			)
-			@components.InputGroup(
-				"",
-				"New Password",
-				"",
-				changePasswordForm.NewPasswordHasError(),
-				true,
-				templ.Attributes{
-					"id":    "new-password",
-					"type":  "password",
-					"name":  "new-password",
-					"value": changePasswordForm.NewPassword,
-				},
-			)
-			@components.InputGroup(
-				"",
-				"Confirm New Password",
-				views.StringArrToStr(changePasswordForm.ValidateNewPassword()),
-				changePasswordForm.NewPasswordHasError(),
-				true,
-				templ.Attributes{
-					"id":    "new-password-confirm",
-					"type":  "password",
-					"name":  "new-password-confirm",
-					"value": changePasswordForm.NewPasswordConfirm,
-				},
-			)
-		</div>
-		<div class="flex justify-end mt-lg">
-			@components.Button("Update password", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"type": "submit"})
-		</div>
-	</form>
+	@partials.ChangePasswordForm(changePasswordForm)
 	<div class="card card--danger mt-md">
 		<h6 class="card__title">Danger zone</h6>
 		<div class="flex items-center gap-sm">
@@ -119,7 +58,7 @@ templ Account(
 			"hx-get": "/partials/auth/logout",
 		}, components.IconRigth, components.LogOutSvg(0, "", ""))
 		@components.ButtonWithIcon("Logout of all devices", "btn--destructive-hover", components.BtnGhost, components.BtnMedium, templ.Attributes{
-			"hx-get": "/partials/auth/logout",
+			"hx-get": "/partials/auth/logout?all=t",
 		}, components.IconRigth, components.LogOutSvg(0, "", ""))
 	</div>
 }

@@ -24,7 +24,8 @@ func (r *UserRepository) Create(ctx context.Context, u *user.User) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO users (id, name, password_hash, created_at, updated_at)
-		 VALUES($1,$2,$3,$4,$5)`,
+		 VALUES($1,$2,$3,$4,$5)
+		`,
 		u.ID(),
 		u.Name(),
 		u.PasswordHash(),
@@ -45,6 +46,55 @@ func (r *UserRepository) Create(ctx context.Context, u *user.User) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepository) UpdateName(ctx context.Context, id user.ID, name string) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`
+		UPDATE users
+		SET
+			name = $1,
+			updated_at = $2
+		WHERE
+			id = $3`,
+		name,
+		time.Now(),
+		id,
+	)
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return user.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (r *UserRepository) Update(ctx context.Context, user *user.User) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`
+		UPDATE users
+		SET
+			name = $2,
+			password_hash = $3,
+			updated_at = $4
+		WHERE
+			id = $1`,
+		user.ID(),
+		user.Name(),
+		user.PasswordHash(),
+		user.UpdatedAt(),
+	)
+	return err
 }
 
 func (r *UserRepository) FindByID(ctx context.Context, id user.ID) (*user.User, error) {

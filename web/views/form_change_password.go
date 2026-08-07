@@ -1,5 +1,11 @@
 package views
 
+import (
+	"errors"
+
+	"github.com/fdanctl/piggytron/internal/domain/user"
+)
+
 type ChangePasswordForm struct {
 	Form
 
@@ -18,12 +24,14 @@ func (v *ChangePasswordForm) ValidateCurrentPassword() (msgs []string) {
 	if v.Initial {
 		return
 	}
+
+	if errors.Is(v.CustomError, user.ErrWrongPassword) {
+		msgs = append(msgs, v.ErrorMsg)
+	}
 	if v.CurrentPassword == "" {
 		msgs = append(msgs, "Current password is required")
 	}
-	// if errors.Is(v.CustomError, user.ErrWrongPassword) {
-	// 	msgs = append(msgs, "Unable to verify password")
-	// }
+
 	return msgs
 }
 
@@ -35,6 +43,7 @@ func (v *ChangePasswordForm) ValidateNewPassword() (msgs []string) {
 	if v.Initial {
 		return
 	}
+
 	if v.NewPassword == "" {
 		msgs = append(msgs, "Password is required")
 	}

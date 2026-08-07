@@ -22,7 +22,7 @@ SET row_security = off;
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.users VALUES ('b1486155-eb83-46c5-9f77-2d1e7673d36d', 'gopher', '$argon2id$v=19$m=65536,t=1,p=4$gmqRhs4/Neoo708g05eW8A$fpWmdn+np0pi31xsvBqwEmcXaVnGGxwnD3NPnAHrm9k', '2026-03-01 00:00:00', '2026-03-01 00:00:00');
+INSERT INTO public.users VALUES ('b1486155-eb83-46c5-9f77-2d1e7673d36d', 'gopher', '$argon2id$v=19$m=65536,t=1,p=4$gmqRhs4/Neoo708g05eW8A$fpWmdn+np0pi31xsvBqwEmcXaVnGGxwnD3NPnAHrm9k', 1, '2026-03-01 00:00:00', '2026-03-01 00:00:00');
 
 
 --

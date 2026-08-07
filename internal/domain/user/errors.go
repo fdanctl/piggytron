@@ -8,4 +8,5 @@ var (
 	ErrInvalidPassword = errors.New("invalid password")
 	ErrDuplicate       = errors.New("name already exists")
 	ErrNotFound        = errors.New("user don't exists")
+	ErrWrongPassword   = errors.New("password does not match")
 )

@@ -1,0 +1,31 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ ProfileForm(v views.ProfileForm) {
+	<form
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/user/change-name"
+		hx-swap="outerHTML"
+		novalidate
+	>
+		@components.InputGroup(
+			"",
+			"Name",
+			views.StringArrToStr(v.ValidateName()),
+			v.NameHasError(),
+			true,
+			templ.Attributes{"id": "name",
+				"type":        "text",
+				"name":        "name",
+				"placeholder": "Name",
+				"value":       v.Name,
+			})
+		<div class="flex justify-end mt-lg">
+			@components.Button("Save profile", "", components.BtnPrimary, components.BtnMedium, templ.Attributes{"type": "submit"})
+		</div>
+	</form>
+}

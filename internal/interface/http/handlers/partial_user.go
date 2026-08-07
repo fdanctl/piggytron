@@ -2,156 +2,67 @@ package handlers
 
 import (
 	"net/http"
-	"net/url"
 
+	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appuser"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
-	"github.com/fdanctl/piggytron/internal/interface/http/shared"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 type UserHandler struct {
-	service     *appuser.Service
-	cookieMaker *shared.CookieMaker
+	service *appuser.Service
 }
 
-func NewUserHandler(s *appuser.Service, cm *shared.CookieMaker) *UserHandler {
+func NewUserHandler(s *appuser.Service) *UserHandler {
 	return &UserHandler{
-		service:     s,
-		cookieMaker: cm,
+		service: s,
 	}
 }
 
 func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	action := r.PathValue("action")
-	if action == "" {
-		http.Error(w, "", http.StatusInternalServerError)
-		return
-	}
-
-	switch action {
-
-	case "login":
-		switch r.Method {
-
-		case http.MethodPost:
-			h.LoginPost(w, r)
-
-		default:
-			http.NotFound(w, r)
-		}
-
-	case "signup":
-		switch r.Method {
-
-		case http.MethodPost:
-			h.SignupPost(w, r)
-
-		default:
-			http.NotFound(w, r)
-		}
-
-	case "logout":
-		switch r.Method {
-
-		case http.MethodGet:
-			h.LogoutGet(w, r)
-
-		default:
-			http.NotFound(w, r)
-		}
+	switch r.Method {
+	case http.MethodPost:
+		h.Post(w, r)
 
 	default:
 		http.NotFound(w, r)
-
 	}
 }
 
-func (h *UserHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	name := r.FormValue("name")
-	pwd := r.FormValue("password")
-	redirect := r.FormValue("redirect")
-	view := views.LoginView{
-		Redirect: redirect,
-		Name:     name,
-		Password: pwd,
-	}
-	msgs := view.Validate()
-
-	// invalid form
-	if len(msgs) > 0 {
-		logger.Info("invalid form", "error", msgs)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.LoginForm(view).Render(r.Context(), w)
+func (h *UserHandler) Post(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
 		return
 	}
 
-	sid, err := h.service.LoginUser(r.Context(), name, pwd)
+	view := views.ProfileForm{
+		Name: r.FormValue("name"),
+	}
+
+	view.Initial = false
+	msgs := view.Validate()
+	if len(msgs) > 0 {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		partials.ProfileForm(view).Render(r.Context(), w)
+		return
+	}
+
+	err = h.service.ChangeName(r.Context(), sessionInfo.UserID, view.Name)
 	if err != nil {
 		view.SetError(err)
-		form := partials.LoginForm(view)
-		httperror.SendFormError(w, r, err, form)
+		httperror.SendFormError(w, r, err, partials.ProfileForm(view))
 		return
 	}
 
-	u, err := url.Parse(redirect)
-	if err != nil || u.IsAbs() || u.Host != "" {
-		redirect = "/"
-	}
-
-	http.SetCookie(w, h.cookieMaker.NewCookie(sid))
-	w.Header().Set("HX-Redirect", redirect)
-	w.WriteHeader(http.StatusSeeOther)
-}
-
-func (h *UserHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	name := r.FormValue("name")
-	pwd := r.FormValue("password")
-	pwdConf := r.FormValue("password-confirm")
-	view := views.SignupView{
-		Name:            name,
-		Password:        pwd,
-		PasswordConfirm: pwdConf,
-	}
-	msgs := view.Validate()
-
-	// invalid form
-	if len(msgs) > 0 {
-		logger.Info("invalid form", "error", msgs)
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		partials.SignupForm(view).Render(r.Context(), w)
-		return
-	}
-
-	sid, err := h.service.CreateUser(r.Context(), name, pwd)
-	if err != nil {
-		view.SetError(err)
-		form := partials.SignupForm(view)
-		httperror.SendFormError(w, r, err, form)
-		return
-	}
-
-	http.SetCookie(w, h.cookieMaker.NewCookie(sid))
-	w.Header().Set("HX-Redirect", "/")
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (h *UserHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
-	cookie, _ := r.Cookie("session_id")
-
-	err := h.service.LogoutUser(r.Context(), cookie.Value)
-	if err != nil {
-		logger.Error("error on logout", "error", err)
-		http.Error(w, "", http.StatusInternalServerError)
-		return
-	}
-
-	http.SetCookie(w, h.cookieMaker.RevokeCookie())
-	w.Header().Set("HX-Redirect", "")
-	w.WriteHeader(http.StatusNoContent)
+	templ.Join(
+		partials.ProfileForm(view),
+		components.SendToast(
+			components.Success,
+			"User name updated",
+		),
+	).Render(r.Context(), w)
 }

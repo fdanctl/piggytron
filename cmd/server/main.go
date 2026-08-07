@@ -189,8 +189,11 @@ func main() {
 	// partials mux - returns HTMX fragments
 	partialsMux := http.NewServeMux()
 
-	userHandler := handlers.NewUserHandler(userService, sessionCM)
-	partialsMux.Handle("/partials/auth/{action}", userHandler)
+	authHandler := handlers.NewAuthHandler(userService, sessionCM)
+	partialsMux.Handle("/partials/auth/{action}", authHandler)
+
+	userHandler := handlers.NewUserHandler(userService)
+	partialsMux.Handle("/partials/user/change-name", userHandler)
 
 	budgetHandler := handlers.NewBudgetHandler(
 		budgetService,

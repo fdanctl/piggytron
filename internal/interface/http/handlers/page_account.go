@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appuser"
+	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -28,7 +30,19 @@ func (h *AccountHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AccountHandler) Get(w http.ResponseWriter, r *http.Request) {
-	pf := views.NewProfileForm("User")
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	u, err := h.userService.FindByID(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	pf := views.NewProfileForm(u.Name())
 	cpf := views.NewChangePasswordForm()
 	content := pages.Account(
 		views.BreadcrumbsView{

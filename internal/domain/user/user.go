@@ -31,7 +31,11 @@ func New(id ID, name, passwordHash string) (*User, error) {
 	}, nil
 }
 
-func Rehydrate(id ID, name, passwordHash string, createdAt, updatedAt time.Time) *User {
+func Rehydrate(
+	id ID,
+	name, passwordHash string,
+	createdAt, updatedAt time.Time,
+) *User {
 	return &User{
 		id:           id,
 		name:         name,
@@ -39,6 +43,13 @@ func Rehydrate(id ID, name, passwordHash string, createdAt, updatedAt time.Time)
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
 	}
+}
+
+func ValidateName(name string) error {
+	if name == "" || len(name) > 50 {
+		return ErrInvalidName
+	}
+	return nil
 }
 
 func (u *User) ID() ID {
@@ -70,4 +81,11 @@ func (u *User) ChangeName(name string) error {
 	return nil
 }
 
-// TODO change password
+func (u *User) ChangePassword(passwordHash string) error {
+	if passwordHash == "" {
+		return ErrInvalidPassword
+	}
+	u.passwordHash = passwordHash
+	u.updatedAt = time.Now()
+	return nil
+}
