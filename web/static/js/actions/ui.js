@@ -102,8 +102,18 @@ function removeEle({ ele, data }) {
   t.remove();
 }
 
+function clickEle({ ele, data }) {
+  let t = ele;
+  if (data.target) {
+    t = getTarget(ele, data.target);
+  }
+  t.click();
+}
+
 export const uiActions = {
   "ui.element.remove": removeEle,
+
+  "ui.element.click": clickEle,
 
   "ui.calendar.prev-month": prevMonth,
 

@@ -175,6 +175,9 @@ func main() {
 	sh := handlers.SignupHandler{}
 	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
 
+	ph := handlers.NewProfileHandler(userService)
+	webMux.Handle("/profile", middleware.AuthProtectedRoute(ph))
+
 	if cfg.IsDev {
 		th := handlers.TestHandler{}
 		webMux.Handle("/test", &th)

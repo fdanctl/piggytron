@@ -1,5 +1,18 @@
 package components
 
+import "fmt"
+
+type size string
+
+const (
+	XS  = "xs"
+	SM  = "sm"
+	MD  = "md"
+	LG  = "lg"
+	XL  = "xl"
+	XXL = "2xl"
+)
+
 templ Logo() {
 	<div class="logo unselectable">
 		<img src="/static/assets/logos/logoAsset2.svg" width="32px"/>
@@ -13,18 +26,24 @@ templ Notification() {
 	</div>
 }
 
-templ Avatar(src string) {
+var SizeMap map[size]int = map[size]int{
+	XS:  6,
+	SM:  8,
+	MD:  10,
+	LG:  14,
+	XL:  20,
+	XXL: 24,
+}
+
+templ Avatar(class, src string, size size) {
 	if src != "" {
-		<div class="flex justify-center items-center">
-			<img
-				class="rounded-full object-cover"
-				style="width: 32px; height: 32px;"
-				src={ src }
-				alt="Rounded avatar"
-			/>
-		</div>
+		<img
+			class={ "rounded-full object-cover", fmt.Sprintf("size-%d", SizeMap[size]) }
+			src={ src }
+			alt="Rounded avatar"
+		/>
 	} else {
-		<span class="avatar">
+		<span class={ "avatar", fmt.Sprintf("size-%d", SizeMap[size]), templ.KV(class, class != "") }>
 			@UserSvg(0, "", "")
 		</span>
 	}
@@ -32,7 +51,7 @@ templ Avatar(src string) {
 
 templ ProfilePic(showNotification bool) {
 	<div class="pfp">
-		@Avatar("")
+		@Avatar("", "", SM)
 		if showNotification {
 			@Notification()
 		}

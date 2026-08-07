@@ -1,7 +1,5 @@
 .avatar {
   display: flex;
-  width: 2rem;
-  height: 2rem;
   align-items: center;
   justify-content: center;
   overflow: hidden;
@@ -9,6 +7,12 @@
   border: 0.5px solid var(--color-border);
   color: var(--color-border);
   background-color: var(--color-surface);
+}
+
+.avatar svg {
+  width: 80%;
+  height: 80%;
+  display: block;
 }
 
 /* === sidebar == */
@@ -305,13 +309,8 @@ html:not(.is-sidebar-collapsed) #sidebar .sidebar__user:focus {
   position: relative;
   width: fit-content;
   height: fit-content;
-}
-
-.pfp div:first-child {
-  width: 32px;
-  aspect-ratio: 1/1;
-  border-radius: 100%;
-  background-color: grey;
+  display: flex;
+  place-items: center center;
 }
 
 .header {
