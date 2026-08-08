@@ -56,6 +56,7 @@ import {
   prevBudgetMonth,
 } from "../month-pill";
 import { hidePopover, showPopover } from "../tooltip";
+import { selectTheme, themeOptionSelect } from "../theme";
 
 function queryNextSelector(ele, selector) {
   const results = ele.parentElement.querySelectorAll(selector);
@@ -114,6 +115,8 @@ export const uiActions = {
   "ui.element.remove": removeEle,
 
   "ui.element.click": clickEle,
+
+  "ui.theme.select": selectTheme,
 
   "ui.calendar.prev-month": prevMonth,
 
@@ -214,4 +217,6 @@ export const uiActions = {
   "ui.popover.show": showPopover,
 
   "ui.popover.hide": hidePopover,
+
+  "ui.theme-option.select": themeOptionSelect,
 };

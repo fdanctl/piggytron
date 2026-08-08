@@ -53,6 +53,7 @@
 }
 
 .theme-option__swatch--clip {
+  border-color: transparent;
   position: absolute;
   clip-path: polygon(0 0, 100% 0, 100% 100%);
   top: 0;

@@ -13,20 +13,42 @@ templ Preferences(
 	@components.Breadcrumbs(bview)
 	<div class="card">
 		<h6 class="card__title">Appearance</h6>
-		<div class="grid grid-cols-3 gap-sm">
+		<div id="theme-grid" class="grid grid-cols-3 gap-sm">
 			@themeOption("light")
 			@themeOption("dark")
 			@themeOption("system")
 		</div>
-		<p class="mt-sm text-sm text-muted">
-			Always use the light appearance.
-		</p>
-		<p class="mt-sm text-sm text-muted">
-			Always use the dark appearance.
-		</p>
-		<p class="mt-sm text-sm text-muted">
-			Matches your device's system setting.
-		</p>
+		<div>
+			<p class="mt-sm text-sm text-muted hidden" data-hint="light">
+				Always use the light appearance.
+			</p>
+			<p class="mt-sm text-sm text-muted hidden" data-hint="dark">
+				Always use the dark appearance.
+			</p>
+			<p class="mt-sm text-sm text-muted hidden" data-hint="system">
+				Matches your device's system setting.
+			</p>
+		</div>
+		<script>
+			const t = localStorage.getItem("theme") || "system";
+			const parent = document.getElementById("theme-grid");
+			const opts = parent.querySelectorAll(".theme-option");
+
+			for (let i = 0; i < opts.length; i++) {
+				const e = opts[i];
+				e.classList.toggle("theme-option__selected", e.dataset.value === t);
+			}
+
+			const hints = parent.nextElementSibling.querySelectorAll("[data-hint]");
+			for (let i = 0; i < opts.length; i++) {
+				const e = hints[i];
+				if (e.dataset.hint === t) {
+					e.classList.remove("hidden");
+				} else {
+					e.classList.add("hidden");
+				}
+			}
+		</script>
 	</div>
 	<form class="card mt-md">
 		<h6 class="card__title">Region</h6>
@@ -65,8 +87,8 @@ templ Preferences(
 				regionForm.LanguageHasError(),
 				true,
 				templ.Attributes{
-					"id":   "language",
-					"name": "language",
+					"id":   "locale",
+					"name": "locale",
 				},
 			)
 			@components.SelectGroup(
@@ -99,7 +121,11 @@ templ Preferences(
 }
 
 templ themeOption(theme string) {
-	<button class="reset-btn theme-option theme-option__selected" onclick="console.log(this.dataset.theme);">
+	<button
+		class="reset-btn theme-option"
+		data-value={ theme }
+		data-action="ui.theme.select ui.theme-option.select"
+	>
 		<div class={ "theme-option__swatch", fmt.Sprintf("theme-option__swatch--%s", theme) }>
 			<div class="bar"></div>
 			if theme == "system" {

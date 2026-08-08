@@ -34,6 +34,10 @@ html {
   view-transition-name: slide-lr;
 }
 
+html:active-view-transition-type(theme) #content {
+  view-transition-name: none;
+}
+
 #sidebar {
   display: none;
 

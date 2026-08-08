@@ -1,4 +1,5 @@
 // import "./js/calendar.js";
+import "./js/theme.js";
 import "./js/charts.js";
 // import "./js/filters-sheet.js";
 // import "./js/form.js";

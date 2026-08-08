@@ -1,4 +1,5 @@
 import { closeAllDialog, closeDialog, closeLastDialog } from "./navigation";
+import { getPreferedTheme } from "./theme";
 import { showToast } from "./toast";
 
 export function confirmModal({
@@ -100,6 +101,11 @@ document.body.addEventListener("htmx:sendError", function (ev) {
 
 document.body.addEventListener("htmx:timeout", function (ev) {
   showToast("error", "Request timed out");
+});
+
+document.body.addEventListener("htmx:configRequest", function (evt) {
+  // for the charts
+  evt.detail.headers["theme"] = getPreferedTheme();
 });
 
 // htmx custom events
