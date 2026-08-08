@@ -2,11 +2,11 @@ package redis
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/auth"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -24,44 +24,51 @@ func NewSessionStore(client *redis.Client) *SessionStore {
 	}
 }
 
-type SessionInfo struct {
-	UserID         string `redis:"user_id"`
-	SessionVersion uint   `redis:"session_version"`
+type SessionInfoDTO struct {
+	UserID  string `redis:"user_id"`
+	Version int    `redis:"session_version"`
 }
 
-func (s *SessionStore) Set(ctx context.Context, value *SessionInfo) (string, error) {
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
+func (s *SessionStore) Set(
+	ctx context.Context,
+	sessionID string,
+	value *auth.SessionInfo,
+) (string, error) {
+	dto := SessionInfoDTO{
+		UserID:  value.UserID,
+		Version: value.Version,
 	}
-	sessionID := hex.EncodeToString(b)
-
 	key := fmt.Sprint(sessionPrefix, sessionID)
-	err = s.client.HSet(ctx, key, *value).Err()
+	err := s.client.HSet(ctx, key, dto).Err()
 	s.client.Expire(ctx, key, time.Hour*24)
 
 	return sessionID, err
 }
 
-func (s *SessionStore) Get(ctx context.Context, sessionID string) *SessionInfo {
+func (s *SessionStore) Get(ctx context.Context, sessionID string) (*auth.SessionInfo, error) {
 	cmd := s.client.HGetAll(ctx, fmt.Sprint(sessionPrefix, sessionID))
 	m, err := cmd.Result()
 	if err != nil {
-		return nil
+		if errors.Is(err, redis.Nil) {
+			return nil, auth.ErrNotFound
+		}
+		return nil, err
 	}
 
 	if len(m) == 0 {
-		return nil
+		return nil, auth.ErrNotFound
 	}
-	var res SessionInfo
+	var res SessionInfoDTO
 	if err := cmd.Scan(&res); err != nil {
-		return nil
+		return nil, err
 	}
-	return &res
+	return &auth.SessionInfo{
+		UserID:  res.UserID,
+		Version: res.Version,
+	}, nil
 }
 
-func (s *SessionStore) Remove(ctx context.Context, sessionID string) error {
+func (s *SessionStore) Delete(ctx context.Context, sessionID string) error {
 	_, err := s.client.Del(ctx, fmt.Sprint(sessionPrefix, sessionID)).Result()
 	return err
 }

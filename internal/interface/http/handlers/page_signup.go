@@ -26,7 +26,7 @@ func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.SignupForm(*views.NewSignupView())
 	if r.Header.Get("Hx-Request") == "true" {
 		form.Render(r.Context(), w)
-		io.WriteString(w, "<title>Login</title>")
+		io.WriteString(w, "<title>Signup</title>")
 		return
 	}
 

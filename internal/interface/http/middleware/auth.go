@@ -2,18 +2,19 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/auth"
 )
 
 type ctxKey string
 
 const UserKey ctxKey = "user"
 
-func AuthMiddleware(store *rdb.SessionStore) func(http.Handler) http.Handler {
+func AuthMiddleware(sessionManager *auth.SessionManager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			logger := LoggerFromContext(r.Context())
@@ -24,22 +25,39 @@ func AuthMiddleware(store *rdb.SessionStore) func(http.Handler) http.Handler {
 				return
 			}
 
-			userInfo := store.Get(r.Context(), cookie.Value)
-			if userInfo != nil {
-				ctx := context.WithValue(r.Context(), UserKey, userInfo)
-
-				logger = logger.With(
-					slog.String("user_id", userInfo.UserID),
-				)
-
-				ctx = context.WithValue(ctx, LoggerKey, logger)
-
-				logger.Info("authenticated")
-				r = r.WithContext(ctx)
-
-			} else {
-				logger.Info("unauthenticated - expired")
+			userInfo, err := sessionManager.GetSession(r.Context(), cookie.Value)
+			if err != nil {
+				if errors.Is(err, auth.ErrNotFound) {
+					logger.Info("unauthenticated - expired")
+				} else {
+					logger.Error("redis failed to get session", "err", err)
+				}
+				next.ServeHTTP(w, r)
+				return
 			}
+
+			valid, err := sessionManager.ValidateSession(r.Context(), userInfo)
+			if err != nil {
+				logger.Error("redis failed to get session version", "err", err)
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			if !valid {
+				logger.Info("unauthenticated - revoked")
+				next.ServeHTTP(w, r)
+				return
+			}
+			ctx := context.WithValue(r.Context(), UserKey, userInfo)
+
+			logger = logger.With(
+				slog.String("user_id", userInfo.UserID),
+			)
+
+			ctx = context.WithValue(ctx, LoggerKey, logger)
+
+			logger.Info("authenticated")
+			r = r.WithContext(ctx)
 
 			next.ServeHTTP(w, r)
 		})

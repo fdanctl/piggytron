@@ -169,7 +169,7 @@ func (h *AuthHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err = h.service.LogoutUserFromAllDevices(r.Context(), sessionInfo.UserID, cookie.Value)
+		err = h.service.LogoutUserFromAllDevices(r.Context(), sessionInfo.UserID)
 		if err != nil {
 			logger.Error("error on logout from all devices", "error", err)
 			http.Error(w, "", http.StatusInternalServerError)

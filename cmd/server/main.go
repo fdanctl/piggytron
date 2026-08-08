@@ -18,6 +18,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
 	"github.com/fdanctl/piggytron/internal/application/appledger"
 	"github.com/fdanctl/piggytron/internal/application/appuser"
+	"github.com/fdanctl/piggytron/internal/auth"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
@@ -78,7 +79,11 @@ func main() {
 		cfg.HashConfig.KeyLen,
 		cfg.HashConfig.SaltLen,
 	)
+
 	sessionStore := rdb.NewSessionStore(client)
+	sessionVersionStore := rdb.NewSessionVersionStore(client)
+	sessionManager := auth.NewSessionManager(sessionStore, sessionVersionStore)
+
 	sessionCM := shared.NewCookieMaker(http.Cookie{
 		Name:     "session_id",
 		Value:    "",
@@ -107,7 +112,7 @@ func main() {
 	ledgerService := appledger.NewService(ledgerRepo, db)
 	expenseCatService := appexpensecategory.NewService(expenseCatRepo)
 	incomeCatService := appincomecategory.NewService(incomeCatRepo)
-	userService := appuser.NewService(userRepo, hasher, sessionStore)
+	userService := appuser.NewService(userRepo, hasher, sessionManager)
 	budgetService := appbudget.NewService(budgetRepo)
 
 	// web mux - returns full HTML page (or, in most cases, just the main element if Hx-Request)
@@ -324,7 +329,7 @@ func main() {
 			middleware.RecoveryMiddleware,
 			middleware.RequestIDMiddleware,
 			middleware.LoggingMiddleware(logger),
-			middleware.AuthMiddleware(sessionStore),
+			middleware.AuthMiddleware(sessionManager),
 		),
 	)
 }

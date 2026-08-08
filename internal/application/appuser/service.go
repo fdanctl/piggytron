@@ -5,22 +5,22 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/fdanctl/piggytron/internal/auth"
 	"github.com/fdanctl/piggytron/internal/domain/user"
 	"github.com/fdanctl/piggytron/internal/errs"
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
 type Service struct {
-	repo         user.Repository
-	hasher       *PasswordHasher
-	sessionStore *rdb.SessionStore
+	repo           user.Repository
+	hasher         *PasswordHasher
+	sessionManager *auth.SessionManager
 }
 
 func NewService(
-	repo user.Repository, hasher *PasswordHasher, ss *rdb.SessionStore,
+	repo user.Repository, hasher *PasswordHasher, sm *auth.SessionManager,
 ) *Service {
-	return &Service{repo: repo, hasher: hasher, sessionStore: ss}
+	return &Service{repo: repo, hasher: hasher, sessionManager: sm}
 }
 
 func (s *Service) FindByID(ctx context.Context, id string) (*user.User, error) {
@@ -103,17 +103,7 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 		return "", err
 	}
 
-	// TODO add session version to pg and pass it instead
-	// session version will for revoke other sessions of the user
-	// ex:
-	// 1. user updates pwd
-	// 2. updates in pg session_vesion + 1
-	// 3. create new session with updated version
-	// every time a request is made compare the session version with the
-	// version on pg if lower session is not valid
-	sid, err := s.sessionStore.Set(ctx, &rdb.SessionInfo{
-		UserID: string(u.ID()), SessionVersion: 1,
-	})
+	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()))
 
 	return sid, err
 }
@@ -173,7 +163,7 @@ func (s *Service) ChangePassword(
 	match, err := s.hasher.Verify(u.PasswordHash(), currPassword)
 	if err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed verifing password: %w", err),
+			fmt.Errorf("failed to verify password: %w", err),
 			"appuser.ChangePassword",
 		)
 		return "", err
@@ -215,9 +205,15 @@ func (s *Service) ChangePassword(
 		return "", err
 	}
 
-	sid, err := s.sessionStore.Set(ctx, &rdb.SessionInfo{
-		UserID: string(u.ID()), SessionVersion: 1,
-	})
+	err = s.sessionManager.RevokeAllSessions(ctx, id)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to log out user: %w", err),
+			"appuser.ChangePassword",
+		)
+		return "", err
+	}
+	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()))
 
 	return sid, err
 }
@@ -259,13 +255,10 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 		return "", err
 	}
 
-	// TODO add session version to pg and pass it instead
-	sid, err := s.sessionStore.Set(ctx, &rdb.SessionInfo{
-		UserID: string(u.ID()), SessionVersion: 1,
-	})
+	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()))
 	if err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed finding user: %w", user.ErrWrongPassword),
+			fmt.Errorf("failed creating session: %w", err),
 			"appuser.LoginUser",
 		)
 	}
@@ -274,7 +267,7 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 }
 
 func (s *Service) LogoutUser(ctx context.Context, sessionID string) error {
-	err := s.sessionStore.Remove(ctx, sessionID)
+	err := s.sessionManager.DeleteSession(ctx, sessionID)
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to log out user: %w", err),
@@ -284,8 +277,8 @@ func (s *Service) LogoutUser(ctx context.Context, sessionID string) error {
 	return err
 }
 
-func (s *Service) LogoutUserFromAllDevices(ctx context.Context, id, sessionID string) error {
-	err := s.sessionStore.Remove(ctx, sessionID)
+func (s *Service) LogoutUserFromAllDevices(ctx context.Context, userID string) error {
+	err := s.sessionManager.RevokeAllSessions(ctx, userID)
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to log out user: %w", err),
@@ -293,6 +286,5 @@ func (s *Service) LogoutUserFromAllDevices(ctx context.Context, id, sessionID st
 		)
 		return err
 	}
-	// TODO finish
 	return nil
 }

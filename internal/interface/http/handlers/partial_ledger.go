@@ -77,7 +77,6 @@ func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	preset := r.URL.Query().Get("preset")
-	fmt.Println(preset)
 	var dialog templ.Component
 	switch preset {
 	case "transfer":

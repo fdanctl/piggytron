@@ -5,13 +5,13 @@ import (
 	"errors"
 	"log/slog"
 
-	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/auth"
 )
 
 var ErrInvalidSession = errors.New("invalid session")
 
-func SessionInfoFromCtx(ctx context.Context) (*rdb.SessionInfo, error) {
-	if v, ok := ctx.Value(UserKey).(*rdb.SessionInfo); ok {
+func SessionInfoFromCtx(ctx context.Context) (*auth.SessionInfo, error) {
+	if v, ok := ctx.Value(UserKey).(*auth.SessionInfo); ok {
 		return v, nil
 	}
 	return nil, ErrInvalidSession
