@@ -7,10 +7,12 @@ templ Breadcrumbs(view views.BreadcrumbsView) {
 		class="breadcrumbs"
 		hx-target="#content"
 		hx-boost="true"
+		hx-swap="innerHTML transition:true"
 	>
 		for i, v := range view.Items {
 			if i < len(view.Items) - 1 {
 				<a
+					data-transition="navigate-back"
 					class="breadcrumbs__link"
 					if v.Href != "" {
 						href={ v.Href }

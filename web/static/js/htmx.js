@@ -103,6 +103,12 @@ document.body.addEventListener("htmx:timeout", function (ev) {
   showToast("error", "Request timed out");
 });
 
+const DEFAULT_TRANSITION = "navigate-forward";
+document.body.addEventListener("htmx:beforeTransition", (ev) => {
+  const transition = ev.target.dataset.transition ?? DEFAULT_TRANSITION;
+  ev.detail.target.style.viewTransitionName = transition;
+});
+
 document.body.addEventListener("htmx:configRequest", function (evt) {
   // for the charts
   evt.detail.headers["theme"] = getPreferedTheme();
