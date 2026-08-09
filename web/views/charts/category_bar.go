@@ -4,6 +4,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"golang.org/x/text/currency"
 )
 
 // MakeCatBarItems maps the per-month category values to a fixed 12-month
@@ -22,20 +23,22 @@ func MakeCatBarItems(mvalues []query.CategoryMonthlyValue) []opts.BarData {
 
 // CreateMonthlyBarChart builds a bar chart of the 12 months of the year
 // from the given bar data.
-func CreateMonthlyBarChart(items []opts.BarData) *charts.Bar {
+func CreateMonthlyBarChart(items []opts.BarData, name, theme string) *charts.Bar {
+	barColor := "#5eefef"
+	if theme == "light" {
+		barColor = "#4bc4c4"
+	}
 	bar := charts.NewBar()
 	bar.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
 		charts.WithLegendOpts(opts.Legend{
 			Show: opts.Bool(false),
 		}),
-		charts.WithColorsOpts(opts.Colors{
-			"#5eefef", "#4bc4c4",
-		}),
+		charts.WithColorsOpts(opts.Colors{barColor}),
 		charts.WithTooltipOpts(opts.Tooltip{
-			BackgroundColor: "rgba(0, 0, 0, 0.7)",
+			BackgroundColor: "rgba(0, 0, 0, 0.8)",
 			BorderColor:     "transparent",
-			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			Formatter:       opts.FuncOpts(barTooltipFormatter(currency.EUR)),
 		}),
 	)
 
@@ -44,8 +47,7 @@ func CreateMonthlyBarChart(items []opts.BarData) *charts.Bar {
 		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 	}
 
-	bar.Assets.ClearPresetJSAssets()
 	bar.SetXAxis(abbv).
-		AddSeries("Value", items)
+		AddSeries(name, items)
 	return bar
 }

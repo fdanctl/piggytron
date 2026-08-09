@@ -82,5 +82,5 @@ html:active-view-transition-type(theme) #content {
 ::view-transition-new(navigate-back) {
   animation:
     250ms cubic-bezier(0, 0, 0.2, 1) 90ms both fade-in,
-    600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-right;
+    600ms cubic-bezier(0.4, 0, 0.2, 1) both slide-from-left;
 }

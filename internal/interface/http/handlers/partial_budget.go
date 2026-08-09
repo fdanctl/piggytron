@@ -240,9 +240,10 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	theme := r.Header.Get("theme")
 	component := components.NoData()
 	if len(links) > 0 {
-		sankey := charts.MakeSankey(nodes, links, true)
+		sankey := charts.MakeSankey(nodes, links, true, theme)
 		component = charts.ConvertChartToTemplComponent(sankey)
 	}
 

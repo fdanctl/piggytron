@@ -23,15 +23,15 @@ func MakeSpentByTypePieItems(cats []query.CategoryBudgetValue) []opts.PieData {
 	data := []opts.PieData{
 		{
 			Name:  "Needs",
-			Value: needs,
+			Value: float64(needs) / 100,
 		},
 		{
 			Name:  "Wants",
-			Value: wants,
+			Value: float64(wants) / 100,
 		},
 		{
 			Name:  "Savings",
-			Value: savings,
+			Value: float64(savings) / 100,
 		},
 	}
 	return data

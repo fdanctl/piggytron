@@ -49,10 +49,12 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	theme := r.Header.Get("theme")
+
 	pieItems := charts.MakeAccountsPieItems(accounts)
 	pie := components.NoData()
 	if len(pieItems) > 0 {
-		c := charts.PieRadius(pieItems)
+		c := charts.PieRadius(pieItems, "Assets", theme)
 		pie = charts.ConvertChartToTemplComponent(c)
 	}
 
@@ -62,7 +64,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	histMap, min, max := charts.GenerateYearAccountsHistLine(changeHist)
-	line := charts.LineTime(histMap, min, max)
+	line := charts.LineTime(histMap, min, max, theme)
 
 	templ.Join(
 		pie,

@@ -3,6 +3,7 @@ package charts
 import (
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"golang.org/x/text/currency"
 )
 
 // MakeBudgetSankeyNodeLink maps a category of the given type to the node and
@@ -52,18 +53,26 @@ func MakeSankey(
 	sankeyNodes []opts.SankeyNode,
 	sankeyLinks []opts.SankeyLink,
 	animation bool,
+	theme string,
 ) *charts.Sankey {
 	sankey := charts.NewSankey()
 	sankey.SetGlobalOptions(
 		charts.WithAnimation(animation),
-		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
+		charts.WithInitializationOpts(
+			opts.Initialization{
+				Width:           "100%",
+				Height:          "100%",
+				Theme:           theme,
+				BackgroundColor: "transparent",
+			},
+		),
 		charts.WithLegendOpts(opts.Legend{
 			Show: opts.Bool(false),
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
-			BackgroundColor: "rgba(0, 0, 0, 0.7)",
+			BackgroundColor: "rgba(0, 0, 0, 0.8)",
 			BorderColor:     "transparent",
-			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			Formatter:       opts.FuncOpts(sankeyTooltipFormatter(currency.EUR)),
 		}),
 	)
 
@@ -77,8 +86,6 @@ func MakeSankey(
 		}),
 		charts.WithLabelOpts(opts.Label{
 			Show: opts.Bool(true),
-			// TODO different colors for dark and light themes
-			Color: "#fff",
 		}),
 	)
 	return sankey

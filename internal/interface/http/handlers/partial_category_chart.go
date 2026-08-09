@@ -43,7 +43,13 @@ func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	name := "Category"
+	if len(mvalues) > 0 {
+		name = mvalues[0].Name
+	}
+
+	theme := r.Header.Get("theme")
 	bItems := charts.MakeCatBarItems(mvalues)
-	chart := charts.CreateMonthlyBarChart(bItems)
+	chart := charts.CreateMonthlyBarChart(bItems, name, theme)
 	charts.ConvertChartToTemplComponent(chart).Render(r.Context(), w)
 }

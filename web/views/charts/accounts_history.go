@@ -7,6 +7,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"golang.org/x/text/currency"
 )
 
 // GenerateYearAccountsHistLine computes, per account, the running total of
@@ -60,7 +61,7 @@ func GenerateYearAccountsHistLine(
 
 // LineTime builds a smooth multi-series line chart with a time x axis and
 // its y axis bounded by [min, max].
-func LineTime(m map[string][]opts.LineData, min, max int) *charts.Line {
+func LineTime(m map[string][]opts.LineData, min, max int, theme string) *charts.Line {
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
@@ -80,9 +81,9 @@ func LineTime(m map[string][]opts.LineData, min, max int) *charts.Line {
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
 			Trigger:         "axis",
-			BackgroundColor: "rgba(0, 0, 0, 0.7)",
+			BackgroundColor: "rgba(0, 0, 0, 0.8)",
 			BorderColor:     "transparent",
-			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			Formatter:       opts.FuncOpts(lineTooltipFormatter(currency.EUR)),
 		}),
 	)
 
@@ -99,10 +100,21 @@ func LineTimeAccount(
 	m map[string][]opts.LineData,
 	min, max float64,
 	since time.Time,
+	theme string,
 ) *charts.Line {
+	lineColor := "#5eefef"
+	if theme == "light" {
+		lineColor = "#4bc4c4"
+	}
 	line := charts.NewLine()
 	line.SetGlobalOptions(
-		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
+		charts.WithInitializationOpts(
+			opts.Initialization{
+				Width:           "100%",
+				Height:          "100%",
+				BackgroundColor: "transparent",
+			},
+		),
 		charts.WithLegendOpts(opts.Legend{
 			Show: opts.Bool(false),
 		}),
@@ -110,18 +122,16 @@ func LineTimeAccount(
 			Min: min,
 			Max: max,
 		}),
-		charts.WithColorsOpts(opts.Colors{
-			"#5eefef", "#4bc4c4",
-		}),
+		charts.WithColorsOpts(opts.Colors{lineColor}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Type: "time",
 			Min:  since,
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
 			Trigger:         "axis",
-			BackgroundColor: "rgba(0, 0, 0, 0.7)",
+			BackgroundColor: "rgba(0, 0, 0, 0.8)",
 			BorderColor:     "transparent",
-			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			Formatter:       opts.FuncOpts(lineTooltipFormatter(currency.EUR)),
 		}),
 	)
 

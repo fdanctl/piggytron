@@ -54,11 +54,12 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	theme := r.Header.Get("theme")
 	pieItems := charts.MakeSpentByTypePieItems(categoryBudgetSpent.Data)
 
 	pie := components.NoData()
 	if len(pieItems) > 0 {
-		c := charts.PieRadius(pieItems)
+		c := charts.PieRadius(pieItems, "Spent", theme)
 		pie = charts.ConvertChartToTemplComponent(c)
 	}
 
@@ -66,7 +67,7 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 		categoryBudgetSpent.Data,
 	)
 	bar := charts.ConvertChartToTemplComponent(
-		charts.CreateCategoryBudgetSpentBarChart(budgetItems, spentItems, categories),
+		charts.CreateCategoryBudgetSpentBarChart(budgetItems, spentItems, categories, theme),
 	)
 
 	templ.Join(

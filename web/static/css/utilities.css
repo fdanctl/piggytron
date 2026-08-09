@@ -348,6 +348,14 @@
   margin-left: var(--spacing-xs);
 }
 
+.ml-sm {
+  margin-left: var(--spacing-sm);
+}
+
+.ml-md {
+  margin-left: var(--spacing-md);
+}
+
 .space-y-xs > * + * {
   margin-top: var(--spacing-xs);
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/go-echarts/go-echarts/v2/charts"
 	"github.com/go-echarts/go-echarts/v2/opts"
+	"golang.org/x/text/currency"
 )
 
 // MakeBudgetSpentBarItems splits the category budget/spent data into the
@@ -16,8 +17,8 @@ func MakeBudgetSpentBarItems(
 		if v.Type == "income" {
 			continue
 		}
-		budget = append(budget, opts.BarData{Value: v.Budgeted})
-		spent = append(spent, opts.BarData{Value: v.Value})
+		budget = append(budget, opts.BarData{Value: float64(v.Budgeted) / 100})
+		spent = append(spent, opts.BarData{Value: float64(v.Value) / 100})
 		xAxis = append(xAxis, v.Name)
 	}
 
@@ -29,6 +30,7 @@ func MakeBudgetSpentBarItems(
 func CreateCategoryBudgetSpentBarChart(
 	budget, spent []opts.BarData,
 	categories []string,
+	theme string,
 ) *charts.Bar {
 	bar := charts.NewBar()
 	bar.SetGlobalOptions(
@@ -40,9 +42,9 @@ func CreateCategoryBudgetSpentBarChart(
 			"#5eefef", "#297373",
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
-			BackgroundColor: "rgba(0, 0, 0, 0.7)",
+			BackgroundColor: "rgba(0, 0, 0, 0.8)",
 			BorderColor:     "transparent",
-			// Formatter:       opts.FuncOpts("myTooltipFormatter"),
+			Formatter:       opts.FuncOpts(barTooltipFormatter(currency.EUR)),
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			AxisLabel: &opts.AxisLabel{
@@ -51,7 +53,6 @@ func CreateCategoryBudgetSpentBarChart(
 		}),
 	)
 
-	bar.Assets.ClearPresetJSAssets()
 	bar.SetXAxis(categories).
 		AddSeries("Budget", budget).
 		AddSeries("Spent", spent)

@@ -25,6 +25,8 @@ function switchTheme(theme) {
       const preferedTheme = getPreferedTheme();
       if (preferedTheme === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
+      } else {
+        document.documentElement.removeAttribute("data-theme", "dark");
       }
   }
 }

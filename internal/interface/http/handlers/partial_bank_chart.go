@@ -70,13 +70,17 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		startDate = time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
 	}
 
+	theme := r.Header.Get("theme")
+
 	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist.Data)
 	line := charts.LineTimeAccount(
 		histMap,
 		0,
 		float64(max),
 		startDate,
+		theme,
 	)
+
 	chartComponent := charts.ConvertChartToTemplComponent(line)
 	partials.BankChartCard(chartComponent, changeHist.MoneyIn, changeHist.MoneyOut, changeHist.Transactions).
 		Render(r.Context(), w)

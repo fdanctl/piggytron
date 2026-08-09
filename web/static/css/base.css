@@ -498,6 +498,12 @@ hr,
   }
 }
 
+@keyframes slide-from-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
 @keyframes slide-to-left {
   to {
     transform: translateX(-100%);

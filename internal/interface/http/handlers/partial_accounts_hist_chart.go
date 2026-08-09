@@ -43,13 +43,15 @@ func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request
 		period = "ytd"
 	}
 
+	theme := r.Header.Get("theme")
+
 	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
 	histMap, min, max := charts.GenerateYearAccountsHistLine(changeHist)
-	line := charts.LineTime(histMap, min, max)
+	line := charts.LineTime(histMap, min, max, theme)
 
 	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)
 }
