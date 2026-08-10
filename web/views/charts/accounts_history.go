@@ -10,23 +10,20 @@ import (
 	"golang.org/x/text/currency"
 )
 
-// GenerateYearAccountsHistLine computes, per account, the running total of
+// GenerateAccountsHistLine computes, per account, the running total of
 // the daily changes in hist and returns the resulting time series, plus the
 // rounded min and max y-axis bounds for the chart.
-func GenerateYearAccountsHistLine(
-	hist []query.AccountDailyChange,
+func GenerateAccountsHistLine(
+	hist []query.AccountDailyBalance,
 ) (map[string][]opts.LineData, int, int) {
 	var min, max float64
 	datas := make(map[string][]opts.LineData)
 
-	runningTotals := make(map[string]int)
-	lastDate := make(map[string]time.Time)
 	for _, v := range hist {
-		total := runningTotals[v.Name] + v.Change
-		runningTotals[v.Name] = total
+		amount := float64(v.Balance) / float64(100)
 
-		amount := float64(total) / float64(100)
-		data := opts.LineData{Value: []any{v.Date, amount}}
+		data := opts.LineData{Value: []any{v.Day, amount}}
+
 		value, ok := datas[v.Name]
 		if !ok {
 			datas[v.Name] = []opts.LineData{data}
@@ -40,17 +37,6 @@ func GenerateYearAccountsHistLine(
 		if amount > max {
 			max = amount
 		}
-		lastDate[v.Name] = v.Date
-	}
-
-	// add today
-	now := time.Now()
-	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.Local)
-	for k, v := range datas {
-		if !today.Equal(lastDate[k]) {
-			amount := float64(runningTotals[k]) / float64(100)
-			datas[k] = append(v, opts.LineData{Value: []any{today, amount}})
-		}
 	}
 
 	rmin := 500 * ((int(math.Floor(min)) / 500) + 1) // previous multiple of 500
@@ -61,7 +47,12 @@ func GenerateYearAccountsHistLine(
 
 // LineTime builds a smooth multi-series line chart with a time x axis and
 // its y axis bounded by [min, max].
-func LineTime(m map[string][]opts.LineData, min, max int, theme string) *charts.Line {
+func LineTime(
+	m map[string][]opts.LineData,
+	min, max int,
+	since time.Time,
+	theme string,
+) *charts.Line {
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
@@ -77,7 +68,7 @@ func LineTime(m map[string][]opts.LineData, min, max int, theme string) *charts.
 		}),
 		charts.WithXAxisOpts(opts.XAxis{
 			Type: "time",
-			Min:  time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+			Min:  since,
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
 			Trigger:         "axis",
@@ -89,7 +80,12 @@ func LineTime(m map[string][]opts.LineData, min, max int, theme string) *charts.
 
 	for k, v := range m {
 		line.AddSeries(k, v).
-			SetSeriesOptions(charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}))
+			SetSeriesOptions(
+				charts.WithLineChartOpts(opts.LineChart{
+					Smooth: opts.Bool(true),
+					Symbol: "none",
+				}),
+			)
 	}
 	return line
 }
@@ -138,7 +134,10 @@ func LineTimeAccount(
 	for k, v := range m {
 		line.AddSeries(k, v).
 			SetSeriesOptions(
-				charts.WithLineChartOpts(opts.LineChart{Smooth: opts.Bool(true)}),
+				charts.WithLineChartOpts(opts.LineChart{
+					Smooth: opts.Bool(true),
+					Symbol: "none",
+				}),
 				charts.WithAreaStyleOpts(
 					opts.AreaStyle{
 						Opacity: opts.Float(0.5),

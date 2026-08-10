@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
@@ -45,13 +46,23 @@ func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request
 
 	theme := r.Header.Get("theme")
 
-	changeHist, err := h.accountQuery.GetBanksDailyChange(r.Context(), sessionInfo.UserID)
+	changeHist, err := h.accountQuery.GetBanksDailyBalanceSince(
+		r.Context(),
+		sessionInfo.UserID,
+		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
-	histMap, min, max := charts.GenerateYearAccountsHistLine(changeHist)
-	line := charts.LineTime(histMap, min, max, theme)
+	histMap, min, max := charts.GenerateAccountsHistLine(changeHist)
+	line := charts.LineTime(
+		histMap,
+		min,
+		max,
+		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+		theme,
+	)
 
 	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)
 }

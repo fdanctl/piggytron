@@ -44,16 +44,10 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
 
-	changeHist, err := h.accountQuery.GetAccountDailyChange(r.Context(), id)
-	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
-		return
-	}
-
 	q := r.URL.Query()
 	d := q.Get("start")
 	m := q.Get("max")
-	logger.Debug(m)
+	logger.Debug(d)
 
 	qmax, err := strconv.Atoi(m)
 	if err != nil {
@@ -62,13 +56,22 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	startDate, err := time.Parse(time.DateOnly, d)
 	if err != nil {
-		now := time.Now()
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
+		startDate = time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local)
+	}
+
+	changeHist, err := h.accountQuery.GetAccountDailyBalanceSince(
+		r.Context(),
+		id,
+		startDate,
+	)
+	if err != nil {
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
+		return
 	}
 
 	theme := r.Header.Get("theme")
 
-	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist)
+	histMap, _, max := charts.GenerateAccountsHistLine(changeHist)
 	line := charts.LineTimeAccount(
 		histMap,
 		0,

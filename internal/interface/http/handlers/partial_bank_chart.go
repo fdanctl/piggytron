@@ -46,7 +46,7 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	fotm := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 
-	changeHist, err := h.accountQuery.GetAccountDailyChangesAndStatsSince(r.Context(), id, fotm)
+	changeHist, err := h.accountQuery.GetAccountDailyBalanceAndStatsSince(r.Context(), id, fotm)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
@@ -72,7 +72,7 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	theme := r.Header.Get("theme")
 
-	histMap, _, max := charts.GenerateYearAccountsHistLine(changeHist.Data)
+	histMap, _, max := charts.GenerateAccountsHistLine(changeHist.Data)
 	line := charts.LineTimeAccount(
 		histMap,
 		0,

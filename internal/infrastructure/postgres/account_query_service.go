@@ -2,8 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -405,214 +403,435 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 	return results, nil
 }
 
-func (s *AccountQueryService) GetBanksDailyChange(
+func (s *AccountQueryService) GetBanksDailyBalanceSince(
 	ctx context.Context,
 	uid string,
-) ([]query.AccountDailyChange, error) {
-	rows, err := s.db.QueryContext(
-		ctx,
-		`SELECT
-			a.id,
-			a.name,
-			DATE(date) AS day,
-			SUM(
-				CASE
-				  WHEN t.from_account_id = a.id THEN t.amount * -1
-				  ELSE t.amount
-				END
-			) AS change
-		 FROM accounts a
-		 LEFT JOIN ledger t
-			ON a.id = t.to_account_id OR a.id = t.from_account_id
-		 WHERE
-			a.user_id = $1 AND a.type = 'bank'
-		 GROUP BY DATE(date), a.id
-		 ORDER BY day`,
-
-		uid,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, query.ErrNoHistory
-		}
-		return nil, err
-	}
-	defer rows.Close()
-
-	var results []query.AccountDailyChange
-
-	for rows.Next() {
-		var r query.AccountDailyChange
-		var date *time.Time = nil
-		var change *int = nil
-		if err := rows.Scan(
-			&r.ID,
-			&r.Name,
-			&date,
-			&change,
-		); err != nil {
-			return nil, err
-		}
-
-		if date == nil || change == nil {
-			continue
-		}
-		r.Date = *date
-		r.Change = *change
-		results = append(results, r)
-	}
-	return results, nil
-}
-
-func (s *AccountQueryService) GetAccountDailyChange(
-	ctx context.Context,
-	id string,
-) ([]query.AccountDailyChange, error) {
-	rows, err := s.db.QueryContext(
-		ctx,
-		`SELECT
-			a.id,
-			a.name,
-			DATE(date) AS day,
-			SUM(
-				CASE
-				  WHEN t.from_account_id = a.id THEN t.amount * -1
-				  ELSE t.amount
-				END
-			) AS change
-		 FROM accounts a
-		 LEFT JOIN ledger t
-			ON a.id = t.to_account_id OR a.id = t.from_account_id
-		 WHERE
-			a.id = $1
-		 GROUP BY DATE(date), a.id
-		 ORDER BY day`,
-		id,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, query.ErrNoHistory
-		}
-		return nil, err
-	}
-	defer rows.Close()
-
-	var results []query.AccountDailyChange
-
-	for rows.Next() {
-		var r query.AccountDailyChange
-		var date *time.Time = nil
-		var change *int = nil
-		if err := rows.Scan(
-			&r.ID,
-			&r.Name,
-			&date,
-			&change,
-		); err != nil {
-			return nil, err
-		}
-
-		if date == nil || change == nil {
-			continue
-		}
-		r.Date = *date
-		r.Change = *change
-		results = append(results, r)
-	}
-	return results, nil
-}
-
-func (s *AccountQueryService) GetAccountDailyChangesAndStatsSince(
-	ctx context.Context,
-	id string,
 	since time.Time,
-) (*query.AccountDailyChangesWithStatsSince, error) {
+) ([]query.AccountDailyBalance, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
 		`
+		WITH
+		  -- since is normalized to the 1st of its month because monthly_summary
+		  -- is month-granular: comparing ms.month < $2 directly would pull the
+		  -- current month's summary into the baseline and double-count it with
+		  -- the ledger deltas. The days series also starts at start_day so the
+		  -- month-to-date deltas before $2 still accumulate into the running
+		  -- balance; the chart simply ignores the days before $2.
+		  params AS (
+		    SELECT
+		      DATE_TRUNC('month', $2::TIMESTAMP)::date AS start_day
+		  ),
+		  -- 1. One row per calendar day, from the 1st of the month
+		  days AS (
+		    SELECT
+			  generate_series((SELECT start_day FROM params), CURRENT_DATE, INTERVAL '1 day')::date AS day
+		  ),
+		  -- 2. Balance carried into the month (all history before it)
+		  baseline AS (
+		    SELECT
+		      a.id,
+		      a.name,
+		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS bal
+		    FROM
+		      accounts a
+		      LEFT JOIN monthly_summary ms ON ms.account_id = a.id
+		      AND ms.month < (SELECT start_day FROM params)
+		    WHERE
+		      a.user_id = $1
+		      AND a.type = 'bank'
+		      AND a.deleted_at IS NULL
+		    GROUP BY
+		      a.id,
+		      a.name
+		  ),
+		  -- 3. Net movement per account per day, from the 1st of the month
+		  deltas AS (
+		    SELECT
+		      a.id,
+		      t.date::date AS day,
+		      SUM(
+		        CASE
+		          WHEN t.from_account_id = a.id THEN - t.amount
+		          ELSE t.amount
+		        END
+		      ) AS delta
+		    FROM
+		      accounts a
+		      JOIN ledger t ON t.date >= (SELECT start_day FROM params)
+		      AND (
+		        t.to_account_id = a.id
+		        OR t.from_account_id = a.id
+		      )
+		    WHERE
+		      a.user_id = $1
+		      AND a.type = 'bank'
+		      AND a.deleted_at IS NULL
+		    GROUP BY
+		      a.id,
+		      t.date::date
+		  )
+		  -- 4. Cross join days x accounts, then run the cumulative sum
 		SELECT
+		  d.day,
 		  a.id,
 		  a.name,
-		  DATE (date) AS day,
-		  SUM(
-		    CASE
-		      WHEN t.from_account_id = a.id THEN t.amount * -1
-		      ELSE t.amount
-		    END
-		  ) AS change,
-		  SUM(
-		    CASE
-		      WHEN t.date >= $2
-		      AND t.to_account_id = a.id THEN t.amount
-		      ELSE 0
-		    END
-		  ) AS money_in,
-		  SUM(
-		    CASE
-		      WHEN t.date >= $2
-		      AND t.from_account_id = a.id THEN t.amount
-		      ELSE 0
-		    END
-		  ) AS money_out,
-		  SUM(
-		    CASE
-		      WHEN t.date >= $2 THEN 1
-		      ELSE 0
-		    END
-		  ) AS transaction
+		  b.bal + COALESCE(
+		    SUM(dt.delta) OVER (
+		      PARTITION BY
+		        a.id
+		      ORDER BY
+		        d.day ROWS BETWEEN UNBOUNDED PRECEDING
+		        AND CURRENT ROW
+		    ),
+		    0
+		  ) AS balance
 		FROM
-		  accounts a
-		  LEFT JOIN ledger t ON a.id = t.to_account_id
-		  OR a.id = t.from_account_id
+		  days d
+		  CROSS JOIN accounts a
+		  JOIN baseline b ON b.id = a.id
+		  LEFT JOIN deltas dt ON dt.id = a.id
+		  AND dt.day = d.day
+		WHERE
+		  a.user_id = $1
+		  AND a.type = 'bank'
+		  AND a.deleted_at IS NULL
+		ORDER BY
+		  d.day,
+		  a.id;`,
+		uid,
+		since,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountDailyBalance
+
+	for rows.Next() {
+		var r query.AccountDailyBalance
+		if err := rows.Scan(
+			&r.Day,
+			&r.ID,
+			&r.Name,
+			&r.Balance,
+		); err != nil {
+			return nil, err
+		}
+
+		results = append(results, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
+		return nil, query.ErrNoHistory
+	}
+	return results, nil
+}
+
+func (s *AccountQueryService) GetAccountDailyBalanceSince(
+	ctx context.Context,
+	id string,
+	since time.Time,
+) ([]query.AccountDailyBalance, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+		WITH
+		  -- since is normalized to the 1st of its month because monthly_summary
+		  -- is month-granular: comparing ms.month < $2 directly would pull the
+		  -- current month's summary into the baseline and double-count it with
+		  -- the ledger deltas. The days series also starts at start_day so the
+		  -- month-to-date deltas before $2 still accumulate into the running
+		  -- balance; the chart simply ignores the days before $2.
+		  params AS (
+		    SELECT
+		      DATE_TRUNC('month', $2::TIMESTAMP)::date AS start_day
+		  ),
+		  -- 1. One row per calendar day, from the 1st of the month
+		  days AS (
+		    SELECT
+				generate_series((SELECT start_day FROM params), CURRENT_DATE, INTERVAL '1 day')::date AS day
+		  ),
+		  -- 2. Balance carried into the month (all history before it)
+		  baseline AS (
+		    SELECT
+		      a.id,
+		      a.name,
+		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS bal
+		    FROM
+		      accounts a
+		      LEFT JOIN monthly_summary ms ON ms.account_id = a.id
+		      AND ms.month < (SELECT start_day FROM params)
+		    WHERE
+		      a.id = $1
+		      AND a.deleted_at IS NULL
+		    GROUP BY
+		      a.id,
+		      a.name
+		  ),
+		  -- 3. Net movement per account per day, from the 1st of the month
+		  deltas AS (
+		    SELECT
+		      a.id,
+		      t.date::date AS day,
+		      SUM(
+		        CASE
+		          WHEN t.from_account_id = a.id THEN - t.amount
+		          ELSE t.amount
+		        END
+		      ) AS delta
+		    FROM
+		      accounts a
+		      JOIN ledger t ON t.date >= (SELECT start_day FROM params)
+		      AND (
+		        t.to_account_id = a.id
+		        OR t.from_account_id = a.id
+		      )
+		    WHERE
+		      a.id = $1
+		      AND a.deleted_at IS NULL
+		    GROUP BY
+		      a.id,
+		      t.date::date
+		  )
+		  -- 4. Cross join days x accounts, then run the cumulative sum
+		SELECT
+		  d.day,
+		  a.id,
+		  a.name,
+		  b.bal + COALESCE(
+		    SUM(dt.delta) OVER (
+		      PARTITION BY
+		        a.id
+		      ORDER BY
+		        d.day ROWS BETWEEN UNBOUNDED PRECEDING
+		        AND CURRENT ROW
+		    ),
+		    0
+		  ) AS balance
+		FROM
+		  days d
+		  CROSS JOIN accounts a
+		  JOIN baseline b ON b.id = a.id
+		  LEFT JOIN deltas dt ON dt.id = a.id
+		  AND dt.day = d.day
 		WHERE
 		  a.id = $1
-		GROUP BY
-		  DATE (date),
-		  a.id
+		  AND a.deleted_at IS NULL
 		ORDER BY
-		  day`,
+		  d.day,
+		  a.id;
+		`,
 		id,
 		since,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, query.ErrNoHistory
-		}
 		return nil, err
 	}
 	defer rows.Close()
 
-	var results []query.AccountDailyChange
-	var moneyInSince, moneyOutSince, transactionsSince int
+	var results []query.AccountDailyBalance
 
 	for rows.Next() {
-		var r query.AccountDailyChange
-		var mi, mo, t int
-		var date *time.Time = nil
-		var change *int = nil
+		var r query.AccountDailyBalance
 		if err := rows.Scan(
+			&r.Day,
 			&r.ID,
 			&r.Name,
-			&date,
-			&change,
-			&mi,
-			&mo,
-			&t,
+			&r.Balance,
 		); err != nil {
 			return nil, err
 		}
 
-		if date == nil || change == nil {
-			continue
-		}
-		r.Date = *date
-		r.Change = *change
 		results = append(results, r)
-		moneyInSince += mi
-		moneyOutSince += mo
-		transactionsSince += t
 	}
-	return &query.AccountDailyChangesWithStatsSince{
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
+		return nil, query.ErrNoHistory
+	}
+	return results, nil
+}
+
+func (s *AccountQueryService) GetAccountDailyBalanceAndStatsSince(
+	ctx context.Context,
+	id string,
+	since time.Time,
+) (*query.AccountDailyBalanceWithStatsSince, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+		WITH
+		  -- since is normalized to the 1st of its month because monthly_summary
+		  -- is month-granular: comparing ms.month < $2 directly would pull the
+		  -- current month's summary into the baseline and double-count it with
+		  -- the ledger deltas. The days series also starts at start_day so the
+		  -- month-to-date deltas before $2 still accumulate into the running
+		  -- balance; the chart simply ignores the days before $2.
+		  params AS (
+		    SELECT
+		      DATE_TRUNC('month', $2::TIMESTAMP)::date AS start_day
+		  ),
+		  -- 1. One row per calendar day, from the 1st of the month
+		  days AS (
+		    SELECT
+				generate_series((SELECT start_day FROM params), CURRENT_DATE, INTERVAL '1 day')::date AS day
+		  ),
+		  -- 2. Balance carried into the month (all history before it)
+		  baseline AS (
+		    SELECT
+		      a.id,
+		      a.name,
+		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS bal
+		    FROM
+		      accounts a
+		      LEFT JOIN monthly_summary ms ON ms.account_id = a.id
+		      AND ms.month < (SELECT start_day FROM params)
+		    WHERE
+		      a.id = $1
+		      AND a.deleted_at IS NULL
+		    GROUP BY
+		      a.id,
+		      a.name
+		  ),
+		  -- 3. Net movement per account per day, from the 1st of the month
+		  deltas AS (
+		    SELECT
+		      a.id,
+		      t.date::date AS day,
+		      SUM(
+		        CASE
+		          WHEN t.from_account_id = a.id THEN - t.amount
+		          ELSE t.amount
+		        END
+		      ) AS delta,
+		      SUM(
+		        CASE
+		          WHEN t.to_account_id = a.id THEN t.amount
+		          ELSE 0
+		        END
+		      ) AS money_in,
+		      SUM(
+		        CASE
+		          WHEN t.from_account_id = a.id THEN t.amount
+		          ELSE 0
+		        END
+		      ) AS money_out,
+		      SUM(1) AS transaction_count
+		    FROM
+		      accounts a
+		      JOIN ledger t ON t.date >= (SELECT start_day FROM params)
+		      AND (
+		        t.to_account_id = a.id
+		        OR t.from_account_id = a.id
+		      )
+		    WHERE
+		      a.id = $1
+		      AND a.deleted_at IS NULL
+		    GROUP BY
+		      a.id,
+		      t.date::date
+		  )
+		  -- 4. Cross join days x accounts, then run the cumulative sum
+		SELECT
+		  d.day,
+		  a.id,
+		  a.name,
+		  b.bal + COALESCE(
+		    SUM(dt.delta) OVER (
+		      PARTITION BY
+		        a.id
+		      ORDER BY
+		        d.day ROWS BETWEEN UNBOUNDED PRECEDING
+		        AND CURRENT ROW
+		    ),
+		    0
+		  ) AS balance,
+		  COALESCE(
+		    SUM(dt.money_in) OVER (
+		      PARTITION BY
+		        a.id
+		      ORDER BY
+		        d.day ROWS BETWEEN UNBOUNDED PRECEDING
+		        AND CURRENT ROW
+		    ),
+		    0
+		  ) AS money_in,
+		  COALESCE(
+		    SUM(dt.money_out) OVER (
+		      PARTITION BY
+		        a.id
+		      ORDER BY
+		        d.day ROWS BETWEEN UNBOUNDED PRECEDING
+		        AND CURRENT ROW
+		    ),
+		    0
+		  ) AS money_out,
+		  COALESCE(
+		    SUM(dt.transaction_count) OVER (
+		      PARTITION BY
+		        a.id
+		      ORDER BY
+		        d.day ROWS BETWEEN UNBOUNDED PRECEDING
+		        AND CURRENT ROW
+		    ),
+		    0
+		  ) AS transaction_count
+		FROM
+		  days d
+		  CROSS JOIN accounts a
+		  JOIN baseline b ON b.id = a.id
+		  LEFT JOIN deltas dt ON dt.id = a.id
+		  AND dt.day = d.day
+		WHERE
+		  a.id = $1
+		  AND a.deleted_at IS NULL
+		ORDER BY
+		  d.day,
+		  a.id;
+		`,
+		id,
+		since,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountDailyBalance
+	var moneyInSince, moneyOutSince, transactionsSince int
+
+	for rows.Next() {
+		var r query.AccountDailyBalance
+		var moneyIn, moneyOut, transactionCount int
+		if err := rows.Scan(
+			&r.Day,
+			&r.ID,
+			&r.Name,
+			&r.Balance,
+			&moneyIn,
+			&moneyOut,
+			&transactionCount,
+		); err != nil {
+			return nil, err
+		}
+		results = append(results, r)
+		// money_in/money_out/transaction_count are cumulative window columns and
+		// rows arrive ordered by day, so the last row scanned holds the range
+		// totals for MoneyIn/MoneyOut/Transactions.
+		moneyInSince, moneyOutSince, transactionsSince = moneyIn, moneyOut, transactionCount
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	if len(results) == 0 {
+		return nil, query.ErrNoHistory
+	}
+	return &query.AccountDailyBalanceWithStatsSince{
 		Data:         results,
 		MoneyIn:      moneyInSince,
 		MoneyOut:     moneyOutSince,
@@ -647,7 +866,7 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 		    FROM
 		      (
 		        SELECT
-		          DATE (t.date) AS day,
+		          t.date::date AS day,
 		          CASE
 		            WHEN t.from_account_id = $1 THEN t.amount * -1
 		            ELSE t.amount

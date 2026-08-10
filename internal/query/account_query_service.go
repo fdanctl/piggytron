@@ -49,15 +49,15 @@ type AccountWithMinRunningBalance struct {
 	MinDate           time.Time
 }
 
-type AccountDailyChange struct {
-	ID     string
-	Name   string
-	Date   time.Time
-	Change int
+type AccountDailyBalance struct {
+	Day     time.Time
+	ID      string
+	Name    string
+	Balance int
 }
 
-type AccountDailyChangesWithStatsSince struct {
-	Data         []AccountDailyChange
+type AccountDailyBalanceWithStatsSince struct {
+	Data         []AccountDailyBalance
 	MoneyIn      int
 	MoneyOut     int
 	Transactions int
@@ -75,13 +75,21 @@ type AccountQueryService interface {
 		month monthlysummary.Month,
 	) ([]AccountWithSumAndMonthChange, error)
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
-	GetBanksDailyChange(ctx context.Context, uid string) ([]AccountDailyChange, error)
-	GetAccountDailyChange(ctx context.Context, id string) ([]AccountDailyChange, error)
-	GetAccountDailyChangesAndStatsSince(
+	GetBanksDailyBalanceSince(
+		ctx context.Context,
+		uid string,
+		since time.Time,
+	) ([]AccountDailyBalance, error)
+	GetAccountDailyBalanceSince(
 		ctx context.Context,
 		id string,
 		since time.Time,
-	) (*AccountDailyChangesWithStatsSince, error)
+	) ([]AccountDailyBalance, error)
+	GetAccountDailyBalanceAndStatsSince(
+		ctx context.Context,
+		id string,
+		since time.Time,
+	) (*AccountDailyBalanceWithStatsSince, error)
 	GetAccountWithMinRunningBalance(
 		ctx context.Context,
 		id string,

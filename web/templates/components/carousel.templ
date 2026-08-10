@@ -21,8 +21,6 @@ templ Carousel(
 			return err
 		}
 		id := hex.EncodeToString(b)
-
-		fmt.Println(id)
 	}}
 	<ul
 		class={ "carousel", templ.KV(class, class != ""), templ.KV("carousel--with-btns", buttons), templ.KV("carousel--with-indicators", indicators), templ.KV("carousel--btns-discoverable", btnHoverDiscoverable) }
@@ -53,8 +51,6 @@ templ CarouselCard(
 			return err
 		}
 		id := hex.EncodeToString(b)
-
-		fmt.Println(id)
 	}}
 	<div class="carousel__card card" style={ fmt.Sprintf("--anchor-id: --%s; anchor-name: --%s;", id, id) }>
 		<h6 class="card__title">{ title }</h6>
