@@ -11,6 +11,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
+// AccountsHistoryChartHandler renders the combined daily balance history
+// line chart for all of the user's banks.
 type AccountsHistoryChartHandler struct {
 	accountQuery query.AccountQueryService
 }
@@ -33,6 +35,9 @@ func (h *AccountsHistoryChartHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	}
 }
 
+// Get renders the banks' combined balance history from January 1st of the
+// current year. TODO: rethink, maybe it makes more sense to be one year range
+// better yet make it dynamic
 func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

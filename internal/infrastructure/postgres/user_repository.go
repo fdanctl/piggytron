@@ -10,16 +10,19 @@ import (
 	"github.com/lib/pq"
 )
 
+// UserRepository persists user aggregates via raw SQL.
 type UserRepository struct {
 	db *sql.DB
 }
 
+// NewUserRepository builds the repository over a *sql.DB.
 func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{
 		db: db,
 	}
 }
 
+// Create inserts the user, mapping unique-name violations to user.ErrDuplicate.
 func (r *UserRepository) Create(ctx context.Context, u *user.User) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -48,6 +51,8 @@ func (r *UserRepository) Create(ctx context.Context, u *user.User) error {
 	return nil
 }
 
+// UpdateName renames the user without touching the password hash, mapping
+// unique-name violations to user.ErrDuplicate.
 func (r *UserRepository) UpdateName(ctx context.Context, id user.ID, name string) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -78,6 +83,7 @@ func (r *UserRepository) UpdateName(ctx context.Context, id user.ID, name string
 	return nil
 }
 
+// Update persists the mutable fields of a user.
 func (r *UserRepository) Update(ctx context.Context, user *user.User) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -97,6 +103,7 @@ func (r *UserRepository) Update(ctx context.Context, user *user.User) error {
 	return err
 }
 
+// FindByID loads one user, mapping missing rows to user.ErrNotFound.
 func (r *UserRepository) FindByID(ctx context.Context, id user.ID) (*user.User, error) {
 	row := r.db.QueryRowContext(
 		ctx,
@@ -131,6 +138,8 @@ func (r *UserRepository) FindByID(ctx context.Context, id user.ID) (*user.User, 
 	return u, err
 }
 
+// FindByName looks a user up by display name, mapping missing rows to
+// user.ErrNotFound.
 func (r *UserRepository) FindByName(ctx context.Context, name string) (*user.User, error) {
 	row := r.db.QueryRowContext(
 		ctx,

@@ -1,3 +1,7 @@
+// Package appuser implements the user use cases: registration, login and
+// logout (including from all devices), changing the name and password, and
+// Argon2id password hashing (see PasswordHasher). Sessions are issued through
+// auth.SessionManager.
 package appuser
 
 import (
@@ -11,18 +15,23 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// Service implements the user use cases (register, login, logout, profile
+// and password changes) and owns session issuance.
 type Service struct {
 	repo           user.Repository
 	hasher         *PasswordHasher
 	sessionManager *auth.SessionManager
 }
 
+// NewService wires the user service to its repository, password hasher and
+// session manager.
 func NewService(
 	repo user.Repository, hasher *PasswordHasher, sm *auth.SessionManager,
 ) *Service {
 	return &Service{repo: repo, hasher: hasher, sessionManager: sm}
 }
 
+// FindByID returns a user by id.
 func (s *Service) FindByID(ctx context.Context, id string) (*user.User, error) {
 	uid, err := util.ParseID[user.ID](id)
 	if err != nil {
@@ -55,6 +64,7 @@ func (s *Service) FindByID(ctx context.Context, id string) (*user.User, error) {
 	return u, nil
 }
 
+// CreateUser registers a new user and returns a session id for it.
 func (s *Service) CreateUser(ctx context.Context, name, password string) (string, error) {
 	hash, err := s.hasher.Hash(password)
 	if err != nil {
@@ -108,6 +118,7 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 	return sid, err
 }
 
+// ChangeName updates the display name, rejecting duplicates.
 func (s *Service) ChangeName(ctx context.Context, id, name string) error {
 	uid, err := util.ParseID[user.ID](id)
 	if err != nil {
@@ -151,6 +162,8 @@ func (s *Service) ChangeName(ctx context.Context, id, name string) error {
 	return nil
 }
 
+// ChangePassword verifies the current password, stores the new hash, revokes
+// every other session and returns a fresh session id.
 func (s *Service) ChangePassword(
 	ctx context.Context,
 	id, currPassword, newPassword string,
@@ -218,6 +231,7 @@ func (s *Service) ChangePassword(
 	return sid, err
 }
 
+// LoginUser verifies name and password and returns a new session id.
 func (s *Service) LoginUser(ctx context.Context, name, password string) (string, error) {
 	u, err := s.repo.FindByName(ctx, name)
 	if err != nil {
@@ -266,6 +280,7 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 	return sid, err
 }
 
+// LogoutUser deletes the current session.
 func (s *Service) LogoutUser(ctx context.Context, sessionID string) error {
 	err := s.sessionManager.DeleteSession(ctx, sessionID)
 	if err != nil {
@@ -277,6 +292,7 @@ func (s *Service) LogoutUser(ctx context.Context, sessionID string) error {
 	return err
 }
 
+// LogoutUserFromAllDevices revokes every session of the user.
 func (s *Service) LogoutUserFromAllDevices(ctx context.Context, userID string) error {
 	err := s.sessionManager.RevokeAllSessions(ctx, userID)
 	if err != nil {

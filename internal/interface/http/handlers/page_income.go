@@ -15,6 +15,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// IncomeHandler renders the income report for a given month.
 type IncomeHandler struct {
 	ledgerQuery query.LedgerQueryService
 }
@@ -36,6 +37,8 @@ func (h *IncomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the month's income entries, their total and the number of
+// distinct sources; ?month=YYYY-MM selects the displayed month.
 func (h *IncomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

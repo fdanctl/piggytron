@@ -13,6 +13,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// DashboardHandler renders the dashboard: recent entries, account balances
+// and the current month's budget spent.
 type DashboardHandler struct {
 	ledgerQuery   query.LedgerQueryService
 	accountQuery  query.AccountQueryService
@@ -31,6 +33,7 @@ func NewDashboardHandler(
 	}
 }
 
+// ServeHTTP dispatches GET to Get; any other path on "/" yields a 404.
 func (h *DashboardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
@@ -40,6 +43,7 @@ func (h *DashboardHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the dashboard page for the authenticated user.
 func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)

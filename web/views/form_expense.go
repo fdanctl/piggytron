@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// ExpenseForm is the view-model for the expense transaction form.
 type ExpenseForm struct {
 	Form
 
@@ -20,6 +21,8 @@ type ExpenseForm struct {
 	SourceAcc   string
 }
 
+// NewExpenseForm returns a blank expense form pre-filled with today's date
+// and the EUR currency.
 func NewExpenseForm() *ExpenseForm {
 	f := ExpenseForm{
 		Date:     time.Now().Format("02/01/2006"),

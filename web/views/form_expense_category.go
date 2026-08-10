@@ -6,6 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
 )
 
+// ExpenseCategoryForm is the view-model for the expense category form.
 type ExpenseCategoryForm struct {
 	Form
 
@@ -13,6 +14,7 @@ type ExpenseCategoryForm struct {
 	Type string
 }
 
+// NewExpenseCategoryForm returns a blank expense category form.
 func NewExpenseCategoryForm() *ExpenseCategoryForm {
 	f := ExpenseCategoryForm{}
 	f.Initial = true

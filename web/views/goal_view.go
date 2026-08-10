@@ -9,6 +9,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+// Goal is the view-model for a savings goal: current amount, amount left,
+// monthly contribution needed and completion percentage.
 type Goal struct {
 	ID           string
 	Name         string
@@ -25,6 +27,9 @@ type Goal struct {
 	CompletePercentage float64
 }
 
+// NewGoal builds the view-model from the account read-model, deriving the
+// monthly contribution needed from the remaining months until the target
+// date.
 func NewGoal(
 	g query.AccountWithSum,
 ) Goal {

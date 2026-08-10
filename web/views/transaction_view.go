@@ -6,6 +6,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+// Transaction is the ledger entry as displayed in lists: formatted amount
+// and date, resolved category and involved accounts.
 type Transaction struct {
 	ID          string
 	Description string
@@ -18,6 +20,8 @@ type Transaction struct {
 	Date        string
 }
 
+// NewTransaction builds the view model from a ledger entry; expenses are
+// shown as negative amounts.
 func NewTransaction(
 	t query.LedgerEntryDTO,
 ) Transaction {
@@ -58,6 +62,9 @@ func NewTransaction(
 	}
 }
 
+// NewAccountTransaction builds the view model from the account's point of
+// view: entries where the account is the source are expenses (negative),
+// everything else is income.
 func NewAccountTransaction(
 	t query.LedgerEntryDTO,
 	accName string,

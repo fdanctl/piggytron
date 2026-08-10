@@ -2,6 +2,7 @@ package user
 
 import "context"
 
+// Repository persists User aggregates; implemented by the postgres package.
 type Repository interface {
 	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, user *User) error

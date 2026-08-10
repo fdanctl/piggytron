@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// IncomeForm is the view-model for the income transaction form.
 type IncomeForm struct {
 	Form
 	Amount         string
@@ -19,6 +20,8 @@ type IncomeForm struct {
 	DestinationAcc string
 }
 
+// NewIncomeForm returns a blank income form pre-filled with today's date
+// and the EUR currency.
 func NewIncomeForm() *IncomeForm {
 	f := IncomeForm{
 		Date:     time.Now().Format("02/01/2006"),

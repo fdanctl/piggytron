@@ -11,10 +11,13 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// LoginHandler serves the login page (and the HTMX login form fragment).
 type LoginHandler struct {
 	isDev bool
 }
 
+// NewLoginHandler builds the handler; in dev mode the form is pre-filled
+// with demo credentials.
 func NewLoginHandler(isDev bool) *LoginHandler {
 	return &LoginHandler{
 		isDev: isDev,
@@ -30,6 +33,7 @@ func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the login form, standalone or wrapped in the base layout.
 func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
 	redirect := r.URL.Query().Get("redirect")
 	v := views.NewLoginView(redirect)

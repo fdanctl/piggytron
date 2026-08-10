@@ -3,22 +3,29 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// LedgerQueryService implements the ledger read-model queries declared in
+// internal/query using raw SQL.
 type LedgerQueryService struct {
 	db *sql.DB
 }
 
+// NewLedgerQueryService builds the service over a *sql.DB.
 func NewLedgerQueryService(db *sql.DB) *LedgerQueryService {
 	return &LedgerQueryService{
 		db: db,
 	}
 }
 
+// FindByID returns one entry with the names of its accounts and categories
+// resolved. Not found maps to ledger.ErrNotFound.
 func (s *LedgerQueryService) FindByID(
 	ctx context.Context,
 	id string,
@@ -65,11 +72,16 @@ func (s *LedgerQueryService) FindByID(
 		&dto.CreatedAt,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ledger.ErrNotFound
+		}
 		return nil, err
 	}
 	return &dto, nil
 }
 
+// FindFiltered returns the user's entries matching the filters, newest
+// first, with pagination.
 func (s *LedgerQueryService) FindFiltered(
 	ctx context.Context,
 	uid string,
@@ -155,6 +167,9 @@ func (s *LedgerQueryService) FindFiltered(
 	return entries, nil
 }
 
+// FindAllWithExpenseCategoryWithCount returns the user's entries that carry
+// an expense category within the date range, with the total row count
+// (before pagination).
 func (s *LedgerQueryService) FindAllWithExpenseCategoryWithCount(
 	ctx context.Context,
 	uid string,
@@ -239,6 +254,8 @@ func (s *LedgerQueryService) FindAllWithExpenseCategoryWithCount(
 	}, nil
 }
 
+// FindFilteredWithCount is FindFiltered with the total row count (before
+// pagination).
 func (s *LedgerQueryService) FindFilteredWithCount(
 	ctx context.Context,
 	uid string,
@@ -332,6 +349,7 @@ func (s *LedgerQueryService) FindFilteredWithCount(
 	}, nil
 }
 
+// CountFilteredResults counts the entries matching the filters.
 func (s *LedgerQueryService) CountFilteredResults(
 	ctx context.Context,
 	uid string,
@@ -367,6 +385,8 @@ func (s *LedgerQueryService) CountFilteredResults(
 	return count, nil
 }
 
+// GetExpensesByCategoryBetweenDates totals expenses per expense category in
+// the date range, plus the overall total (ROLLUP row).
 func (s *LedgerQueryService) GetExpensesByCategoryBetweenDates(
 	ctx context.Context,
 	uid string,
@@ -423,6 +443,7 @@ func (s *LedgerQueryService) GetExpensesByCategoryBetweenDates(
 	}, nil
 }
 
+// GetRecentEntries returns the user's latest entries, newest first.
 func (s *LedgerQueryService) GetRecentEntries(
 	ctx context.Context, uid string, limit uint,
 ) ([]query.LedgerEntryDTO, error) {
@@ -489,6 +510,9 @@ func (s *LedgerQueryService) GetRecentEntries(
 	return entries, nil
 }
 
+// GetMinMaxAmountAndDate returns the smallest/largest entry amount and the
+// earliest/latest entry date of the user; used to build the ledger filter
+// form bounds.
 func (s *LedgerQueryService) GetMinMaxAmountAndDate(
 	ctx context.Context,
 	uid string,
@@ -514,6 +538,7 @@ func (s *LedgerQueryService) GetMinMaxAmountAndDate(
 	return
 }
 
+// GetFirstEntryDate returns the date of the user's earliest ledger entry.
 func (s *LedgerQueryService) GetFirstEntryDate(
 	ctx context.Context,
 	uid string,

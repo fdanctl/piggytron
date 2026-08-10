@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// ExpenseCategoriesHandler renders the "new expense category" dialog (GET)
+// and creates the category (POST).
 type ExpenseCategoriesHandler struct {
 	service *appexpensecategory.Service
 }
@@ -37,6 +39,7 @@ func (h *ExpenseCategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// Get renders the new expense category form in a dialog.
 func (h *ExpenseCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.ExpenseCategoryForm(*views.NewExpenseCategoryForm())
 	components.DialogWrapper(
@@ -48,6 +51,8 @@ func (h *ExpenseCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Post validates and creates the expense category, appending the new item
+// to the expense categories list out-of-band.
 func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())

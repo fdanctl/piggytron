@@ -7,18 +7,24 @@ import (
 	"time"
 )
 
+// LoggerKey is the context key holding the request-scoped logger.
 const LoggerKey ctxKey = "logger"
 
+// responseWriter wraps http.ResponseWriter to capture the status code.
 type responseWriter struct {
 	http.ResponseWriter
 	status int
 }
 
+// WriteHeader records the status code before delegating to the embedded
+// writer.
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.status = code
 	rw.ResponseWriter.WriteHeader(code)
 }
 
+// LoggingMiddleware logs request start/completion (with status and
+// duration) and injects the request-scoped logger into the context.
 func LoggingMiddleware(l *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

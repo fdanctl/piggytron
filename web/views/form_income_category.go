@@ -6,11 +6,13 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 )
 
+// IncomeCategoryForm is the view-model for the income category form.
 type IncomeCategoryForm struct {
 	Form
 	Name string
 }
 
+// NewIncomeCategoryForm returns a blank income category form.
 func NewIncomeCategoryForm() *IncomeCategoryForm {
 	f := IncomeCategoryForm{}
 	f.Initial = true

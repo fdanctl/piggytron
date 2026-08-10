@@ -40,6 +40,9 @@ func NewBank(id string, name string, btype string, isSaving bool, amount int) Ba
 	}
 }
 
+// NewBankPage aggregates the accounts and recent entries into the page
+// model, computing the metric totals and their deltas (money in/out) as
+// increase percentages over the previous month's balance.
 func NewBankPage(
 	a []query.AccountWithSumAndMonthChange,
 	t []query.LedgerEntryDTO,

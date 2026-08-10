@@ -14,6 +14,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// ExpensesHandler renders the expenses report for a given month.
 type ExpensesHandler struct {
 	ledgerQuery query.LedgerQueryService
 }
@@ -35,6 +36,9 @@ func (h *ExpensesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the month's categorized expenses, their total and the month
+// selector; ?month=YYYY-MM selects the displayed month.
+// TODO: WIP
 func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

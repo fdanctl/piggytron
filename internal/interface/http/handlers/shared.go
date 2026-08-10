@@ -1,3 +1,7 @@
+// Package handlers implements the HTTP layer: page handlers (full HTML) and
+// partial handlers (HTMX fragments, including the chart partials), plus the
+// helpers they share. Handlers depend only on application services and query
+// interfaces — never on Postgres directly.
 package handlers
 
 import (
@@ -19,10 +23,15 @@ import (
 )
 
 var (
+	// ErrInvalidAmount signals an amount string that cannot be parsed into
+	// cents.
 	ErrInvalidAmount = errors.New("invalid amount")
-	ErrEmpty         = errors.New("string is empty")
+	// ErrEmpty signals a required string argument that is empty.
+	ErrEmpty = errors.New("string is empty")
 )
 
+// LIMIT is the default page size for paginated ledger listings; handlers
+// request LIMIT+1 rows to detect whether more pages exist.
 const LIMIT = 30
 
 func renderWithMainLayout(
@@ -86,6 +95,7 @@ func convertAmountStrToInt(str string) (int, error) {
 
 // parseMonth receive a string of type 042026,
 // and return the correspondent year and month
+// TODO remove
 func parseMonth(str string) (int, time.Month, error) {
 	if len(str) != 6 {
 		return 0, time.January, errors.New("wrong month")

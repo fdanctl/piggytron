@@ -5,6 +5,9 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
+// BudgetPageView is the view-model for the budget page: per-category rows
+// grouped by needs/wants/savings, the summary totals and the percentage of
+// the budget assigned to each group.
 type BudgetPageView struct {
 	Month               budget.Month
 	TotalBudgeted       int
@@ -31,6 +34,8 @@ type BudgetPageView struct {
 	SavingsPct    float64
 }
 
+// BudgetRowView is the view-model for one category's budget row: budgeted
+// amount, carryover from the previous month and available balance.
 type BudgetRowView struct {
 	CategoryID string
 	Month      budget.Month
@@ -40,6 +45,9 @@ type BudgetRowView struct {
 	Available  int
 }
 
+// NewBudgetPageView aggregates the per-category budget values into rows and
+// computes the month's totals: ready-to-assign, income, budgeted, spent, available,
+// overspent and the carryover amounts.
 func NewBudgetPageView(
 	month budget.Month,
 	net int,

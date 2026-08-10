@@ -13,6 +13,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
+// AccountChartHandler renders the daily balance line chart for one account.
 type AccountChartHandler struct {
 	accountQuery query.AccountQueryService
 }
@@ -40,6 +41,9 @@ func (h *AccountChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// Get renders the account's daily balance line from ?start=YYYY-MM-DD
+// (defaulting to the start of the year). Used in goals page, start and max
+// are used to render the chart.
 func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")

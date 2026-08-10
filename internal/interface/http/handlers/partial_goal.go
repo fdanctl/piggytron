@@ -19,6 +19,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// GoalHandler renders the new/edit goal dialog (GET) and handles goal
+// creation (POST) and updates (PUT).
 type GoalHandler struct {
 	accService          *appaccount.Service
 	accountQueryService query.AccountQueryService
@@ -53,6 +55,8 @@ func (h *GoalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the goal form: blank for a new goal, pre-filled when an {id}
+// path value points at an existing goal account.
 func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -105,6 +109,8 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		Render(r.Context(), w)
 }
 
+// Post validates and creates the goal, then navigates to the new goal page
+// and prepends the goal item to the active-goals list.
 func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
@@ -194,6 +200,8 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Put validates and updates the goal identified by {id}, then navigates
+// back to its page (refreshes).
 func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())

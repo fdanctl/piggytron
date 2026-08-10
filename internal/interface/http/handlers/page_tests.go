@@ -6,6 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/pages"
 )
 
+// TestHandler renders the test page (development-only template sandbox).
 type TestHandler struct{}
 
 func (h *TestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -17,6 +18,7 @@ func (h *TestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the test page.
 func (h *TestHandler) Get(w http.ResponseWriter, r *http.Request) {
 	content := pages.Test()
 	renderWithMainLayout(w, r, "Expenses", content)

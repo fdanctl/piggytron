@@ -1,3 +1,6 @@
+// Package appledger implements the ledger use cases: creating, updating and
+// deleting income, expense and transfer entries, and querying them. Every
+// write keeps the affected accounts' monthly summaries in sync.
 package appledger
 
 import (
@@ -14,17 +17,21 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// Service implements the ledger use cases. Every write runs inside a single
+// database transaction and keeps the affected accounts' monthly summaries in
+// sync.
 type Service struct {
 	repo ledger.Repository
 	db   *sql.DB
 }
 
-var ErrCanChangeType = errors.New("can't change transaction type")
-
+// NewService wires the ledger service to its repository and database.
 func NewService(r ledger.Repository, db *sql.DB) *Service {
 	return &Service{repo: r, db: db}
 }
 
+// Update dispatches the request to the typed update matching ttype (income,
+// expense or transfer).
 func (s *Service) Update(
 	ctx context.Context,
 	ttype string,
@@ -82,6 +89,8 @@ func (s *Service) Update(
 	return nil, errs.NewGenericBadRequestAppError(ledger.ErrInvalidType, "appledger.Update")
 }
 
+// Delete removes an entry, verifying the destination account stays solvent
+// and subtracting the movement from both accounts' monthly summaries.
 func (s *Service) Delete(ctx context.Context, id string) error {
 	tid, err := util.ParseID[ledger.ID](id)
 	if err != nil {
@@ -196,6 +205,7 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// FindOneByID returns a ledger entry by id.
 func (s *Service) FindOneByID(ctx context.Context, id string) (*ledger.Entry, error) {
 	tid, err := util.ParseID[ledger.ID](id)
 	if err != nil {
@@ -229,6 +239,7 @@ func (s *Service) FindOneByID(ctx context.Context, id string) (*ledger.Entry, er
 	return t, nil
 }
 
+// FindAllByUser returns the user's ledger entries.
 func (s *Service) FindAllByUser(
 	ctx context.Context,
 	userID string,
@@ -256,6 +267,7 @@ func (s *Service) FindAllByUser(
 	return transactions, nil
 }
 
+// FindAllByAccount returns the ledger entries of an account.
 func (s *Service) FindAllByAccount(
 	ctx context.Context,
 	accountID string,
@@ -282,6 +294,7 @@ func (s *Service) FindAllByAccount(
 	return transactions, nil
 }
 
+// FindAllByCategory returns the ledger entries of a category.
 func (s *Service) FindAllByCategory(
 	ctx context.Context,
 	categoryID string,

@@ -1,3 +1,5 @@
+// Package util provides small generic helpers shared across layers, currently
+// UUID parsing and generation typed as domain ID types.
 package util
 
 import (
@@ -6,8 +8,10 @@ import (
 	"github.com/google/uuid"
 )
 
+// ZeroUUID is the all-zero UUID string, used as a sentinel.
 const ZeroUUID = "00000000-0000-0000-0000-000000000000"
 
+// ErrInvalidID is returned when a string is not a valid UUID.
 var ErrInvalidID = errors.New("invalid id")
 
 // ParseID validates s as a UUID and returns it typed as T.

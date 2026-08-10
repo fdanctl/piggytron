@@ -7,6 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// LedgerFilters is an optional filter set for ledger queries. Nil fields
+// mean "no filter"; non-nil slices/pointers are treated as an OR set (any
+// match is included).
 type LedgerFilters struct {
 	Types *[]string
 
@@ -21,6 +24,10 @@ type LedgerFilters struct {
 	MaxDate *time.Time
 }
 
+// NewLedgerFilters builds LedgerFilters from raw HTTP query strings,
+// discarding invalid values. Amounts are given in the UI unit (e.g. 12.50 as
+// "12.50") and converted to cents; dates are Unix seconds. An invalid or
+// contradictory range yields nil for the affected fields.
 func NewLedgerFilters(
 	ttype, accountIDs, categoryIDs []string,
 	minAmount, maxAmount string,

@@ -9,17 +9,22 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 )
 
+// MonthlySummaryRepository persists monthly_summary rows via raw SQL.
 type MonthlySummaryRepository struct {
 	db DBTX
 }
 
+// NewMonthlySummaryRepository builds the repository over a DBTX (sql.DB or
+// sql.Tx).
 func NewMonthlySummaryRepository(db DBTX) *MonthlySummaryRepository {
 	return &MonthlySummaryRepository{
 		db: db,
 	}
 }
 
-type MonthlySummaryDTO struct {
+// monthlySummaryDTO is the raw monthly_summary row projection used when
+// scanning query results.
+type monthlySummaryDTO struct {
 	accountID monthlysummary.ID
 	month     time.Time
 	moneyIn   int
@@ -28,6 +33,8 @@ type MonthlySummaryDTO struct {
 	updatedAt time.Time
 }
 
+// Save upserts a summary, adding the incoming money_in/money_out to the
+// existing row on conflict (account_id, month).
 func (r *MonthlySummaryRepository) Save(
 	ctx context.Context,
 	summary *monthlysummary.MonthlySummary,
@@ -62,6 +69,7 @@ func (r *MonthlySummaryRepository) Save(
 	return nil
 }
 
+// Update overwrites the money in/out totals of an existing row.
 func (r *MonthlySummaryRepository) Update(
 	ctx context.Context,
 	summary *monthlysummary.MonthlySummary,
@@ -87,6 +95,8 @@ func (r *MonthlySummaryRepository) Update(
 	return nil
 }
 
+// FindByAccountAndMonth loads one summary, mapping missing rows to
+// monthlysummary.ErrNotFound.
 func (r *MonthlySummaryRepository) FindByAccountAndMonth(
 	ctx context.Context,
 	accountID string,
@@ -135,6 +145,7 @@ func (r *MonthlySummaryRepository) FindByAccountAndMonth(
 	return u, err
 }
 
+// FindAllByAccount returns every summary row of an account.
 func (r *MonthlySummaryRepository) FindAllByAccount(
 	ctx context.Context,
 	accountID string,
@@ -160,7 +171,7 @@ func (r *MonthlySummaryRepository) FindAllByAccount(
 	var summaries []*monthlysummary.MonthlySummary
 
 	for rows.Next() {
-		var dto MonthlySummaryDTO
+		var dto monthlySummaryDTO
 		err := rows.Scan(
 			&dto.accountID,
 			&dto.month,
@@ -189,6 +200,7 @@ func (r *MonthlySummaryRepository) FindAllByAccount(
 	return summaries, nil
 }
 
+// FindAllByUser returns the summary rows of every account owned by the user.
 func (r *MonthlySummaryRepository) FindAllByUser(
 	ctx context.Context,
 	userID string,
@@ -215,7 +227,7 @@ func (r *MonthlySummaryRepository) FindAllByUser(
 	var summaries []*monthlysummary.MonthlySummary
 
 	for rows.Next() {
-		var dto MonthlySummaryDTO
+		var dto monthlySummaryDTO
 		err := rows.Scan(
 			&dto.accountID,
 			&dto.month,

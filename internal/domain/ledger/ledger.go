@@ -1,3 +1,6 @@
+// Package ledger defines the ledger entry aggregate — income, expense and
+// transfer — the authoritative record of every money movement. Its invariants
+// mirror the CHECK constraints in schema.
 package ledger
 
 import (
@@ -5,8 +8,10 @@ import (
 	"time"
 )
 
+// ID is a ledger entry identifier.
 type ID string
 
+// Type is a ledger entry type: income, expense or transfer.
 type Type string
 
 const (
@@ -15,6 +20,7 @@ const (
 	transfer Type = "transfer"
 )
 
+// NewType parses a string into a Type, returning ErrInvalidType otherwise.
 func NewType(str string) (Type, error) {
 	switch str {
 	case "income":
@@ -31,6 +37,8 @@ func NewType(str string) (Type, error) {
 	}
 }
 
+// Entry is a single money movement: money in (income), money out (expense) or
+// between accounts (transfer). Amounts are positive, in cents.
 type Entry struct {
 	id     ID
 	userID ID
@@ -49,6 +57,7 @@ type Entry struct {
 	createdAt   time.Time
 }
 
+// NewIncome builds a validated income entry credited to toAccountID.
 func NewIncome(
 	id ID,
 	userID ID,
@@ -82,6 +91,9 @@ func NewIncome(
 	}, nil
 }
 
+// NewExpense builds a validated expense entry debited from fromAccountID.
+// minRunningBalance is the account balance before this entry; the expense is
+// rejected if it would make the balance negative.
 func NewExpense(
 	id ID,
 	userID ID,
@@ -119,6 +131,9 @@ func NewExpense(
 	}, nil
 }
 
+// NewTransfer builds a validated transfer between two accounts. For transfers
+// into a goal or a savings account, the expense category must match the
+// destination account's category and type.
 func NewTransfer(
 	id ID,
 	userID ID,
@@ -176,6 +191,8 @@ func NewTransfer(
 	}, nil
 }
 
+// Rehydrate rebuilds an Entry from persistence without re-running
+// validation (the database constraints already guard it).
 func Rehydrate(
 	id ID,
 	userID ID,
@@ -204,51 +221,66 @@ func Rehydrate(
 	}
 }
 
+// ID returns the entry id.
 func (t *Entry) ID() ID {
 	return t.id
 }
 
+// UserID returns the id of the user who owns the entry.
 func (t *Entry) UserID() ID {
 	return t.userID
 }
 
+// Type returns the entry type (income, expense or transfer).
 func (t *Entry) Type() Type {
 	return t.ttype
 }
 
+// FromAccountID returns the source account id, or nil for income entries.
 func (t *Entry) FromAccountID() *ID {
 	return t.fromAccountID
 }
 
+// ToAccountID returns the destination account id, or nil for expense entries.
 func (t *Entry) ToAccountID() *ID {
 	return t.toAccountID
 }
 
+// IncomeCategoryID returns the income category id, or nil for non-income entries.
 func (t *Entry) IncomeCategoryID() *ID {
 	return t.incomeCategoryID
 }
 
+// ExpenseCategoryID returns the expense category id, or nil for income
+// entries; for transfers it is set only when the transfer moves money into a
+// goal or a savings account.
 func (t *Entry) ExpenseCategoryID() *ID {
 	return t.expenseCategoryID
 }
 
+// Amount returns the amount in cents (always positive).
 func (t *Entry) Amount() int {
 	return t.amount
 }
 
+// Description returns the entry description.
 func (t *Entry) Description() string {
 	return t.description
 }
 
+// Date returns the date the entry applies to.
 func (t *Entry) Date() time.Time {
 	return t.date
 }
 
+// CreatedAt returns when the entry was created.
 func (t *Entry) CreatedAt() time.Time {
 	return t.createdAt
 }
 
-// CanBeDeleted receive the destination account balance or nil if it does not nonexistent
+// CanBeDeleted reports whether the entry can be deleted: the destination
+// account balance (if provided) must stay non-negative after the amount is
+// removed from it.
 func (t *Entry) CanBeDeleted(toAccBalance *int) error {
 	if toAccBalance != nil && *toAccBalance-t.Amount() < 0 {
 		return ErrNegativeBalance
@@ -256,6 +288,7 @@ func (t *Entry) CanBeDeleted(toAccBalance *int) error {
 	return nil
 }
 
+// UpdateIncome replaces the mutable fields of an income entry in place.
 func (t *Entry) UpdateIncome(
 	toAccountID ID,
 	incomeCategoryID ID,
@@ -284,6 +317,7 @@ func (t *Entry) UpdateIncome(
 	return nil
 }
 
+// ChangeExpenseCategory reassigns the expense category of a transfer.
 func (t *Entry) ChangeExpenseCategory(cid ID) error {
 	if t.fromAccountID == nil {
 		return errors.New("can't update")
@@ -293,6 +327,7 @@ func (t *Entry) ChangeExpenseCategory(cid ID) error {
 	return nil
 }
 
+// UpdateExpense replaces the mutable fields of an expense entry in place.
 func (t *Entry) UpdateExpense(
 	fromAccountID ID,
 	expenseCategoryID ID,
@@ -319,7 +354,9 @@ func (t *Entry) UpdateExpense(
 	return nil
 }
 
-// UpdateTransfer does not verify the toAccountID, for it use UpdateTransferToAccountAndCategory instead
+// UpdateTransfer replaces the mutable fields of a transfer entry in place.
+// It does not verify the destination account; use
+// UpdateTransferToAccountAndCategory for that.
 func (t *Entry) UpdateTransfer(
 	fromAccountID ID,
 	toAccountID ID,
@@ -349,6 +386,9 @@ func (t *Entry) UpdateTransfer(
 	return nil
 }
 
+// UpdateTransferToAccountAndCategory reassigns the destination account (and
+// optionally the expense category) of a transfer, re-running the goal/savings
+// category checks.
 func (t *Entry) UpdateTransferToAccountAndCategory(
 	expenseCategoryID *ID,
 	toAccountID ID,

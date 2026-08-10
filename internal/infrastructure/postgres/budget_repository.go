@@ -9,17 +9,20 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 )
 
+// BudgetRepository persists monthly budgets via raw SQL.
 type BudgetRepository struct {
 	db *sql.DB
 }
 
+// NewBudgetRepository builds a budget repository over a *sql.DB.
 func NewBudgetRepository(db *sql.DB) *BudgetRepository {
 	return &BudgetRepository{
 		db: db,
 	}
 }
 
-type BudgetDto struct {
+// budgetDto is the database row shape of the monthly_budgets table.
+type budgetDto struct {
 	CategoryID budget.ID
 	Month      time.Time
 	Amount     int
@@ -27,6 +30,7 @@ type BudgetDto struct {
 	UpdatedAt  time.Time
 }
 
+// Save upserts a budget on (category_id, month).
 func (r *BudgetRepository) Save(
 	ctx context.Context,
 	b *budget.Budget,
@@ -49,6 +53,8 @@ func (r *BudgetRepository) Save(
 	return err
 }
 
+// FindByCategoryAndMonth loads a budget, mapping missing rows to
+// budget.ErrNotFound.
 func (r *BudgetRepository) FindByCategoryAndMonth(
 	ctx context.Context,
 	cid budget.ID,
@@ -65,7 +71,7 @@ func (r *BudgetRepository) FindByCategoryAndMonth(
 		month.Time(),
 	)
 
-	var c BudgetDto
+	var c budgetDto
 	err := row.Scan(
 		&c.CategoryID,
 		&c.Month,
@@ -89,6 +95,9 @@ func (r *BudgetRepository) FindByCategoryAndMonth(
 	return category, err
 }
 
+// CopyLastMonthBudget copies last month's positive budgets into month for
+// the user's categories, overwriting only budgets currently <= 0, and
+// returns the number of rows affected.
 func (r *BudgetRepository) CopyLastMonthBudget(
 	ctx context.Context,
 	uid budget.ID,

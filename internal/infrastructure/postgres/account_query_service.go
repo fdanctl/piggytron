@@ -11,16 +11,20 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// AccountQueryService implements the read-model queries declared in
+// internal/query using raw SQL.
 type AccountQueryService struct {
 	db DBTX
 }
 
+// NewAccountQueryService builds the service over a DBTX (sql.DB or sql.Tx).
 func NewAccountQueryService(db DBTX) *AccountQueryService {
 	return &AccountQueryService{
 		db: db,
 	}
 }
 
+// FindIDNamesIncludes returns id/name pairs for the given account ids.
 func (s *AccountQueryService) FindIDNamesIncludes(
 	ctx context.Context,
 	ids []string,
@@ -70,6 +74,7 @@ func (s *AccountQueryService) FindIDNamesIncludes(
 	return results, nil
 }
 
+// FindBanksIDNames returns id/name pairs of the user's bank accounts.
 func (s *AccountQueryService) FindBanksIDNames(
 	ctx context.Context,
 	uid string,
@@ -101,6 +106,7 @@ func (s *AccountQueryService) FindBanksIDNames(
 	return results, nil
 }
 
+// FindGoalsIDNames returns id/name pairs of the user's goal accounts.
 func (s *AccountQueryService) FindGoalsIDNames(
 	ctx context.Context,
 	uid string,
@@ -132,6 +138,8 @@ func (s *AccountQueryService) FindGoalsIDNames(
 	return results, nil
 }
 
+// FindWithSum returns one account with its total balance, computed as the
+// sum of its monthly summaries.
 func (s *AccountQueryService) FindWithSum(
 	ctx context.Context,
 	id string,
@@ -191,6 +199,7 @@ func (s *AccountQueryService) FindWithSum(
 	return &g, nil
 }
 
+// FindAllWithSum returns every account of the user with its total balance.
 func (s *AccountQueryService) FindAllWithSum(
 	ctx context.Context,
 	uid string,
@@ -260,6 +269,8 @@ func (s *AccountQueryService) FindAllWithSum(
 	return results, nil
 }
 
+// FindAllWithSumAndMonthChange returns the user's accounts with total
+// balance plus money in/out within month.
 func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 	ctx context.Context,
 	uid string,
@@ -335,6 +346,7 @@ func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 	return results, nil
 }
 
+// FindAllGoalsWithSum returns the user's goal accounts with total balance.
 func (s *AccountQueryService) FindAllGoalsWithSum(
 	ctx context.Context,
 	uid string,
@@ -403,6 +415,9 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 	return results, nil
 }
 
+// GetBanksDailyBalanceSince returns a daily running balance per bank account
+// of the user from the first day of since's month. The month-normalization
+// rationale is embedded in the SQL below.
 func (s *AccountQueryService) GetBanksDailyBalanceSince(
 	ctx context.Context,
 	uid string,
@@ -531,6 +546,9 @@ func (s *AccountQueryService) GetBanksDailyBalanceSince(
 	return results, nil
 }
 
+// GetAccountDailyBalanceSince returns a daily running balance for one
+// account from the first day of since's month. The month-normalization
+// rationale is embedded in the SQL below.
 func (s *AccountQueryService) GetAccountDailyBalanceSince(
 	ctx context.Context,
 	id string,
@@ -657,6 +675,10 @@ func (s *AccountQueryService) GetAccountDailyBalanceSince(
 	return results, nil
 }
 
+// GetAccountDailyBalanceAndStatsSince returns one account's daily running
+// balance plus the money in, money out and transaction totals for the whole
+// range since (from the first day of since's month). The month-normalization
+// rationale is embedded in the SQL below.
 func (s *AccountQueryService) GetAccountDailyBalanceAndStatsSince(
 	ctx context.Context,
 	id string,
@@ -839,6 +861,10 @@ func (s *AccountQueryService) GetAccountDailyBalanceAndStatsSince(
 	}, nil
 }
 
+// GetAccountWithMinRunningBalance loads an account and the minimum running
+// balance reached between fromDate and untilDate (optional), excluding
+// excludeEntryID, together with the date it was reached. It is used to
+// prevent overdrafts when creating or updating entries.
 func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 	ctx context.Context,
 	id string,

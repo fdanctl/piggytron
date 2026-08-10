@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// IncomeCategoriesHandler renders the "new income category" dialog (GET)
+// and creates the category (POST).
 type IncomeCategoriesHandler struct {
 	service *appincomecategory.Service
 }
@@ -37,6 +39,7 @@ func (h *IncomeCategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 }
 
+// Get renders the new income category form in a dialog.
 func (h *IncomeCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.IncomeCategoryForm(*views.NewIncomeCategoryForm())
 	components.DialogWrapper(
@@ -48,6 +51,8 @@ func (h *IncomeCategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Post validates and creates the income category, appending the new item
+// to the income categories list out-of-band.
 func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())

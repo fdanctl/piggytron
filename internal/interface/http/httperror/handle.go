@@ -10,6 +10,9 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 )
 
+// SendError writes the HTMX error response for an error: an AppError is
+// logged according to its kind, mapped to an HTTP status, and announced via
+// an HX-Trigger toast. It returns whether an error was handled.
 func SendError(w http.ResponseWriter, r *http.Request, err error) bool {
 	if err == nil {
 		return false
@@ -50,6 +53,9 @@ func SendError(w http.ResponseWriter, r *http.Request, err error) bool {
 	return true
 }
 
+// SendFormError writes the error status and re-renders the given form with
+// the error attached; validation errors skip the toast (the form shows
+// field-level feedback instead).
 func SendFormError(w http.ResponseWriter, r *http.Request, err error, form templ.Component) {
 	logger := middleware.LoggerFromContext(r.Context())
 

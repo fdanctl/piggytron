@@ -11,6 +11,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// SignupHandler serves the signup page (and the HTMX signup form fragment).
 type SignupHandler struct{}
 
 func (h *SignupHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -22,6 +23,7 @@ func (h *SignupHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the signup form, standalone or wrapped in the base layout.
 func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.SignupForm(*views.NewSignupView())
 	if r.Header.Get("Hx-Request") == "true" {

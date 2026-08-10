@@ -15,6 +15,8 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// CreateExpense records money spent from srcAccID, refusing goals and savings
+// accounts, rejecting overdraft, and adds the amount to the monthly summary.
 func (s *Service) CreateExpense(
 	ctx context.Context,
 	userID string,
@@ -199,6 +201,8 @@ func (s *Service) CreateExpense(
 	return t, nil
 }
 
+// UpdateExpense modifies an expense entry, re-running the overdraft checks
+// affected by the change and reconciling monthly summaries.
 func (s *Service) UpdateExpense(
 	ctx context.Context,
 	id string,

@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
+// BanksChartsHandler renders the banks page charts: the assets pie and the
+// combined daily balance history line.
 type BanksChartsHandler struct {
 	accountQuery query.AccountQueryService
 }
@@ -36,6 +38,7 @@ func (h *BanksChartsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the assets pie and swaps the history chart out-of-band.
 func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

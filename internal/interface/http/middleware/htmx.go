@@ -2,6 +2,8 @@ package middleware
 
 import "net/http"
 
+// RequireHTMX rejects requests without the HX-Request header with a 404;
+// used for partial-only routes.
 func RequireHTMX(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("HX-Request") != "true" {

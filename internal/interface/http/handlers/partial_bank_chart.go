@@ -12,6 +12,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
+// BankChartHandler renders the bank detail chart card: the month's daily
+// balance line plus money in/out and transaction-count stats.
 type BankChartHandler struct {
 	accountQuery query.AccountQueryService
 }
@@ -39,6 +41,9 @@ func (h *BankChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the chart card; ?month=YYYY-MM selects the displayed month
+// (defaulting to the current one). TODO: rethink, make it dynamic with
+// month to date, last 6 months, last year, year to date and all
 func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")

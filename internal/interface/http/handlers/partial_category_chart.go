@@ -9,6 +9,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
+// CategoryChartHandler renders the monthly values bar chart for one
+// category across the current year.
 type CategoryChartHandler struct {
 	categoryQuery query.CategoryQueryService
 }
@@ -31,6 +33,9 @@ func (h *CategoryChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 }
 
+// Get renders the category's monthly bar chart for the current year.
+// TODO: rethink, maybe it makes more sense the last year, last 6 months
+// or dynamic
 func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")

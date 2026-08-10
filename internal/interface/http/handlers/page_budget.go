@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// BudgetPageHandler renders the budget page for a given month: budgets per
+// category, spent values and the month's net/balance.
 type BudgetPageHandler struct {
 	categoryQuery    query.CategoryQueryService
 	transactionQuery query.LedgerQueryService
@@ -38,6 +40,8 @@ func (h *BudgetPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the budget page; the optional ?month=YYYY-MM query selects the
+// displayed month.
 func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

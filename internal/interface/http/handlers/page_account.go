@@ -10,6 +10,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// AccountHandler renders the account settings page (profile and password
+// forms).
 type AccountHandler struct {
 	userService *appuser.Service
 }
@@ -29,6 +31,7 @@ func (h *AccountHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the account settings page for the authenticated user.
 func (h *AccountHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

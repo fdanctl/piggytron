@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// LedgerEntryDTO is a ledger entry.
 type LedgerEntryDTO struct {
 	ID     string
 	UserID string
@@ -23,21 +24,28 @@ type LedgerEntryDTO struct {
 	CreatedAt   time.Time
 }
 
+// EntriesWithTotalCount is a page of ledger entries with the total number of
+// matching rows.
 type EntriesWithTotalCount struct {
 	Data  []LedgerEntryDTO
 	Total int
 }
 
+// CategoryExpense is the amount spent in one expense category over a range.
 type CategoryExpense struct {
 	ID     string
 	Amount int
 }
 
+// CategoryExpenseWithTotal is the per-category expense report plus the total
+// spent.
 type CategoryExpenseWithTotal struct {
 	Data  []CategoryExpense
 	Total int
 }
 
+// LedgerQueryService is the read-model contract for ledger.
+// It is implemented by the Postgres infrastructure.
 type LedgerQueryService interface {
 	FindByID(ctx context.Context, id string) (*LedgerEntryDTO, error)
 	FindFiltered(
@@ -67,7 +75,8 @@ type LedgerQueryService interface {
 	GetRecentEntries(
 		ctx context.Context, uid string, limit uint,
 	) ([]LedgerEntryDTO, error)
-	// GetMinMaxAmountAndDate return minAmount, maxAmount, minDate, maxDate, error
+	// GetMinMaxAmountAndDate returns minAmount, maxAmount, minDate, maxDate, error
 	GetMinMaxAmountAndDate(ctx context.Context, uid string) (int, int, time.Time, time.Time, error)
+	// GetFirstEntryDate returns the date of the user's oldest ledger entry.
 	GetFirstEntryDate(ctx context.Context, uid string) (time.Time, error)
 }

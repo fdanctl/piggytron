@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
+// DashboardBudgetCharts renders the dashboard's budget charts: the
+// budget-vs-spent bar chart and the spent-by-type pie.
 type DashboardBudgetCharts struct {
 	categoryQuery query.CategoryQueryService
 }
@@ -36,6 +38,12 @@ func (h *DashboardBudgetCharts) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// Get renders the budget bar chart and swaps the spent-by-type pie
+// out-of-band for the current month.
+// TODO: make it more complete,
+//   - bar chart has a 2nd slide showing spent progress, similar to month progress, by category
+//   - pie chart has a 2nd slide showing the spent progrees by type
+//   - considering the pie chart to be a double donut with spent and budget
 func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

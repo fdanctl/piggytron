@@ -7,6 +7,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// BankForm is the view-model for the bank account form.
 type BankForm struct {
 	Form
 
@@ -15,6 +16,7 @@ type BankForm struct {
 	IsSavings bool
 }
 
+// NewBankForm returns a blank bank form pre-filled with the EUR currency.
 func NewBankForm() *BankForm {
 	f := BankForm{
 		Currency: currency.EUR.String(),

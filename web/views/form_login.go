@@ -1,5 +1,7 @@
 package views
 
+// LoginView is the view-model for the login form, carrying the optional
+// post-login redirect target.
 type LoginView struct {
 	Form
 	Redirect string
@@ -8,6 +10,7 @@ type LoginView struct {
 	Password string
 }
 
+// NewLoginView returns a blank login form with the given redirect target.
 func NewLoginView(redirect string) *LoginView {
 	f := LoginView{
 		Redirect: redirect,

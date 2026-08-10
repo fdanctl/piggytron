@@ -1,3 +1,6 @@
+// Package config loads the application configuration from environment
+// variables (SERVER_PORT, DB_USER/DB_PASSWORD/DB_PORT/DB_NAME, REDIS_PORT,
+// DEV) and exposes it to the rest of the application.
 package config
 
 import (
@@ -24,12 +27,15 @@ type hashConfig struct {
 
 type config struct {
 	ServerPort string
+	// postgres://<DB_USER>:<DB_PASSWORD>@localhost:<DB_PORT>/<DB_NAME>
 	DBURL      string
 	RedisAddr  string
 	HashConfig hashConfig
 	IsDev      bool
 }
 
+// LoadConfig reads the configuration from environment variables and returns
+// a populated config, or an error when a required variable is missing.
 func LoadConfig() (*config, error) {
 	serverPort := os.Getenv("SERVER_PORT")
 	if serverPort == "" {
@@ -37,7 +43,6 @@ func LoadConfig() (*config, error) {
 		serverPort = "8080"
 	}
 
-	// "postgres://postgres:postgres@localhost:5433/db"
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbPort := os.Getenv("DB_PORT")

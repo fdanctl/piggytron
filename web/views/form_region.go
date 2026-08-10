@@ -1,11 +1,14 @@
 package views
 
+// RegionForm is the view-model for the preferences (region/formatting)
+// form.
 type RegionForm struct {
 	Form
 	Currency string
 	Language string
 }
 
+// NewRegionForm returns a blank region form.
 func NewRegionForm() *RegionForm {
 	f := RegionForm{}
 	f.Initial = true

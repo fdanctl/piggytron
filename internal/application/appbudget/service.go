@@ -1,3 +1,6 @@
+// Package appbudget implements the budget use cases: creating and querying
+// monthly budgets per expense category, and copying the previous month's
+// budgets into an empty month.
 package appbudget
 
 import (
@@ -10,15 +13,19 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// Service implements the budget use cases.
 type Service struct {
 	repo budget.Repository
 }
 
+// NewService wires the budget service to its repository.
 func NewService(r budget.Repository) *Service {
 	return &Service{repo: r}
 }
 
-func (s *Service) CreateBudget(
+// SaveBudget creates a budget for a category and month, if not existing.
+// Otherwise updates it.
+func (s *Service) SaveBudget(
 	ctx context.Context,
 	categoryID string,
 	month budget.Month,
@@ -60,6 +67,7 @@ func (s *Service) CreateBudget(
 	return b, nil
 }
 
+// FindBudget returns the budget for a category and month.
 func (s *Service) FindBudget(
 	ctx context.Context,
 	categoryID string,
@@ -107,6 +115,8 @@ func (s *Service) FindBudget(
 	return b, nil
 }
 
+// CopyFromLastMonth carries the previous month's budgets into month,
+// returning the number of categories updated.
 func (s *Service) CopyFromLastMonth(
 	ctx context.Context,
 	userID string,

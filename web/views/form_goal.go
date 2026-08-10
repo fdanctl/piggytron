@@ -12,6 +12,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// GoalForm is the view-model for the goal create/edit form.
 type GoalForm struct {
 	Form
 	Name         string
@@ -22,6 +23,8 @@ type GoalForm struct {
 	Category     string
 }
 
+// NewGoalForm returns a blank goal form pre-filled with today's start date
+// and the EUR currency.
 func NewGoalForm() *GoalForm {
 	f := GoalForm{
 		StartDate: time.Now().Format("02/01/2006"),

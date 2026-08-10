@@ -8,6 +8,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// PreferencesHandler renders the preferences page (region/formatting
+// settings).
 type PreferencesHandler struct {
 	userService *appuser.Service
 }
@@ -27,6 +29,7 @@ func (h *PreferencesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the preferences page.
 func (h *PreferencesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	rf := views.NewRegionForm()
 	content := pages.Preferences(

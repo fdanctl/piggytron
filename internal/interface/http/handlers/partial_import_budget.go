@@ -12,6 +12,8 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/components"
 )
 
+// ImportBudgetHandler copies last month's budgets into the requested month
+// (POST /import?month=YYYY-MM).
 type ImportBudgetHandler struct {
 	service *appbudget.Service
 }
@@ -30,6 +32,8 @@ func (h *ImportBudgetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// Post imports the budgets and reports success or a "no budget last month"
+// warning via toast. Navigates back to its page (refreshes) on success.
 func (h *ImportBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -56,7 +60,10 @@ func (h *ImportBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if count > 0 {
-		w.Header().Set("HX-Trigger", "budget-import-completed")
+		w.Header().Set(
+			"HX-Trigger",
+			fmt.Sprintf(`{"contentPush": { "url": "/budget?month=%s" }}`, month),
+		)
 		components.SendToast(
 			components.Success,
 			fmt.Sprintf("Imported  %d categories with success", count),

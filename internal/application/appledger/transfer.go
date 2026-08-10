@@ -14,6 +14,9 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// CreateTransfer moves money between two accounts, enforcing the goal and
+// savings category rules and the source's solvency, and updates both monthly
+// summaries.
 func (s *Service) CreateTransfer(
 	ctx context.Context,
 	userID string,
@@ -245,6 +248,9 @@ func (s *Service) CreateTransfer(
 	return t, nil
 }
 
+// UpdateTransfer modifies a transfer entry, re-running the goal/savings and
+// solvency checks affected by the change and reconciling monthly summaries on
+// both sides.
 func (s *Service) UpdateTransfer(
 	ctx context.Context,
 	id string,

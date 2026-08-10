@@ -2,6 +2,9 @@ package incomecategory
 
 import "context"
 
+// Repository persists IncomeCategory aggregates; implemented by the postgres
+// package.
+// TODO: update
 type Repository interface {
 	Create(ctx context.Context, category *IncomeCategory) error
 	// Update(ctx context.Context, budget *IncomeCategory) error

@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// BankHandler renders the "new account" dialog (GET) and creates the bank
+// account (POST).
 type BankHandler struct {
 	service *appaccount.Service
 }
@@ -37,6 +39,7 @@ func (h *BankHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the new-account form in a dialog.
 func (h *BankHandler) Get(w http.ResponseWriter, r *http.Request) {
 	form := partials.BankForm(*views.NewBankForm())
 	components.DialogWrapper(
@@ -48,6 +51,8 @@ func (h *BankHandler) Get(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Post validates and creates the bank, then navigates to the new bank page
+// and prepends the account item to the accounts list.
 func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

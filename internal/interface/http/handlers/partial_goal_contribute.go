@@ -18,6 +18,9 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// GoalContributeHandler renders the "contribute to goal" dialog (GET) and
+// handles the contribution, which is a transfer into the goal account
+// (POST).
 type GoalContributeHandler struct {
 	service       *appledger.Service
 	categoryQuery query.CategoryQueryService
@@ -49,6 +52,8 @@ func (h *GoalContributeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// Get renders the contribution form pre-filled with the goal as
+// destination (hidden) and category locked/disabled.
 func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -105,6 +110,8 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		Render(r.Context(), w)
 }
 
+// Post validates and creates the contribution transfer, triggering a
+// transaction refetch and success toast.
 func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())

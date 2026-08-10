@@ -8,6 +8,9 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
+// DashboardPage is the view-model for the dashboard: budget summary
+// (ready-to-assign, income, spent and its percentage of the budget), daily
+// averages, goals and recent transactions.
 type DashboardPage struct {
 	BudgetReadyToAssign int
 	Income              int
@@ -25,6 +28,9 @@ type DashboardPage struct {
 	RecentTransactions []Transaction
 }
 
+// NewDashboardPage aggregates accounts, recent entries and category budget
+// values into the page model, computing the budget/spent summary and the
+// daily averages.
 func NewDashboardPage(
 	a []query.AccountWithSum,
 	t []query.LedgerEntryDTO,

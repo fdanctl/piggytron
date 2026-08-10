@@ -14,6 +14,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// GoalsHandler renders the goals overview and the per-goal detail page.
 type GoalsHandler struct {
 	accountService      *appaccount.Service
 	ledgerQueryService  query.LedgerQueryService
@@ -47,6 +48,7 @@ func (h *GoalsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the goals overview with progress for each goal.
 func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -80,6 +82,8 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	renderWithMainLayout(w, r, "Goals", content)
 }
 
+// GetWithID renders one goal: progress, paginated contributions, and
+// sibling-goal links in the breadcrumbs.
 func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

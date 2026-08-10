@@ -12,6 +12,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// UserHandler handles the profile form submission (name change).
 type UserHandler struct {
 	service *appuser.Service
 }
@@ -32,6 +33,8 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Post validates and applies the profile form, re-rendering it with a
+// success toast on completion.
 func (h *UserHandler) Post(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

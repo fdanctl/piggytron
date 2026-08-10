@@ -1,4 +1,4 @@
-// Package appcharts builds ECharts-based chart components from query read models.
+// Package charts builds ECharts-based chart components from query read models.
 package charts
 
 import (

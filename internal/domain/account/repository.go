@@ -2,6 +2,7 @@ package account
 
 import "context"
 
+// Repository persists Account aggregates; implemented by the postgres package.
 type Repository interface {
 	Create(ctx context.Context, acc *Account) error
 	Update(ctx context.Context, acc *Account) error

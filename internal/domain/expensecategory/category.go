@@ -1,9 +1,13 @@
+// Package expensecategory defines the expense category aggregate with its
+// needs / wants / savings type.
 package expensecategory
 
 import "time"
 
+// ID is an expense category identifier.
 type ID string
 
+// ExpenseType classifies a category as needs, wants or savings.
 type ExpenseType string
 
 const (
@@ -12,6 +16,8 @@ const (
 	Savings ExpenseType = "savings"
 )
 
+// NewExpenseType parses a string into an ExpenseType, returning
+// ErrInvalidType otherwise.
 func NewExpenseType(str string) (ExpenseType, error) {
 	switch str {
 	case "needs":
@@ -28,6 +34,7 @@ func NewExpenseType(str string) (ExpenseType, error) {
 	}
 }
 
+// ExpenseCategory groups expenses of a single type, owned by one user.
 type ExpenseCategory struct {
 	id          ID
 	userID      ID
@@ -37,6 +44,7 @@ type ExpenseCategory struct {
 	updatedAt   time.Time
 }
 
+// New builds a validated expense category.
 func New(id ID, userID ID, name string, expenseType ExpenseType) (*ExpenseCategory, error) {
 	if name == "" || len(name) > 30 {
 		return nil, ErrInvalidName
@@ -54,6 +62,8 @@ func New(id ID, userID ID, name string, expenseType ExpenseType) (*ExpenseCatego
 	}, nil
 }
 
+// Rehydrate rebuilds an ExpenseCategory from persistence without re-running
+// validation (the database constraints already guard it).
 func Rehydrate(
 	id ID,
 	userID ID,
@@ -71,30 +81,37 @@ func Rehydrate(
 	}
 }
 
+// ID returns the category id.
 func (ec *ExpenseCategory) ID() ID {
 	return ec.id
 }
 
+// UserID returns the id of the user who owns the category.
 func (ec *ExpenseCategory) UserID() ID {
 	return ec.userID
 }
 
+// Name returns the category name.
 func (ec *ExpenseCategory) Name() string {
 	return ec.name
 }
 
+// ExpenseType returns the category type (needs, wants or savings).
 func (ec *ExpenseCategory) ExpenseType() ExpenseType {
 	return ec.expenseType
 }
 
+// CreatedAt returns when the category was created.
 func (ec *ExpenseCategory) CreatedAt() time.Time {
 	return ec.createdAt
 }
 
+// UpdatedAt returns when the category was last updated.
 func (ec *ExpenseCategory) UpdatedAt() time.Time {
 	return ec.updatedAt
 }
 
+// ChangeName renames the category.
 func (ec *ExpenseCategory) ChangeName(name string) error {
 	if name == "" || len(name) > 30 {
 		return ErrInvalidName
@@ -104,6 +121,7 @@ func (ec *ExpenseCategory) ChangeName(name string) error {
 	return nil
 }
 
+// ChangeType reclassifies the category, rejecting a no-op change.
 func (ec *ExpenseCategory) ChangeType(t ExpenseType) error {
 	if t == ec.expenseType {
 		return ErrSameType

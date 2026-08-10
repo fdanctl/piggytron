@@ -11,17 +11,21 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 )
 
+// LedgerRepository persists ledger entries via raw SQL.
 type LedgerRepository struct {
 	db DBTX
 }
 
+// NewLedgerRepository builds the repository over a DBTX (sql.DB or sql.Tx).
 func NewLedgerRepository(db DBTX) *LedgerRepository {
 	return &LedgerRepository{
 		db: db,
 	}
 }
 
-type LedgerEntryDto struct {
+// ledgerEntryDto is the internal row shape used when scanning ledger
+// entries; it maps 1:1 onto the ledger table columns.
+type ledgerEntryDto struct {
 	id     ledger.ID
 	userID ledger.ID
 
@@ -39,6 +43,7 @@ type LedgerEntryDto struct {
 	createdAt   time.Time
 }
 
+// Create inserts a ledger entry.
 func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -75,6 +80,7 @@ func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 	return nil
 }
 
+// Update persists the mutable fields of a ledger entry.
 func (r *LedgerRepository) Update(ctx context.Context, t *ledger.Entry) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -103,6 +109,8 @@ func (r *LedgerRepository) Update(ctx context.Context, t *ledger.Entry) error {
 	return nil
 }
 
+// UpdateMany bulk-updates entries with a single multi-row UPDATE ... FROM
+// VALUES statement.
 func (r *LedgerRepository) UpdateMany(
 	ctx context.Context,
 	tt []*ledger.Entry,
@@ -196,6 +204,7 @@ func (r *LedgerRepository) UpdateMany(
 	return err
 }
 
+// Delete removes a ledger entry by id.
 func (r *LedgerRepository) Delete(ctx context.Context, id ledger.ID) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -209,6 +218,7 @@ func (r *LedgerRepository) Delete(ctx context.Context, id ledger.ID) error {
 	return nil
 }
 
+// FindByID loads one entry, mapping missing rows to ledger.ErrNotFound.
 func (r *LedgerRepository) FindByID(
 	ctx context.Context,
 	id ledger.ID,
@@ -221,7 +231,7 @@ func (r *LedgerRepository) FindByID(
 		id,
 	)
 
-	var dto LedgerEntryDto
+	var dto ledgerEntryDto
 	err := row.Scan(
 		&dto.id,
 		&dto.userID,
@@ -258,6 +268,7 @@ func (r *LedgerRepository) FindByID(
 	return transaction, nil
 }
 
+// FindAllByUser returns the user's entries, newest first.
 func (r *LedgerRepository) FindAllByUser(
 	ctx context.Context,
 	uid ledger.ID,
@@ -278,7 +289,7 @@ func (r *LedgerRepository) FindAllByUser(
 	var entries []*ledger.Entry
 
 	for rows.Next() {
-		var dto LedgerEntryDto
+		var dto ledgerEntryDto
 		err := rows.Scan(
 			&dto.id,
 			&dto.userID,
@@ -317,6 +328,7 @@ func (r *LedgerRepository) FindAllByUser(
 	return entries, nil
 }
 
+// FindAllByAccount returns the entries touching an account, newest first.
 func (r *LedgerRepository) FindAllByAccount(
 	ctx context.Context,
 	aid ledger.ID,
@@ -337,7 +349,7 @@ func (r *LedgerRepository) FindAllByAccount(
 	var entries []*ledger.Entry
 
 	for rows.Next() {
-		var dto LedgerEntryDto
+		var dto ledgerEntryDto
 		err := rows.Scan(
 			&dto.id,
 			&dto.userID,
@@ -376,6 +388,7 @@ func (r *LedgerRepository) FindAllByAccount(
 	return entries, nil
 }
 
+// FindAllByCategory returns the entries of a category, newest first.
 func (r *LedgerRepository) FindAllByCategory(
 	ctx context.Context,
 	cid ledger.ID,
@@ -396,7 +409,7 @@ func (r *LedgerRepository) FindAllByCategory(
 	var entries []*ledger.Entry
 
 	for rows.Next() {
-		var dto LedgerEntryDto
+		var dto ledgerEntryDto
 		err := rows.Scan(
 			&dto.id,
 			&dto.userID,

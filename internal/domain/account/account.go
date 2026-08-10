@@ -1,3 +1,6 @@
+// Package account defines the bank and goal aggregates. Banks and goals share
+// the Account shape and are discriminated by AccountType; the invariants are
+// enforced by New/Rehydrate and mirrored by the CHECK constraints in schema.
 package account
 
 import (
@@ -5,8 +8,10 @@ import (
 	"time"
 )
 
+// ID is an account identifier.
 type ID string
 
+// AccountType discriminates a bank from a goal account.
 type AccountType string
 
 const (
@@ -14,6 +19,8 @@ const (
 	GoalType AccountType = "goal"
 )
 
+// Account is a bank or a goal. Bank accounts carry an isSaving flag; goals
+// carry target amounts and dates plus the expense category used to fund them.
 type Account struct {
 	id       ID
 	userID   ID
@@ -31,6 +38,7 @@ type Account struct {
 	updatedAt time.Time
 }
 
+// NewBank builds a validated bank account.
 func NewBank(
 	id, userID ID,
 	name string,
@@ -58,6 +66,8 @@ func NewBank(
 	}, nil
 }
 
+// NewGoal builds a validated goal account: target amount must be positive and
+// the start date must not be after the target date.
 func NewGoal(
 	id, userID ID,
 	name string,
@@ -97,6 +107,8 @@ func NewGoal(
 	}, nil
 }
 
+// Rehydrate rebuilds an Account from persistence without re-running
+// validation (the database constraints already guard it).
 func Rehydrate(
 	id, userID ID,
 	aType AccountType,
@@ -125,54 +137,68 @@ func Rehydrate(
 	}
 }
 
+// ID returns the account id.
 func (b *Account) ID() ID {
 	return b.id
 }
 
+// UserID returns the id of the user who owns the account.
 func (b *Account) UserID() ID {
 	return b.userID
 }
 
+// Name returns the account name.
 func (b *Account) Name() string {
 	return b.name
 }
 
+// Type returns the account type (bank or goal).
 func (b *Account) Type() AccountType {
 	return b.aType
 }
 
+// IsSaving returns the savings flag for banks, or nil for goals.
 func (b *Account) IsSaving() *bool {
 	return b.isSaving
 }
 
+// Currency returns the account currency code.
 func (b *Account) Currency() string {
 	return b.currency
 }
 
+// TargetAmount returns the goal target in cents, or nil for banks.
 func (b *Account) TargetAmount() *int {
 	return b.targetAmount
 }
 
+// StartDate returns the goal start date, or nil for banks.
 func (b *Account) StartDate() *time.Time {
 	return b.startDate
 }
 
+// TargetDate returns the goal target date, or nil for banks (unlimited goals).
 func (b *Account) TargetDate() *time.Time {
 	return b.targetDate
 }
 
+// CategoryID returns the goal funding category, or nil for banks.
 func (b *Account) CategoryID() *ID {
 	return b.categoryID
 }
 
+// CreatedAt returns when the account was created.
 func (b *Account) CreatedAt() time.Time {
 	return b.createdAt
 }
 
+// UpdatedAt returns when the account was last updated.
 func (b *Account) UpdatedAt() time.Time {
 	return b.updatedAt
 }
 
+// CanReceiveIncome reports whether the account may be the destination of an
+// income entry: goals and savings accounts are funded only by transfers.
 func (b *Account) CanReceiveIncome() error {
 	if b.aType == GoalType {
 		return errors.New("goals can't receive from outside")
@@ -183,6 +209,8 @@ func (b *Account) CanReceiveIncome() error {
 	return nil
 }
 
+// CanMakeExpense reports whether the account may be the source of an expense
+// entry: goals and savings accounts are moved only by transfers.
 func (b *Account) CanMakeExpense() error {
 	if b.aType == GoalType {
 		return errors.New("goals can't make expenses")
@@ -193,8 +221,10 @@ func (b *Account) CanMakeExpense() error {
 	return nil
 }
 
-// updates
+// Update methods: each change re-runs its invariant and bumps UpdatedAt.
 
+// ChangeName updates the account name, requiring a non-empty value up to
+// 50 characters long.
 func (b *Account) ChangeName(name string) error {
 	if name == "" || len(name) > 50 {
 		return ErrInvalidName
@@ -204,6 +234,7 @@ func (b *Account) ChangeName(name string) error {
 	return nil
 }
 
+// ChangeTargetAmount updates the goal target, requiring a positive value.
 func (b *Account) ChangeTargetAmount(amount int) error {
 	if b.aType != GoalType {
 		return ErrAccountWrongType
@@ -216,6 +247,8 @@ func (b *Account) ChangeTargetAmount(amount int) error {
 	return nil
 }
 
+// ChangeStartDate moves the goal start date; notLaterThan is the earliest
+// contribution date already recorded, which must not precede the new start.
 func (b *Account) ChangeStartDate(date time.Time, notLaterThan *time.Time) error {
 	if b.aType != GoalType {
 		return ErrAccountWrongType
@@ -231,6 +264,7 @@ func (b *Account) ChangeStartDate(date time.Time, notLaterThan *time.Time) error
 	return nil
 }
 
+// ChangeTargetDate updates the goal deadline; nil keeps the goal open-ended.
 func (b *Account) ChangeTargetDate(date *time.Time) error {
 	if b.aType != GoalType {
 		return ErrAccountWrongType
@@ -244,6 +278,7 @@ func (b *Account) ChangeTargetDate(date *time.Time) error {
 	return nil
 }
 
+// ChangeCategory reassigns the expense category used to fund the goal.
 func (b *Account) ChangeCategory(cid ID) error {
 	if b.aType != GoalType {
 		return ErrAccountWrongType

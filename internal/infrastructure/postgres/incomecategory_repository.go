@@ -10,17 +10,21 @@ import (
 	"github.com/lib/pq"
 )
 
+// IncomeCategoryRepository persists income category aggregates via raw SQL.
 type IncomeCategoryRepository struct {
 	db *sql.DB
 }
 
+// NewIncomeCategoryRepository builds the repository over a *sql.DB.
 func NewIncomeCategoryRepository(db *sql.DB) *IncomeCategoryRepository {
 	return &IncomeCategoryRepository{
 		db: db,
 	}
 }
 
-type IncomeCategoryDto struct {
+// incomeCategoryDto is the database row shape of the income_categories
+// table.
+type incomeCategoryDto struct {
 	ID        incomecategory.ID
 	UserID    incomecategory.ID
 	Name      string
@@ -28,6 +32,8 @@ type IncomeCategoryDto struct {
 	UpdatedAt time.Time
 }
 
+// Create inserts the category, mapping unique-name violations to
+// incomecategory.ErrDuplicate.
 func (r *IncomeCategoryRepository) Create(
 	ctx context.Context,
 	category *incomecategory.IncomeCategory,
@@ -58,6 +64,8 @@ func (r *IncomeCategoryRepository) Create(
 	return nil
 }
 
+// FindByID loads one category, mapping missing rows to
+// incomecategory.ErrNotFound.
 func (r *IncomeCategoryRepository) FindByID(
 	ctx context.Context,
 	id incomecategory.ID,
@@ -70,7 +78,7 @@ func (r *IncomeCategoryRepository) FindByID(
 		id,
 	)
 
-	var c IncomeCategoryDto
+	var c incomeCategoryDto
 	err := row.Scan(
 		&c.ID,
 		&c.UserID,
@@ -94,6 +102,8 @@ func (r *IncomeCategoryRepository) FindByID(
 	return category, err
 }
 
+// FindByNameAndUser looks up a category by its (user, name) uniqueness key.
+// TODO: remove, not used
 func (r *IncomeCategoryRepository) FindByNameAndUser(
 	ctx context.Context,
 	userID incomecategory.ID,
@@ -108,7 +118,7 @@ func (r *IncomeCategoryRepository) FindByNameAndUser(
 		name,
 	)
 
-	var c IncomeCategoryDto
+	var c incomeCategoryDto
 	err := row.Scan(
 		&c.ID,
 		&c.UserID,
@@ -129,6 +139,7 @@ func (r *IncomeCategoryRepository) FindByNameAndUser(
 	return category, err
 }
 
+// FindAllByUser returns every income category of the user.
 func (r *IncomeCategoryRepository) FindAllByUser(
 	ctx context.Context,
 	userID incomecategory.ID,
@@ -148,7 +159,7 @@ func (r *IncomeCategoryRepository) FindAllByUser(
 	var categories []*incomecategory.IncomeCategory
 
 	for rows.Next() {
-		var c IncomeCategoryDto
+		var c incomeCategoryDto
 		if err := rows.Scan(
 			&c.ID,
 			&c.UserID,

@@ -12,8 +12,12 @@ import (
 
 type ctxKey string
 
+// UserKey is the context key holding the authenticated *auth.SessionInfo.
 const UserKey ctxKey = "user"
 
+// AuthMiddleware resolves the session cookie into a session and, when valid,
+// stores it (plus a user-scoped logger) in the request context. Invalid,
+// expired or revoked sessions fall through unauthenticated.
 func AuthMiddleware(sessionManager *auth.SessionManager) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -64,6 +68,8 @@ func AuthMiddleware(sessionManager *auth.SessionManager) func(http.Handler) http
 	}
 }
 
+// AuthProtectedRoute guards a route: unauthenticated requests are redirected
+// to /login, keeping the original URI as the post-login redirect target.
 func AuthProtectedRoute(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		uinfo := r.Context().Value(UserKey)
@@ -77,6 +83,8 @@ func AuthProtectedRoute(next http.Handler) http.Handler {
 	})
 }
 
+// AuthenticatedRedirect guards login/signup pages: authenticated requests are
+// redirected to the dashboard.
 func AuthenticatedRedirect(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		uinfo := r.Context().Value(UserKey)

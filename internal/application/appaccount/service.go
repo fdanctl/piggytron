@@ -1,3 +1,5 @@
+// Package appaccount implements the account use cases: creating bank accounts
+// and goals, updating goals, and listing accounts by user.
 package appaccount
 
 import (
@@ -14,20 +16,21 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// Service implements the account use cases. It composes the account
+// repository with a *sql.DB so multi-aggregate operations (e.g., UpdateGoal)
+// can run inside a single database transaction.
 type Service struct {
 	repo account.Repository
 	db   *sql.DB
 }
 
-var (
-	ErrInvalidAmount = errors.New("invalid amount")
-	ErrInvalidDate   = errors.New("invalid date")
-)
-
+// NewService wires the account service to its repository and database.
 func NewService(repo account.Repository, db *sql.DB) *Service {
 	return &Service{repo: repo, db: db}
 }
 
+// FindOneByID returns an account owned by userID, mapping not-found and
+// ownership mismatches to KindNotFound.
 func (s *Service) FindOneByID(
 	ctx context.Context,
 	id string,
@@ -83,6 +86,8 @@ func (s *Service) FindOneByID(
 	return goal, nil
 }
 
+// CreateBank builds and persists a new bank account for the user, rejecting
+// duplicate names.
 func (s *Service) CreateBank(
 	ctx context.Context,
 	userID string,
@@ -141,6 +146,8 @@ func (s *Service) CreateBank(
 	return acc, nil
 }
 
+// CreateGoal builds and persists a new goal account for the user, rejecting
+// duplicate names.
 func (s *Service) CreateGoal(
 	ctx context.Context,
 	userID string,
@@ -222,6 +229,9 @@ func (s *Service) CreateGoal(
 	return acc, nil
 }
 
+// UpdateGoal updates a goal's fields in a single transaction, also
+// changes the categories of its funding ledger entries when the
+// goal category changes.
 func (s *Service) UpdateGoal(
 	ctx context.Context,
 	id string,
@@ -422,6 +432,7 @@ func (s *Service) UpdateGoal(
 	return goal, nil
 }
 
+// FindAllByUser returns all accounts of the user.
 func (s *Service) FindAllByUser(
 	ctx context.Context,
 	userID string,
@@ -449,6 +460,7 @@ func (s *Service) FindAllByUser(
 	return accounts, nil
 }
 
+// FindAllBanksByUser returns all bank accounts of the user.
 func (s *Service) FindAllBanksByUser(
 	ctx context.Context,
 	userID string,
@@ -476,6 +488,7 @@ func (s *Service) FindAllBanksByUser(
 	return accounts, nil
 }
 
+// FindAllGoalsByUser returns all goal accounts of the user.
 func (s *Service) FindAllGoalsByUser(
 	ctx context.Context,
 	userID string,

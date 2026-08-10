@@ -18,6 +18,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// LedgerEntryHandler renders the edit dialog for one entry (GET) and
+// handles its update (PUT) and deletion (DELETE).
 type LedgerEntryHandler struct {
 	service       *appledger.Service
 	categoryQuery query.CategoryQueryService
@@ -52,6 +54,7 @@ func (h *LedgerEntryHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the edit dialog pre-filled from the entry's current values.
 func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
@@ -142,6 +145,8 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Put validates and applies the updated entry via the ledger service,
+// re-rendering the form on error or showing a success toast.
 func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
@@ -303,6 +308,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Delete removes the entry and triggers the transaction-deleted event.
 func (h *LedgerEntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 

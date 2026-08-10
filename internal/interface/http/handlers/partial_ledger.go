@@ -18,6 +18,9 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// LedgerHandler renders the "new transaction" dialog (income/expense/
+// transfer tabs, or a pre-filled transfer via ?preset=transfer) and handles
+// the transaction creation POST.
 type LedgerHandler struct {
 	service       *appledger.Service
 	categoryQuery query.CategoryQueryService
@@ -49,6 +52,7 @@ func (h *LedgerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the new-transaction dialog as an HTMX fragment.
 func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -133,6 +137,9 @@ func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	dialog.Render(r.Context(), w)
 }
 
+// Post parses and validates the submitted form and creates the
+// income/expense/transfer entry, re-rendering the form on error or showing
+// a success toast.
 func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())

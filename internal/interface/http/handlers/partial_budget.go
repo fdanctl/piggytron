@@ -20,6 +20,8 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
+// BudgetHandler handles budget amount edits on the budget page: it persists
+// the new amount and re-renders every budget summary cell out-of-band.
 type BudgetHandler struct {
 	service       *appbudget.Service
 	categoryQuery query.CategoryQueryService
@@ -44,6 +46,9 @@ func (h *BudgetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Post persists the new budget amount for the category and month and
+// recomputes the whole budget summary (totals, percentages, sankey) from the
+// form-provided deltas.
 func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
@@ -111,7 +116,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = h.service.CreateBudget(r.Context(), cid, bm, cents)
+	_, err = h.service.SaveBudget(r.Context(), cid, bm, cents)
 	if err != nil {
 		httperror.SendFormError(w, r, err, budgetInfoInputs)
 		return

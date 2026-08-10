@@ -6,6 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/user"
 )
 
+// SignupView is the view-model for the signup form.
 type SignupView struct {
 	Form
 
@@ -14,6 +15,7 @@ type SignupView struct {
 	PasswordConfirm string
 }
 
+// NewSignupView returns a blank signup form.
 func NewSignupView() *SignupView {
 	f := SignupView{}
 	f.Initial = true

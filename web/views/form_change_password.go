@@ -6,6 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/user"
 )
 
+// ChangePasswordForm is the view-model for the change-password form.
 type ChangePasswordForm struct {
 	Form
 
@@ -14,6 +15,7 @@ type ChangePasswordForm struct {
 	NewPasswordConfirm string
 }
 
+// NewChangePasswordForm returns a blank change-password form.
 func NewChangePasswordForm() *ChangePasswordForm {
 	f := ChangePasswordForm{}
 	f.Initial = true

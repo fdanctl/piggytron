@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// RequestIDKey is the context key holding the request id.
 const RequestIDKey ctxKey = "request_id"
 
 func generateRequestID() string {
@@ -15,6 +16,9 @@ func generateRequestID() string {
 		strconv.Itoa(rand.Intn(100000))
 }
 
+// RequestIDMiddleware propagates the incoming X-Request-ID header or, when
+// absent, generates one; the id is echoed back on the response and stored in
+// the request context.
 func RequestIDMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqID := r.Header.Get("X-Request-ID")

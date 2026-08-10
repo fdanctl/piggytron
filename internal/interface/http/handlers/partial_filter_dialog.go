@@ -17,6 +17,8 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/partials"
 )
 
+// FilterDialogHandler renders the ledger filter dialog (GET) and applies
+// the submitted filters (POST).
 type FilterDialogHandler struct {
 	categoryQueryService query.CategoryQueryService
 	accountService       *appaccount.Service
@@ -51,6 +53,8 @@ func (h *FilterDialogHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
+// Get renders the filter form: category/account options, amount and date
+// bounds from the user's entries, and the currently applied filters.
 func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -170,6 +174,9 @@ func (h *FilterDialogHandler) Get(w http.ResponseWriter, r *http.Request) {
 	).Render(r.Context(), w)
 }
 
+// Post applies the submitted filters: it pushes the filter query string to
+// the URL, triggers a transaction refetch and updates the result count and
+// the filter button badge.
 func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

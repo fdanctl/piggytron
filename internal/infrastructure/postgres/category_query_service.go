@@ -12,16 +12,20 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 )
 
+// CategoryQueryService implements the category read-model queries declared
+// in internal/query using raw SQL.
 type CategoryQueryService struct {
 	db DBTX
 }
 
+// NewCategoryQueryService builds the service over a DBTX (sql.DB or sql.Tx).
 func NewCategoryQueryService(db DBTX) *CategoryQueryService {
 	return &CategoryQueryService{
 		db: db,
 	}
 }
 
+// FindByID looks a category up across both income and expense categories.
 func (s *CategoryQueryService) FindByID(
 	ctx context.Context,
 	id string,
@@ -49,6 +53,7 @@ func (s *CategoryQueryService) FindByID(
 	return &c, err
 }
 
+// FindAllCategories returns all categories (income and expense) of the user.
 func (s *CategoryQueryService) FindAllCategories(
 	ctx context.Context,
 	uid string,
@@ -89,6 +94,8 @@ func (s *CategoryQueryService) FindAllCategories(
 	return results, nil
 }
 
+// FindCategoriesIDIncludes returns id/name pairs for the given category ids,
+// across both income and expense categories.
 func (s *CategoryQueryService) FindCategoriesIDIncludes(
 	ctx context.Context,
 	ids []string,
@@ -145,6 +152,9 @@ func (s *CategoryQueryService) FindCategoriesIDIncludes(
 	return results, nil
 }
 
+// GetCategoriesBudgetSpentValue returns, for month, every category with its
+// budget, spent value and previous totals, plus the month's net cash flow
+// and the running balance of the non-savings bank accounts.
 func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 	ctx context.Context,
 	uid string,
@@ -284,6 +294,8 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 	}, nil
 }
 
+// GetCategoriesBudgetSpent returns, for a date range, the budgeted value per
+// expense category and the received income per income category.
 func (s *CategoryQueryService) GetCategoriesBudgetSpent(
 	ctx context.Context,
 	uid string,
@@ -353,6 +365,8 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
 	return results, nil
 }
 
+// GetYearMonthlyValue returns, for one category and year, the monthly
+// totals of its ledger movements.
 func (s *CategoryQueryService) GetYearMonthlyValue(
 	ctx context.Context,
 	year int,

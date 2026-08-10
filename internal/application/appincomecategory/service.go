@@ -1,3 +1,5 @@
+// Package appincomecategory implements the income category use cases (create,
+// find by id, list by user).
 package appincomecategory
 
 import (
@@ -10,14 +12,17 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// Service implements the income category use cases.
 type Service struct {
 	repo incomecategory.Repository
 }
 
+// NewService wires the income category service to its repository.
 func NewService(repo incomecategory.Repository) *Service {
 	return &Service{repo: repo}
 }
 
+// CreateCategory persists a new income category, rejecting duplicates.
 func (s *Service) CreateCategory(
 	ctx context.Context,
 	userID string,
@@ -74,6 +79,8 @@ func (s *Service) CreateCategory(
 	return category, nil
 }
 
+// FindCategory returns a category owned by userID, mapping not-found and
+// ownership mismatches to KindNotFound.
 func (s *Service) FindCategory(
 	ctx context.Context,
 	id string,
@@ -135,6 +142,7 @@ func (s *Service) FindCategory(
 	return cat, nil
 }
 
+// FindAllUserCategories lists the user's income categories.
 func (s *Service) FindAllUserCategories(
 	ctx context.Context,
 	userID string,

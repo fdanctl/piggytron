@@ -15,6 +15,8 @@ import (
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
+// CreateIncome records money received into dstAccID, refusing goals and
+// savings accounts, and adds the amount to the account's monthly summary.
 func (s *Service) CreateIncome(
 	ctx context.Context,
 	userID string,
@@ -188,6 +190,8 @@ func (s *Service) CreateIncome(
 	return t, nil
 }
 
+// UpdateIncome modifies an income entry, re-running the eligibility and
+// solvency checks affected by the change and reconciling monthly summaries.
 func (s *Service) UpdateIncome(
 	ctx context.Context,
 	id string,

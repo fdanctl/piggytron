@@ -2,6 +2,7 @@ package monthlysummary
 
 import "context"
 
+// Repository persists MonthlySummary rows; implemented by the postgres package.
 type Repository interface {
 	Save(ctx context.Context, summary *MonthlySummary) error
 	Update(ctx context.Context, summary *MonthlySummary) error

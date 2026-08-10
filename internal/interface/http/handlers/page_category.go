@@ -16,6 +16,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// CategoriesHandler renders the categories overview and the per-category
+// detail page.
 type CategoriesHandler struct {
 	incomeCatService   *appincomecategory.Service
 	expenseCatService  *appexpensecategory.Service
@@ -49,6 +51,7 @@ func (h *CategoriesHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the categories overview, grouped into income and expense.
 func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -94,6 +97,8 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 	renderWithMainLayout(w, r, "Categories", content)
 }
 
+// GetWithID renders one category (income or expense) with its paginated
+// entries and sibling-category breadcrumb links.
 func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

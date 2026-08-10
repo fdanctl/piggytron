@@ -13,6 +13,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// GoalContributionsHandler renders the paginated contribution list of a
+// goal as an HTMX fragment.
 type GoalContributionsHandler struct {
 	query query.LedgerQueryService
 }
@@ -35,6 +37,7 @@ func (h *GoalContributionsHandler) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// Get renders the contribution list items for the requested page.
 func (h *GoalContributionsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

@@ -1,3 +1,6 @@
+// Package httperror maps errs.AppError kinds to HTTP status codes and writes
+// the corresponding error responses (toast or form re-render for HTMX
+// requests).
 package httperror
 
 import (
@@ -6,6 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/errs"
 )
 
+// HTTPStatus maps an errs.ErrorKind to its HTTP status code.
 func HTTPStatus(k errs.ErrorKind) int {
 	switch k {
 	case errs.KindValidation:

@@ -10,6 +10,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// TransactionDetailsHandler renders the read-only details dialog for one
+// ledger entry.
 type TransactionDetailsHandler struct {
 	service query.LedgerQueryService
 }
@@ -30,6 +32,7 @@ func (h *TransactionDetailsHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	}
 }
 
+// Get renders the details dialog with the entry's action buttons.
 func (h *TransactionDetailsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	t, err := h.service.FindByID(r.Context(), id)

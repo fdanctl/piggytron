@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// TransferForm is the view-model for the transfer transaction form.
 type TransferForm struct {
 	Form
 
@@ -21,6 +22,8 @@ type TransferForm struct {
 	DestinationAcc string
 }
 
+// NewTransferForm returns a blank transfer form pre-filled with today's
+// date and the EUR currency.
 func NewTransferForm() *TransferForm {
 	f := TransferForm{
 		Date:     time.Now().Format("02/01/2006"),

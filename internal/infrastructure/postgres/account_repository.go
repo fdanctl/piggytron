@@ -10,17 +10,21 @@ import (
 	"github.com/lib/pq"
 )
 
+// AccountRepository persists account aggregates via raw SQL.
 type AccountRepository struct {
 	db DBTX
 }
 
+// NewAccountRepository builds an account repository over a DBTX (sql.DB or
+// sql.Tx).
 func NewAccountRepository(db DBTX) *AccountRepository {
 	return &AccountRepository{
 		db: db,
 	}
 }
 
-type AccountDto struct {
+// accountDto is the database row shape of the accounts table.
+type accountDto struct {
 	ID     account.ID
 	UserID account.ID
 	Type   account.AccountType
@@ -37,6 +41,8 @@ type AccountDto struct {
 	UpdatedAt time.Time
 }
 
+// Create inserts the account, mapping unique-name violations to
+// account.ErrDuplicate.
 func (r *AccountRepository) Create(ctx context.Context, a *account.Account) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -71,6 +77,7 @@ func (r *AccountRepository) Create(ctx context.Context, a *account.Account) erro
 	return nil
 }
 
+// Update persists the mutable fields of an account.
 func (r *AccountRepository) Update(ctx context.Context, a *account.Account) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -102,6 +109,7 @@ func (r *AccountRepository) Update(ctx context.Context, a *account.Account) erro
 	return nil
 }
 
+// FindByID loads one account, mapping missing rows to account.ErrNotFound.
 func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*account.Account, error) {
 	row := r.db.QueryRowContext(
 		ctx,
@@ -111,7 +119,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 		id,
 	)
 
-	var b AccountDto
+	var b accountDto
 	err := row.Scan(
 		&b.ID,
 		&b.UserID,
@@ -150,6 +158,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 	return account, err
 }
 
+// FindBankByNameAndUser looks up a bank by its (user, name) uniqueness key.
 func (r *AccountRepository) FindBankByNameAndUser(
 	ctx context.Context,
 	uid account.ID,
@@ -165,7 +174,7 @@ func (r *AccountRepository) FindBankByNameAndUser(
 		name,
 	)
 
-	var b AccountDto
+	var b accountDto
 	err := row.Scan(
 		&b.ID,
 		&b.UserID,
@@ -199,6 +208,8 @@ func (r *AccountRepository) FindBankByNameAndUser(
 	return account, err
 }
 
+// FindGoalByNameAndUser looks up a goal by its (user, name) uniqueness key.
+// TODO: remove, not used
 func (r *AccountRepository) FindGoalByNameAndUser(
 	ctx context.Context,
 	uid account.ID,
@@ -214,7 +225,7 @@ func (r *AccountRepository) FindGoalByNameAndUser(
 		name,
 	)
 
-	var b AccountDto
+	var b accountDto
 	err := row.Scan(
 		&b.ID,
 		&b.UserID,
@@ -250,6 +261,7 @@ func (r *AccountRepository) FindGoalByNameAndUser(
 	return account, err
 }
 
+// FindAllByUser returns every account of the user.
 func (r *AccountRepository) FindAllByUser(
 	ctx context.Context,
 	uid account.ID,
@@ -269,7 +281,7 @@ func (r *AccountRepository) FindAllByUser(
 	var accounts []*account.Account
 
 	for rows.Next() {
-		var dto AccountDto
+		var dto accountDto
 		if err := rows.Scan(
 			&dto.ID,
 			&dto.UserID,
@@ -309,6 +321,7 @@ func (r *AccountRepository) FindAllByUser(
 	return accounts, nil
 }
 
+// FindAllBanksByUser returns the bank accounts of the user.
 func (r *AccountRepository) FindAllBanksByUser(
 	ctx context.Context,
 	uid account.ID,
@@ -328,7 +341,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 	var accounts []*account.Account
 
 	for rows.Next() {
-		var dto AccountDto
+		var dto accountDto
 		if err := rows.Scan(
 			&dto.ID,
 			&dto.UserID,
@@ -363,6 +376,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 	return accounts, nil
 }
 
+// FindAllGoalsByUser returns the goal accounts of the user.
 func (r *AccountRepository) FindAllGoalsByUser(
 	ctx context.Context,
 	uid account.ID,
@@ -382,7 +396,7 @@ func (r *AccountRepository) FindAllGoalsByUser(
 	var accounts []*account.Account
 
 	for rows.Next() {
-		var dto AccountDto
+		var dto accountDto
 		if err := rows.Scan(
 			&dto.ID,
 			&dto.UserID,

@@ -16,6 +16,9 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// FilteredLedgerHandler renders the paginated, filtered transaction list as
+// an HTMX fragment (used by the ledger page's infinite scroll and filter
+// refreshes).
 type FilteredLedgerHandler struct {
 	query query.LedgerQueryService
 }
@@ -38,6 +41,8 @@ func (h *FilteredLedgerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// Get renders the transaction list items for the requested page and filter
+// query string, plus an out-of-band result-count update.
 func (h *FilteredLedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

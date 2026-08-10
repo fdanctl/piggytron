@@ -16,6 +16,9 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
+// BudgetChartHandler renders the budget sankey diagram for a given month
+// (path {month}), including unassigned carryover and
+// leftover.
 type BudgetChartHandler struct {
 	categoryQuery query.CategoryQueryService
 }
@@ -38,6 +41,8 @@ func (h *BudgetChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the sankey for the requested month, honoring the optional
+// ?unassign= carryover amount.
 func (h *BudgetChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	month := r.PathValue("month")
 	logger := middleware.LoggerFromContext(r.Context())

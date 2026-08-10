@@ -12,6 +12,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// LedgerPageHandler renders the ledger page with the filter form and the
+// paginated, filterable entry list.
 type LedgerPageHandler struct {
 	query query.LedgerQueryService
 }
@@ -34,6 +36,8 @@ func (h *LedgerPageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the ledger page honoring the filter query string and the
+// current page.
 func (h *LedgerPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

@@ -14,6 +14,8 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// AuthHandler implements the authentication endpoints: login, signup,
+// logout (single device or all devices) and password change.
 type AuthHandler struct {
 	service     *appuser.Service
 	cookieMaker *shared.CookieMaker
@@ -26,6 +28,8 @@ func NewAuthHandler(s *appuser.Service, cm *shared.CookieMaker) *AuthHandler {
 	}
 }
 
+// ServeHTTP dispatches on the {action} path value: login, signup, logout or
+// change-password, each with its own allowed method.
 func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	action := r.PathValue("action")
 	if action == "" {
@@ -80,6 +84,8 @@ func (h *AuthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// LoginPost validates the credentials, starts a session, sets the session
+// cookie and redirects (HTMX) to the requested page or the dashboard.
 func (h *AuthHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	name := r.FormValue("name")
@@ -118,6 +124,8 @@ func (h *AuthHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusSeeOther)
 }
 
+// SignupPost creates the user, starts a session, sets the session cookie
+// and redirects to the dashboard.
 func (h *AuthHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	name := r.FormValue("name")
@@ -151,6 +159,8 @@ func (h *AuthHandler) SignupPost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// LogoutGet ends the current session (or all sessions with ?all=t) and
+// revokes the session cookie.
 func (h *AuthHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 	logger := middleware.LoggerFromContext(r.Context())
 	cookie, _ := r.Cookie("session_id")
@@ -182,6 +192,8 @@ func (h *AuthHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// PostPassword changes the user's password, invalidating other sessions and
+// issuing a fresh session cookie for the current one.
 func (h *AuthHandler) PostPassword(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {

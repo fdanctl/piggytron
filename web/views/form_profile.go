@@ -6,11 +6,14 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/user"
 )
 
+// ProfileForm is the view-model for the profile (name) form.
 type ProfileForm struct {
 	Form
 	Name string
 }
 
+// NewProfileForm returns a profile form pre-filled with the current
+// username.
 func NewProfileForm(username string) *ProfileForm {
 	f := ProfileForm{}
 	f.Initial = true

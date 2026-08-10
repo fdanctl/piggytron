@@ -20,6 +20,7 @@ type PasswordHasher struct {
 	saltLen uint32
 }
 
+// NewPasswordHasher builds a hasher with the given Argon2id parameters.
 func NewPasswordHasher(
 	time uint32,
 	memory uint32,
@@ -36,6 +37,8 @@ func NewPasswordHasher(
 	}
 }
 
+// Hash derives the Argon2id hash of the password with a fresh random salt
+// and encodes it in PHC string format ($argon2id$...).
 func (h *PasswordHasher) Hash(password string) (string, error) {
 	salt := make([]byte, h.saltLen)
 	_, err := rand.Read(salt)
@@ -65,6 +68,8 @@ func (h *PasswordHasher) Hash(password string) (string, error) {
 	return encoded, nil
 }
 
+// Verify re-derives the hash using the parameters embedded in the stored
+// hash string and compares it in constant time.
 func (h *PasswordHasher) Verify(hash, password string) (bool, error) {
 	arr := strings.Split(hash, "$")
 

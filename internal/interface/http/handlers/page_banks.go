@@ -14,6 +14,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
+// BanksHandler renders the banks overview and the per-bank detail page.
 type BanksHandler struct {
 	service          *appaccount.Service
 	transactionQuery query.LedgerQueryService
@@ -47,6 +48,8 @@ func (h *BanksHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get renders the banks overview: accounts with balances and month change,
+// plus the user's recent entries.
 func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -89,6 +92,8 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 	renderWithMainLayout(w, r, "Banks", content)
 }
 
+// GetWithID renders one bank: its balance, paginated entries filtered by
+// account, and sibling-bank links in the breadcrumbs.
 func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
