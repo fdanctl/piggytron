@@ -27,7 +27,7 @@ templ SelectPill(
 		if err != nil {
 			return err
 		}
-		id := hex.EncodeToString(b)
+		id := "sp-" + hex.EncodeToString(b)
 	}}
 	<div
 		class={ "select select-pill unselectable", fmt.Sprintf("select-pill--%s", direction), templ.KV(class, class != "") }

@@ -3,6 +3,12 @@ import { closeLastDialog } from "./navigation";
 import { formatDate } from "./utils";
 import { makeSVG } from "./icons";
 
+/**
+ * Appends a filter pill to the current-filters box.
+ *
+ * @param {string} id - The filter value, used as the pill data-id.
+ * @param {string} label - The pill label.
+ */
 function addPill(id, label) {
   const pillBox = document.getElementById("curr-filters");
   const newPill = document.createElement("div");
@@ -23,6 +29,13 @@ function addPill(id, label) {
   newPill.dataset.action = "ui.filters.remove";
 }
 
+/**
+ * Opens/closes the accordion of a filter group and swaps its
+ * indicator icon (+/-).
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The accordion header.
+ */
 export function filterAccordionToggle({ ele }) {
   const div = ele.parentElement.parentElement.children[1];
   div.classList.toggle("flex-wrap");
@@ -30,6 +43,10 @@ export function filterAccordionToggle({ ele }) {
   ele.children[1].classList.toggle("hidden");
 }
 
+/**
+ * Resets the transactions filters: clears the querystring, refetches the
+ * ledger entries, resets the filter button badge and closes the sheet.
+ */
 export function resetTransactionFiltersForm() {
   history.replaceState({}, "", window.location.pathname);
   htmx.ajax("GET", "/partials/ledger", {
@@ -44,7 +61,10 @@ export function resetTransactionFiltersForm() {
 }
 
 /**
- * @param {HTMLInputElement} input
+ * Toggles a filter pill adding or removing from the current filters container.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The checkbox input.
  */
 export function toggleFilterPill({ ele }) {
   if (ele.checked) {
@@ -55,6 +75,13 @@ export function toggleFilterPill({ ele }) {
   }
 }
 
+/**
+ * Removes the clicked pill in the current filters container, and resets
+ * the matching filter input. The changed input triggers an "input" event.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The pill element being removed.
+ */
 export function removeFilterPill({ ele }) {
   const form = document.getElementById("transactions-filters");
   const inputs = form.querySelectorAll("input");
@@ -126,6 +153,12 @@ export function removeFilterPill({ ele }) {
   }
 }
 
+/**
+ * Updates the minimum amount chip label and the amount-range pill.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The slider input.
+ */
 export function changeMinAmountChip({ ele }) {
   let str = ele.value;
   if (str === "") {
@@ -137,6 +170,12 @@ export function changeMinAmountChip({ ele }) {
   changeRangePill(ele, "amount");
 }
 
+/**
+ * Updates the maximum amount chip label and the amount-range pill.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The slider input.
+ */
 export function changeMaxAmountChip({ ele }) {
   let str = ele.value;
   if (str === "") {
@@ -148,6 +187,12 @@ export function changeMaxAmountChip({ ele }) {
   changeRangePill(ele, "amount");
 }
 
+/**
+ * Updates the minimum date chip label and the date-range pill.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The slider input.
+ */
 export function changeMinDateChip({ ele }) {
   let str = ele.value;
   if (str === "") {
@@ -161,6 +206,12 @@ export function changeMinDateChip({ ele }) {
   changeRangePill(ele, "date");
 }
 
+/**
+ * Updates the maximum date chip label and the date-range pill.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The slider input.
+ */
 export function changeMaxDateChip({ ele }) {
   let str = ele.value;
   if (str === "") {
@@ -171,9 +222,16 @@ export function changeMaxDateChip({ ele }) {
   document.getElementById("maxdate-chip").innerText = formatDate(
     new Date(Number(str) * 1000),
   );
-  changeRangePill(ele);
+  changeRangePill(ele, "date");
 }
 
+/**
+ * Adds, updates or removes the "amount-range"/"date-range" pill to reflect
+ * the current slider values (removed when both ends sit on the defaults).
+ *
+ * @param {HTMLInputElement} ele - The slider input that changed.
+ * @param {"amount"|"date"} attr - The range kind; used to name the inputs.
+ */
 function changeRangePill(ele, attr) {
   const slider = ele.closest(".slider");
   const minInput = slider.querySelector(`[name='min${attr}']`);

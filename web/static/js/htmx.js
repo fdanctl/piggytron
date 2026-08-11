@@ -1,8 +1,10 @@
 import { confirmModal } from "./confirmModal";
 import { closeAllDialog, closeLastDialog } from "./navigation";
-import { getpreferredTheme } from "./theme";
+import { getPreferredTheme } from "./theme";
 import { showToast } from "./toast";
 
+// Replaces the built-in window.confirm with the custom dialog. The question
+// may be a JSON string configuring the dialog; otherwise it is used verbatim.
 document.body.addEventListener("htmx:confirm", (evt) => {
   if (!evt.detail.question) return;
 
@@ -29,6 +31,9 @@ document.body.addEventListener("htmx:confirm", (evt) => {
   });
 });
 
+// Re-marks the nav link matching the restored page title.
+// NOTE: probably will not be needed in HTMX 4, because it handles
+// history diferently
 document.body.addEventListener("htmx:historyRestore", () => {
   // nav active link
   let title = document.title;
@@ -40,6 +45,7 @@ document.body.addEventListener("htmx:historyRestore", () => {
   }
 });
 
+// Toast a generic error unless the server already sent its own trigger.
 document.body.addEventListener("htmx:responseError", function (evt) {
   if (!evt.detail.xhr.getResponseHeader("HX-Trigger")) {
     showToast("error", "Something went wrong");
@@ -54,23 +60,33 @@ document.body.addEventListener("htmx:timeout", function () {
   showToast("error", "Request timed out");
 });
 
+// Names the view transition on the swapped target before navigation.
 const DEFAULT_TRANSITION = "navigate-forward";
 document.body.addEventListener("htmx:beforeTransition", (evt) => {
   evt.detail.target.style.viewTransitionName =
     evt.target.dataset.transition ?? DEFAULT_TRANSITION;
+  // TODO: htmx 4 has a after transtion event. after transition set it to "none"
 });
 
+// Sends the effective theme with every request so charts can render dark.
 document.body.addEventListener("htmx:configRequest", function (evt) {
-  // for the charts
-  evt.detail.headers["theme"] = getpreferredTheme();
+  evt.detail.headers["theme"] = getPreferredTheme();
 });
 
-// htmx custom events - set by the server with HX-Trigger header
+// HTMX custom events - set by the server with HX-Trigger header
 
+// Server-emitted toast
+// (HX-Trigger:
+//   {"show-toast": {
+//     "level": "success"|"warning"|"error"|"info",
+//     "message": string
+//   }}
+// ).
 document.body.addEventListener("show-toast", function (evt) {
   showToast(evt.detail.level, evt.detail.message);
 });
 
+// Bumps the income category counter after one is added.
 document.body.addEventListener("incomeCategoryAdded", function () {
   closeLastDialog();
   const li = document.querySelectorAll("#income-cat li");
@@ -78,6 +94,7 @@ document.body.addEventListener("incomeCategoryAdded", function () {
     `Income (${li.length + 1})`;
 });
 
+// Bumps the expense category counter after one is added.
 document.body.addEventListener("expenseCategoryAdded", function () {
   closeLastDialog();
   const li = document.querySelectorAll("#expense-cat li");
@@ -85,6 +102,7 @@ document.body.addEventListener("expenseCategoryAdded", function () {
     `Expenses (${li.length + 1})`;
 });
 
+// Closes the top-most dialog.
 document.body.addEventListener("closeModal", function () {
   closeLastDialog();
 });
@@ -93,6 +111,8 @@ document.body.addEventListener("closeAllModal", function () {
   closeAllDialog();
 });
 
+// Navigates making an hx-get to swap #contetn with an optional transition.
+// (HX-Trigger: {"contentPush": { "url": string, "transition": bool}})
 document.body.addEventListener("contentPush", function (evt) {
   htmx.ajax("GET", evt.detail.url, {
     target: "#content",
@@ -101,6 +121,7 @@ document.body.addEventListener("contentPush", function (evt) {
   });
 });
 
+// Refeshes the current page (or just the ledger list on the ledger page).
 document.body.addEventListener("refetch-transactions", function () {
   const isLedgerPage = window.location.pathname.includes("ledger");
   if (!isLedgerPage) {
@@ -118,6 +139,8 @@ document.body.addEventListener("refetch-transactions", function () {
   }
 });
 
+// After a deletion: close dialogs and, refresh on non-ledger pages,
+// or decrements the result count.
 document.body.addEventListener("transaction-deleted", function () {
   closeAllDialog();
   const isLedgerPage = window.location.pathname.includes("ledger");

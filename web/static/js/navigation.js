@@ -1,7 +1,11 @@
 // === sidebar === //
+/** Whether the sidebar is collapsed; persisted in localStorage. */
 let collapsed = localStorage.getItem("collapsed") === "true";
 const sidebar = document.getElementById("sidebar");
 
+/**
+ * Toggles the collapsed sidebar state and persists it.
+ */
 export const collapseSidebar = () => {
   document.documentElement.classList.toggle("is-sidebar-collapsed");
   collapsed = !collapsed;
@@ -11,12 +15,28 @@ export const collapseSidebar = () => {
     .forEach((e) => e.classList.remove("sublinks--open"));
 };
 
+/**
+ * Shows the sidebar item popover, only when the sidebar is collapsed.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The nav link.
+ */
 export function sidebarShowPopover({ ele }) {
   if (collapsed) {
     document.getElementById(ele.dataset.name + "-popover").showPopover();
   }
 }
 
+/**
+ * Hides the sidebar item popover unless the pointer moved into the link or
+ * the popover itself.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Event} param0.evt - The mouseout event.
+ * @param {Element} param0.ele - The nav link.
+ * @param {DOMStringMap} param0.data - Dataset of the link; `data.name`
+ *   identifies the popover.
+ */
 export function sidebarHidePopover({ evt, ele, data }) {
   const sub = document.getElementById(data.name + "-popover");
 
@@ -31,6 +51,9 @@ export function sidebarHidePopover({ evt, ele, data }) {
 // === dialog x nav sheet === //
 const dialogRoot = document.querySelector("#dialog-root");
 
+/**
+ * Opens the mobile navigation sheet inside the dialog root.
+ */
 export function openNavSheet() {
   dialogRoot.classList.add("is-dialog-open");
   dialogRoot
@@ -38,11 +61,17 @@ export function openNavSheet() {
     .parentElement.classList.remove("hidden");
 }
 
+/**
+ * Closes the top-most dialog.
+ */
 export const closeLastDialog = () => {
   const lc = dialogRoot.lastElementChild.firstElementChild;
   closeDialog(lc);
 };
 
+/**
+ * Closes every open dialog, top to bottom.
+ */
 export const closeAllDialog = () => {
   const children = [...dialogRoot.children];
   for (let i = children.length - 1; i >= 0; i--) {
@@ -50,6 +79,12 @@ export const closeAllDialog = () => {
   }
 };
 
+/**
+ * Closes a single dialog with a closing animation; removes it from the DOM
+ * afterwards unless it is the persistent nav sheet.
+ *
+ * @param {Element} ele - The dialog element to close.
+ */
 export const closeDialog = (ele) => {
   if (!ele) return;
   dialogRoot.classList.remove("is-dialog-open");
@@ -68,6 +103,12 @@ export const closeDialog = (ele) => {
   );
 };
 
+/**
+ * Closes the top dialog when its overlay is clicked or Escape is pressed.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Event} param0.evt - The click or keydown event.
+ */
 export function overlayClose({ evt }) {
   if (
     (evt.type === "click" || evt.key === "Escape") &&
@@ -77,10 +118,7 @@ export function overlayClose({ evt }) {
   }
 }
 
-// let startY = 0;
-// let currentDialog = null;
-// let dragging = false;
-
+/** State used for the pull-down-to-close dialog drag */
 let ddragState = {
   startY: 0,
   delta: 0,
@@ -88,6 +126,13 @@ let ddragState = {
   dragging: false,
 };
 
+/**
+ * Starts tracking a touch drag on the top dialog (pull-down-to-close).
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The dialog overlay.
+ * @param {PointerEvent} param0.evt - The pointerdown event.
+ */
 export function startDialogDrag({ ele, evt }) {
   if (ele !== dialogRoot?.lastElementChild) return;
   if (ele.firstElementChild.scrollTop > 0) return;
@@ -104,6 +149,11 @@ export function startDialogDrag({ ele, evt }) {
   document.addEventListener("pointercancel", cancelDialogDrag);
 }
 
+/**
+ * Moves the dragged dialog down with the pointer, only on pull-down.
+ *
+ * @param {PointerEvent} evt - The pointermove event.
+ */
 function moveDialogDrag(evt) {
   if (!ddragState.currentDialog || !ddragState.dragging) return;
 
@@ -122,6 +172,12 @@ function moveDialogDrag(evt) {
   ddragState.currentDialog.style.transform = `translateY(${deltaY}px)`;
 }
 
+/**
+ * Ends the drag: closes the dialog when pulled past 20% of the viewport
+ * height, otherwise snaps it back.
+ *
+ * @param {PointerEvent} evt - The pointerup event.
+ */
 function endDialogDrag(evt) {
   if (!ddragState.dragging || !ddragState.currentDialog) return;
   if (ddragState.currentDialog.scrollTop > 0) return;
@@ -129,7 +185,7 @@ function endDialogDrag(evt) {
   const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
 
   const deltaY = clientY - ddragState.startY;
-  const shouldClose = deltaY > window.innerHeight * 0.2;
+  const shouldClose = deltaY > window.innerHeight * 0.2; // 20% of the viewport
 
   ddragState.currentDialog.style.transition = "transform 200ms ease";
 
@@ -166,6 +222,9 @@ function endDialogDrag(evt) {
   document.removeEventListener("pointercancel", cancelDialogDrag);
 }
 
+/**
+ * Handle drag cancels of a in-progress dialog drag and snaps the dialog back.
+ */
 function cancelDialogDrag() {
   if (!ddragState.dragging || !ddragState.currentDialog) return;
   ddragState.currentDialog.style.transform = "";
@@ -187,6 +246,12 @@ for (let i = 0; i < a.length; i++) {
   );
 }
 
+/**
+ * Marks the nav link matching the current pathname as active, defaulting
+ * to the dashboard link on the root path.
+ *
+ * @param {Element} [ele] - Optional element to force active.
+ */
 const handleActiveLink = (ele) => {
   a.forEach((e) => e.classList.remove("active"));
   let pathname = window.location.pathname;
@@ -200,6 +265,12 @@ const handleActiveLink = (ele) => {
   ele?.classList.add("active");
 };
 
+/**
+ * Collapses every open sublink group in the nav.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - Any nav element used to locate the nav.
+ */
 export function collapseAllSublinks({ ele }) {
   const allSublinks = ele.closest("nav").querySelectorAll(".sublinks");
 
@@ -208,6 +279,14 @@ export function collapseAllSublinks({ ele }) {
   }
 }
 
+/**
+ * Toggles the sublink group of the clicked nav item (sidebar or nav sheet).
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The clicked nav link.
+ * @param {DOMStringMap} param0.data - Dataset of the link; `data.name`
+ *   identifies the sublinks group.
+ */
 export function toggleSublinks({ ele, data }) {
   const sb = ele.closest("#sidebar");
   const ns = ele.closest("#nav-sheet");
@@ -237,6 +316,14 @@ export function toggleSublinks({ ele, data }) {
   return;
 }
 
+/**
+ * Expands the sublink group of the focused nav item.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The focused nav link.
+ * @param {DOMStringMap} param0.data - Dataset of the link; `data.name`
+ *   identifies the sublinks group.
+ */
 export function expandSublinks({ ele, data }) {
   collapseAllSublinks({ ele });
   const sb = ele.closest("#sidebar");
@@ -258,6 +345,14 @@ export function expandSublinks({ ele, data }) {
   }
 }
 
+/**
+ * Collapses the sublink group of the blurred nav item.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The blurred nav link.
+ * @param {DOMStringMap} param0.data - Dataset of the link; `data.name`
+ *   identifies the sublinks group.
+ */
 export function collapseSublinks({ ele, data }) {
   const sb = ele.closest("#sidebar");
   const ns = ele.closest("#nav-sheet");
@@ -282,6 +377,13 @@ export function collapseSublinks({ ele, data }) {
   }
 }
 
+/**
+ * Marks the sublink matching the focused nav item's href inside the item's
+ * popover.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The focused nav link.
+ */
 export function handleSublinkFocus({ ele }) {
   const a = document.querySelectorAll(`#${ele.dataset.name}-popover a`);
   for (let i = 0; i < a.length; i++) {
@@ -292,6 +394,10 @@ export function handleSublinkFocus({ ele }) {
   }
 }
 
+/**
+ * Post-navigation hook: closes open dialogs, re-marks the active nav link
+ * and moves focus to <main>.
+ */
 export function navigate() {
   closeLastDialog();
   handleActiveLink();

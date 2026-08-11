@@ -170,7 +170,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 		if err != nil {
 			return err
 		}
-		id := hex.EncodeToString(b)
+		id := "di-" + hex.EncodeToString(b)
 	}}
 	<div class="relative date-input">
 		<input
@@ -184,7 +184,7 @@ templ DateInput(class string, hasError bool, attrs templ.Attributes) {
 				class="reset-btn flex justify-center items-center"
 				type="button"
 				data-action="ui.date-input.toggle"
-				data-target={ id }
+				data-target={ fmt.Sprintf("#%s", id) }
 				popovertarget={ id }
 				style={ fmt.Sprintf("anchor-name: --%s;", id) }
 			>
@@ -227,7 +227,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 		if err != nil {
 			return err
 		}
-		id := hex.EncodeToString(b)
+		id := "ti-" + hex.EncodeToString(b)
 	}}
 	<div class="relative date-input">
 		<input
@@ -242,7 +242,7 @@ templ TimeInput(class string, hasError bool, attrs templ.Attributes) {
 				class="reset-btn flex justify-center items-center"
 				type="button"
 				data-action="ui.time-input.toggle"
-				data-target={ id }
+				data-target={ fmt.Sprintf("#%s", id) }
 				popovertarget={ id }
 				style={ fmt.Sprintf("anchor-name: --%s;", id) }
 			>

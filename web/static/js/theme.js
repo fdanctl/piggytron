@@ -1,6 +1,12 @@
 const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-export function getpreferredTheme() {
+/**
+ * Resolves the effective theme from the stored preference and the OS
+ * preference (used when the stored preference is "system").
+ *
+ * @returns {"light"|"dark"} The effective theme.
+ */
+export function getPreferredTheme() {
   const theme = localStorage.getItem("theme") || "system";
   const prefersDark = mediaQuery.matches;
   const isDark = theme === "dark" || (theme === "system" && prefersDark);
@@ -8,6 +14,12 @@ export function getpreferredTheme() {
   return isDark ? "dark" : "light";
 }
 
+/**
+ * Applies the given theme to the document root and wires (or removes) the
+ * media query listener as needed.
+ *
+ * @param {"light"|"dark"|"system"} theme - The theme to apply.
+ */
 function switchTheme(theme) {
   switch (theme) {
     case "light":
@@ -22,7 +34,7 @@ function switchTheme(theme) {
 
     case "system":
       mediaQuery.addEventListener("change", updateTheme);
-      const preferredTheme = getpreferredTheme();
+      const preferredTheme = getPreferredTheme();
       if (preferredTheme === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
       } else {
@@ -31,6 +43,13 @@ function switchTheme(theme) {
   }
 }
 
+/**
+ * Applies the selected theme with a view transition.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {DOMStringMap} param0.data - Dataset of the option; `data.value` is
+ *   the theme ("light", "dark" or "system").
+ */
 export function selectTheme({ data }) {
   localStorage.setItem("theme", data.value);
   document.startViewTransition({
@@ -42,16 +61,28 @@ export function selectTheme({ data }) {
   });
 }
 
+/**
+ * Applies the OS color scheme to the document root. Registered as the
+ * media query change listener while in "system" mode.
+ *
+ * @param {MediaQueryListEvent} e - The media query change event.
+ */
 function updateTheme(e) {
   document.documentElement.dataset.theme = e.matches ? "dark" : "light";
 }
-
 const initialTheme = localStorage.getItem("theme") || "system";
 if (initialTheme === "system") {
   mediaQuery.addEventListener("change", updateTheme);
 }
 
-// theme option
+/**
+ * Marks the clicked theme option as selected and reveals its hint text.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The clicked theme option.
+ * @param {DOMStringMap} param0.data - Dataset of the option; `data.value` is
+ *   the theme the option stands for.
+ */
 export function themeOptionSelect({ ele, data }) {
   const parent = ele.parentElement;
   const opts = parent.querySelectorAll(".theme-option");

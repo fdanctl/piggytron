@@ -1,5 +1,12 @@
 import { makeSVG } from "./icons";
 
+/**
+ * Programmatically clicks the dropdown option whose data-value matches,
+ * used to sync calendar month/year <select>.
+ *
+ * @param {Element} ele - Any element inside the dropdown.
+ * @param {string} value - The data-value to click.
+ */
 export function clickOption(ele, value) {
   const options = ele.closest(".dropdown").querySelectorAll("li");
   for (let i = 0; i < options.length; i++) {
@@ -10,6 +17,10 @@ export function clickOption(ele, value) {
   }
 }
 
+/**
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The month-back button.
+ */
 export function prevMonth({ ele }) {
   const calendar = ele.closest(".calendar");
   const month = calendar.querySelector("input[name='month']");
@@ -23,6 +34,10 @@ export function prevMonth({ ele }) {
   month.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 }
 
+/**
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The month-forward button.
+ */
 export function nextMonth({ ele }) {
   const calendar = ele.closest(".calendar");
   const month = calendar.querySelector("input[name='month']");
@@ -36,6 +51,13 @@ export function nextMonth({ ele }) {
   month.dispatchEvent(new Event("change", { bubbles: true })); // triggers change event
 }
 
+/**
+ * Rebuilds the day grid of the calendar for the selected month, rendering
+ * up to 42 day cells starting from the Sunday before the 1st.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - Any element inside the calendar.
+ */
 export function buildCalendar({ ele }) {
   const calendar = ele.closest(".calendar");
   const year = calendar.querySelector("input[name='year']").value;
@@ -68,8 +90,15 @@ export function buildCalendar({ ele }) {
   }
 }
 
-// meant to attach new years options on scroll (infinite)
-// instead of prerendering a limiting set
+/**
+ * Appends or prepends the next ten year options to the year dropdown,
+ * depending on the scroll direction of the sentinel option.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The sentinel option that triggered the action.
+ * @param {DOMStringMap} param0.data - Dataset of the sentinel; `data.direction`
+ *   is "down" (older years) or "up" (newer years).
+ */
 export function generateYearLI({ ele, data }) {
   const range = 10;
   let dir = data.direction;
@@ -97,6 +126,13 @@ export function generateYearLI({ ele, data }) {
   }
 }
 
+/**
+ * Builds a year option (selectable via the ui.select.option action) with a
+ * check icon.
+ *
+ * @param {number} year - The year to render.
+ * @returns {HTMLLIElement} The new <li> element.
+ */
 function makeYearOption(year) {
   const li = document.createElement("li");
   li.dataset.action = "ui.select.option";

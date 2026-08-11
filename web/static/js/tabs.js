@@ -1,3 +1,11 @@
+/**
+ * Activates the clicked tab trigger and shows the matching tab content.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The clicked tab trigger.
+ * @param {DOMStringMap} param0.data - Dataset of the trigger; `data.tab` names
+ *   the content id and `data.tabTrigger` groups triggers/contents.
+ */
 export function changeTab({ ele, data }) {
   const triggers = document.querySelectorAll(
     `[data-tab-trigger="${data.tabTrigger}"]`,

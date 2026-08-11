@@ -6,6 +6,10 @@ import (
 	"golang.org/x/text/currency"
 )
 
+// TODO: locale config
+// use parseInt instead of addCommas for numeric values
+// console.log(parseInt(params.value || '0', 10).toLocaleString('pt-PT'));
+
 func pieTooltipFormatter(curr currency.Unit) string {
 	return fmt.Sprintf(`
 		function (params) {

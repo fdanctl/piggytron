@@ -18,13 +18,13 @@ templ Dropdown(class, name string, minWFull bool, attrs templ.Attributes) {
 		if err != nil {
 			return err
 		}
-		id := hex.EncodeToString(b)
+		id := "d-" + hex.EncodeToString(b)
 	}}
 	<div class="dropdown">
 		<button
 			class={ "reset-btn", templ.KV(class, class != "") }
 			type="button"
-			data-target={ id }
+			data-target={ fmt.Sprintf("#%s", id) }
 			popovertarget={ id }
 			style={ fmt.Sprintf("anchor-name: --%s;", id) }
 			{ attrs... }

@@ -1,9 +1,18 @@
+/** State used for the slider drag */
 let dragState = {
   active: false,
   thumb: null,
   root: null,
 };
 
+/**
+ * Handles a click on the slider track: picks the thumb closest to the click
+ * position (double sliders), snaps it there and starts dragging it.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The slider element.
+ * @param {MouseEvent|TouchEvent} param0.evt - The pointer/touch event.
+ */
 export function sliderClick({ ele, evt }) {
   const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
   const slider = ele.closest(".slider");
@@ -47,6 +56,13 @@ export function sliderClick({ ele, evt }) {
   startSliderDrag({ ele: thumb });
 }
 
+/**
+ * Starts dragging a thumb: marks it active and wires the document
+ * pointermove/pointerup listeners.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The thumb element.
+ */
 export function startSliderDrag({ ele }) {
   ele.classList.add("active");
   dragState.active = true;
@@ -56,12 +72,20 @@ export function startSliderDrag({ ele }) {
   document.addEventListener("pointerup", endSliderDrag);
 }
 
+/**
+ * Moves the active thumb with the pointer.
+ *
+ * @param {MouseEvent|TouchEvent} evt - The pointer/touch event.
+ */
 function moveSliderDrag(evt) {
   if (!dragState.active) return;
   const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
   updateSlider(clientX, dragState.root, dragState.thumb);
 }
 
+/**
+ * Ends the drag, clears the drag state and unwires the document listeners.
+ */
 function endSliderDrag() {
   dragState.thumb.classList.remove("active");
   dragState.active = false;
@@ -71,6 +95,14 @@ function endSliderDrag() {
   document.removeEventListener("pointerup", endSliderDrag);
 }
 
+/**
+ * Moves a thumb to the pointer position, clamps it against the other thumb
+ * (double sliders), updates the hidden input and repaints the thumb/fill.
+ *
+ * @param {number} clientX - Pointer X coordinate.
+ * @param {Element} slider - The slider root element.
+ * @param {Element} thumb - The thumb being moved.
+ */
 function updateSlider(clientX, slider, thumb) {
   const range = Number(slider.dataset.range);
   const sliderMin = Number(slider.dataset.min) || 0;
@@ -139,6 +171,11 @@ function updateSlider(clientX, slider, thumb) {
   }
 }
 
+/**
+ * Resets the slider visuals back to the full range.
+ *
+ * @param {Element} slider - The slider root element.
+ */
 export function resetSlider(slider) {
   const fill = slider.querySelector(".slider__fill");
   fill.style.left = "0%";

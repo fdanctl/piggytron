@@ -1,6 +1,16 @@
 import { makeSVG } from "./icons";
 import { closeDialog } from "./navigation";
 
+/**
+ * Opens a confirmation dialog and resolves with the user's choice.
+ *
+ * @param {Object} [options] - Dialog options.
+ * @param {string} [options.title] - Dialog title (default "Confirm").
+ * @param {string} [options.message] - Message body (default "Are you sure?").
+ * @param {string} [options.acceptText] - Accept button label (default "Yes").
+ * @param {string} [options.refuseText] - Refuse button label (default "No").
+ * @returns {Promise<boolean>} Resolves true if accepted, false if refused.
+ */
 export function confirmModal({
   title = "Confirm",
   message = "Are you sure?",

@@ -58,6 +58,14 @@ import {
 import { hidePopover, showPopover } from "../tooltip";
 import { selectTheme, themeOptionSelect } from "../theme";
 
+/**
+ * Returns the first element after ele matching the selector.
+ * Adapted from htmx source code.
+ *
+ * @param {Element} ele - The reference element.
+ * @param {string} selector - CSS selector to match.
+ * @returns {Element|undefined} The matching element, if any.
+ */
 function queryNextSelector(ele, selector) {
   const results = ele.parentElement.querySelectorAll(selector);
   for (let i = 0; i < results.length; i++) {
@@ -68,6 +76,14 @@ function queryNextSelector(ele, selector) {
   }
 }
 
+/**
+ * Returns the last element before ele matching the selector.
+ * Adapted from htmx source code.
+ *
+ * @param {Element} ele - The reference element.
+ * @param {string} selector - CSS selector to match.
+ * @returns {Element|undefined} The matching element, if any.
+ */
 function queryPreviousSelector(ele, selector) {
   const results = ele.parentElement.querySelectorAll(selector);
   for (let i = results.length - 1; i >= 0; i--) {
@@ -78,7 +94,15 @@ function queryPreviousSelector(ele, selector) {
   }
 }
 
-function getTarget(ele, selector) {
+/**
+ * Emulates hx-target.
+ * Adapted from htmx source code.
+ *
+ * @param {Element} ele - The reference element.
+ * @param {string} selector - The selector descriptor.
+ * @returns {Element|null} The resolved element.
+ */
+export function getTarget(ele, selector) {
   if (selector.indexOf("closest ") === 0) {
     return ele.closest(selector.slice(8));
   } else if (selector.indexOf("find ") === 0) {
@@ -96,6 +120,11 @@ function getTarget(ele, selector) {
   }
 }
 
+/**
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The triggering element.
+ * @param {DOMStringMap} param0.data - Dataset; optional `data.target`.
+ */
 function removeEle({ ele, data }) {
   let t = ele;
   if (data.target) {
@@ -104,6 +133,11 @@ function removeEle({ ele, data }) {
   t.remove();
 }
 
+/**
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The triggering element.
+ * @param {DOMStringMap} param0.data - Dataset; optional `data.target`.
+ */
 function clickEle({ ele, data }) {
   let t = ele;
   if (data.target) {
@@ -112,6 +146,7 @@ function clickEle({ ele, data }) {
   t.click();
 }
 
+/** Registry of every ui.* action. */
 export const uiActions = {
   "ui.element.remove": removeEle,
 

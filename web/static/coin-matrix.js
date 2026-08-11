@@ -7,6 +7,9 @@ const height = rect.height;
 const img = div.querySelector(".img-container");
 const fresh = img.cloneNode(true);
 
+/**
+ * @param {HTMLElement} ele - The coin element to animate.
+ */
 const furu = (ele) => {
   // time ms
   const minTime = 5000;
@@ -33,6 +36,10 @@ const furu = (ele) => {
   }, 10);
 };
 
+/**
+ * @param {number} ms - Delay in milliseconds before spawning.
+ * @param {boolean} [recursive] - When true, keeps spawning a coin every 700ms.
+ */
 const newCoin = (ms, recursive) => {
   setTimeout(() => {
     const nc = fresh.cloneNode(true);

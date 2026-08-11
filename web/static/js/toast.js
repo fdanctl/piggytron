@@ -1,5 +1,11 @@
 import { makeSVG } from "./icons";
 
+/**
+ * Shows a toast of the given level containing msg.
+ *
+ * @param {"success"|"warning"|"error"|"info"} level - Toast severity.
+ * @param {string} msg - The message to display.
+ */
 export function showToast(level, msg) {
   const toast = document.createElement("div");
   toast.classList.add("toast", "cursor-pointer", "toast--" + level);

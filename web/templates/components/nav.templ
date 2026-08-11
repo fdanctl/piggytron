@@ -80,15 +80,13 @@ templ navLi(v navLink) {
 		if len(v.sub) > 0 {
 			<div id={ fmt.Sprintf("%s-sublinks", v.name) } class="sublinks">
 				<ul>
-					for i, s := range v.sub {
+					for _, s := range v.sub {
 						<li>
 							<a
 								data-name={ v.name }
 								href={ s.href }
 								data-focus="ui.nav.sublinks-focus ui.nav.expand-sublinks ui.sidebar.show-popover"
-								if len(v.sub) - 1 == i {
-									data-blur="ui.nav.collapse-sublinks ui.sidebar.hide-popover"
-								}
+								data-blur="ui.nav.collapse-sublinks ui.sidebar.hide-popover"
 							>
 								@ChevronRightSvg(16, "", "")
 								<span>

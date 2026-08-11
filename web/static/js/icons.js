@@ -1,3 +1,12 @@
+/**
+ * Builds an inline <svg>.
+ *
+ * @param {"success"|"warning"|"error"|"info"|"x"} icon - Icon name.
+ * @param {number} [size] - Width/height in px (default 24).
+ * @param {string} [color] - Stroke color (default "currentColor").
+ * @param {string} [className] - CSS class for the <svg> element.
+ * @returns {string} SVG markup string.
+ */
 export function makeSVG(
   icon,
   size = 24,

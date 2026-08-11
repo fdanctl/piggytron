@@ -1,5 +1,12 @@
+import { getTarget } from "./actions/ui";
 import { buildCalendar, clickOption } from "./calendar";
 
+/**
+ * Verifies, on blur, if the input has error and adds error state to it
+ * and its input-group.
+ *
+ * @param {HTMLInputElement} ele - The input being blurred.
+ */
 export function handleInputOnBlur(ele) {
   ele.classList.toggle("input--error", !ele.validity.valid);
   const parent = ele.parentElement.parentElement;
@@ -8,6 +15,13 @@ export function handleInputOnBlur(ele) {
   }
 }
 
+/**
+ * Show/hide password. Changes between password input and text
+ * input and icons accordingly.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The toggle button.
+ */
 export function passwordToggle({ ele }) {
   const pwdInput = ele.parentElement.parentElement.children[0];
   if (pwdInput.type === "password") {
@@ -19,13 +33,27 @@ export function passwordToggle({ ele }) {
   ele.children[1].classList.toggle("hidden");
 }
 
+/**
+ * Toggles the checkbox of a clickable pill and fires its input event.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The pill element.
+ */
 export function checkboxPillToggle({ ele }) {
   let cb = ele.querySelector("input");
   cb.checked = !cb.checked;
   cb.dispatchEvent(new Event("input", { bubbles: true })); // triggers change event
 }
 
-// select
+/**
+ * Selects a custom dropdown option: writes the value into the hidden input,
+ * marks the option and syncs the trigger button label.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The clicked option.
+ * @param {DOMStringMap} param0.data - Dataset of the option; `data.value` is
+ *   the selected value.
+ */
 export function selectSelect({ ele, data }) {
   const input = ele.parentElement.nextElementSibling;
   input.value = data.value;
@@ -39,12 +67,21 @@ export function selectSelect({ ele, data }) {
   ele.closest(".popover").hidePopover();
   let drop = ele.closest(".dropdown");
   if (drop) {
-    drop.querySelector("button").innerText = ele.firstChild.innerText;
+    drop.querySelector("button > span").innerText = ele.firstChild.innerText;
     drop.querySelector("button").classList.remove("input--error");
     ele.closest(".input-group")?.classList.remove("input-group--error");
   }
 }
 
+/**
+ * Selects a pill-style option, mirroring selectSelect for the
+ * .select-pill variant.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The clicked option.
+ * @param {DOMStringMap} param0.data - Dataset of the option; `data.value` is
+ *   the selected value.
+ */
 export function selectPillSelect({ ele, data }) {
   ele.closest(".popover").hidePopover();
   const input = ele.parentElement.nextElementSibling;
@@ -62,8 +99,17 @@ export function selectPillSelect({ ele, data }) {
   }
 }
 
-export function centerSelected({ data }) {
-  const popover = document.getElementById(data.target);
+/**
+ * Scrolls the selected option into view inside an open popover, on the next
+ * frame.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The triggering element.
+ * @param {DOMStringMap} param0.data - Dataset of the trigger; `data.target`
+ *   is the id of the popover element.
+ */
+export function centerSelected({ ele, data }) {
+  const popover = getTarget(ele, data.target);
 
   requestAnimationFrame(() => {
     if (popover.matches(":popover-open")) {
@@ -76,7 +122,13 @@ export function centerSelected({ data }) {
   });
 }
 
-// cash input
+/**
+ * Strips non-numeric characters from a cash input while typing and clamps
+ * the value to two decimal places.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The cash input.
+ */
 export function sanitizeCashInput({ ele }) {
   let value = ele.value.replace(/[^0-9.]/g, "");
   const parts = value.split(".");
@@ -89,6 +141,13 @@ export function sanitizeCashInput({ ele }) {
   ele.value = value;
 }
 
+/**
+ * Formats the cash input on blur: pads the decimals to two digits and adds
+ * thousands separators to the integer part.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The cash input.
+ */
 export function cashInputBlur({ ele }) {
   let value = ele.value.replace(/[^0-9.]/g, "");
 
@@ -103,17 +162,32 @@ export function cashInputBlur({ ele }) {
     decimalPart = decimalPart.slice(0, 2);
   }
 
+  // TODO: locale config
   intPart = parseInt(intPart || "0", 10).toLocaleString("en-US");
 
   ele.value = `${intPart}${decimalPart != "" ? "." + decimalPart : ""}`;
 }
 
+/**
+ * Strips thousands separators on focus and places the caret at the end, so
+ * the user can keep typing.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The cash input.
+ */
 export function cashInputFocus({ ele }) {
   ele.value = ele.value.replaceAll(",", "");
   const length = ele.value.length;
   ele.setSelectionRange(length, length);
 }
 
+/**
+ * Filters budget-amount keystrokes: allows digits, dot and control keys,
+ * and moves between amount inputs with j/k or the arrow keys.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {KeyboardEvent} param0.evt - The keydown event.
+ */
 export function budgetInput({ evt }) {
   // allow text shortcuts and reload page
   if (
@@ -146,6 +220,12 @@ export function budgetInput({ evt }) {
   evt.preventDefault();
 }
 
+/**
+ * Plays the "scan" highlight animation on the input.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The amount input.
+ */
 export function budgetInputScan({ ele }) {
   ele.classList.add("scan");
   ele.addEventListener(
@@ -157,6 +237,9 @@ export function budgetInputScan({ ele }) {
   );
 }
 
+/**
+ * @returns {HTMLInputElement[]} The amount inputs.
+ */
 function getInputs() {
   return [...document.querySelectorAll("input[name='amount']")];
 }
@@ -183,7 +266,13 @@ function prevInput() {
   }
 }
 
-// date
+/**
+ * Masks a date input as DD/MM/YYYY while typing, clamping day to 01–31 and
+ * month to 01–12.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The date input.
+ */
 export function dateOnChange({ ele }) {
   let raw = ele.value.replace(/\D/g, "");
 
@@ -206,13 +295,6 @@ export function dateOnChange({ ele }) {
     month = m.toString().padStart(2, "0");
   }
 
-  // Optional: limit year range
-  // if (year.length === 4) {
-  //   let y = parseInt(year, 10);
-  //   y = Math.min(Math.max(y, 1900), 2100); // adjust if needed
-  //   year = y.toString();
-  // }
-
   let formatted = day;
 
   if (raw.length > 2) {
@@ -226,8 +308,17 @@ export function dateOnChange({ ele }) {
   ele.value = formatted;
 }
 
-export function openCalendar({ data }) {
-  const target = document.getElementById(data.target);
+/**
+ * Opens the calendar popover, rebuilding its grid and preselecting the
+ * value (or today) of the linked date input.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The triggering element.
+ * @param {DOMStringMap} param0.data - Dataset of the trigger; `data.target`
+ *   is the id of the calendar popover.
+ */
+export function openCalendar({ ele, data }) {
+  const target = getTarget(ele, data.target);
   buildCalendar({ ele: target.querySelector(".calendar") });
   const inputValue = target.previousSibling.querySelector("input").value;
   let day;
@@ -259,6 +350,14 @@ export function openCalendar({ data }) {
   }
 }
 
+/**
+ * Writes the clicked calendar day into the linked date input (DD/MM/YYYY)
+ * and closes the popover.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The calendar popover.
+ * @param {Event} param0.evt - The click event; the target must be a day cell.
+ */
 export function selectDay({ ele, evt }) {
   if (!Number.isNaN(Number(evt.target.innerHTML))) {
     const calendar = evt.target.closest(".calendar");
@@ -275,7 +374,13 @@ export function selectDay({ ele, evt }) {
   }
 }
 
-// time
+/**
+ * Masks a time input as HH:MM while typing, clamping hours to 00–23 and
+ * minutes to 00–59.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {HTMLInputElement} param0.ele - The time input.
+ */
 export function timeOnChange({ ele }) {
   let value = ele.value.replace(/\D/g, "");
 
@@ -304,6 +409,12 @@ export function timeOnChange({ ele }) {
   ele.value = formatted;
 }
 
+/**
+ * Combines the selected hour/minute options into the linked time input.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The clicked time option.
+ */
 export function selectTime({ ele }) {
   const popover = ele.closest(".date-input__popover");
 
@@ -337,8 +448,17 @@ export function selectTime({ ele }) {
   input.dispatchEvent(new Event("input"));
 }
 
-export function openTimePopover({ data }) {
-  const target = document.getElementById(data.target);
+/**
+ * Opens the time popover, preselecting the hour/minute matching the linked
+ * time input value.
+ *
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The triggering element.
+ * @param {DOMStringMap} param0.data - Dataset of the trigger; `data.target`
+ *   is the id of the time options element.
+ */
+export function openTimePopover({ ele, data }) {
+  const target = getTarget(ele, data.target);
   const inputValue = target
     .closest(".date-input__popover")
     .previousSibling.querySelector("input").value;
