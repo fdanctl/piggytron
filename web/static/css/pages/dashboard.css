@@ -1,3 +1,8 @@
+/* resizing down would fail */
+#dashboard-container > section {
+  min-width: 0;
+}
+
 .to-budget {
   background: var(--color-on-ambivalent);
   border: 0.5px solid var(--color-ambivalent);

@@ -53,6 +53,7 @@
   }
 }
 
+/* resizing down would fail */
 #banks-container > section {
   min-width: 0;
 }

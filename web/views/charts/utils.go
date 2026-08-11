@@ -47,9 +47,9 @@ func ConvertChartToTemplComponent(chart Renderable) templ.Component {
 				initialized_%s = true;
 				return;
 			}
-			goecharts_%s.resize()
+			goecharts_%s.resize();
 		})
-		observer_%s.observe(document.getElementById("%s"))
+		observer_%s.observe(document.getElementById("%s"));
 		</script>`, id, id, id, id, id, id, id,
 		)
 		return err

@@ -28,9 +28,9 @@ templ Dashboard(
 		</a>
 	}
 	<div id="dashboard-container">
-		<div id="dashboard-stats" class="dashboard-stats">
+		<section id="dashboard-stats" class="dashboard-stats">
 			<div class="card">
-				<h6 class="card__title mb-xs" style="margin-bottom: var(--spacing-xs);">Income</h6>
+				<h6 class="card__title mb-xs">Income</h6>
 				<p class="metric__value metric__value--xl">
 					{ views.FormatMoney(float64(view.Income)/100,currency.EUR, language.AmericanEnglish) }
 				</p>
@@ -65,8 +65,8 @@ templ Dashboard(
 					across checking accounts
 				</p>
 			</div>
-		</div>
-		<div id="dashboard-bs">
+		</section>
+		<section id="dashboard-bs">
 			<div class="card">
 				<h6 class="card__title">Budget-spent by category</h6>
 				<div
@@ -77,8 +77,8 @@ templ Dashboard(
 					@components.Loader("h-full", nil)
 				</div>
 			</div>
-		</div>
-		<div id="dashboard-st">
+		</section>
+		<section id="dashboard-st">
 			<div class="card">
 				<h6 class="card__title">Spent by type</h6>
 				<div
@@ -88,8 +88,8 @@ templ Dashboard(
 					@components.Loader("h-full", nil)
 				</div>
 			</div>
-		</div>
-		<div id="dashboard-ah">
+		</section>
+		<section id="dashboard-ah">
 			<div class="card">
 				<div>
 					<h6 class="card__title">Account history</h6>
@@ -102,8 +102,8 @@ templ Dashboard(
 					@components.Loader("h-full", nil)
 				</div>
 			</div>
-		</div>
-		<div id="dashboard-mp">
+		</section>
+		<section id="dashboard-mp">
 			<div class="card" style="display: grid; grid-template-rows: auto 1fr auto;">
 				<h6 class="card__title">Month progress</h6>
 				<div>
@@ -177,8 +177,8 @@ templ Dashboard(
 					</div>
 				</div>
 			</div>
-		</div>
-		<div id="dashboard-rt">
+		</section>
+		<section id="dashboard-rt">
 			<div class="card">
 				<h6 class="card__title">Recent transactions</h6>
 				<div>
@@ -192,8 +192,8 @@ templ Dashboard(
 					<a href="/ledger" class="text-center" style="display: block;">view all transactions</a>
 				</div>
 			</div>
-		</div>
-		<div id="dashboard-gp">
+		</section>
+		<section id="dashboard-gp">
 			<div class="card">
 				<h6 class="card__title">Goals</h6>
 				<div
@@ -207,7 +207,7 @@ templ Dashboard(
 					}
 				</div>
 			</div>
-		</div>
+		</section>
 	</div>
 }
 

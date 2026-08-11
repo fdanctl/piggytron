@@ -318,4 +318,8 @@ func (h *LedgerEntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("HX-Trigger", "transaction-deleted")
+	components.SendToast(
+		components.Success,
+		"Transaction deleted",
+	).Render(r.Context(), w)
 }
