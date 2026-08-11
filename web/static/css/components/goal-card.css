@@ -70,6 +70,24 @@
   }
 }
 
+.progress-bar--needs {
+  > span {
+    background-color: var(--color-needs);
+  }
+}
+
+.progress-bar--wants {
+  > span {
+    background-color: var(--color-wants);
+  }
+}
+
+.progress-bar--savings {
+  > span {
+    background-color: var(--color-savings);
+  }
+}
+
 .goal-card__subinfo {
   display: flex;
   justify-content: space-between;

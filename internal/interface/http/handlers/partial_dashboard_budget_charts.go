@@ -11,6 +11,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
@@ -41,7 +42,6 @@ func (h *DashboardBudgetCharts) ServeHTTP(w http.ResponseWriter, r *http.Request
 // Get renders the budget bar chart and swaps the spent-by-type pie
 // out-of-band for the current month.
 // TODO: make it more complete,
-//   - bar chart has a 2nd slide showing spent progress, similar to month progress, by category
 //   - pie chart has a 2nd slide showing the spent progrees by type
 //   - considering the pie chart to be a double donut with spent and budget
 func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
@@ -78,8 +78,55 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 		charts.CreateCategoryBudgetSpentBarChart(budgetItems, spentItems, categories, theme),
 	)
 
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	nextMonthFirst := time.Date(today.Year(), today.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	monthLen := time.Date(
+		nextMonthFirst.Year(),
+		nextMonthFirst.Month(),
+		nextMonthFirst.Day()-1,
+		0,
+		0,
+		0,
+		0,
+		time.UTC,
+	).Day()
+	daysLeft := monthLen - today.Day() - 1
+
+	spentCardSlides := []templ.Component{pages.ChartContainer(bar)}
+	size := 4 // groups of 4
+	for i := 0; i < len(categoryBudgetSpent.Data); i += size {
+		end := i + size
+		if end > len(categoryBudgetSpent.Data) {
+			end = len(categoryBudgetSpent.Data)
+		}
+
+		var slide []templ.Component
+		for k := i; k < end; k++ {
+			c := categoryBudgetSpent.Data[k]
+			if c.Type == "income" {
+				i++
+				end++
+				continue
+			}
+			slide = append(
+				slide,
+				pages.CategorySpentProgress(c.Name, c.Type, c.Value, c.Budgeted, daysLeft),
+			)
+		}
+		spentCardSlides = append(spentCardSlides, pages.CategorySpentContainer(slide))
+	}
+
 	templ.Join(
-		bar,
+		components.CarouselCard(
+			"",
+			"Budget-spent by category",
+			spentCardSlides,
+			true,
+			true,
+			true,
+			nil,
+		),
 		layouts.OOBWraper(
 			"spent-by-type",
 			"innerHTML",

@@ -120,6 +120,10 @@
 }
 
 /* ===== TEXT ===== */
+.text-xxs {
+  font-size: var(--font-size-xxs);
+}
+
 .text-xs {
   font-size: var(--font-size-xs);
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
+	"math"
 )
 
 templ Dashboard(
@@ -73,6 +74,8 @@ templ Dashboard(
 					class="chart-container"
 					hx-get="/partials/charts/dashboard-budget-spent"
 					hx-trigger="load"
+					hx-swap="outerHTML"
+					hx-target="closest .card"
 				>
 					@components.Loader("h-full", nil)
 				</div>
@@ -197,13 +200,20 @@ templ Dashboard(
 			<div class="card">
 				<h6 class="card__title">Goals</h6>
 				<div
-					class="space-y-md"
+					class="space-y-sm"
 					hx-target="#content"
 					hx-boost="true"
 					hx-swap="innerHTML transition:true"
 				>
-					for _, g := range view.Goals {
-						@GoalProgress(g)
+					for i, g := range view.Goals {
+						if i < 4 {
+							@GoalProgress(g)
+						}
+					}
+					if len(view.Goals) - 4 > 0 {
+						<div class="flex justify-end">
+							<a class="text-xxs text-muted" href="/goals">{ len(view.Goals) - 4 } more</a>
+						</div>
 					}
 				</div>
 			</div>
@@ -212,26 +222,82 @@ templ Dashboard(
 }
 
 templ GoalProgress(g views.Goal) {
-	<a href={ fmt.Sprintf("/goals/%s", g.ID) }>
+	<div>
+		<a href={ fmt.Sprintf("/goals/%s", g.ID) }>
+			<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+				<span>{ g.Name }</span>
+				<div class="flex gap-xs" style="align-items: baseline;">
+					<span class="text-sm font-mono">
+						{ g.Amount }
+					</span>
+					<span class="text-xs text-muted font-mono">
+						/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+					</span>
+				</div>
+			</div>
+			@components.ProgressBar("progress-bar--xs", g.CompletePercentage)
+			<div class="mt-xs flex justify-between">
+				<span class="text-xs text-muted">
+					{  views.FormatFloat(g.CompletePercentage) }% funded
+				</span>
+				<span class="text-xs text-muted">
+					{ g.AmountLeft } to go
+				</span>
+			</div>
+		</a>
+	</div>
+}
+
+templ ChartContainer(chart templ.Component) {
+	<div class="chart-container">
+		@chart
+	</div>
+}
+
+templ CategorySpentProgress(name string, ttype string, spent, budgeted int, daysLeft int) {
+	{{
+		var pct float64 = 100
+		if budgeted == 0 && spent == 0 {
+			pct = 0
+		} else if budgeted > 0 {
+			pct = float64(spent) / float64(budgeted)
+		}
+
+		avgleft := int(
+			math.Round(float64(budgeted-spent) / float64(daysLeft)),
+		)
+	}}
+	<div>
 		<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-			<span>{ g.Name }</span>
+			<span>{ name }</span>
 			<div class="flex gap-xs" style="align-items: baseline;">
 				<span class="text-sm font-mono">
-					{ g.Amount }
+					{  views.FormatMoney(float64(budgeted)/100,currency.EUR, language.AmericanEnglish) }
 				</span>
 				<span class="text-xs text-muted font-mono">
-					/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+					/ { views.FormatMoney(float64(budgeted)/100,currency.EUR, language.AmericanEnglish) }
 				</span>
 			</div>
 		</div>
-		@components.ProgressBar("progress-bar--xs", g.CompletePercentage)
+		@components.ProgressBar(fmt.Sprintf("progress-bar--xs progress-bar--%s", ttype), pct)
 		<div class="mt-xs flex justify-between">
 			<span class="text-xs text-muted">
-				{  views.FormatFloat(g.CompletePercentage) }% funded
+				{  views.FormatFloat(pct) }% of budget spent
 			</span>
 			<span class="text-xs text-muted">
-				{ g.AmountLeft } to go
+				{  views.FormatMoney(float64(budgeted - spent)/100,currency.EUR, language.AmericanEnglish) } left
+				<span style="font-size: var(--font-size-xxs);">
+					({  views.FormatMoney(float64(avgleft)/100,currency.EUR, language.AmericanEnglish) }/day)
+				</span>
 			</span>
 		</div>
-	</a>
+	</div>
+}
+
+templ CategorySpentContainer(items []templ.Component) {
+	<div class="space-y-sm px-lg mt-md">
+		for _, v := range items {
+			@v
+		}
+	</div>
 }
