@@ -1,3 +1,5 @@
+import { makeSVG } from "./icons";
+
 export function clickOption(ele, value) {
   const options = ele.closest(".dropdown").querySelectorAll("li");
   for (let i = 0; i < options.length; i++) {
@@ -41,7 +43,7 @@ export function buildCalendar({ ele }) {
 
   const date = new Date(year, month, 1);
   const monthFirstWeekDay = date.getDay();
-  const firstSunday = date - new Date(monthFirstWeekDay * 24 * 60 * 60 * 900); // hours * minutes * seconds * miliseconds
+  const firstSunday = date - new Date(monthFirstWeekDay * 24 * 60 * 60 * 1000); // hours * minutes * seconds * miliseconds
 
   const daysContainer = calendar.querySelector(".calendar__days");
   daysContainer.innerHTML = "";
@@ -66,6 +68,8 @@ export function buildCalendar({ ele }) {
   }
 }
 
+// meant to attach new years options on scroll (infinite)
+// instead of prerendering a limiting set
 export function generateYearLI({ ele, data }) {
   const range = 10;
   let dir = data.direction;
@@ -99,20 +103,7 @@ function makeYearOption(year) {
   li.dataset.value = year;
   const span = document.createElement("span");
   span.innerText = year;
-  const svg = `<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      class=""
-    >
-      <path d="M20 6 9 17l-5-5"></path>
-    </svg>`;
+  const svg = makeSVG("success", 16);
   li.innerHTML = svg;
   li.prepend(span);
   return li;

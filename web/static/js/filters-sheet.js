@@ -1,6 +1,7 @@
 import { resetSlider } from "./slider";
 import { closeLastDialog } from "./navigation";
 import { formatDate } from "./utils";
+import { makeSVG } from "./icons";
 
 function addPill(id, label) {
   const pillBox = document.getElementById("curr-filters");
@@ -14,8 +15,7 @@ function addPill(id, label) {
   const btn = document.createElement("button");
   btn.classList.add("reset-btn", "flex", "justify-center", "items-center");
   btn.type = "button";
-  btn.innerHTML =
-    '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path></svg>';
+  btn.innerHTML = makeSVG("x", 14);
 
   newPill.appendChild(span);
   newPill.appendChild(btn);
@@ -134,7 +134,7 @@ export function changeMinAmountChip({ ele }) {
     str = minInput.dataset.default;
   }
   document.getElementById("minamount-chip").innerText = str;
-  changeAmountRangePill(ele);
+  changeRangePill(ele, "amount");
 }
 
 export function changeMaxAmountChip({ ele }) {
@@ -145,37 +145,7 @@ export function changeMaxAmountChip({ ele }) {
     str = maxInput.dataset.default;
   }
   document.getElementById("maxamount-chip").innerText = str;
-  changeAmountRangePill(ele);
-}
-
-function changeAmountRangePill(ele) {
-  const slider = ele.closest(".slider");
-  const minInput = slider.querySelector("[name='minamount']");
-  const maxInput = slider.querySelector("[name='maxamount']");
-  const minVal = minInput.value || minInput.dataset.default;
-  const maxVal = maxInput.value || maxInput.dataset.default;
-  // remove pill if both are the defaults
-  if (
-    minVal === minInput.dataset.default &&
-    maxVal === maxInput.dataset.default
-  ) {
-    document.querySelector(".pill[data-id='amount-range']")?.remove();
-    return;
-  }
-
-  const pill = document.querySelector("div[data-id='amount-range']");
-  if (!pill) {
-    addPill(
-      "amount-range",
-      document.getElementById("minamount-chip").closest("div").innerText,
-    );
-  } else {
-    const span = pill.firstElementChild;
-
-    span.innerText = document
-      .getElementById("minamount-chip")
-      .closest("div").innerText;
-  }
+  changeRangePill(ele, "amount");
 }
 
 export function changeMinDateChip({ ele }) {
@@ -188,7 +158,7 @@ export function changeMinDateChip({ ele }) {
   document.getElementById("mindate-chip").innerText = formatDate(
     new Date(Number(str) * 1000),
   );
-  changeDateRangePill(ele);
+  changeRangePill(ele, "date");
 }
 
 export function changeMaxDateChip({ ele }) {
@@ -201,13 +171,13 @@ export function changeMaxDateChip({ ele }) {
   document.getElementById("maxdate-chip").innerText = formatDate(
     new Date(Number(str) * 1000),
   );
-  changeDateRangePill(ele);
+  changeRangePill(ele);
 }
 
-function changeDateRangePill(ele) {
+function changeRangePill(ele, attr) {
   const slider = ele.closest(".slider");
-  const minInput = slider.querySelector("[name='mindate']");
-  const maxInput = slider.querySelector("[name='maxdate']");
+  const minInput = slider.querySelector(`[name='min${attr}']`);
+  const maxInput = slider.querySelector(`[name='max${attr}']`);
   const minVal = minInput.value || minInput.dataset.default;
   const maxVal = maxInput.value || maxInput.dataset.default;
   // remove pill if both are the defaults
@@ -215,21 +185,21 @@ function changeDateRangePill(ele) {
     minVal === minInput.dataset.default &&
     maxVal === maxInput.dataset.default
   ) {
-    document.querySelector(".pill[data-id='date-range']")?.remove();
+    document.querySelector(`.pill[data-id='${attr}-range']`)?.remove();
     return;
   }
 
-  const pill = document.querySelector("div[data-id='date-range']");
+  const pill = document.querySelector(`div[data-id='${attr}-range']`);
   if (!pill) {
     addPill(
-      "date-range",
-      document.getElementById("mindate-chip").closest("div").innerText,
+      `${attr}-range`,
+      document.getElementById(`min${attr}-chip`).closest("div").innerText,
     );
   } else {
     const span = pill.firstElementChild;
 
     span.innerText = document
-      .getElementById("mindate-chip")
+      .getElementById(`min${attr}-chip`)
       .closest("div").innerText;
   }
 }

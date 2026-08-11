@@ -16,7 +16,7 @@ const observer = new IntersectionObserver((entries) => {
   });
 });
 
-document.body.addEventListener("htmx:afterOnLoad", function (ev) {
+document.body.addEventListener("htmx:afterOnLoad", function () {
   observer.disconnect();
   const elements = document.querySelectorAll(
     `[data-${eventAttributes.intersect}]`,

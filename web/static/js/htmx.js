@@ -1,58 +1,9 @@
-import { closeAllDialog, closeDialog, closeLastDialog } from "./navigation";
-import { getPreferedTheme } from "./theme";
+import { confirmModal } from "./confirmModal";
+import { closeAllDialog, closeLastDialog } from "./navigation";
+import { getpreferredTheme } from "./theme";
 import { showToast } from "./toast";
 
-export function confirmModal({
-  title = "Confirm",
-  message = "Are you sure?",
-  acceptText = "Yes",
-  refuseText = "No",
-} = {}) {
-  return new Promise((resolve) => {
-    const overlay = document.createElement("div");
-    overlay.classList.add("dialog__overlay");
-    overlay.tabIndex = "-1";
-    overlay.dataset.pointerdown = "ui.dialog.start-drag";
-
-    const modal = document.createElement("div");
-    modal.tabIndex = "-1";
-    modal.classList.add("dialog", "dialog--float");
-
-    modal.innerHTML = `
-		<div class="dialog__bar">
-			<div></div>
-		</div>
-		<button type="button" class="reset-btn dialog__x" data-action="ui.dialog.close-last">
-      <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=""><path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path></svg>
-		</button>
-    <div>
-      <h4 class="mb-md">${title}</h4>
-      <p class="text-subtitle">${message}</p>
-      <div class="flex gap-xs justify-end items-center mt-sm">
-        <button class="btn btn--outline refuse">${refuseText}</button>
-        <button class="btn btn--outline accept">${acceptText}</button>
-      </div>
-`;
-
-    overlay.appendChild(modal);
-    const root = document.getElementById("dialog-root");
-    root.appendChild(overlay);
-    root.classList.add("is-dialog-open");
-    overlay.focus();
-
-    modal.querySelector(".accept").onclick = () => {
-      closeDialog(modal);
-      resolve(true);
-    };
-
-    modal.querySelector(".refuse").onclick = () => {
-      closeDialog(modal);
-      resolve(false);
-    };
-  });
-}
-
-document.addEventListener("htmx:confirm", (evt) => {
+document.body.addEventListener("htmx:confirm", (evt) => {
   if (!evt.detail.question) return;
 
   // This will prevent the request from being issued to later manually issue it
@@ -78,7 +29,7 @@ document.addEventListener("htmx:confirm", (evt) => {
   });
 });
 
-document.body.addEventListener("htmx:historyRestore", (ev) => {
+document.body.addEventListener("htmx:historyRestore", () => {
   // nav active link
   let title = document.title;
   const a = document.querySelectorAll("nav a");
@@ -89,67 +40,68 @@ document.body.addEventListener("htmx:historyRestore", (ev) => {
   }
 });
 
-document.body.addEventListener("htmx:responseError", function (ev) {
-  if (!ev.detail.xhr.getResponseHeader("HX-Trigger")) {
+document.body.addEventListener("htmx:responseError", function (evt) {
+  if (!evt.detail.xhr.getResponseHeader("HX-Trigger")) {
     showToast("error", "Something went wrong");
   }
 });
 
-document.body.addEventListener("htmx:sendError", function (ev) {
+document.body.addEventListener("htmx:sendError", function () {
   showToast("error", "Network error");
 });
 
-document.body.addEventListener("htmx:timeout", function (ev) {
+document.body.addEventListener("htmx:timeout", function () {
   showToast("error", "Request timed out");
 });
 
 const DEFAULT_TRANSITION = "navigate-forward";
-document.body.addEventListener("htmx:beforeTransition", (ev) => {
-  const transition = ev.target.dataset.transition ?? DEFAULT_TRANSITION;
-  ev.detail.target.style.viewTransitionName = transition;
+document.body.addEventListener("htmx:beforeTransition", (evt) => {
+  evt.detail.target.style.viewTransitionName =
+    evt.target.dataset.transition ?? DEFAULT_TRANSITION;
 });
 
 document.body.addEventListener("htmx:configRequest", function (evt) {
   // for the charts
-  evt.detail.headers["theme"] = getPreferedTheme();
+  evt.detail.headers["theme"] = getpreferredTheme();
 });
 
-// htmx custom events
-document.body.addEventListener("show-toast", function (ev) {
-  showToast(ev.detail.level, ev.detail.message);
+// htmx custom events - set by the server with HX-Trigger header
+
+document.body.addEventListener("show-toast", function (evt) {
+  showToast(evt.detail.level, evt.detail.message);
 });
 
-document.body.addEventListener("incomeCategoryAdded", function (ev) {
+document.body.addEventListener("incomeCategoryAdded", function () {
   closeLastDialog();
   const li = document.querySelectorAll("#income-cat li");
   document.querySelector("#income-cat h4").innerText =
     `Income (${li.length + 1})`;
 });
 
-document.body.addEventListener("expenseCategoryAdded", function (ev) {
+document.body.addEventListener("expenseCategoryAdded", function () {
   closeLastDialog();
   const li = document.querySelectorAll("#expense-cat li");
   document.querySelector("#expense-cat h4").innerText =
     `Expenses (${li.length + 1})`;
 });
 
-document.body.addEventListener("closeModal", function (ev) {
+document.body.addEventListener("closeModal", function () {
   closeLastDialog();
 });
 
-document.body.addEventListener("closeAllModal", function (ev) {
+document.body.addEventListener("closeAllModal", function () {
   closeAllDialog();
 });
 
-document.body.addEventListener("contentPush", function (ev) {
-  htmx.ajax("GET", ev.detail.url, {
+document.body.addEventListener("contentPush", function (evt) {
+  htmx.ajax("GET", evt.detail.url, {
     target: "#content",
-    swap: `innerHTML transition:${ev.detail.transition ?? "false"}`,
+    swap: `innerHTML transition:${evt.detail.transition ?? "false"}`,
     push: "true",
   });
 });
 
-document.body.addEventListener("refetch-transactions", function (ev) {
+document.body.addEventListener("refetch-transactions", function () {
   const isLedgerPage = window.location.pathname.includes("ledger");
   if (!isLedgerPage) {
     htmx.ajax("GET", window.location.pathname, {
@@ -166,7 +118,7 @@ document.body.addEventListener("refetch-transactions", function (ev) {
   }
 });
 
-document.body.addEventListener("transaction-deleted", function (ev) {
+document.body.addEventListener("transaction-deleted", function () {
   closeAllDialog();
   const isLedgerPage = window.location.pathname.includes("ledger");
   if (!isLedgerPage) {

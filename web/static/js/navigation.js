@@ -1,18 +1,18 @@
 // === sidebar === //
-let colapsed = localStorage.getItem("colapsed") === "true";
+let collapsed = localStorage.getItem("collapsed") === "true";
 const sidebar = document.getElementById("sidebar");
 
-export const colapseSidebar = () => {
+export const collapseSidebar = () => {
   document.documentElement.classList.toggle("is-sidebar-collapsed");
-  colapsed = !colapsed;
-  localStorage.setItem("colapsed", colapsed);
+  collapsed = !collapsed;
+  localStorage.setItem("collapsed", collapsed);
   sidebar
     .querySelectorAll(".sublinks")
     .forEach((e) => e.classList.remove("sublinks--open"));
 };
 
 export function sidebarShowPopover({ ele }) {
-  if (colapsed) {
+  if (collapsed) {
     document.getElementById(ele.dataset.name + "-popover").showPopover();
   }
 }
@@ -22,7 +22,7 @@ export function sidebarHidePopover({ evt, ele, data }) {
 
   if (
     !(ele.contains(evt.toElement) || sub.contains(evt.toElement)) &&
-    (colapsed || sub.matches(":popover-open"))
+    (collapsed || sub.matches(":popover-open"))
   ) {
     sub.hidePopover();
   }

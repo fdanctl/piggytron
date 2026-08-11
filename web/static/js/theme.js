@@ -1,6 +1,6 @@
 const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-export function getPreferedTheme() {
+export function getpreferredTheme() {
   const theme = localStorage.getItem("theme") || "system";
   const prefersDark = mediaQuery.matches;
   const isDark = theme === "dark" || (theme === "system" && prefersDark);
@@ -22,8 +22,8 @@ function switchTheme(theme) {
 
     case "system":
       mediaQuery.addEventListener("change", updateTheme);
-      const preferedTheme = getPreferedTheme();
-      if (preferedTheme === "dark") {
+      const preferredTheme = getpreferredTheme();
+      if (preferredTheme === "dark") {
         document.documentElement.setAttribute("data-theme", "dark");
       } else {
         document.documentElement.removeAttribute("data-theme", "dark");

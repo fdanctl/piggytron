@@ -1,4 +1,4 @@
-import { confirmModal } from "../htmx";
+import { confirmModal } from "../confirmModal";
 
 export const goalActions = {
   "goal.edit.confirm": confirmGoal,

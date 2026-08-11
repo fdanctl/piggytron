@@ -36,7 +36,7 @@ import {
 } from "../input";
 import {
   closeLastDialog,
-  colapseSidebar,
+  collapseSidebar,
   collapseAllSublinks,
   collapseSublinks,
   expandSublinks,
@@ -77,6 +77,7 @@ function queryPreviousSelector(ele, selector) {
     }
   }
 }
+
 function getTarget(ele, selector) {
   if (selector.indexOf("closest ") === 0) {
     return ele.closest(selector.slice(8));
@@ -174,7 +175,7 @@ export const uiActions = {
 
   "ui.time-input.input": timeOnChange,
 
-  "ui.sidebar.colapse": colapseSidebar,
+  "ui.sidebar.collapse": collapseSidebar,
 
   "ui.nav-sheet.open": openNavSheet,
 
