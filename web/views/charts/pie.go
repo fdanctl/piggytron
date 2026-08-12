@@ -18,7 +18,7 @@ func PieRadius(items []opts.PieData, name, theme string) *charts.Pie {
 	pie.SetGlobalOptions(
 		charts.WithInitializationOpts(opts.Initialization{Width: "100%", Height: "100%"}),
 		charts.WithColorsOpts(opts.Colors{
-			"#95bf98", "#d9725b", "#b185a7", "#297373",
+			"#50808E", "#C95D63", "#EEC170", "#A083A2", "#9B9B9B",
 		}),
 		charts.WithLegendOpts(opts.Legend{
 			TextStyle: &opts.TextStyle{

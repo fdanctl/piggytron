@@ -418,7 +418,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 // GetBanksDailyBalanceSince returns a daily running balance per bank account
 // of the user from the first day of since's month. The month-normalization
 // rationale is embedded in the SQL below.
-func (s *AccountQueryService) GetBanksDailyBalanceSince(
+func (s *AccountQueryService) GetAllDailyBalanceSince(
 	ctx context.Context,
 	uid string,
 	since time.Time,
@@ -454,7 +454,6 @@ func (s *AccountQueryService) GetBanksDailyBalanceSince(
 		      AND ms.month < (SELECT start_day FROM params)
 		    WHERE
 		      a.user_id = $1
-		      AND a.type = 'bank'
 		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
@@ -480,7 +479,6 @@ func (s *AccountQueryService) GetBanksDailyBalanceSince(
 		      )
 		    WHERE
 		      a.user_id = $1
-		      AND a.type = 'bank'
 		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
@@ -491,6 +489,7 @@ func (s *AccountQueryService) GetBanksDailyBalanceSince(
 		  d.day,
 		  a.id,
 		  a.name,
+		  a.type,
 		  b.bal + COALESCE(
 		    SUM(dt.delta) OVER (
 		      PARTITION BY
@@ -509,7 +508,6 @@ func (s *AccountQueryService) GetBanksDailyBalanceSince(
 		  AND dt.day = d.day
 		WHERE
 		  a.user_id = $1
-		  AND a.type = 'bank'
 		  AND a.deleted_at IS NULL
 		ORDER BY
 		  d.day,
@@ -530,6 +528,7 @@ func (s *AccountQueryService) GetBanksDailyBalanceSince(
 			&r.Day,
 			&r.ID,
 			&r.Name,
+			&r.Type,
 			&r.Balance,
 		); err != nil {
 			return nil, err

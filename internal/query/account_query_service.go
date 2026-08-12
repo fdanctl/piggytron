@@ -68,6 +68,7 @@ type AccountDailyBalance struct {
 	Day     time.Time
 	ID      string
 	Name    string
+	Type    string
 	Balance int
 }
 
@@ -94,10 +95,10 @@ type AccountQueryService interface {
 		month monthlysummary.Month,
 	) ([]AccountWithSumAndMonthChange, error)
 	FindAllGoalsWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
-	// GetBanksDailyBalanceSince returns the daily balance of every bank
-	// account from the 1st of the month of since to today. Since is truncated
+	// GetAllDailyBalanceSince returns the daily balance of every account
+	// from the 1st of the month of since to today. Since is truncated
 	// to the month because monthly_summary is month-granular.
-	GetBanksDailyBalanceSince(
+	GetAllDailyBalanceSince(
 		ctx context.Context,
 		uid string,
 		since time.Time,

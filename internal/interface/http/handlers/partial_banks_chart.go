@@ -9,7 +9,6 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
@@ -46,23 +45,9 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: optimize could easily be just one query
-	accounts, err := h.accountQuery.FindAllWithSum(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts: %w", err))
-		return
-	}
-
 	theme := r.Header.Get("theme")
 
-	pieItems := charts.MakeAccountsPieItems(accounts)
-	pie := components.NoData()
-	if len(pieItems) > 0 {
-		c := charts.PieRadius(pieItems, "Assets", theme)
-		pie = charts.ConvertChartToTemplComponent(c)
-	}
-
-	changeHist, err := h.accountQuery.GetBanksDailyBalanceSince(
+	changeHist, err := h.accountQuery.GetAllDailyBalanceSince(
 		r.Context(),
 		sessionInfo.UserID,
 		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
@@ -71,14 +56,21 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
-	histMap, min, max := charts.GenerateAccountsHistLine(changeHist)
+
+	histMap, sortedKeys, pieItems, min, max := charts.GenerateAccountsHistLineAndPieItems(
+		changeHist,
+	)
 	line := charts.LineTime(
 		histMap,
+		&sortedKeys,
 		min,
 		max,
 		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
 		theme,
 	)
+
+	c := charts.PieRadius(pieItems, "Assets", theme)
+	pie := charts.ConvertChartToTemplComponent(c)
 
 	templ.Join(
 		pie,
