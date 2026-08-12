@@ -415,7 +415,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 	return results, nil
 }
 
-// GetBanksDailyBalanceSince returns a daily running balance per bank account
+// GetAllDailyBalanceSince returns a daily running balance per bank account
 // of the user from the first day of since's month. The month-normalization
 // rationale is embedded in the SQL below.
 func (s *AccountQueryService) GetAllDailyBalanceSince(

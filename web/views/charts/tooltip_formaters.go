@@ -63,9 +63,11 @@ func lineTooltipFormatter(curr currency.Unit) string {
 func barTooltipFormatter(curr currency.Unit) string {
 	return fmt.Sprintf(`
 		function (params) {
+			const top = params.seriesName ? params.seriesName + '<br/>' : '';
+			const marker = params.seriesName ? params.marker : '';
 			return '<div style="color: var(--grey-200);">' +
-				 params.seriesName + '<br/>' +
-				 params.marker + params.name +
+				 top +
+				 marker + params.name +
 				 '<strong class="ml-md">' + echarts.format.addCommas(params.value) + '</strong><span style="font-size: 10px"> %s</span>' + '</div>';
 		}`, curr)
 }

@@ -44,6 +44,7 @@ func PieRadius(items []opts.PieData, name, theme string) *charts.Pie {
 	return pie
 }
 
+// PieInPie builds a two donut stacked chart.
 func PieInPie(
 	outerItems []opts.PieData, outerName string,
 	innerItems []opts.PieData, innerName string,
