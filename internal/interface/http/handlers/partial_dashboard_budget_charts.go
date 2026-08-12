@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -41,9 +42,6 @@ func (h *DashboardBudgetCharts) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 // Get renders the budget bar chart and swaps the spent-by-type pie
 // out-of-band for the current month.
-// TODO: make it more complete,
-//   - pie chart has a 2nd slide showing the spent progrees by type
-//   - considering the pie chart to be a double donut with spent and budget
 func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
@@ -63,13 +61,10 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	theme := r.Header.Get("theme")
-	pieItems := charts.MakeSpentByTypePieItems(categoryBudgetSpent.Data)
-
-	pie := components.NoData()
-	if len(pieItems) > 0 {
-		c := charts.PieRadius(pieItems, "Spent", theme)
-		pie = charts.ConvertChartToTemplComponent(c)
-	}
+	spentData, budgetedData := charts.MakeBudgetSpentByTypePieItems(categoryBudgetSpent.Data)
+	pie := charts.ConvertChartToTemplComponent(
+		charts.PieInPie(spentData, "Spent", budgetedData, "Budget", theme),
+	)
 
 	budgetItems, spentItems, categories := charts.MakeBudgetSpentBarItems(
 		categoryBudgetSpent.Data,
@@ -93,7 +88,23 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 	).Day()
 	daysLeft := monthLen - today.Day() - 1
 
-	spentCardSlides := []templ.Component{pages.ChartContainer(bar)}
+	byTypeSlides := []templ.Component{pages.ChartContainer(pie)}
+	var byTypeSlide2 []templ.Component
+	for i, v := range spentData {
+		byTypeSlide2 = append(
+			byTypeSlide2,
+			pages.CategorySpentProgress(
+				v.Name,
+				strings.ToLower(v.Name),
+				int(v.Value.(float64)*100),
+				int(budgetedData[i].Value.(float64)*100),
+				daysLeft,
+			),
+		)
+	}
+	byTypeSlides = append(byTypeSlides, pages.CategorySpentContainer(byTypeSlide2))
+
+	byCategorySlides := []templ.Component{pages.ChartContainer(bar)}
 	size := 4 // groups of 4
 	for i := 0; i < len(categoryBudgetSpent.Data); i += size {
 		end := i + size
@@ -114,24 +125,32 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 				pages.CategorySpentProgress(c.Name, c.Type, c.Value, c.Budgeted, daysLeft),
 			)
 		}
-		spentCardSlides = append(spentCardSlides, pages.CategorySpentContainer(slide))
+		byCategorySlides = append(byCategorySlides, pages.CategorySpentContainer(slide))
 	}
 
 	templ.Join(
 		components.CarouselCard(
 			"",
 			"Budget-spent by category",
-			spentCardSlides,
+			byCategorySlides,
 			true,
 			true,
 			true,
 			nil,
 		),
 		layouts.OOBWraper(
-			"spent-by-type",
+			"dashboard-st",
 			"innerHTML",
 			nil,
-			pie,
+			components.CarouselCard(
+				"",
+				"Budget-spent by type",
+				byTypeSlides,
+				true,
+				true,
+				true,
+				nil,
+			),
 		),
 	).Render(r.Context(), w)
 }

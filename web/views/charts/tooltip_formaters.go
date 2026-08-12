@@ -22,6 +22,18 @@ func pieTooltipFormatter(curr currency.Unit) string {
 		}`, curr)
 }
 
+func pieTooltipFormatterWithSeries(curr currency.Unit) string {
+	return fmt.Sprintf(`
+		function (params) {
+			return '<div style="color: var(--grey-200);">' +
+				params.marker +
+    		    params.name + ' (' + params.seriesName + ')' + '<br/>' +
+				'<strong>' + echarts.format.addCommas(params.value) + '</strong>' +
+				'<span style="font-size: 10px"> %s</span> (' + params.percent + '%%)'+
+			'</div>';
+		}`, curr)
+}
+
 func lineTooltipFormatter(curr currency.Unit) string {
 	return fmt.Sprintf(`
 		function (params) {

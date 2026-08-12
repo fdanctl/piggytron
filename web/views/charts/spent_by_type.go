@@ -5,34 +5,55 @@ import (
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
-// MakeSpentByTypePieItems aggregates the spent value per budget category
-// type (needs, wants, savings) into pie chart data.
-func MakeSpentByTypePieItems(cats []query.CategoryBudgetValue) []opts.PieData {
-	var needs, wants, savings int
+// MakeBudgetSpentByTypePieItems aggregates the budget and spent value per
+// category type (needs, wants, savings) into two pie chart data, respectively.
+func MakeBudgetSpentByTypePieItems(
+	cats []query.CategoryBudgetValue,
+) (spentData []opts.PieData, budgetedData []opts.PieData) {
+	var needsSpent, wantsSpent, savingsSpent int
+	var needsBudgeted, wantsBudgeted, savingsBudgeted int
 	for _, v := range cats {
 		switch v.Type {
 		case "needs":
-			needs += v.Value
+			needsSpent += v.Value
+			needsBudgeted += v.Budgeted
 		case "wants":
-			wants += v.Value
+			wantsSpent += v.Value
+			wantsBudgeted += v.Budgeted
 		case "savings":
-			savings += v.Value
+			savingsSpent += v.Value
+			wantsBudgeted += v.Budgeted
 		}
 	}
 
-	data := []opts.PieData{
+	spentData = []opts.PieData{
 		{
 			Name:  "Needs",
-			Value: float64(needs) / 100,
+			Value: float64(needsSpent) / 100,
 		},
 		{
 			Name:  "Wants",
-			Value: float64(wants) / 100,
+			Value: float64(wantsSpent) / 100,
 		},
 		{
 			Name:  "Savings",
-			Value: float64(savings) / 100,
+			Value: float64(savingsSpent) / 100,
 		},
 	}
-	return data
+
+	budgetedData = []opts.PieData{
+		{
+			Name:  "Needs",
+			Value: float64(needsBudgeted) / 100,
+		},
+		{
+			Name:  "Wants",
+			Value: float64(wantsBudgeted) / 100,
+		},
+		{
+			Name:  "Savings",
+			Value: float64(savingsBudgeted) / 100,
+		},
+	}
+	return
 }
