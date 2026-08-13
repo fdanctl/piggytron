@@ -32,7 +32,10 @@ export function showPopover({ data }) {
 export function hidePopover({ ele, data, evt }) {
   if (!tid) return;
   const popover = document.getElementById(data.name + "-popover");
-  const toElement = evt.toElement;
+
+  // .toElement it's the chrome way and
+  // .explicitOriginalTarget it's the firefox way
+  const toElement = evt.toElement || evt.explicitOriginalTarget;
   if (ele.contains(toElement) || popover.contains(toElement)) {
     return;
   }

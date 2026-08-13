@@ -40,8 +40,11 @@ export function sidebarShowPopover({ ele }) {
 export function sidebarHidePopover({ evt, ele, data }) {
   const sub = document.getElementById(data.name + "-popover");
 
+  // .toElement it's the chrome way and
+  // .explicitOriginalTarget it's the firefox way
+  const toElement = evt.toElement || evt.explicitOriginalTarget;
   if (
-    !(ele.contains(evt.toElement) || sub.contains(evt.toElement)) &&
+    !(ele.contains(toElement) || sub.contains(toElement)) &&
     (collapsed || sub.matches(":popover-open"))
   ) {
     sub.hidePopover();

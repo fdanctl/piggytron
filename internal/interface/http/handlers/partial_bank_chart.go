@@ -51,6 +51,7 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		period = "mtd" // default
 	}
 
+	// TODO cache it in redis
 	d, err := h.accountQuery.GetAccountFirstEntryDate(r.Context(), id)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
