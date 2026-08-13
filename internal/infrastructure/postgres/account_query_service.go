@@ -1013,3 +1013,21 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 	g.Category = &c
 	return &g, nil
 }
+
+func (s *AccountQueryService) GetAccountFirstEntryDate(
+	ctx context.Context,
+	uid string,
+) (date time.Time, err error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		`SELECT date FROM ledger
+		WHERE from_account_id = $1 OR to_account_id = $1
+		ORDER BY date ASC
+		LIMIT 1
+		`,
+		uid,
+	)
+
+	err = row.Scan(&date)
+	return
+}

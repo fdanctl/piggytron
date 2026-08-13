@@ -1,20 +1,34 @@
 package partials
 
 import (
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
+	"strings"
 )
 
-templ BankChartCard(chart templ.Component, moneyIn, moneyOut int, transactions int) {
-	@components.SelectPill("", "MTD", "mtd", components.SelectPillLeft, []components.SelectOption{
+templ BankChartCard(bankID string, chart templ.Component, moneyIn, moneyOut int, transactions int, period string) {
+	{{
+		periodLabel := period
+		if periodLabel == "all" {
+			periodLabel = views.CapitalizeFirst(periodLabel)
+		} else {
+			periodLabel = strings.ToUpper(period)
+		}
+	}}
+	@components.SelectPill("", periodLabel, period, components.SelectPillLeft, []components.SelectOption{
 		{Label: "MTD", Value: "mtd"},
 		{Label: "6M", Value: "6m"},
 		{Label: "YTD", Value: "ytd"},
 		{Label: "1Y", Value: "1y"},
 		{Label: "All", Value: "all"},
-	}, nil)
+	}, templ.Attributes{
+		"name":      "period",
+		"hx-get":    fmt.Sprint("/partials/charts/bank-hist/", bankID),
+		"hx-target": "#bank-chart-card",
+	})
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-md));"
@@ -37,5 +51,33 @@ templ BankChartCard(chart templ.Component, moneyIn, moneyOut int, transactions i
 		<div>
 			{ transactions } transactions
 		</div>
+	</div>
+}
+
+templ AccountHistCard(chart templ.Component, period string) {
+	{{
+		periodLabel := period
+		if periodLabel == "all" {
+			periodLabel = views.CapitalizeFirst(periodLabel)
+		} else {
+			periodLabel = strings.ToUpper(period)
+		}
+	}}
+	@components.SelectPill("", periodLabel, period, components.SelectPillLeft, []components.SelectOption{
+		{Label: "MTD", Value: "mtd"},
+		{Label: "6M", Value: "6m"},
+		{Label: "YTD", Value: "ytd"},
+		{Label: "1Y", Value: "1y"},
+		{Label: "All", Value: "all"},
+	}, templ.Attributes{
+		"name":      "period",
+		"hx-get":    "/partials/charts/accounts-history",
+		"hx-target": "next .chart-container",
+		"hx-select": ".chart-container",
+	})
+	<div
+		class="chart-container"
+	>
+		@chart
 	</div>
 }

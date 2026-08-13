@@ -255,6 +255,7 @@ func main() {
 
 	accountsHistChartHandler := handlers.NewAccountsHistoryChartHandler(
 		accountQueryService,
+		ledgerQueryService,
 	)
 	partialsMux.Handle("/partials/charts/accounts-history", accountsHistChartHandler)
 
@@ -270,6 +271,7 @@ func main() {
 
 	banksChartsHandler := handlers.NewBanksChartsHandler(
 		accountQueryService,
+		ledgerQueryService,
 	)
 	partialsMux.Handle("/partials/charts/banks", banksChartsHandler)
 

@@ -107,10 +107,7 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 	byCategorySlides := []templ.Component{pages.ChartContainer(bar)}
 	size := 4 // groups of 4
 	for i := 0; i < len(categoryBudgetSpent.Data); i += size {
-		end := i + size
-		if end > len(categoryBudgetSpent.Data) {
-			end = len(categoryBudgetSpent.Data)
-		}
+		end := min(i+size, len(categoryBudgetSpent.Data))
 
 		var slide []templ.Component
 		for k := i; k < end; k++ {

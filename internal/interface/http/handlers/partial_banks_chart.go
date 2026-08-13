@@ -3,13 +3,14 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/a-h/templ"
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
@@ -17,13 +18,16 @@ import (
 // combined daily balance history line.
 type BanksChartsHandler struct {
 	accountQuery query.AccountQueryService
+	ledgerQuery  query.LedgerQueryService
 }
 
 func NewBanksChartsHandler(
 	aq query.AccountQueryService,
+	lq query.LedgerQueryService,
 ) *BanksChartsHandler {
 	return &BanksChartsHandler{
 		accountQuery: aq,
+		ledgerQuery:  lq,
 	}
 }
 
@@ -37,20 +41,28 @@ func (h *BanksChartsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Get renders the assets pie and swaps the history chart out-of-band.
+// Get renders the assets pie and the accounts balance chart (out-of-band).
 func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return
 	}
-
 	theme := r.Header.Get("theme")
+
+	d, err := h.ledgerQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, errs.NewInternalAppError(err, "BanksChartsHandler.Get"))
+		return
+	}
+
+	defaultPeriod := "ytd"
+	startDate := getStartPeriodDate(defaultPeriod, d)
 
 	changeHist, err := h.accountQuery.GetAllDailyBalanceSince(
 		r.Context(),
 		sessionInfo.UserID,
-		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+		startDate,
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
@@ -65,7 +77,7 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		&sortedKeys,
 		min,
 		max,
-		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+		startDate,
 		theme,
 	)
 
@@ -76,9 +88,9 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		pie,
 		layouts.OOBWraper(
 			"account-history-chart",
-			"innerHTML",
+			"outerHTML",
 			nil,
-			charts.ConvertChartToTemplComponent(line),
+			partials.AccountHistCard(charts.ConvertChartToTemplComponent(line), defaultPeriod),
 		),
 	).Render(r.Context(), w)
 }

@@ -3,11 +3,12 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
@@ -15,13 +16,16 @@ import (
 // line chart for all of the user's banks.
 type AccountsHistoryChartHandler struct {
 	accountQuery query.AccountQueryService
+	ledgerQuery  query.LedgerQueryService
 }
 
 func NewAccountsHistoryChartHandler(
 	aq query.AccountQueryService,
+	lq query.LedgerQueryService,
 ) *AccountsHistoryChartHandler {
 	return &AccountsHistoryChartHandler{
 		accountQuery: aq,
+		ledgerQuery:  lq,
 	}
 }
 
@@ -35,26 +39,33 @@ func (h *AccountsHistoryChartHandler) ServeHTTP(w http.ResponseWriter, r *http.R
 	}
 }
 
-// Get renders the banks' combined balance history from January 1st of the
-// current year. TODO: rethink, maybe it makes more sense to be one year range
-// better yet make it dynamic
+// Get renders the banks' combined balance history from a selected
+// predefind time period (all, 1y, ytd, 6m, mtd).
 func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return
 	}
+	theme := r.Header.Get("theme")
 	period := r.URL.Query().Get("period")
 	if period == "" {
-		period = "ytd"
+		period = "ytd" // default
 	}
 
-	theme := r.Header.Get("theme")
+	// TODO cache it in redis
+	d, err := h.ledgerQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, errs.NewInternalAppError(err, "AccountsHistoryChartHandler.Get"))
+		return
+	}
+
+	startDate := getStartPeriodDate(period, d)
 
 	changeHist, err := h.accountQuery.GetAllDailyBalanceSince(
 		r.Context(),
 		sessionInfo.UserID,
-		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+		startDate,
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
@@ -69,9 +80,10 @@ func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request
 		&sortedKeys,
 		min,
 		max,
-		time.Date(time.Now().Year(), time.January, 1, 0, 0, 0, 0, time.Local),
+		startDate,
 		theme,
 	)
 
-	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)
+	partials.AccountHistCard(charts.ConvertChartToTemplComponent(line), period).
+		Render(r.Context(), w)
 }

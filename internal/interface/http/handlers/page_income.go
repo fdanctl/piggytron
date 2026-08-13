@@ -114,7 +114,7 @@ func (h *IncomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var total int
-	sources := make(map[string]interface{}, 0)
+	sources := make(map[string]any, 0)
 	var transactionsView []views.Transaction
 	for _, t := range transactions.Data {
 		_, ok := sources[t.ID]

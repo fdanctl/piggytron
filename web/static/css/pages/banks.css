@@ -21,6 +21,10 @@
   grid-area: account-history;
 }
 
+#account-history > .card {
+  height: 100%;
+}
+
 #accounts {
   grid-area: accounts;
   height: 100%;

@@ -204,3 +204,32 @@ func getAccSelectOptions(
 	}
 	return
 }
+
+func getStartPeriodDate(period string, clamp time.Time) time.Time {
+	now := time.Now()
+	switch period {
+	case "all":
+		return clamp
+	case "1y":
+		yearago := time.Date(now.Year()-1, now.Month(), 1, 0, 0, 0, 0, now.Location())
+		if clamp.Before(yearago) {
+			return yearago
+		}
+	case "ytd":
+		ytd := time.Date(now.Year(), time.January, 1, 0, 0, 0, 0, now.Location())
+		if clamp.Before(ytd) {
+			return ytd
+		}
+	case "6m":
+		monthsago := time.Date(now.Year(), now.Month()-6, 1, 0, 0, 0, 0, now.Location())
+		if clamp.Before(monthsago) {
+			return monthsago
+		}
+	case "mtd":
+		mtd := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+		if clamp.Before(mtd) {
+			return mtd
+		}
+	}
+	return clamp
+}

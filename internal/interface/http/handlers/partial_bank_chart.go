@@ -3,10 +3,8 @@ package handlers
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views/charts"
@@ -41,41 +39,35 @@ func (h *BankChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Get renders the chart card; ?month=YYYY-MM selects the displayed month
-// (defaulting to the current one). TODO: rethink, make it dynamic with
-// month to date, last 6 months, last year, year to date and all
+// Get renders the chart card. Shows account balance chart from a
+// selected predefind time period (all, 1y, ytd, 6m, mtd), and
+// the money in, money out and transaction count from that period.
 func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
+	theme := r.Header.Get("theme")
 
-	now := time.Now()
-	fotm := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = "mtd" // default
+	}
 
-	changeHist, err := h.accountQuery.GetAccountDailyBalanceAndStatsSince(r.Context(), id, fotm)
+	d, err := h.accountQuery.GetAccountFirstEntryDate(r.Context(), id)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
 		return
 	}
 
-	q := r.URL.Query()
-	month := q.Get("month")
+	startDate := getStartPeriodDate(period, d)
 
-	var startDate time.Time
-	if month == "" {
-		now := time.Now()
-		startDate = time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
-	} else {
-		y, m, err := parseMonth(month)
-		if err != nil {
-			logger.Error("unexpected error", "error", err)
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		logger.Debug("parseMonth", "year", y, "month", m)
-		startDate = time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
+	changeHist, err := h.accountQuery.GetAccountDailyBalanceAndStatsSince(
+		r.Context(),
+		id,
+		startDate,
+	)
+	if err != nil {
+		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
+		return
 	}
-
-	theme := r.Header.Get("theme")
 
 	histMap, _, max := charts.GenerateAccountsHistLine(changeHist.Data)
 	line := charts.LineTimeAccount(
@@ -87,6 +79,6 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	)
 
 	chartComponent := charts.ConvertChartToTemplComponent(line)
-	partials.BankChartCard(chartComponent, changeHist.MoneyIn, changeHist.MoneyOut, changeHist.Transactions).
+	partials.BankChartCard(id, chartComponent, changeHist.MoneyIn, changeHist.MoneyOut, changeHist.Transactions, period).
 		Render(r.Context(), w)
 }

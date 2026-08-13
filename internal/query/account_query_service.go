@@ -127,4 +127,6 @@ type AccountQueryService interface {
 		untilDate *time.Time,
 		excludeEntryID *string,
 	) (*AccountWithMinRunningBalance, error)
+	// GetAccountFirstEntryDate returns the date of the account's oldest ledger entry.
+	GetAccountFirstEntryDate(ctx context.Context, id string) (time.Time, error)
 }
