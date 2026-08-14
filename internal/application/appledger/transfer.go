@@ -439,6 +439,9 @@ func (s *Service) UpdateTransfer(
 
 	// verify if the account is closed
 	oldToAcc, err := qtx.FindWithSum(ctx, prevToAccountID)
+	if err != nil {
+		return nil, errs.NewInternalAppError(err, "appledger.UpdateTransfer")
+	}
 	var oldToAccCID *account.ID
 	if oldToAcc.Category.ID != util.ZeroUUID {
 		temp := account.ID(oldToAcc.Category.ID)
@@ -471,6 +474,9 @@ func (s *Service) UpdateTransfer(
 	}
 
 	oldFromAcc, err := qtx.FindWithSum(ctx, prevFromAccountID)
+	if err != nil {
+		return nil, errs.NewInternalAppError(err, "appledger.UpdateTransfer")
+	}
 	var oldFromAccCID *account.ID
 	if oldFromAcc.Category.ID != util.ZeroUUID {
 		temp := account.ID(oldFromAcc.Category.ID)

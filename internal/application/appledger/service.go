@@ -144,6 +144,9 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 
 		// verify if the account is closed
 		oldAcc, err := qtx.FindWithSum(ctx, toAcc.ID)
+		if err != nil {
+			return errs.NewInternalAppError(err, "appledger.Delete")
+		}
 		var oldAccCID *account.ID
 		if oldAcc.Category.ID != util.ZeroUUID {
 			temp := account.ID(oldAcc.Category.ID)
@@ -207,6 +210,9 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 
 		// verify if the account is closed
 		oldAcc, err := qtx.FindWithSum(ctx, fromAcc.ID)
+		if err != nil {
+			return errs.NewInternalAppError(err, "appledger.Delete")
+		}
 		var oldAccCID *account.ID
 		if oldAcc.Category.ID != util.ZeroUUID {
 			temp := account.ID(oldAcc.Category.ID)

@@ -315,6 +315,9 @@ func (s *Service) UpdateExpense(
 
 	// verify if the account is closed
 	oldAcc, err := qtx.FindWithSum(ctx, prevAccountID)
+	if err != nil {
+		return nil, errs.NewInternalAppError(err, "appledger.UpdateExpense")
+	}
 	var oldAccCID *account.ID
 	if oldAcc.Category.ID != util.ZeroUUID {
 		temp := account.ID(oldAcc.Category.ID)

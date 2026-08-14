@@ -304,6 +304,9 @@ func (s *Service) UpdateIncome(
 
 	// verify if the account is closed
 	oldAcc, err := qtx.FindWithSum(ctx, prevAccountID)
+	if err != nil {
+		return nil, errs.NewInternalAppError(err, "appledger.UpdateIncome")
+	}
 	var oldAccCID *account.ID
 	if oldAcc.Category.ID != util.ZeroUUID {
 		temp := account.ID(oldAcc.Category.ID)
