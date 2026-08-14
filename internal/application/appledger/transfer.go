@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
@@ -106,6 +107,36 @@ func (s *Service) CreateTransfer(
 			"appledger.CreateTransfer",
 		)
 	}
+	var fromAccountCID *account.ID
+	if fromAccount.Category.ID != util.ZeroUUID {
+		temp := account.ID(fromAccount.Category.ID)
+		fromAccountCID = &temp
+	}
+	fromA := account.Rehydrate(
+		account.ID(fromAccount.ID),
+		account.ID(fromAccount.UserID),
+		account.AccountType(fromAccount.Type),
+		fromAccount.Name,
+		fromAccount.IsSaving,
+		account.AccountStatus(fromAccount.Status),
+		fromAccount.TargetAmount,
+		fromAccount.StartDate,
+		fromAccount.TargetDate,
+		fromAccountCID,
+		fromAccount.Currency,
+		fromAccount.ClosedAt,
+		fromAccount.CreatedAt,
+		fromAccount.UpdatedAt,
+	)
+
+	if fromA.IsClosed() {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Can't change closed accounts",
+			account.ErrClosedAccount,
+			"appledger.CreateTransfer",
+		)
+	}
 	toAccount, err := qtx.FindWithSum(ctx, dstAccID)
 	if err != nil {
 		err = errs.NewAppError(
@@ -115,6 +146,36 @@ func (s *Service) CreateTransfer(
 			"appledger.CreateTransfer",
 		)
 		return nil, err
+	}
+	var toAccountCID *account.ID
+	if toAccount.Category.ID != util.ZeroUUID {
+		temp := account.ID(toAccount.Category.ID)
+		toAccountCID = &temp
+	}
+	toA := account.Rehydrate(
+		account.ID(toAccount.ID),
+		account.ID(toAccount.UserID),
+		account.AccountType(toAccount.Type),
+		toAccount.Name,
+		toAccount.IsSaving,
+		account.AccountStatus(toAccount.Status),
+		toAccount.TargetAmount,
+		toAccount.StartDate,
+		toAccount.TargetDate,
+		toAccountCID,
+		toAccount.Currency,
+		toAccount.ClosedAt,
+		toAccount.CreatedAt,
+		toAccount.UpdatedAt,
+	)
+
+	if toA.IsClosed() {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Can't change closed accounts",
+			account.ErrClosedAccount,
+			"appledger.CreateTransfer",
+		)
 	}
 
 	var accCID *ledger.ID
@@ -376,6 +437,71 @@ func (s *Service) UpdateTransfer(
 		return nil, err
 	}
 
+	// verify if the account is closed
+	oldToAcc, err := qtx.FindWithSum(ctx, prevToAccountID)
+	var oldToAccCID *account.ID
+	if oldToAcc.Category.ID != util.ZeroUUID {
+		temp := account.ID(oldToAcc.Category.ID)
+		oldToAccCID = &temp
+	}
+	oldToA := account.Rehydrate(
+		account.ID(oldToAcc.ID),
+		account.ID(oldToAcc.UserID),
+		account.AccountType(oldToAcc.Type),
+		oldToAcc.Name,
+		oldToAcc.IsSaving,
+		account.AccountStatus(oldToAcc.Status),
+		oldToAcc.TargetAmount,
+		oldToAcc.StartDate,
+		oldToAcc.TargetDate,
+		oldToAccCID,
+		oldToAcc.Currency,
+		oldToAcc.ClosedAt,
+		oldToAcc.CreatedAt,
+		oldToAcc.UpdatedAt,
+	)
+
+	if oldToA.IsClosed() {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Can't change closed accounts",
+			account.ErrClosedAccount,
+			"appledger.UpdateTransfer",
+		)
+	}
+
+	oldFromAcc, err := qtx.FindWithSum(ctx, prevFromAccountID)
+	var oldFromAccCID *account.ID
+	if oldFromAcc.Category.ID != util.ZeroUUID {
+		temp := account.ID(oldFromAcc.Category.ID)
+		oldFromAccCID = &temp
+	}
+	oldFromA := account.Rehydrate(
+		account.ID(oldFromAcc.ID),
+		account.ID(oldFromAcc.UserID),
+		account.AccountType(oldFromAcc.Type),
+		oldFromAcc.Name,
+		oldFromAcc.IsSaving,
+		account.AccountStatus(oldFromAcc.Status),
+		oldFromAcc.TargetAmount,
+		oldFromAcc.StartDate,
+		oldFromAcc.TargetDate,
+		oldFromAccCID,
+		oldFromAcc.Currency,
+		oldFromAcc.ClosedAt,
+		oldFromAcc.CreatedAt,
+		oldFromAcc.UpdatedAt,
+	)
+
+	if oldFromA.IsClosed() {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Can't change closed accounts",
+			account.ErrClosedAccount,
+			"appledger.UpdateTransfer",
+		)
+	}
+
 	if toAccChanged || cid != t.ExpenseCategoryID() {
 		toAccount, err := qtx.FindWithSum(ctx, dstAccID)
 		if err != nil {
@@ -392,6 +518,32 @@ func (s *Service) UpdateTransfer(
 		if toAccount.Category.ID != util.ZeroUUID {
 			temp := ledger.ID(toAccount.Category.ID)
 			accCID = &temp
+		}
+
+		a := account.Rehydrate(
+			account.ID(toAccount.ID),
+			account.ID(toAccount.UserID),
+			account.AccountType(toAccount.Type),
+			toAccount.Name,
+			toAccount.IsSaving,
+			account.AccountStatus(toAccount.Status),
+			toAccount.TargetAmount,
+			toAccount.StartDate,
+			toAccount.TargetDate,
+			oldToAccCID,
+			toAccount.Currency,
+			toAccount.ClosedAt,
+			toAccount.CreatedAt,
+			toAccount.UpdatedAt,
+		)
+
+		if a.IsClosed() {
+			return nil, errs.NewAppError(
+				errs.KindBusinessRule,
+				"Can't change closed accounts",
+				account.ErrClosedAccount,
+				"appledger.UpdateTransfer",
+			)
 		}
 
 		var toAccountCatType string
@@ -440,6 +592,32 @@ func (s *Service) UpdateTransfer(
 			return nil, errs.NewInternalAppError(
 				fmt.Errorf("failed to find account '%s': %w", prevToAccountID, err),
 				"appledger.UpdateTransfer",
+			)
+		}
+
+		a := account.Rehydrate(
+			account.ID(acc.ID),
+			account.ID(acc.UserID),
+			account.AccountType(acc.Type),
+			acc.Name,
+			acc.IsSaving,
+			account.AccountStatus(acc.Status),
+			acc.TargetAmount,
+			acc.StartDate,
+			acc.TargetDate,
+			oldToAccCID,
+			acc.Currency,
+			acc.ClosedAt,
+			acc.CreatedAt,
+			acc.UpdatedAt,
+		)
+
+		if a.IsClosed() {
+			return nil, errs.NewAppError(
+				errs.KindBusinessRule,
+				"Can't change closed accounts",
+				account.ErrClosedAccount,
+				"appledger.UpdateExpense",
 			)
 		}
 

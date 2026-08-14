@@ -226,6 +226,9 @@ func (b *Account) UpdatedAt() time.Time {
 // CanReceiveIncome reports whether the account may be the destination of an
 // income entry: goals and savings accounts are funded only by transfers.
 func (b *Account) CanReceiveIncome() error {
+	if b.IsClosed() {
+		return ErrClosedAccount
+	}
 	if b.aType == GoalType {
 		return errors.New("goals can't receive from outside")
 	}
@@ -238,6 +241,9 @@ func (b *Account) CanReceiveIncome() error {
 // CanMakeExpense reports whether the account may be the source of an expense
 // entry: goals and savings accounts are moved only by transfers.
 func (b *Account) CanMakeExpense() error {
+	if b.IsClosed() {
+		return ErrClosedAccount
+	}
 	if b.aType == GoalType {
 		return errors.New("goals can't make expenses")
 	}
@@ -245,6 +251,10 @@ func (b *Account) CanMakeExpense() error {
 		return errors.New("savings accounts can't make expenses")
 	}
 	return nil
+}
+
+func (b *Account) IsClosed() bool {
+	return b.status == ClosedStatus
 }
 
 // Update methods: each change re-runs its invariant and bumps UpdatedAt.

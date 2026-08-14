@@ -115,9 +115,13 @@ func (s *Service) CreateExpense(
 	)
 
 	if err := a.CanMakeExpense(); err != nil {
+		msg := fmt.Sprintf("%s of type %s can't make expenses", a.Name(), a.Type())
+		if errors.Is(err, account.ErrClosedAccount) {
+			msg = fmt.Sprintf("%s is closed", a.Name())
+		}
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
-			fmt.Sprintf("%s of type %s can't make expenses", a.Name(), a.Type()),
+			msg,
 			fmt.Errorf("%s of type %s can't make expenses: %w", a.Name(), a.Type(), err),
 			"appledger.CreateExpense",
 		)
@@ -305,6 +309,39 @@ func (s *Service) UpdateExpense(
 			errs.KindBusinessRule,
 			"Failed to update expense",
 			fmt.Errorf("failed to update expense: %w", err),
+			"appledger.UpdateExpense",
+		)
+	}
+
+	// verify if the account is closed
+	oldAcc, err := qtx.FindWithSum(ctx, prevAccountID)
+	var oldAccCID *account.ID
+	if oldAcc.Category.ID != util.ZeroUUID {
+		temp := account.ID(oldAcc.Category.ID)
+		oldAccCID = &temp
+	}
+	oldA := account.Rehydrate(
+		account.ID(oldAcc.ID),
+		account.ID(oldAcc.UserID),
+		account.AccountType(oldAcc.Type),
+		oldAcc.Name,
+		oldAcc.IsSaving,
+		account.AccountStatus(oldAcc.Status),
+		oldAcc.TargetAmount,
+		oldAcc.StartDate,
+		oldAcc.TargetDate,
+		oldAccCID,
+		oldAcc.Currency,
+		oldAcc.ClosedAt,
+		oldAcc.CreatedAt,
+		oldAcc.UpdatedAt,
+	)
+
+	if oldA.IsClosed() {
+		return nil, errs.NewAppError(
+			errs.KindBusinessRule,
+			"Can't change closed accounts",
+			account.ErrClosedAccount,
 			"appledger.UpdateExpense",
 		)
 	}

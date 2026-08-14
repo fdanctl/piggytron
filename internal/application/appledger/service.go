@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
@@ -141,6 +142,39 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 			return err
 		}
 
+		// verify if the account is closed
+		oldAcc, err := qtx.FindWithSum(ctx, toAcc.ID)
+		var oldAccCID *account.ID
+		if oldAcc.Category.ID != util.ZeroUUID {
+			temp := account.ID(oldAcc.Category.ID)
+			oldAccCID = &temp
+		}
+		oldA := account.Rehydrate(
+			account.ID(oldAcc.ID),
+			account.ID(oldAcc.UserID),
+			account.AccountType(oldAcc.Type),
+			oldAcc.Name,
+			oldAcc.IsSaving,
+			account.AccountStatus(oldAcc.Status),
+			oldAcc.TargetAmount,
+			oldAcc.StartDate,
+			oldAcc.TargetDate,
+			oldAccCID,
+			oldAcc.Currency,
+			oldAcc.ClosedAt,
+			oldAcc.CreatedAt,
+			oldAcc.UpdatedAt,
+		)
+
+		if oldA.IsClosed() {
+			return errs.NewAppError(
+				errs.KindBusinessRule,
+				"Destination account is closed. Can't change closed accounts",
+				account.ErrClosedAccount,
+				"appledger.Delete",
+			)
+		}
+
 		if err = t.CanBeDeleted(&toAcc.MinRunningBalance); err != nil {
 			if errors.Is(err, ledger.ErrNegativeBalance) {
 				err = errs.NewAppError(
@@ -155,6 +189,53 @@ func (s *Service) Delete(ctx context.Context, id string) error {
 				)
 			}
 			return err
+		}
+	}
+
+	// check from account is closed
+	if t.FromAccountID() != nil {
+		fromAcc, err := qtx.FindWithSum(ctx, string(*t.FromAccountID()))
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Source account not found",
+				fmt.Errorf("failed to find account '%s': %w", *t.FromAccountID(), err),
+				"appledger.Delete",
+			)
+			return err
+		}
+
+		// verify if the account is closed
+		oldAcc, err := qtx.FindWithSum(ctx, fromAcc.ID)
+		var oldAccCID *account.ID
+		if oldAcc.Category.ID != util.ZeroUUID {
+			temp := account.ID(oldAcc.Category.ID)
+			oldAccCID = &temp
+		}
+		oldA := account.Rehydrate(
+			account.ID(oldAcc.ID),
+			account.ID(oldAcc.UserID),
+			account.AccountType(oldAcc.Type),
+			oldAcc.Name,
+			oldAcc.IsSaving,
+			account.AccountStatus(oldAcc.Status),
+			oldAcc.TargetAmount,
+			oldAcc.StartDate,
+			oldAcc.TargetDate,
+			oldAccCID,
+			oldAcc.Currency,
+			oldAcc.ClosedAt,
+			oldAcc.CreatedAt,
+			oldAcc.UpdatedAt,
+		)
+
+		if oldA.IsClosed() {
+			return errs.NewAppError(
+				errs.KindBusinessRule,
+				"Source account is closed. Can't change closed accounts",
+				account.ErrClosedAccount,
+				"appledger.Delete",
+			)
 		}
 	}
 
