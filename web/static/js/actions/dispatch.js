@@ -1,5 +1,6 @@
 import { handleInputOnBlur } from "../input";
 import { showToast } from "../toast";
+import { accountActions } from "./account";
 import { goalActions } from "./goal";
 import { uiActions } from "./ui";
 
@@ -44,6 +45,7 @@ const actions = {
   "dev.log.this": log,
   ...uiActions,
   ...goalActions,
+  ...accountActions,
 };
 
 /**

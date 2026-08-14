@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-templ BankChartCard(bankID string, chart templ.Component, moneyIn, moneyOut int, transactions int, period string) {
+templ BankChartCard(bankID string, chart templ.Component, moneyIn, moneyOut int, transactions int, period string, selectPill bool) {
 	{{
 		periodLabel := period
 		if periodLabel == "all" {
@@ -18,17 +18,19 @@ templ BankChartCard(bankID string, chart templ.Component, moneyIn, moneyOut int,
 			periodLabel = strings.ToUpper(period)
 		}
 	}}
-	@components.SelectPill("", periodLabel, period, components.SelectPillLeft, []components.SelectOption{
-		{Label: "MTD", Value: "mtd"},
-		{Label: "6M", Value: "6m"},
-		{Label: "YTD", Value: "ytd"},
-		{Label: "1Y", Value: "1y"},
-		{Label: "All", Value: "all"},
-	}, templ.Attributes{
-		"name":      "period",
-		"hx-get":    fmt.Sprint("/partials/charts/bank-hist/", bankID),
-		"hx-target": "#bank-chart-card",
-	})
+	if selectPill {
+		@components.SelectPill("", periodLabel, period, components.SelectPillLeft, []components.SelectOption{
+			{Label: "MTD", Value: "mtd"},
+			{Label: "6M", Value: "6m"},
+			{Label: "YTD", Value: "ytd"},
+			{Label: "1Y", Value: "1y"},
+			{Label: "All", Value: "all"},
+		}, templ.Attributes{
+			"name":      "period",
+			"hx-get":    fmt.Sprint("/partials/charts/bank-hist/", bankID),
+			"hx-target": "#bank-chart-card",
+		})
+	}
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-md));"

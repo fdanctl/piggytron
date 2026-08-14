@@ -75,12 +75,14 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	theme := r.Header.Get("theme")
 
+	now := time.Now()
 	histMap, _, max := charts.GenerateAccountsHistLine(changeHist)
 	line := charts.LineTimeAccount(
 		histMap,
 		0,
 		math.Max(float64(qmax)/100, float64(max)),
 		startDate,
+		time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()),
 		theme,
 	)
 	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)

@@ -290,6 +290,8 @@ func main() {
 
 	bankHandler := handlers.NewBankHandler(accountService)
 	partialsMux.Handle("/partials/bank", bankHandler)
+	partialsMux.Handle("/partials/bank/{id}", bankHandler)
+	partialsMux.Handle("/partials/bank/{id}/{action}", bankHandler)
 
 	goalHandler := handlers.NewGoalHandler(
 		accountService, accountQueryService, catQueryService,

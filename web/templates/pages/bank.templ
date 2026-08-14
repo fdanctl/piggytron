@@ -8,14 +8,57 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
+	"time"
 )
 
 templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Transaction, hasMore bool, ttCount int) {
-	@components.Breadcrumbs(bview)
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
+			<ul class="breadcrumbs-selection">
+				if b.Status == "active" {
+					<li>
+						<button
+							class="reset-btn"
+							data-action="ui.popover.hide"
+							hx-get={ fmt.Sprintf("/partials/bank/%s/change-name", b.ID) }
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
+						>Change name</button>
+					</li>
+					<li>
+						<button
+							hx-trigger="confirmed"
+							hx-post={ fmt.Sprintf("/partials/bank/%s/close", b.ID) }
+							class="reset-btn"
+							data-action="ui.popover.hide account.close.confirm"
+							data-balance={ b.Sum }
+						>Close account</button>
+					</li>
+				}
+				<li>
+					<button
+						hx-trigger="confirmed"
+						hx-delete={ fmt.Sprintf("/partials/bank/%s", b.ID) }
+						class="reset-btn"
+						data-action="ui.popover.hide account.delete.confirm"
+						data-transactions={ ttCount }
+					>Delete account</button>
+				</li>
+			</ul>
+		}
+	</div>
 	<div>
-		<p class="text-muted mb-sm uppercase text-sm">Current balance</p>
+		if b.Status == "closed" {
+			<div class="text-muted mb-sm uppercase text-sm flex gap-sm items-center">
+				<span>Final balance</span>
+				@components.BadgeWithIcon("", "Closed", components.BadgeClosed, components.LockKeyholeSvg(10, "", ""))
+			</div>
+		} else {
+			<p class="text-muted mb-sm uppercase text-sm">Current balance</p>
+		}
 		<div class="bank-balance">
-			<h2>
+			<h2 class={ templ.KV("text-muted", b.Status == "closed") }>
 				{{
 					curr, err := currency.ParseISO(b.Currency)
 					if err != nil {
@@ -35,6 +78,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 						"hx-get":    fmt.Sprintf("/partials/ledger/entry?preset=transfer&destination=%s", b.ID),
 						"hx-target": "#dialog-root",
 						"hx-swap":   "beforeend",
+						"disabled":  b.Status == "closed",
 					},
 				)
 				@components.Button(
@@ -46,15 +90,25 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 						"hx-get":    fmt.Sprintf("/partials/ledger/entry?preset=transfer&source=%s", b.ID),
 						"hx-target": "#dialog-root",
 						"hx-swap":   "beforeend",
+						"disabled":  b.Status == "closed",
 					},
 				)
 			</div>
 		</div>
 	</div>
+	if b.Status == "closed" {
+		@closeNotice("mt-md", *b.ClosedAt)
+	}
+	{{
+		query := ""
+		if b.Status == "closed" {
+			query = fmt.Sprintf("closedAt=%s", views.FormatDateOnly(*b.ClosedAt))
+		}
+	}}
 	<div
 		id="bank-chart-card"
-		class="card relative mt-xl"
-		hx-get={ fmt.Sprintf("/partials/charts/bank-hist/%s", b.ID) }
+		class={ "card relative mt-xl", templ.KV("card--muted", b.Status == "closed") }
+		hx-get={ fmt.Sprintf("/partials/charts/bank-hist/%s?%s", b.ID, query) }
 		hx-trigger="load"
 	>
 		<div
@@ -83,5 +137,15 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 			</div>
 		</div>
 		@partials.TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", b.ID), hasMore)
+	</div>
+}
+
+templ closeNotice(class string, closedAt time.Time) {
+	<div class={ "closed-notice", templ.KV(class, class != "") }>
+		@components.CalendarX2(0, "", "closed-notice__icon")
+		<div class="closed-notice-text">
+			<strong class="text-sm">This account was closed on { views.FormatDate(closedAt) }</strong>
+			<p class="text-sm text-muted">Transaction history is available for reference. No new transactions can be made.</p>
+		</div>
 	</div>
 }

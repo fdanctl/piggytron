@@ -30,6 +30,11 @@ export function showPopover({ data }) {
  * @param {Event} param0.evt - The mouseout event.
  */
 export function hidePopover({ ele, data, evt }) {
+  if (!data.name) {
+    ele.closest(".popover").hidePopover();
+    tid = null;
+  }
+
   if (!tid) return;
   const popover = document.getElementById(data.name + "-popover");
 

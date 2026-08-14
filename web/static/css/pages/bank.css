@@ -50,3 +50,24 @@
 .bank-chart__legend-circle--out {
   background-color: var(--color-negative);
 }
+
+.closed-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.closed-notice__icon {
+  margin: auto 0;
+  height: fit-content;
+}
+
+.closed-notice-text {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}

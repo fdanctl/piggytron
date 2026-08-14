@@ -125,11 +125,13 @@ templ Test() {
 			Badges
 		</h2>
 		<div class="flex flex-wrap gap-sm items-center">
-			@components.Badge("Needs", "", components.BadgeNeeds)
-			@components.Badge("Wants", "", components.BadgeWants)
-			@components.Badge("Savings", "", components.BadgeSavings)
-			@components.Badge("Default", "", components.BadgeDefault)
-			@components.Badge("Custom", "font-mono text-xs", components.BadgeDefault)
+			@components.Badge("", "Needs", components.BadgeNeeds)
+			@components.Badge("", "Wants", components.BadgeWants)
+			@components.Badge("", "Savings", components.BadgeSavings)
+			@components.Badge("", "Checking", components.BadgeChecking)
+			@components.BadgeWithIcon("", "Closed", components.BadgeClosed, components.LockKeyholeSvg(10, "", ""))
+			@components.Badge("", "Default", components.BadgeDefault)
+			@components.Badge("font-mono text-xs", "Custom", components.BadgeDefault)
 		</div>
 	</section>
 	<!-- ============================================================ -->
@@ -743,6 +745,10 @@ templ Test() {
 				<span class="text-xs text-center">CalendarArrowUp</span>
 			</div>
 			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CalendarX2(24, "", "")
+				<span class="text-xs text-center">CalendarX2</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
 				@components.MenuSvg(24, "", "")
 				<span class="text-xs text-center">MenuSvg</span>
 			</div>
@@ -829,6 +835,30 @@ templ Test() {
 			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
 				@components.EllipsisSvg(24, "", "")
 				<span class="text-xs text-center">EllipsisSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.RotateCcwSvg(24, "", "")
+				<span class="text-xs text-center">RotateCcwSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.UserSvg(24, "", "")
+				<span class="text-xs text-center">UserSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.LogOutSvg(24, "", "")
+				<span class="text-xs text-center">LogOutSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.CameraSvg(24, "", "")
+				<span class="text-xs text-center">CameraSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.ShieldAlertSvg(24, "", "")
+				<span class="text-xs text-center">ShieldAlertSvg</span>
+			</div>
+			<div class="flex flex-col items-center gap-xs p-sm" style="border: 1px solid var(--color-border); border-radius: var(--radius-sm);">
+				@components.LockKeyholeSvg(24, "", "")
+				<span class="text-xs text-center">LockKeyholeSvg</span>
 			</div>
 		</div>
 	</section>

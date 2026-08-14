@@ -19,6 +19,14 @@ const (
 	GoalType AccountType = "goal"
 )
 
+// AccountStatus marks the status of the account (active or closed).
+type AccountStatus string
+
+const (
+	ActiveStatus AccountStatus = "active"
+	ClosedStatus AccountStatus = "closed"
+)
+
 // Account is a bank or a goal. Bank accounts carry an isSaving flag; goals
 // carry target amounts and dates plus the expense category used to fund them.
 type Account struct {
@@ -27,6 +35,7 @@ type Account struct {
 	aType    AccountType
 	name     string
 	isSaving *bool // bank-specific
+	status   AccountStatus
 	currency string
 	// goal-specific
 	targetAmount *int
@@ -34,6 +43,7 @@ type Account struct {
 	targetDate   *time.Time
 	categoryID   *ID
 
+	closedAt  *time.Time
 	createdAt time.Time
 	updatedAt time.Time
 }
@@ -60,6 +70,7 @@ func NewBank(
 		name:      name,
 		aType:     BankType,
 		isSaving:  &isSaving,
+		status:    ActiveStatus,
 		currency:  currency,
 		createdAt: now,
 		updatedAt: now,
@@ -97,6 +108,7 @@ func NewGoal(
 		userID:       userID,
 		name:         name,
 		aType:        GoalType,
+		status:       ActiveStatus,
 		targetAmount: &targetAmount,
 		startDate:    &startDate,
 		targetDate:   targetDate,
@@ -114,11 +126,13 @@ func Rehydrate(
 	aType AccountType,
 	name string,
 	isSaving *bool,
+	status AccountStatus,
 	targetAmount *int,
 	startDate *time.Time,
 	targetDate *time.Time,
 	categoryID *ID,
 	currency string,
+	closedAt *time.Time,
 	createdAt, updatedAt time.Time,
 ) *Account {
 	return &Account{
@@ -127,11 +141,13 @@ func Rehydrate(
 		aType:        aType,
 		name:         name,
 		isSaving:     isSaving,
+		status:       status,
 		targetAmount: targetAmount,
 		startDate:    startDate,
 		targetDate:   targetDate,
 		categoryID:   categoryID,
 		currency:     currency,
+		closedAt:     closedAt,
 		createdAt:    createdAt,
 		updatedAt:    updatedAt,
 	}
@@ -162,6 +178,11 @@ func (b *Account) IsSaving() *bool {
 	return b.isSaving
 }
 
+// Status returns the account status (active or closed).
+func (b *Account) Status() AccountStatus {
+	return b.status
+}
+
 // Currency returns the account currency code.
 func (b *Account) Currency() string {
 	return b.currency
@@ -185,6 +206,11 @@ func (b *Account) TargetDate() *time.Time {
 // CategoryID returns the goal funding category, or nil for banks.
 func (b *Account) CategoryID() *ID {
 	return b.categoryID
+}
+
+// ClosedAt returns when the account was closed, or nil if not closed.
+func (b *Account) ClosedAt() *time.Time {
+	return b.closedAt
 }
 
 // CreatedAt returns when the account was created.
@@ -285,5 +311,18 @@ func (b *Account) ChangeCategory(cid ID) error {
 	}
 	b.categoryID = &cid
 	b.updatedAt = time.Now()
+	return nil
+}
+
+// CloseAccount verifies if there is balance and
+// closes the account
+func (b *Account) CloseAccount(accBalance int) error {
+	if accBalance > 0 {
+		return ErrAccountHasBalance
+	}
+	now := time.Now()
+	b.status = ClosedStatus
+	b.closedAt = &now
+	b.updatedAt = now
 	return nil
 }

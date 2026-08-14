@@ -29,6 +29,7 @@ type AccountWithCategory struct {
 	Type     string
 	Name     string
 	IsSaving *bool
+	Status   string
 	Currency string
 	// goal-specific
 	TargetAmount *int
@@ -36,6 +37,7 @@ type AccountWithCategory struct {
 	TargetDate   *time.Time
 	Category     *CategoryDTO
 
+	ClosedAt  *time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }

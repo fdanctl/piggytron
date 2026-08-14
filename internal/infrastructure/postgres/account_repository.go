@@ -31,12 +31,14 @@ type accountDto struct {
 	Name   string
 
 	IsSaving     *bool
+	Status       account.AccountStatus
 	TargetAmount *int
 	StartDate    *time.Time
 	TargetDate   *time.Time
 	CategoryID   *account.ID
 
 	Currency  string
+	ClosedAt  *time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
@@ -46,18 +48,20 @@ type accountDto struct {
 func (r *AccountRepository) Create(ctx context.Context, a *account.Account) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO accounts (id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at)
-	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+		`INSERT INTO accounts (id, user_id, type, name, is_saving, status, currency, target_amount, start_date, target_date, category_id, closed_at, created_at, updated_at)
+	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
 		a.ID(),
 		a.UserID(),
 		a.Type(),
 		a.Name(),
 		a.IsSaving(),
+		a.Status(),
 		a.Currency(),
 		a.TargetAmount(),
 		a.StartDate(),
 		a.TargetDate(),
 		a.CategoryID(),
+		a.ClosedAt(),
 		a.CreatedAt(),
 		a.UpdatedAt(),
 	)
@@ -85,22 +89,40 @@ func (r *AccountRepository) Update(ctx context.Context, a *account.Account) erro
 		SET
 			name = $2,
 			is_saving = $3,
-			currency = $4,
-			target_amount = $5,
-			start_date = $6,
-			target_date = $7,
-			category_id = $8,
-			updated_at = $9
+			status = $4,
+			currency = $5,
+			target_amount = $6,
+			start_date = $7,
+			target_date = $8,
+			category_id = $9,
+			closed_at = $10,
+			updated_at = $11
 		WHERE id = $1`,
 		a.ID(),
 		a.Name(),
 		a.IsSaving(),
+		a.Status(),
 		a.Currency(),
 		a.TargetAmount(),
 		a.StartDate(),
 		a.TargetDate(),
 		a.CategoryID(),
+		a.ClosedAt(),
 		a.UpdatedAt(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete removes matching id account
+func (r *AccountRepository) Delete(ctx context.Context, id account.ID) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`DELETE FROM accounts WHERE id = $1`,
+		id,
 	)
 	if err != nil {
 		return err
@@ -113,7 +135,7 @@ func (r *AccountRepository) Update(ctx context.Context, a *account.Account) erro
 func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*account.Account, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at
+		`SELECT id, user_id, type, name, is_saving, status, currency, target_amount, start_date, target_date, category_id, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE id = $1`,
 		id,
@@ -126,11 +148,13 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 		&b.Type,
 		&b.Name,
 		&b.IsSaving,
+		&b.Status,
 		&b.Currency,
 		&b.TargetAmount,
 		&b.StartDate,
 		&b.TargetDate,
 		&b.CategoryID,
+		&b.ClosedAt,
 		&b.CreatedAt,
 		&b.UpdatedAt,
 	)
@@ -147,114 +171,13 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 		b.Type,
 		b.Name,
 		b.IsSaving,
+		b.Status,
 		b.TargetAmount,
 		b.StartDate,
 		b.TargetDate,
 		b.CategoryID,
 		b.Currency,
-		b.CreatedAt,
-		b.UpdatedAt,
-	)
-	return account, err
-}
-
-// FindBankByNameAndUser looks up a bank by its (user, name) uniqueness key.
-func (r *AccountRepository) FindBankByNameAndUser(
-	ctx context.Context,
-	uid account.ID,
-	name string,
-) (*account.Account, error) {
-	row := r.db.QueryRowContext(
-		ctx,
-		`SELECT id, user_id, name, is_saving, currency, created_at, updated_at
-		 FROM accounts
-		 WHERE user_id = $1 AND type = $2 AND name = $3 `,
-		uid,
-		account.BankType,
-		name,
-	)
-
-	var b accountDto
-	err := row.Scan(
-		&b.ID,
-		&b.UserID,
-		&b.Name,
-		&b.IsSaving,
-		&b.Currency,
-		&b.CreatedAt,
-		&b.UpdatedAt,
-	)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, account.ErrNotFound
-		}
-		return nil, err
-	}
-
-	account := account.Rehydrate(
-		b.ID,
-		b.UserID,
-		account.BankType,
-		b.Name,
-		b.IsSaving,
-		nil,
-		nil,
-		nil,
-		nil,
-		b.Currency,
-		b.CreatedAt,
-		b.UpdatedAt,
-	)
-	return account, err
-}
-
-// FindGoalByNameAndUser looks up a goal by its (user, name) uniqueness key.
-// TODO: remove, not used
-func (r *AccountRepository) FindGoalByNameAndUser(
-	ctx context.Context,
-	uid account.ID,
-	name string,
-) (*account.Account, error) {
-	row := r.db.QueryRowContext(
-		ctx,
-		`SELECT id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at
-		 FROM accounts
-		 WHERE user_id = $1 AND type = $2 AND name = $3`,
-		uid,
-		account.GoalType,
-		name,
-	)
-
-	var b accountDto
-	err := row.Scan(
-		&b.ID,
-		&b.UserID,
-		&b.Type,
-		&b.Name,
-		&b.IsSaving,
-		&b.Currency,
-		&b.TargetAmount,
-		&b.StartDate,
-		&b.TargetDate,
-		&b.CategoryID,
-		&b.CreatedAt,
-		&b.UpdatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	account := account.Rehydrate(
-		b.ID,
-		b.UserID,
-		b.Type,
-		b.Name,
-		b.IsSaving,
-		b.TargetAmount,
-		b.StartDate,
-		b.TargetDate,
-		b.CategoryID,
-		b.Currency,
+		b.ClosedAt,
 		b.CreatedAt,
 		b.UpdatedAt,
 	)
@@ -268,7 +191,7 @@ func (r *AccountRepository) FindAllByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at
+		`SELECT id, user_id, type, name, is_saving, status, currency, target_amount, start_date, target_date, category_id, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE user_id = $1`,
 		uid,
@@ -288,11 +211,13 @@ func (r *AccountRepository) FindAllByUser(
 			&dto.Type,
 			&dto.Name,
 			&dto.IsSaving,
+			&dto.Status,
 			&dto.Currency,
 			&dto.TargetAmount,
 			&dto.StartDate,
 			&dto.TargetDate,
 			&dto.CategoryID,
+			&dto.ClosedAt,
 			&dto.CreatedAt,
 			&dto.UpdatedAt,
 		); err != nil {
@@ -304,11 +229,13 @@ func (r *AccountRepository) FindAllByUser(
 			dto.Type,
 			dto.Name,
 			dto.IsSaving,
+			dto.Status,
 			dto.TargetAmount,
 			dto.StartDate,
 			dto.TargetDate,
 			dto.CategoryID,
 			dto.Currency,
+			dto.ClosedAt,
 			dto.CreatedAt,
 			dto.UpdatedAt,
 		)
@@ -328,7 +255,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, name, is_saving, currency, created_at, updated_at
+		`SELECT id, user_id, name, is_saving, status, currency, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE user_id = $1 AND type = 'bank'`,
 		uid,
@@ -347,7 +274,9 @@ func (r *AccountRepository) FindAllBanksByUser(
 			&dto.UserID,
 			&dto.Name,
 			&dto.IsSaving,
+			&dto.Status,
 			&dto.Currency,
+			&dto.ClosedAt,
 			&dto.CreatedAt,
 			&dto.UpdatedAt,
 		); err != nil {
@@ -359,11 +288,13 @@ func (r *AccountRepository) FindAllBanksByUser(
 			account.BankType,
 			dto.Name,
 			dto.IsSaving,
+			dto.Status,
 			nil,
 			nil,
 			nil,
 			nil,
 			dto.Currency,
+			dto.ClosedAt,
 			dto.CreatedAt,
 			dto.UpdatedAt,
 		)
@@ -383,7 +314,7 @@ func (r *AccountRepository) FindAllGoalsByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, name, is_saving, currency, target_amount, start_date, target_date, category_id, created_at, updated_at
+		`SELECT id, user_id, type, name, is_saving, status, currency, target_amount, start_date, target_date, category_id, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE user_id = $1 AND type = 'goal'`,
 		uid,
@@ -403,11 +334,13 @@ func (r *AccountRepository) FindAllGoalsByUser(
 			&dto.Type,
 			&dto.Name,
 			&dto.IsSaving,
+			&dto.Status,
 			&dto.Currency,
 			&dto.TargetAmount,
 			&dto.StartDate,
 			&dto.TargetDate,
 			&dto.CategoryID,
+			&dto.ClosedAt,
 			&dto.CreatedAt,
 			&dto.UpdatedAt,
 		); err != nil {
@@ -419,11 +352,13 @@ func (r *AccountRepository) FindAllGoalsByUser(
 			dto.Type,
 			dto.Name,
 			dto.IsSaving,
+			dto.Status,
 			dto.TargetAmount,
 			dto.StartDate,
 			dto.TargetDate,
 			dto.CategoryID,
 			dto.Currency,
+			dto.ClosedAt,
 			dto.CreatedAt,
 			dto.UpdatedAt,
 		)

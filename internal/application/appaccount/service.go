@@ -110,7 +110,7 @@ func (s *Service) CreateBank(
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed generating id: %w", err),
-			"appuser.CreateBank",
+			"appaccount.CreateBank",
 		)
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (s *Service) CreateBank(
 			errs.KindBusinessRule,
 			"Failed to create bank",
 			fmt.Errorf("failed to create bank: %w", err),
-			"appuser.CreateBank",
+			"appaccount.CreateBank",
 		)
 		return nil, err
 	}
@@ -133,12 +133,12 @@ func (s *Service) CreateBank(
 				errs.KindValidation,
 				"A bank with the same name already exists",
 				fmt.Errorf("failed saving account '%s': %w", acc.Name(), err),
-				"appuser.CreateBank",
+				"appaccount.CreateBank",
 			)
 		} else {
 			err = errs.NewInternalAppError(
 				fmt.Errorf("failed saving bank: %w", err),
-				"appuser.CreateBank",
+				"appaccount.CreateBank",
 			)
 		}
 		return nil, err
@@ -184,7 +184,7 @@ func (s *Service) CreateGoal(
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed generating id: %w", err),
-			"appuser.CreateGoal",
+			"appaccount.CreateGoal",
 		)
 		return nil, err
 	}
@@ -204,7 +204,7 @@ func (s *Service) CreateGoal(
 			errs.KindBusinessRule,
 			"Failed to create goal",
 			fmt.Errorf("failed to create goal: %w", err),
-			"appuser.CreateGoal",
+			"appaccount.CreateGoal",
 		)
 		return nil, err
 	}
@@ -216,12 +216,12 @@ func (s *Service) CreateGoal(
 				errs.KindValidation,
 				"A goal with the same name already exists",
 				fmt.Errorf("failed saving account '%s': %w", acc.Name(), err),
-				"appuser.CreateGoal",
+				"appaccount.CreateGoal",
 			)
 		} else {
 			err = errs.NewInternalAppError(
 				fmt.Errorf("failed saving user: %w", err),
-				"appuser.CreateGoal",
+				"appaccount.CreateGoal",
 			)
 		}
 		return nil, err
@@ -280,7 +280,7 @@ func (s *Service) UpdateGoal(
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed updating goal: %w", err),
-			"appuser.UpdateGoal",
+			"appaccount.UpdateGoal",
 		)
 		return nil, err
 	}
@@ -514,4 +514,203 @@ func (s *Service) FindAllGoalsByUser(
 	}
 
 	return accounts, nil
+}
+
+func (s *Service) DeleteAccount(
+	ctx context.Context,
+	id string,
+) error {
+	aid, err := util.ParseID[account.ID](id)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", id),
+			fmt.Errorf("failed parsing id '%s': %w", id, err),
+			"appledger.Delete",
+		)
+		return err
+	}
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appaccount.Delete",
+		)
+		return err
+	}
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	hasData := true
+	_, err = qtx.GetAccountFirstEntryDate(ctx, id)
+	if err != nil {
+		if errors.Is(err, account.ErrNotFound) {
+			hasData = false
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed finding ledger entries for '%s' account: %w", id, err),
+				"appaccount.Delete",
+			)
+			return err
+		}
+	}
+
+	if hasData {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			"Can't delete an account with historical data",
+			errors.New("can't delete an account with historical data"),
+			"appaccount.Delete",
+		)
+		return err
+	}
+
+	atx := postgres.NewAccountRepository(tx)
+	err = atx.Delete(ctx, aid)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to delete '%s' account: %w", id, err),
+			"appaccount.Delete",
+		)
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appaccount.Delete",
+		)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) UpdateBankName(
+	ctx context.Context,
+	userID string,
+	id string,
+	name string,
+	currency string,
+	isSaving bool,
+) error {
+	uid, err := util.ParseID[account.ID](userID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.UpdateBankName",
+		)
+		return err
+	}
+
+	aid, err := util.ParseID[account.ID](id)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.UpdateBankName",
+		)
+		return err
+	}
+
+	acc, err := account.NewBank(aid, uid, name, currency, isSaving)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create bank",
+			fmt.Errorf("failed to create bank: %w", err),
+			"appaccount.UpdateBankName",
+		)
+		return err
+	}
+
+	err = s.repo.Update(ctx, acc)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating bank: %w", err),
+			"appaccount.UpdateBankName",
+		)
+		return err
+	}
+	return nil
+}
+
+func (s *Service) CloseAccount(
+	ctx context.Context,
+	id string,
+) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appaccount.CloseAccount",
+		)
+		return err
+	}
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	dto, err := qtx.FindWithSum(ctx, id)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding ledger entries for '%s' account: %w", id, err),
+			"appaccount.Delete",
+		)
+		return err
+	}
+
+	cid := &dto.Category.ID
+	if *cid == util.ZeroUUID {
+		cid = nil
+	}
+
+	acc := account.Rehydrate(
+		account.ID(dto.ID),
+		account.ID(dto.UserID),
+		account.AccountType(dto.Type),
+		dto.Name,
+		dto.IsSaving,
+		account.AccountStatus(dto.Status),
+		dto.TargetAmount,
+		dto.StartDate,
+		dto.TargetDate,
+		(*account.ID)(cid),
+		dto.Currency,
+		dto.ClosedAt,
+		dto.CreatedAt,
+		dto.UpdatedAt,
+	)
+
+	err = acc.CloseAccount(dto.Sum)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Make the account balance 0 before closing it",
+			err,
+			"appaccount.CloseAccount",
+		)
+	}
+
+	atx := postgres.NewAccountRepository(tx)
+	err = atx.Update(ctx, acc)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to close '%s' account: %w", id, err),
+			"appaccount.CloseAccount",
+		)
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appaccount.CloseAccount",
+		)
+		return err
+	}
+
+	return nil
 }

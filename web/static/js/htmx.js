@@ -113,6 +113,7 @@ document.body.addEventListener("closeAllModal", function () {
 
 // Navigates making an hx-get to swap #contetn with an optional transition.
 // (HX-Trigger: {"contentPush": { "url": string, "transition": bool}})
+// TODO: choose the transtion
 document.body.addEventListener("contentPush", function (evt) {
   htmx.ajax("GET", evt.detail.url, {
     target: "#content",

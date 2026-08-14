@@ -73,12 +73,18 @@ func LineTimeAccount(
 	m map[string][]opts.LineData,
 	min, max float64,
 	since time.Time,
+	end time.Time,
 	theme string,
 ) *charts.Line {
-	lineColor := "#5eefef"
+	lineColor := "#5eefef" // dark
 	if theme == "light" {
 		lineColor = "#4bc4c4"
+	} else if theme == "light-closed" {
+		lineColor = "#525252"
+	} else if theme == "dark-closed" {
+		lineColor = "#d4d4d4"
 	}
+
 	line := charts.NewLine()
 	line.SetGlobalOptions(
 		charts.WithInitializationOpts(
@@ -99,6 +105,7 @@ func LineTimeAccount(
 		charts.WithXAxisOpts(opts.XAxis{
 			Type: "time",
 			Min:  since,
+			Max:  end,
 		}),
 		charts.WithTooltipOpts(opts.Tooltip{
 			Trigger:         "axis",

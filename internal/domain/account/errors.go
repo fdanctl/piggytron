@@ -12,4 +12,5 @@ var (
 	ErrContributionBeforeStartDate = errors.New("contribution before start date")
 	ErrNotFound                    = errors.New("not found")
 	ErrStartDateAfterTarget        = errors.New("start date after target date")
+	ErrAccountHasBalance           = errors.New("account has balance")
 )

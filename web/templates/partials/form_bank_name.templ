@@ -1,0 +1,45 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ BankNameForm(id string, v views.BankForm) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post={ fmt.Sprintf("/partials/bank/%s/change-name", id) }
+		hx-swap="outerHTML"
+		novalidate
+	>
+		@components.InputGroup(
+			"",
+			"Name",
+			views.StringArrToStr(v.ValidateName()),
+			v.NameHasError(),
+			true,
+			templ.Attributes{
+				"id":          "name",
+				"type":        "text",
+				"name":        "name",
+				"placeholder": "Savings",
+				"value":       v.Name,
+			},
+		)
+		<input type="hidden" name="currency" value={ v.Currency }/>
+		<input type="hidden" name="is-savings" value={ v.IsSavings }/>
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

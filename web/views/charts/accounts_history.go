@@ -139,10 +139,12 @@ func GenerateAccountsHistLineAndPieItems(
 	for i, p := range pairs {
 		if i < availableSlots {
 			sortedKeys = append(sortedKeys, p.Key)
-			pieData = append(
-				pieData,
-				opts.PieData{Name: p.Key, Value: float64(p.Value) / float64(100)},
-			)
+			if p.Value > 0 {
+				pieData = append(
+					pieData,
+					opts.PieData{Name: p.Key, Value: float64(p.Value) / float64(100)},
+				)
+			}
 		} else {
 			isThereOther = true
 			other += p.Value
@@ -151,7 +153,7 @@ func GenerateAccountsHistLineAndPieItems(
 		}
 	}
 
-	if isThereOther {
+	if isThereOther && other > 0 {
 		pieData = append(pieData, opts.PieData{Name: "Other", Value: float64(other) / float64(100)})
 	}
 

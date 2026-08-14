@@ -17,6 +17,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -189,6 +190,9 @@ func getAccSelectOptions(
 	}
 
 	for _, v := range acc {
+		if v.Status() == account.ClosedStatus {
+			continue
+		}
 		// not a goal and not is savings
 		if v.IsSaving() != nil && !*v.IsSaving() {
 			noSavingsBanksOpts = append(

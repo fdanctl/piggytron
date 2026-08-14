@@ -5,6 +5,14 @@
   padding: var(--spacing-md) calc(var(--spacing-md) + var(--spacing-xs));
 }
 
+.card--muted {
+  opacity: 0.6;
+
+  .select-pill--popover {
+    opacity: 0.6;
+  }
+}
+
 .card__title {
   font-size: var(--font-size-xs);
   font-weight: 500;

@@ -2,10 +2,13 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
@@ -74,7 +77,7 @@ func (s *AccountQueryService) FindIDNamesIncludes(
 	return results, nil
 }
 
-// FindBanksIDNames returns id/name pairs of the user's bank accounts.
+// FindBanksIDNames returns id/name pairs of the user's active bank accounts.
 func (s *AccountQueryService) FindBanksIDNames(
 	ctx context.Context,
 	uid string,
@@ -83,7 +86,7 @@ func (s *AccountQueryService) FindBanksIDNames(
 		ctx,
 		`SELECT id, name
 		 FROM accounts
-		 WHERE user_id = $1 and type = 'bank'`,
+		 WHERE user_id = $1 AND type = 'bank' AND status = 'active'`,
 		uid,
 	)
 	if err != nil {
@@ -152,6 +155,7 @@ func (s *AccountQueryService) FindWithSum(
 			a.type, 
 			a.name, 
 			a.is_saving, 
+			a.status,
 			a.currency, 
 			a.target_amount, 
 			a.start_date, 
@@ -159,6 +163,7 @@ func (s *AccountQueryService) FindWithSum(
 			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
+			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum
@@ -182,6 +187,7 @@ func (s *AccountQueryService) FindWithSum(
 		&g.Type,
 		&g.Name,
 		&g.IsSaving,
+		&g.Status,
 		&g.Currency,
 		&g.TargetAmount,
 		&g.StartDate,
@@ -189,6 +195,7 @@ func (s *AccountQueryService) FindWithSum(
 		&c.ID,
 		&c.Name,
 		&c.Type,
+		&g.ClosedAt,
 		&g.CreatedAt,
 		&g.UpdatedAt,
 		&g.Sum,
@@ -212,6 +219,7 @@ func (s *AccountQueryService) FindAllWithSum(
 			a.type, 
 			a.name, 
 			a.is_saving, 
+			a.status,
 			a.currency, 
 			a.target_amount, 
 			a.start_date, 
@@ -219,6 +227,7 @@ func (s *AccountQueryService) FindAllWithSum(
 			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
+			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum
@@ -250,6 +259,7 @@ func (s *AccountQueryService) FindAllWithSum(
 			&g.Type,
 			&g.Name,
 			&g.IsSaving,
+			&g.Status,
 			&g.Currency,
 			&g.TargetAmount,
 			&g.StartDate,
@@ -257,6 +267,7 @@ func (s *AccountQueryService) FindAllWithSum(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&g.ClosedAt,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
@@ -284,6 +295,7 @@ func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 			a.type, 
 			a.name, 
 			a.is_saving, 
+			a.status,
 			a.currency, 
 			a.target_amount, 
 			a.start_date, 
@@ -325,6 +337,7 @@ func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 			&g.Type,
 			&g.Name,
 			&g.IsSaving,
+			&g.Status,
 			&g.Currency,
 			&g.TargetAmount,
 			&g.StartDate,
@@ -359,6 +372,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			a.type, 
 			a.name, 
 			a.is_saving, 
+			a.status,
 			a.currency, 
 			a.target_amount, 
 			a.start_date, 
@@ -366,6 +380,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			c.id,
 			c.name,
 			COALESCE(c.type,'income'),
+			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum
@@ -396,6 +411,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			&g.Type,
 			&g.Name,
 			&g.IsSaving,
+			&g.Status,
 			&g.Currency,
 			&g.TargetAmount,
 			&g.StartDate,
@@ -403,6 +419,7 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&g.ClosedAt,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
@@ -454,7 +471,6 @@ func (s *AccountQueryService) GetAllDailyBalanceSince(
 		      AND ms.month < (SELECT start_day FROM params)
 		    WHERE
 		      a.user_id = $1
-		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
 		      a.name
@@ -479,7 +495,6 @@ func (s *AccountQueryService) GetAllDailyBalanceSince(
 		      )
 		    WHERE
 		      a.user_id = $1
-		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
 		      t.date::date
@@ -508,7 +523,6 @@ func (s *AccountQueryService) GetAllDailyBalanceSince(
 		  AND dt.day = d.day
 		WHERE
 		  a.user_id = $1
-		  AND a.deleted_at IS NULL
 		ORDER BY
 		  d.day,
 		  a.id;`,
@@ -584,7 +598,6 @@ func (s *AccountQueryService) GetAccountDailyBalanceSince(
 		      AND ms.month < (SELECT start_day FROM params)
 		    WHERE
 		      a.id = $1
-		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
 		      a.name
@@ -609,7 +622,6 @@ func (s *AccountQueryService) GetAccountDailyBalanceSince(
 		      )
 		    WHERE
 		      a.id = $1
-		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
 		      t.date::date
@@ -637,7 +649,6 @@ func (s *AccountQueryService) GetAccountDailyBalanceSince(
 		  AND dt.day = d.day
 		WHERE
 		  a.id = $1
-		  AND a.deleted_at IS NULL
 		ORDER BY
 		  d.day,
 		  a.id;
@@ -714,7 +725,6 @@ func (s *AccountQueryService) GetAccountDailyBalanceAndStatsSince(
 		      AND ms.month < (SELECT start_day FROM params)
 		    WHERE
 		      a.id = $1
-		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
 		      a.name
@@ -752,7 +762,6 @@ func (s *AccountQueryService) GetAccountDailyBalanceAndStatsSince(
 		      )
 		    WHERE
 		      a.id = $1
-		      AND a.deleted_at IS NULL
 		    GROUP BY
 		      a.id,
 		      t.date::date
@@ -810,7 +819,6 @@ func (s *AccountQueryService) GetAccountDailyBalanceAndStatsSince(
 		  AND dt.day = d.day
 		WHERE
 		  a.id = $1
-		  AND a.deleted_at IS NULL
 		ORDER BY
 		  d.day,
 		  a.id;
@@ -963,6 +971,7 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 			a.type,
 			a.name,
 			a.is_saving,
+			a.status,
 			a.currency,
 			a.target_amount,
 			a.start_date,
@@ -996,6 +1005,7 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 		&g.Type,
 		&g.Name,
 		&g.IsSaving,
+		&g.Status,
 		&g.Currency,
 		&g.TargetAmount,
 		&g.StartDate,
@@ -1029,5 +1039,11 @@ func (s *AccountQueryService) GetAccountFirstEntryDate(
 	)
 
 	err = row.Scan(&date)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return date, account.ErrNotFound
+		}
+		return date, err
+	}
 	return
 }

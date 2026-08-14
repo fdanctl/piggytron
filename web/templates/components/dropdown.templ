@@ -48,3 +48,36 @@ templ Dropdown(class, name string, minWFull bool, attrs templ.Attributes) {
 		</span>
 	</div>
 }
+
+templ IconDropdown(class string, icon templ.Component, minWFull bool, attrs templ.Attributes) {
+	{{
+		b := make([]byte, 5)
+		_, err := rand.Read(b)
+		if err != nil {
+			return err
+		}
+		id := "d-" + hex.EncodeToString(b)
+	}}
+	<div class="dropdown">
+		<button
+			class={ "reset-btn", templ.KV(class, class != "") }
+			type="button"
+			data-target={ fmt.Sprintf("#%s", id) }
+			popovertarget={ id }
+			style={ fmt.Sprintf("anchor-name: --%s;", id) }
+			{ attrs... }
+		>
+			@icon
+		</button>
+		<span
+			id={ id }
+			class={ "popover", templ.KV("min-w", minWFull) }
+			style={ fmt.Sprintf("position-anchor: --%s;", id) }
+			popover
+		>
+			<div>
+				{ children... }
+			</div>
+		</span>
+	</div>
+}

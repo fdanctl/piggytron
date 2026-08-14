@@ -26,15 +26,17 @@ type Bank struct {
 	ID        string
 	Name      string
 	Type      string
+	Status    string
 	IsSavings bool
 	Amount    int
 }
 
-func NewBank(id string, name string, btype string, isSaving bool, amount int) Bank {
+func NewBank(id string, name string, btype string, status string, isSaving bool, amount int) Bank {
 	return Bank{
 		ID:        id,
 		Name:      name,
 		Type:      btype,
+		Status:    status,
 		IsSavings: isSaving,
 		Amount:    amount,
 	}
@@ -69,10 +71,12 @@ func NewBankPage(
 				availableDelta -= v.MoneyOut
 			}
 
-			banks = append(
-				banks,
-				NewBank(v.ID, v.Name, v.Type, isSaving, v.Sum),
-			)
+			if v.Status == "active" {
+				banks = append(
+					banks,
+					NewBank(v.ID, v.Name, v.Type, v.Status, isSaving, v.Sum),
+				)
+			}
 		}
 
 		if v.Type == string(account.GoalType) {

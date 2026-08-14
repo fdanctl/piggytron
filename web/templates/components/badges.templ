@@ -5,14 +5,25 @@ import "fmt"
 type badgeVariant string
 
 const (
-	BadgeNeeds   badgeVariant = "needs"
-	BadgeWants   badgeVariant = "wants"
-	BadgeSavings badgeVariant = "savings"
-	BadgeDefault badgeVariant = ""
+	BadgeNeeds    badgeVariant = "needs"
+	BadgeWants    badgeVariant = "wants"
+	BadgeSavings  badgeVariant = "savings"
+	BadgeChecking badgeVariant = "checking"
+	BadgeClosed   badgeVariant = "closed"
+	BadgeDefault  badgeVariant = ""
 )
 
-templ Badge(text, class string, variant badgeVariant) {
+templ Badge(class, text string, variant badgeVariant) {
 	<div class={ "badge", templ.KV(fmt.Sprint("badge--", variant), variant != ""), templ.KV(class, class != "") }>
+		{ text }
+	</div>
+}
+
+templ BadgeWithIcon(class, text string, variant badgeVariant, icon templ.Component) {
+	<div class={ "badge", templ.KV(fmt.Sprint("badge--", variant), variant != ""), templ.KV(class, class != "") }>
+		if icon != nil {
+			@icon
+		}
 		{ text }
 	</div>
 }

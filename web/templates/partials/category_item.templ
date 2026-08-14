@@ -13,11 +13,11 @@ templ CategoryItem(cat views.Category, attrs templ.Attributes) {
 			</div>
 			switch cat.GetExpenseType() {
 				case "needs":
-					@components.Badge("Needs", "", components.BadgeNeeds)
+					@components.Badge("", "Needs", components.BadgeNeeds)
 				case "wants":
-					@components.Badge("Wants", "", components.BadgeWants)
+					@components.Badge("", "Wants", components.BadgeWants)
 				case "savings":
-					@components.Badge("Savings", "", components.BadgeSavings)
+					@components.Badge("", "Savings", components.BadgeSavings)
 			}
 		</a>
 	</li>

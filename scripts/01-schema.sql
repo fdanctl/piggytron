@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS income_categories (
   --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  deleted_at TIMESTAMP,
   --
   UNIQUE (user_id, name)
 );
@@ -28,7 +27,6 @@ CREATE TABLE IF NOT EXISTS expense_categories (
   --
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  deleted_at TIMESTAMP,
   --
   UNIQUE (user_id, name)
 );
@@ -40,6 +38,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   name VARCHAR(50) NOT NULL,
   type VARCHAR(10) NOT NULL CHECK (type IN ('bank', 'goal')),
   is_saving BOOLEAN, -- bank specific
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
   --
   currency VARCHAR(10) NOT NULL,
   -- Goal-specific fields (NULL if type = 'bank')
@@ -48,9 +47,9 @@ CREATE TABLE IF NOT EXISTS accounts (
   target_date TIMESTAMP,
   category_id UUID REFERENCES expense_categories (id),
   --
+  closed_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  deleted_at TIMESTAMP
   -- rules
   CHECK (
     (

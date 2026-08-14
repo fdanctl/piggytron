@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -27,12 +29,40 @@ func NewBankHandler(as *appaccount.Service) *BankHandler {
 }
 
 func (h *BankHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	action := r.PathValue("action")
+
+	if action != "" {
+		switch action {
+		case "close":
+			if r.Method != http.MethodPost {
+				http.NotFound(w, r)
+			}
+			h.PostClose(w, r)
+
+		case "change-name":
+			switch r.Method {
+			case http.MethodGet:
+				h.GetChangeName(w, r)
+
+			case http.MethodPost:
+				h.PostChangeName(w, r)
+
+			default:
+				http.NotFound(w, r)
+			}
+		}
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
 
 	case http.MethodPost:
 		h.Post(w, r)
+
+	case http.MethodDelete:
+		h.Delete(w, r)
 
 	default:
 		http.NotFound(w, r)
@@ -106,7 +136,14 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		isSaving = true
 	}
 
-	bview := views.NewBank(string(bank.ID()), bank.Name(), string(bank.Type()), isSaving, 0)
+	bview := views.NewBank(
+		string(bank.ID()),
+		bank.Name(),
+		string(bank.Type()),
+		string(bank.Status()),
+		isSaving,
+		0,
+	)
 	templ.Join(
 		partials.BankForm(view),
 		layouts.OOBWraper(
@@ -116,4 +153,123 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 			partials.AccountItem(bview),
 		),
 	).Render(r.Context(), w)
+}
+
+// Delete deletes an account if no historical data is found.
+func (h *BankHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	if id == "" {
+		err := errs.NewAppError(
+			errs.KindBadRequest,
+			"Account ID is required",
+			errors.New("no id passed"),
+			"BankHandler.Delete",
+		)
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	err := h.service.DeleteAccount(r.Context(), id)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+	w.Header().Set(
+		"HX-Trigger",
+		`{"contentPush": { "url": "/banks","transition": "true" }}`,
+	)
+}
+
+// GetChangeName get the form to change name
+func (h *BankHandler) GetChangeName(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+	acc, err := h.service.FindOneByID(r.Context(), r.PathValue("id"), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	view := views.NewBankForm()
+	view.Name = acc.Name()
+	view.Currency = acc.Currency()
+	if acc.IsSaving() != nil {
+		view.IsSavings = *acc.IsSaving()
+	}
+
+	form := partials.BankNameForm(r.PathValue("id"), *view)
+	components.DialogWrapper(
+		"",
+		components.DialogHeader("", "Change name", nil),
+		form,
+		nil,
+		nil,
+	).Render(r.Context(), w)
+}
+
+// PostChangeName validates form changes an account name
+func (h *BankHandler) PostChangeName(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	name := r.FormValue("name")
+	currency := r.FormValue("currency")
+	savings := r.FormValue("savings")
+
+	view := views.BankForm{
+		Name:      name,
+		Currency:  currency,
+		IsSavings: savings == "on",
+	}
+
+	err = h.service.UpdateBankName(
+		r.Context(),
+		sessionInfo.UserID,
+		id,
+		view.Name,
+		view.Currency,
+		view.IsSavings,
+	)
+	if err != nil {
+		view.SetError(err)
+		form := partials.BankNameForm(id, view)
+		httperror.SendFormError(w, r, err, form)
+		return
+	}
+
+	w.Header().Set(
+		"HX-Trigger",
+		fmt.Sprintf(`{
+		"closeModal": true,
+		"contentPush": {
+			"url": "/banks/%s"
+		}
+		}`, id),
+	)
+	templ.Join(
+		partials.BankNameForm(id, view),
+		components.SendToast(components.Success, "Name changed with success"),
+	).Render(r.Context(), w)
+}
+
+// PostClose closes an account name
+func (h *BankHandler) PostClose(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	err := h.service.CloseAccount(r.Context(), id)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+	w.Header().Set(
+		"HX-Trigger",
+		fmt.Sprintf(`{"contentPush": { "url": "/banks/%s" }}`, id),
+	)
 }

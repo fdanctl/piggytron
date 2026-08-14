@@ -2,6 +2,8 @@
   display: inline-flex;
   width: fit-content;
   height: fit-content;
+  align-items: center;
+  gap: 2px;
   padding: 0 var(--spacing-sm);
   font-size: var(--font-size-xs);
   border-radius: var(--radius-sm);
@@ -20,4 +22,15 @@
 .badge--savings {
   color: var(--color-on-savings);
   background-color: var(--color-savings);
+}
+
+.badge--checking {
+  color: var(--color-primary);
+  background-color: oklch(from var(--color-primary) l c h / 10%);
+}
+
+.badge--closed {
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  border: 0.5px solid var(--color-border-secondary);
 }

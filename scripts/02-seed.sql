@@ -29,42 +29,42 @@ INSERT INTO public.users VALUES ('b1486155-eb83-46c5-9f77-2d1e7673d36d', 'gopher
 -- Data for Name: expense_categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.expense_categories VALUES ('dd654864-25bc-42db-87a2-c2158a49519b', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'House', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('b7cd2e91-f4fa-4359-8413-87f44e83063a', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Utilities', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('6833f201-1557-4615-b28b-0a928cc508d5', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Transportation', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('4024bbac-7642-431a-8924-2accdffb4fcb', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Groceries', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Entertainment', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('924fdfe0-d705-4fc0-9028-620f2f257572', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Clothing', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('344f4403-c3da-42b4-99e8-ff639add0d01', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Shopping', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('5771af42-b305-4742-84e8-b8111fcd2d46', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Eating Out', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('9d75d005-4ee1-4ca1-941b-a4b56e480500', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Health', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('c57cd9f7-46a7-4b81-9e45-872200995d00', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Household Items', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('1d13701a-b78f-4201-bb22-07a35a63e7c6', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Personal', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('16777ce0-6bc6-4a09-8880-5c82892a9700', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Savings', 'savings', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('6a8cf86c-8648-40fc-b972-a001191ea664', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Investing', 'savings', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('61d859c8-502d-499c-998b-7969215fb367', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Emergency Fund', 'savings', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('bc8b13d1-3643-40b4-8c13-4dc46c26b5e3', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Gifts/Donations', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.expense_categories VALUES ('7028224b-1a8a-47b2-b810-e00f8e70124e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Miscellaneous', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
+INSERT INTO public.expense_categories VALUES ('dd654864-25bc-42db-87a2-c2158a49519b', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'House', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('b7cd2e91-f4fa-4359-8413-87f44e83063a', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Utilities', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('6833f201-1557-4615-b28b-0a928cc508d5', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Transportation', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('4024bbac-7642-431a-8924-2accdffb4fcb', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Groceries', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Entertainment', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('924fdfe0-d705-4fc0-9028-620f2f257572', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Clothing', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('344f4403-c3da-42b4-99e8-ff639add0d01', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Shopping', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('5771af42-b305-4742-84e8-b8111fcd2d46', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Eating Out', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('9d75d005-4ee1-4ca1-941b-a4b56e480500', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Health', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('c57cd9f7-46a7-4b81-9e45-872200995d00', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Household Items', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('1d13701a-b78f-4201-bb22-07a35a63e7c6', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Personal', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('16777ce0-6bc6-4a09-8880-5c82892a9700', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Savings', 'savings', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('6a8cf86c-8648-40fc-b972-a001191ea664', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Investing', 'savings', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('61d859c8-502d-499c-998b-7969215fb367', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Emergency Fund', 'savings', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('bc8b13d1-3643-40b4-8c13-4dc46c26b5e3', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Gifts/Donations', 'wants', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.expense_categories VALUES ('7028224b-1a8a-47b2-b810-e00f8e70124e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Miscellaneous', 'needs', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
 
 
 --
 -- Data for Name: accounts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.accounts VALUES ('61a9f1db-6eda-424c-afb3-0a088df81d29', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Main', 'bank', false, 'EUR', NULL, NULL, NULL, NULL, '2026-05-25 18:48:55.826741', '2026-05-25 18:48:55.826741', NULL);
-INSERT INTO public.accounts VALUES ('a1f9fd71-861b-4e9d-82cc-acc56f6d9024', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Cash', 'bank', false, 'EUR', NULL, NULL, NULL, NULL, '2026-05-25 18:49:19.310473', '2026-05-25 18:49:19.310473', NULL);
-INSERT INTO public.accounts VALUES ('a7b6fe5b-5820-4bdb-9d87-b76f2b69c46e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Savings', 'bank', true, 'EUR', NULL, NULL, NULL, NULL, '2026-05-25 18:49:31.509823', '2026-05-25 18:49:31.509823', NULL);
-INSERT INTO public.accounts VALUES ('d7158788-5015-43e1-a617-d9e5f2ad1e72', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Holidays', 'goal', NULL, 'EUR', 50000, '2026-05-01 00:00:00', '2026-12-01 00:00:00', '71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', '2026-05-25 18:51:10.893844', '2026-05-25 18:51:10.893844', NULL);
+INSERT INTO public.accounts VALUES ('61a9f1db-6eda-424c-afb3-0a088df81d29', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Main', 'bank', false, 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:48:55.826741', '2026-05-25 18:48:55.826741');
+INSERT INTO public.accounts VALUES ('a1f9fd71-861b-4e9d-82cc-acc56f6d9024', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Cash', 'bank', false, 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:49:19.310473', '2026-05-25 18:49:19.310473');
+INSERT INTO public.accounts VALUES ('a7b6fe5b-5820-4bdb-9d87-b76f2b69c46e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Savings', 'bank', true, 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:49:31.509823', '2026-05-25 18:49:31.509823');
+INSERT INTO public.accounts VALUES ('d7158788-5015-43e1-a617-d9e5f2ad1e72', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Holidays', 'goal', NULL, 'active', 'EUR', 50000, '2026-05-01 00:00:00', '2026-12-01 00:00:00', '71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', NULL, '2026-05-25 18:51:10.893844', '2026-05-25 18:51:10.893844');
 
 
 --
 -- Data for Name: income_categories; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.income_categories VALUES ('5d73ddb6-f839-4b83-8457-ac238ca66bec', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Job', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.income_categories VALUES ('694d93cc-fec8-4073-a361-850f6176866c', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Side Hustle', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.income_categories VALUES ('acb92080-2ba7-43ed-9d72-5466c77f725f', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Gifts', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
-INSERT INTO public.income_categories VALUES ('5b973f89-5440-4edc-9a1d-57d73f03d982', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Others', '2026-03-11 00:00:00', '2026-03-11 00:00:00', NULL);
+INSERT INTO public.income_categories VALUES ('5d73ddb6-f839-4b83-8457-ac238ca66bec', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Job', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.income_categories VALUES ('694d93cc-fec8-4073-a361-850f6176866c', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Side Hustle', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.income_categories VALUES ('acb92080-2ba7-43ed-9d72-5466c77f725f', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Gifts', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
+INSERT INTO public.income_categories VALUES ('5b973f89-5440-4edc-9a1d-57d73f03d982', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Others', '2026-03-11 00:00:00', '2026-03-11 00:00:00');
 
 
 --
