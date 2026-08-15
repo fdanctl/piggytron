@@ -340,7 +340,7 @@ input:focus + .checkbox__box {
   user-select: none;
 }
 
-.toggle-switch label {
+.toggle-switch__label {
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -348,7 +348,6 @@ input:focus + .checkbox__box {
   gap: 5px;
   padding: 6px 16px;
   border-radius: 6px;
-  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-tertiary);
   transition: all 0.15s;

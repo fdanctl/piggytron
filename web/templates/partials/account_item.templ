@@ -14,12 +14,8 @@ templ AccountItem(v views.Bank) {
 				<p>
 					{ v.Name }
 				</p>
-				<p class="text-xs text-muted">
-					if v.IsSavings {
-						Savings
-					} else {
-						Checking
-					}
+				<p class="text-xs text-muted capitalize">
+					{ v.Type }
 				</p>
 			</div>
 			<div class="font-medium">

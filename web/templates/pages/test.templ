@@ -398,31 +398,31 @@ templ Test() {
 		<div class="grid grid-cols-2 gap-md">
 			<div>
 				<h3 class="font-medium mb-sm">Toggle Switch (2 options)</h3>
-				@components.ToggleSwitch("", "toggle-billing", []components.ToggleOption{
+				@components.ToggleSwitch("text-sm", "toggle-billing", []components.ToggleOption{
 					{Label: "Monthly", Id: "monthly", Value: "monthly"},
-					{Label: "Yearly", Id: "yearly", Value: "yearly"},
+					{Label: "Yearly", Id: "yearly", Value: "yearly", Checked: true},
 				}, nil)
 			</div>
 			<div>
 				<h3 class="font-medium mb-sm">Toggle Switch (3 options)</h3>
-				@components.ToggleSwitch("", "toggle-period", []components.ToggleOption{
-					{Label: "Day", Id: "day", Value: "day"},
+				@components.ToggleSwitch("text-xs", "toggle-period", []components.ToggleOption{
+					{Label: "Day", Id: "day", Value: "day", Checked: true},
 					{Label: "Week", Id: "week", Value: "week"},
 					{Label: "Month", Id: "month", Value: "month"},
 				}, nil)
 			</div>
 			<div>
 				<h3 class="font-medium mb-sm">Toggle Switch Group</h3>
-				@components.ToggleSwitchGroup("", "View Mode", "view-mode", []components.ToggleOption{
+				@components.ToggleSwitchGroup("text-sm", "View Mode", "view-mode", []components.ToggleOption{
 					{Label: "Table", Id: "table", Value: "table"},
-					{Label: "Grid", Id: "grid", Value: "grid"},
+					{Label: "Grid", Id: "grid", Value: "grid", Checked: true},
 					{Label: "List", Id: "list", Value: "list"},
 				}, nil)
 			</div>
 			<div>
 				<h3 class="font-medium mb-sm">Toggle Switch Group (2 options)</h3>
-				@components.ToggleSwitchGroup("", "Chart Type", "chart-type", []components.ToggleOption{
-					{Label: "Bar", Id: "bar", Value: "bar"},
+				@components.ToggleSwitchGroup("text-xs", "Chart Type", "chart-type", []components.ToggleOption{
+					{Label: "Bar", Id: "bar", Value: "bar", Checked: true},
 					{Label: "Line", Id: "line", Value: "line"},
 				}, nil)
 			</div>

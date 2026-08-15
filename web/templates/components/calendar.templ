@@ -84,7 +84,7 @@ templ CalendarPreRendered() {
 		</div>
 		<div class="calendar__days">
 			// 7 * 4
-			for i := 0; i < 28; i++ {
+			for i := range 28 {
 				@dayDiv(i, firstSunday)
 			}
 			// 5th row if necessary

@@ -175,18 +175,17 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		    FROM
 		      accounts a
 		      LEFT JOIN monthly_summary ms ON a.id = ms.account_id
-		      AND ms.month <= $2 -- $2
+		      AND ms.month <= $2
 		    WHERE
-		      user_id = $1 -- $1
-		      AND type = 'bank'
-		      AND is_saving = FALSE
+		      user_id = $1
+		      AND type = 'checking'
 		    GROUP BY
 		      ms.month
 		  ),
 		  categories as (
 		    SELECT
 		      c.id as cid,
-		      COALESCE(b.month, $2) AS month, -- $2
+		      COALESCE(b.month, $2) AS month,
 		      c.type,
 		      c.name,
 		      COALESCE(b.amount, 0) as budgeted,
@@ -198,7 +197,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		          monthly_budgets mb
 		        WHERE
 		          mb.category_id = c.id
-		          AND mb.month < COALESCE(b.month, $2) -- $2
+		          AND mb.month < COALESCE(b.month, $2)
 		      ) as total_budgeted_prev,
 		      (
 		        SELECT
@@ -207,18 +206,18 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		          ledger l
 		        WHERE
 		          l.expense_category_id = c.id
-		          AND l.date < COALESCE(b.month, $2) -- $2
+		          AND l.date < COALESCE(b.month, $2)
 		      ) as total_spent_prev
 		    FROM
 		      expense_categories c
 		      LEFT JOIN ledger t ON c.id = t.expense_category_id
-		      AND t.date >= $2 -- $2
+		      AND t.date >= $2
 		      AND t.date < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month'
 		      LEFT JOIN monthly_budgets b ON c.id = b.category_id
-		      AND b.month >= $2 -- $2
+		      AND b.month >= $2
 		      AND b.month < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month'
 		    WHERE
-		      c.user_id = $1 -- $1
+		      c.user_id = $1
 		    GROUP BY
 		      c.id,
 		      b.category_id,
@@ -226,7 +225,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		    UNION ALL
 		    SELECT
 		      c.id as cid,
-		      $2 AS month, -- $2
+		      $2 AS month,
 		      'income' AS type,
 		      c.name as name,
 		      0 as budgeted,
@@ -236,10 +235,10 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		    FROM
 		      income_categories c
 		      LEFT JOIN ledger t ON c.id = t.income_category_id
-		      AND t.date >= $2 -- $2
-		      AND t.date < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month' -- $2
+		      AND t.date >= $2
+		      AND t.date < date_trunc('month', $2::TIMESTAMP) + INTERVAL '1 month'
 		    WHERE
-		      c.user_id = $1 -- $1
+		      c.user_id = $1
 		    GROUP BY
 		      c.id
 		  )
@@ -249,7 +248,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		  COALESCE(n.running_total, 0) as balance
 		FROM
 		  categories c
-		  LEFT JOIN month_net n ON n.month = $2 -- $2
+		  LEFT JOIN month_net n ON n.month = $2
 		ORDER BY c.type
 		`,
 		uid,

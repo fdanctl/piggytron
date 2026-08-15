@@ -28,7 +28,6 @@ type AccountWithCategory struct {
 	UserID   string
 	Type     string
 	Name     string
-	IsSaving *bool
 	Status   string
 	Currency string
 	// goal-specific

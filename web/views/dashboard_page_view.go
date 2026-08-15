@@ -59,14 +59,12 @@ func NewDashboardPage(
 
 	var goals []Goal
 	for _, v := range a {
-		if v.Type == "bank" {
-			if *v.IsSaving {
-				savings += v.Sum
-			} else {
-				balance += v.Sum
-			}
+		if v.Type == string(account.CheckingType) {
+			balance += v.Sum
 		}
-
+		if v.Type == string(account.SavingsType) {
+			savings += v.Sum
+		}
 		if v.Type == string(account.GoalType) {
 			goals = append(goals, NewGoal(v))
 		}

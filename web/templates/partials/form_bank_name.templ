@@ -29,7 +29,7 @@ templ BankNameForm(id string, v views.BankForm) {
 			},
 		)
 		<input type="hidden" name="currency" value={ v.Currency }/>
-		<input type="hidden" name="is-savings" value={ v.IsSavings }/>
+		<input type="hidden" name="type" value={ v.Type }/>
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Enter",

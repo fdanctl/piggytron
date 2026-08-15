@@ -23,22 +23,20 @@ type BankPage struct {
 }
 
 type Bank struct {
-	ID        string
-	Name      string
-	Type      string
-	Status    string
-	IsSavings bool
-	Amount    int
+	ID     string
+	Name   string
+	Type   string
+	Status string
+	Amount int
 }
 
-func NewBank(id string, name string, btype string, status string, isSaving bool, amount int) Bank {
+func NewBank(id string, name string, btype string, status string, amount int) Bank {
 	return Bank{
-		ID:        id,
-		Name:      name,
-		Type:      btype,
-		Status:    status,
-		IsSavings: isSaving,
-		Amount:    amount,
+		ID:     id,
+		Name:   name,
+		Type:   btype,
+		Status: status,
+		Amount: amount,
 	}
 }
 
@@ -58,32 +56,28 @@ func NewBankPage(
 
 	var banks []Bank
 	for _, v := range a {
-		var isSaving bool
-		if v.Type == "bank" {
-			if *v.IsSaving {
-				savings += v.Sum
-				savingsDelta += v.MoneyIn
-				savingsDelta -= v.MoneyOut
-				isSaving = true
-			} else {
-				available += v.Sum
-				availableDelta += v.MoneyIn
-				availableDelta -= v.MoneyOut
-			}
-
-			if v.Status == "active" {
-				banks = append(
-					banks,
-					NewBank(v.ID, v.Name, v.Type, v.Status, isSaving, v.Sum),
-				)
-			}
+		if v.Type == string(account.CheckingType) {
+			available += v.Sum
+			availableDelta += v.MoneyIn
+			availableDelta -= v.MoneyOut
 		}
-
+		if v.Type == string(account.SavingsType) {
+			savings += v.Sum
+			savingsDelta += v.MoneyIn
+			savingsDelta -= v.MoneyOut
+		}
 		if v.Type == string(account.GoalType) {
 			goals += v.Sum
 			goalsDelta += v.MoneyIn
 			goalsDelta -= v.MoneyOut
 		}
+		if v.Type != "goal" && v.Status == "active" {
+			banks = append(
+				banks,
+				NewBank(v.ID, v.Name, v.Type, v.Status, v.Sum),
+			)
+		}
+
 	}
 
 	var tviews []Transaction

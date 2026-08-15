@@ -11,9 +11,9 @@ import (
 type BankForm struct {
 	Form
 
-	Name      string
-	Currency  string
-	IsSavings bool
+	Name     string
+	Currency string
+	Type     string
 }
 
 // NewBankForm returns a blank bank form pre-filled with the EUR currency.
@@ -22,6 +22,7 @@ func NewBankForm() *BankForm {
 		Currency: currency.EUR.String(),
 	}
 	f.Initial = true
+	f.Type = "checking"
 	return &f
 }
 
@@ -66,16 +67,20 @@ func (v *BankForm) CurrencyHasError() bool {
 	return len(v.ValidateCurrency()) > 0
 }
 
-func (v *BankForm) ValidateIsSavings() (msgs []string) {
+func (v *BankForm) ValidateType() (msgs []string) {
 	if v.Initial {
 		return
+	}
+
+	if v.Type != "checking" && v.Type != "savings" {
+		msgs = append(msgs, v.Type+" is not a valid type")
 	}
 
 	return msgs
 }
 
-func (v *BankForm) IsSavingsHasError() bool {
-	return len(v.ValidateIsSavings()) > 0
+func (v *BankForm) TypeHasError() bool {
+	return len(v.ValidateType()) > 0
 }
 
 func (v *BankForm) Validate() (msgs []string) {
@@ -84,6 +89,6 @@ func (v *BankForm) Validate() (msgs []string) {
 	}
 	msgs = append(msgs, v.ValidateName()...)
 	msgs = append(msgs, v.ValidateCurrency()...)
-	msgs = append(msgs, v.ValidateIsSavings()...)
+	msgs = append(msgs, v.ValidateType()...)
 	return msgs
 }

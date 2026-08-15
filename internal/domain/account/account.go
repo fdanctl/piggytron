@@ -11,12 +11,13 @@ import (
 // ID is an account identifier.
 type ID string
 
-// AccountType discriminates a bank from a goal account.
+// AccountType discriminates a bank (checking or savings) from a goal account.
 type AccountType string
 
 const (
-	BankType AccountType = "bank"
-	GoalType AccountType = "goal"
+	CheckingType AccountType = "checking"
+	SavingsType  AccountType = "savings"
+	GoalType     AccountType = "goal"
 )
 
 // AccountStatus marks the status of the account (active or closed).
@@ -27,14 +28,30 @@ const (
 	ClosedStatus AccountStatus = "closed"
 )
 
-// Account is a bank or a goal. Bank accounts carry an isSaving flag; goals
-// carry target amounts and dates plus the expense category used to fund them.
+// NewType parses a string into a Type, returning ErrInvalidType otherwise.
+func NewType(str string) (AccountType, error) {
+	switch str {
+	case "checking":
+		return CheckingType, nil
+
+	case "savings":
+		return SavingsType, nil
+
+	case "goal":
+		return GoalType, nil
+
+	default:
+		return "", ErrInvalidType
+	}
+}
+
+// Account is a bank (checking or savings) or a goal. Goals carry target amounts and dates
+// plus the expense category used to fund them.
 type Account struct {
 	id       ID
 	userID   ID
 	aType    AccountType
 	name     string
-	isSaving *bool // bank-specific
 	status   AccountStatus
 	currency string
 	// goal-specific
@@ -53,7 +70,7 @@ func NewBank(
 	id, userID ID,
 	name string,
 	currency string,
-	isSaving bool,
+	btype AccountType,
 ) (*Account, error) {
 	if name == "" || len(name) > 50 {
 		return nil, ErrInvalidName
@@ -68,8 +85,7 @@ func NewBank(
 		id:        id,
 		userID:    userID,
 		name:      name,
-		aType:     BankType,
-		isSaving:  &isSaving,
+		aType:     btype,
 		status:    ActiveStatus,
 		currency:  currency,
 		createdAt: now,
@@ -125,7 +141,6 @@ func Rehydrate(
 	id, userID ID,
 	aType AccountType,
 	name string,
-	isSaving *bool,
 	status AccountStatus,
 	targetAmount *int,
 	startDate *time.Time,
@@ -140,7 +155,6 @@ func Rehydrate(
 		userID:       userID,
 		aType:        aType,
 		name:         name,
-		isSaving:     isSaving,
 		status:       status,
 		targetAmount: targetAmount,
 		startDate:    startDate,
@@ -171,11 +185,6 @@ func (b *Account) Name() string {
 // Type returns the account type (bank or goal).
 func (b *Account) Type() AccountType {
 	return b.aType
-}
-
-// IsSaving returns the savings flag for banks, or nil for goals.
-func (b *Account) IsSaving() *bool {
-	return b.isSaving
 }
 
 // Status returns the account status (active or closed).
@@ -232,7 +241,7 @@ func (b *Account) CanReceiveIncome() error {
 	if b.aType == GoalType {
 		return errors.New("goals can't receive from outside")
 	}
-	if b.isSaving != nil && *b.isSaving {
+	if b.aType == SavingsType {
 		return errors.New("savings accounts can't receive from outside")
 	}
 	return nil
@@ -247,7 +256,7 @@ func (b *Account) CanMakeExpense() error {
 	if b.aType == GoalType {
 		return errors.New("goals can't make expenses")
 	}
-	if b.isSaving != nil && *b.isSaving {
+	if b.aType == SavingsType {
 		return errors.New("savings accounts can't make expenses")
 	}
 	return nil

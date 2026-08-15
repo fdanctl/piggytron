@@ -36,12 +36,11 @@ CREATE TABLE IF NOT EXISTS accounts (
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
   name VARCHAR(50) NOT NULL,
-  type VARCHAR(10) NOT NULL CHECK (type IN ('bank', 'goal')),
-  is_saving BOOLEAN, -- bank specific
+  type VARCHAR(10) NOT NULL CHECK (type IN ('checking', 'savings', 'goal')),
   status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'closed')),
   --
   currency VARCHAR(10) NOT NULL,
-  -- Goal-specific fields (NULL if type = 'bank')
+  -- Goal-specific fields (NULL if type = 'checking' or type = 'savings')
   target_amount BIGINT,
   start_date TIMESTAMP,
   target_date TIMESTAMP,
@@ -53,8 +52,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   -- rules
   CHECK (
     (
-      type = 'bank'
-      AND is_saving IS NOT NULL
+      type != 'goal'
       AND target_amount IS NULL
       AND start_date IS NULL
       AND target_date IS NULL
@@ -62,7 +60,6 @@ CREATE TABLE IF NOT EXISTS accounts (
     )
     OR (
       type = 'goal'
-      AND is_saving IS NULL
       AND target_amount IS NOT NULL
       AND start_date IS NOT NULL
       -- AND target_date IS NOT NULL

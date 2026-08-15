@@ -2,6 +2,7 @@ package pages
 
 import (
 	"fmt"
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -16,16 +17,16 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 		@components.Breadcrumbs(bview)
 		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
 			<ul class="breadcrumbs-selection">
+				<li>
+					<button
+						class="reset-btn"
+						data-action="ui.popover.hide"
+						hx-get={ fmt.Sprintf("/partials/bank/%s/change-name", b.ID) }
+						hx-target="#dialog-root"
+						hx-swap="beforeend"
+					>Change name</button>
+				</li>
 				if b.Status == "active" {
-					<li>
-						<button
-							class="reset-btn"
-							data-action="ui.popover.hide"
-							hx-get={ fmt.Sprintf("/partials/bank/%s/change-name", b.ID) }
-							hx-target="#dialog-root"
-							hx-swap="beforeend"
-						>Change name</button>
-					</li>
 					<li>
 						<button
 							hx-trigger="confirmed"
@@ -49,14 +50,20 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 		}
 	</div>
 	<div>
-		if b.Status == "closed" {
-			<div class="text-muted mb-sm uppercase text-sm flex gap-sm items-center">
+		<div class="text-muted mb-sm uppercase text-sm flex gap-sm items-center">
+			if b.Status == "closed" {
 				<span>Final balance</span>
 				@components.BadgeWithIcon("", "Closed", components.BadgeClosed, components.LockKeyholeSvg(10, "", ""))
-			</div>
-		} else {
-			<p class="text-muted mb-sm uppercase text-sm">Current balance</p>
-		}
+			} else {
+				<span>Current balance</span>
+				switch b.Type {
+					case string(account.CheckingType):
+						@components.Badge("", b.Type, components.BadgeChecking)
+					case string(account.SavingsType):
+						@components.Badge("", b.Type, components.BadgeSavings)
+				}
+			}
+		</div>
 		<div class="bank-balance">
 			<h2 class={ templ.KV("text-muted", b.Status == "closed") }>
 				{{

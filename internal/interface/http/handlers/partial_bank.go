@@ -90,14 +90,10 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := r.FormValue("name")
-	currency := r.FormValue("currency")
-	savings := r.FormValue("savings")
-
 	view := views.BankForm{
-		Name:      name,
-		Currency:  currency,
-		IsSavings: savings == "on",
+		Name:     r.FormValue("name"),
+		Currency: r.FormValue("currency"),
+		Type:     r.FormValue("type"),
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
@@ -109,9 +105,9 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 	bank, err := h.service.CreateBank(
 		r.Context(),
 		sessionInfo.UserID,
-		name,
-		currency,
-		savings == "on",
+		view.Name,
+		view.Currency,
+		view.Type,
 	)
 	if err != nil {
 		view.SetError(err)
@@ -131,17 +127,11 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}`, bank.ID()),
 	)
 
-	var isSaving bool
-	if *bank.IsSaving() {
-		isSaving = true
-	}
-
 	bview := views.NewBank(
 		string(bank.ID()),
 		bank.Name(),
 		string(bank.Type()),
 		string(bank.Status()),
-		isSaving,
 		0,
 	)
 	templ.Join(
@@ -196,9 +186,7 @@ func (h *BankHandler) GetChangeName(w http.ResponseWriter, r *http.Request) {
 	view := views.NewBankForm()
 	view.Name = acc.Name()
 	view.Currency = acc.Currency()
-	if acc.IsSaving() != nil {
-		view.IsSavings = *acc.IsSaving()
-	}
+	view.Type = string(acc.Type())
 
 	form := partials.BankNameForm(r.PathValue("id"), *view)
 	components.DialogWrapper(
@@ -219,14 +207,10 @@ func (h *BankHandler) PostChangeName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name := r.FormValue("name")
-	currency := r.FormValue("currency")
-	savings := r.FormValue("savings")
-
 	view := views.BankForm{
-		Name:      name,
-		Currency:  currency,
-		IsSavings: savings == "on",
+		Name:     r.FormValue("name"),
+		Currency: r.FormValue("currency"),
+		Type:     r.FormValue("type"),
 	}
 
 	err = h.service.UpdateBankName(
@@ -235,7 +219,7 @@ func (h *BankHandler) PostChangeName(w http.ResponseWriter, r *http.Request) {
 		id,
 		view.Name,
 		view.Currency,
-		view.IsSavings,
+		view.Type,
 	)
 	if err != nil {
 		view.SetError(err)

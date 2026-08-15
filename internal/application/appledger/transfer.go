@@ -117,7 +117,6 @@ func (s *Service) CreateTransfer(
 		account.ID(fromAccount.UserID),
 		account.AccountType(fromAccount.Type),
 		fromAccount.Name,
-		fromAccount.IsSaving,
 		account.AccountStatus(fromAccount.Status),
 		fromAccount.TargetAmount,
 		fromAccount.StartDate,
@@ -157,7 +156,6 @@ func (s *Service) CreateTransfer(
 		account.ID(toAccount.UserID),
 		account.AccountType(toAccount.Type),
 		toAccount.Name,
-		toAccount.IsSaving,
 		account.AccountStatus(toAccount.Status),
 		toAccount.TargetAmount,
 		toAccount.StartDate,
@@ -185,7 +183,7 @@ func (s *Service) CreateTransfer(
 	}
 
 	var toAccountCatType string
-	if toAccount.IsSaving != nil && *toAccount.IsSaving && categoryID != "" {
+	if toAccount.Type == string(account.SavingsType) && categoryID != "" {
 		cattx := postgres.NewCategoryQueryService(tx)
 		cat, err := cattx.FindByID(ctx, categoryID)
 		if err != nil {
@@ -206,7 +204,7 @@ func (s *Service) CreateTransfer(
 		fromAccount.MinRunningBalance,
 		accCID,
 		toAccountCatType,
-		toAccount.IsSaving != nil && *toAccount.IsSaving,
+		toAccount.Type == string(account.SavingsType),
 	)
 	if err != nil {
 		msg := "Failed to create transfer"
@@ -452,7 +450,6 @@ func (s *Service) UpdateTransfer(
 		account.ID(oldToAcc.UserID),
 		account.AccountType(oldToAcc.Type),
 		oldToAcc.Name,
-		oldToAcc.IsSaving,
 		account.AccountStatus(oldToAcc.Status),
 		oldToAcc.TargetAmount,
 		oldToAcc.StartDate,
@@ -487,7 +484,6 @@ func (s *Service) UpdateTransfer(
 		account.ID(oldFromAcc.UserID),
 		account.AccountType(oldFromAcc.Type),
 		oldFromAcc.Name,
-		oldFromAcc.IsSaving,
 		account.AccountStatus(oldFromAcc.Status),
 		oldFromAcc.TargetAmount,
 		oldFromAcc.StartDate,
@@ -531,7 +527,6 @@ func (s *Service) UpdateTransfer(
 			account.ID(toAccount.UserID),
 			account.AccountType(toAccount.Type),
 			toAccount.Name,
-			toAccount.IsSaving,
 			account.AccountStatus(toAccount.Status),
 			toAccount.TargetAmount,
 			toAccount.StartDate,
@@ -553,7 +548,7 @@ func (s *Service) UpdateTransfer(
 		}
 
 		var toAccountCatType string
-		if toAccount.IsSaving != nil && *toAccount.IsSaving && categoryID != "" {
+		if toAccount.Type == string(account.SavingsType) && categoryID != "" {
 			cattx := postgres.NewCategoryQueryService(tx)
 			cat, err := cattx.FindByID(ctx, categoryID)
 			if err != nil {
@@ -567,7 +562,7 @@ func (s *Service) UpdateTransfer(
 			toAccID,
 			accCID,
 			toAccountCatType,
-			toAccount.IsSaving != nil && *toAccount.IsSaving,
+			toAccount.Type == string(account.SavingsType),
 		); err != nil {
 			msg := "Failed to update transfer"
 			if errors.Is(err, ledger.ErrGoalCategory) {
@@ -606,7 +601,6 @@ func (s *Service) UpdateTransfer(
 			account.ID(acc.UserID),
 			account.AccountType(acc.Type),
 			acc.Name,
-			acc.IsSaving,
 			account.AccountStatus(acc.Status),
 			acc.TargetAmount,
 			acc.StartDate,

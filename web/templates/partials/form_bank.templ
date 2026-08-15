@@ -13,48 +13,45 @@ templ BankForm(v views.BankForm) {
 		hx-swap="outerHTML"
 		novalidate
 	>
-		@components.InputGroup(
-			"",
-			"Name",
-			views.StringArrToStr(v.ValidateName()),
-			v.NameHasError(),
-			true,
-			templ.Attributes{
-				"id":          "name",
-				"type":        "text",
-				"name":        "name",
-				"placeholder": "Savings",
-				"value":       v.Name,
-			},
-		)
-		@components.SelectGroup(
-			"",
-			"Currency",
-			v.Currency,
-			"-- Select currency --",
-			[]components.SelectOption{
-				{
-					Label: "EUR",
-					Value: "EUR",
+		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
+			@components.InputGroup(
+				"",
+				"Name",
+				views.StringArrToStr(v.ValidateName()),
+				v.NameHasError(),
+				true,
+				templ.Attributes{
+					"id":          "name",
+					"type":        "text",
+					"name":        "name",
+					"placeholder": "Savings",
+					"value":       v.Name,
 				},
-			},
-			views.StringArrToStr(v.ValidateCurrency()),
-			v.CurrencyHasError(),
-			true,
-			templ.Attributes{
-				"id":   "currency",
-				"name": "currency",
-			},
-		)
-		@components.Checkbox(
-			"",
-			"Is savings account",
-			v.IsSavings,
-			templ.Attributes{
-				"id":   "is-savings",
-				"name": "savings",
-			},
-		)
+			)
+			@components.SelectGroup(
+				"",
+				"Currency",
+				v.Currency,
+				"-- Select currency --",
+				[]components.SelectOption{
+					{
+						Label: "EUR",
+						Value: "EUR",
+					},
+				},
+				views.StringArrToStr(v.ValidateCurrency()),
+				v.CurrencyHasError(),
+				true,
+				templ.Attributes{
+					"id":   "currency",
+					"name": "currency",
+				},
+			)
+		</div>
+		@components.ToggleSwitchGroup("text-xs", "Type", "type", []components.ToggleOption{
+			{Label: "Checking", Id: "checking", Value: "checking", Checked: v.Type == "checking"},
+			{Label: "Savings", Id: "savings", Value: "savings", Checked: v.Type == "savings"},
+		}, nil)
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Enter",

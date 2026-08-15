@@ -51,10 +51,10 @@ INSERT INTO public.expense_categories VALUES ('7028224b-1a8a-47b2-b810-e00f8e701
 -- Data for Name: accounts; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.accounts VALUES ('61a9f1db-6eda-424c-afb3-0a088df81d29', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Main', 'bank', false, 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:48:55.826741', '2026-05-25 18:48:55.826741');
-INSERT INTO public.accounts VALUES ('a1f9fd71-861b-4e9d-82cc-acc56f6d9024', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Cash', 'bank', false, 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:49:19.310473', '2026-05-25 18:49:19.310473');
-INSERT INTO public.accounts VALUES ('a7b6fe5b-5820-4bdb-9d87-b76f2b69c46e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Savings', 'bank', true, 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:49:31.509823', '2026-05-25 18:49:31.509823');
-INSERT INTO public.accounts VALUES ('d7158788-5015-43e1-a617-d9e5f2ad1e72', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Holidays', 'goal', NULL, 'active', 'EUR', 50000, '2026-05-01 00:00:00', '2026-12-01 00:00:00', '71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', NULL, '2026-05-25 18:51:10.893844', '2026-05-25 18:51:10.893844');
+INSERT INTO public.accounts VALUES ('61a9f1db-6eda-424c-afb3-0a088df81d29', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Main', 'checking', 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:48:55.826741', '2026-05-25 18:48:55.826741');
+INSERT INTO public.accounts VALUES ('a1f9fd71-861b-4e9d-82cc-acc56f6d9024', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Cash', 'checking', 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:49:19.310473', '2026-05-25 18:49:19.310473');
+INSERT INTO public.accounts VALUES ('a7b6fe5b-5820-4bdb-9d87-b76f2b69c46e', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Savings', 'savings', 'active', 'EUR', NULL, NULL, NULL, NULL, NULL, '2026-05-25 18:49:31.509823', '2026-05-25 18:49:31.509823');
+INSERT INTO public.accounts VALUES ('d7158788-5015-43e1-a617-d9e5f2ad1e72', 'b1486155-eb83-46c5-9f77-2d1e7673d36d', 'Holidays', 'goal', 'active', 'EUR', 50000, '2026-05-01 00:00:00', '2026-12-01 00:00:00', '71e3b7dc-1ce3-4c93-81ac-44cc8b1dd26f', NULL, '2026-05-25 18:51:10.893844', '2026-05-25 18:51:10.893844');
 
 
 --

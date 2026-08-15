@@ -93,7 +93,7 @@ func (s *Service) CreateBank(
 	userID string,
 	name string,
 	currency string,
-	isSaving bool,
+	btype string,
 ) (*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
@@ -115,7 +115,17 @@ func (s *Service) CreateBank(
 		return nil, err
 	}
 
-	acc, err := account.NewBank(id, uid, name, currency, isSaving)
+	accType, err := account.NewType(btype)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid type", btype),
+			fmt.Errorf("%s is not a valid type: %w", btype, err),
+			"appaccount.CreateBank",
+		)
+	}
+
+	acc, err := account.NewBank(id, uid, name, currency, accType)
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
@@ -592,7 +602,7 @@ func (s *Service) UpdateBankName(
 	id string,
 	name string,
 	currency string,
-	isSaving bool,
+	btype string,
 ) error {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
@@ -616,7 +626,17 @@ func (s *Service) UpdateBankName(
 		return err
 	}
 
-	acc, err := account.NewBank(aid, uid, name, currency, isSaving)
+	accType, err := account.NewType(btype)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid type", btype),
+			fmt.Errorf("%s is not a valid type: %w", btype, err),
+			"appaccount.Update",
+		)
+	}
+
+	acc, err := account.NewBank(aid, uid, name, currency, accType)
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
@@ -672,7 +692,6 @@ func (s *Service) CloseAccount(
 		account.ID(dto.UserID),
 		account.AccountType(dto.Type),
 		dto.Name,
-		dto.IsSaving,
 		account.AccountStatus(dto.Status),
 		dto.TargetAmount,
 		dto.StartDate,

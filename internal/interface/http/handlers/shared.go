@@ -193,8 +193,7 @@ func getAccSelectOptions(
 		if v.Status() == account.ClosedStatus {
 			continue
 		}
-		// not a goal and not is savings
-		if v.IsSaving() != nil && !*v.IsSaving() {
+		if v.Type() == account.CheckingType {
 			noSavingsBanksOpts = append(
 				noSavingsBanksOpts,
 				components.SelectOption{Label: v.Name(), Value: string(v.ID())},

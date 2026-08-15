@@ -21,5 +21,5 @@ func (h *TestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Get renders the test page.
 func (h *TestHandler) Get(w http.ResponseWriter, r *http.Request) {
 	content := pages.Test()
-	renderWithMainLayout(w, r, "Expenses", content)
+	renderWithMainLayout(w, r, "Test", content)
 }

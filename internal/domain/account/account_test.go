@@ -13,7 +13,7 @@ func TestNewBank(t *testing.T) {
 		userID   ID
 		bankname string
 		currency string
-		isSaving bool
+		btype    AccountType
 		wantErr  error
 	}{
 		{
@@ -22,7 +22,7 @@ func TestNewBank(t *testing.T) {
 			userID:   ID("420"),
 			bankname: "savings",
 			currency: "USD",
-			isSaving: true,
+			btype:    SavingsType,
 			wantErr:  nil,
 		},
 		{
@@ -31,7 +31,7 @@ func TestNewBank(t *testing.T) {
 			userID:   ID("420"),
 			bankname: "main",
 			currency: "USD",
-			isSaving: false,
+			btype:    CheckingType,
 			wantErr:  nil,
 		},
 		{
@@ -40,7 +40,7 @@ func TestNewBank(t *testing.T) {
 			userID:   ID("420"),
 			bankname: "",
 			currency: "USD",
-			isSaving: false,
+			btype:    CheckingType,
 			wantErr:  ErrInvalidName,
 		},
 		{
@@ -49,7 +49,7 @@ func TestNewBank(t *testing.T) {
 			userID:   ID("420"),
 			bankname: "H,g?)FTm&LHu0EyqQH*sAc_9h<tNrjJd?jucL$49ec!w)w2FU,)", // 51 chars
 			currency: "USD",
-			isSaving: false,
+			btype:    CheckingType,
 			wantErr:  ErrInvalidName,
 		},
 		{
@@ -58,7 +58,7 @@ func TestNewBank(t *testing.T) {
 			userID:   ID("420"),
 			bankname: "main",
 			currency: "",
-			isSaving: false,
+			btype:    CheckingType,
 			wantErr:  ErrInvalidCurrency,
 		},
 		{
@@ -67,14 +67,14 @@ func TestNewBank(t *testing.T) {
 			userID:   ID("420"),
 			bankname: "main",
 			currency: "UUUUUUUUUUU", // 11 chars
-			isSaving: false,
+			btype:    CheckingType,
 			wantErr:  ErrInvalidCurrency,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewBank(tt.id, tt.userID, tt.bankname, tt.currency, tt.isSaving)
+			_, err := NewBank(tt.id, tt.userID, tt.bankname, tt.currency, tt.btype)
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("NewBank() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -242,13 +242,13 @@ func TestCanReceiveIncome(t *testing.T) {
 	}
 
 	// Savings bank
-	saving, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", true)
+	saving, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", SavingsType)
 	if err := saving.CanReceiveIncome(); err == nil {
 		t.Error("savings accounts should not receive income directly")
 	}
 
 	// Regular bank (should succeed)
-	main, _ := NewBank(ID("420"), ID("420"), "Main", "USD", false)
+	main, _ := NewBank(ID("420"), ID("420"), "Main", "USD", CheckingType)
 	if err := main.CanReceiveIncome(); err != nil {
 		t.Errorf("checking account should receive income, got: %v", err)
 	}
@@ -290,7 +290,7 @@ func TestChangeTargetAmount(t *testing.T) {
 	amount := 1000
 
 	// Bank type
-	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", true)
+	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", SavingsType)
 	upAt := bank.UpdatedAt()
 	if err := bank.ChangeTargetAmount(amount); err == nil {
 		t.Error("banks can't change target amount")
@@ -381,7 +381,7 @@ func TestChangeStartDate(t *testing.T) {
 	)
 
 	// Bank type
-	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", true)
+	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", SavingsType)
 	upAt := bank.UpdatedAt()
 	if err := bank.ChangeStartDate(yesterday, nil); err == nil {
 		t.Error("banks can't change start date")
@@ -477,7 +477,7 @@ func TestChangeTargetDate(t *testing.T) {
 	)
 
 	// Bank type
-	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", true)
+	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", SavingsType)
 	upAt := bank.UpdatedAt()
 	if err := bank.ChangeTargetDate(&nextMonth); err == nil {
 		t.Error("banks can't change target date")
@@ -512,7 +512,7 @@ func TestChangeTargetDate(t *testing.T) {
 
 func TestChangeCategory(t *testing.T) {
 	id := ID("2")
-	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", true)
+	bank, _ := NewBank(ID("420"), ID("420"), "Savings", "USD", SavingsType)
 	upAt := bank.UpdatedAt()
 	if err := bank.ChangeCategory(id); err == nil {
 		t.Error("banks can't change category")

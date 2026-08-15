@@ -14,4 +14,5 @@ var (
 	ErrStartDateAfterTarget        = errors.New("start date after target date")
 	ErrAccountHasBalance           = errors.New("account has balance")
 	ErrClosedAccount               = errors.New("account is closed")
+	ErrInvalidType                 = errors.New("invalid type")
 )
