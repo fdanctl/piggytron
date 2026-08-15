@@ -714,7 +714,7 @@ func (s *Service) CloseAccount(
 	}
 
 	atx := postgres.NewAccountRepository(tx)
-	err = atx.Update(ctx, acc)
+	err = atx.UpdateStatus(ctx, acc)
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to close '%s' account: %w", id, err),

@@ -79,30 +79,48 @@ func (r *AccountRepository) Create(ctx context.Context, a *account.Account) erro
 	return nil
 }
 
-// Update persists the mutable fields of an account.
+// Update persists the mutable fields of an account. (to close an accout see other)
 func (r *AccountRepository) Update(ctx context.Context, a *account.Account) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`UPDATE accounts
 		SET
 			name = $2,
-			status = $3,
-			currency = $4,
-			target_amount = $5,
-			start_date = $6,
-			target_date = $7,
-			category_id = $8,
-			closed_at = $9,
-			updated_at = $10
+			currency = $3,
+			target_amount = $4,
+			start_date = $5,
+			target_date = $6,
+			category_id = $7,
+			updated_at = $8
 		WHERE id = $1`,
 		a.ID(),
 		a.Name(),
-		a.Status(),
 		a.Currency(),
 		a.TargetAmount(),
 		a.StartDate(),
 		a.TargetDate(),
 		a.CategoryID(),
+		a.UpdatedAt(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateStatus updates status related fields.
+func (r *AccountRepository) UpdateStatus(ctx context.Context, a *account.Account) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`UPDATE accounts
+		SET
+			status = $2,
+			closed_at = $3,
+			updated_at = $4
+		WHERE id = $1`,
+		a.ID(),
+		a.Status(),
 		a.ClosedAt(),
 		a.UpdatedAt(),
 	)

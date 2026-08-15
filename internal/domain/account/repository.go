@@ -6,6 +6,7 @@ import "context"
 type Repository interface {
 	Create(ctx context.Context, acc *Account) error
 	Update(ctx context.Context, acc *Account) error
+	UpdateStatus(ctx context.Context, acc *Account) error
 	Delete(ctx context.Context, id ID) error
 	FindByID(ctx context.Context, id ID) (*Account, error)
 	FindAllByUser(ctx context.Context, uid ID) ([]*Account, error)
