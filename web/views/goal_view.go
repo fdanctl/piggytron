@@ -14,6 +14,7 @@ import (
 type Goal struct {
 	ID           string
 	Name         string
+	Status       string
 	Type         string
 	TargetAmount int
 	StartDate    time.Time
@@ -25,6 +26,7 @@ type Goal struct {
 	MonthlyNeeded      string
 	MonthsLeft         string
 	CompletePercentage float64
+	ClosedAt           *time.Time
 }
 
 // NewGoal builds the view-model from the account read-model, deriving the
@@ -55,6 +57,7 @@ func NewGoal(
 	return Goal{
 		ID:           g.ID,
 		Name:         g.Name,
+		Status:       g.Status,
 		Type:         g.Type,
 		TargetAmount: *g.TargetAmount,
 		StartDate:    *g.StartDate,
@@ -73,5 +76,6 @@ func NewGoal(
 		MonthlyNeeded:      monthlyNeeded,
 		MonthsLeft:         monthsLeft,
 		CompletePercentage: float64(g.Sum) / float64(*g.TargetAmount) * 100,
+		ClosedAt:           g.ClosedAt,
 	}
 }

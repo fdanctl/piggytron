@@ -526,7 +526,7 @@ func (s *Service) FindAllGoalsByUser(
 	return accounts, nil
 }
 
-func (s *Service) DeleteAccount(
+func (s *Service) Delete(
 	ctx context.Context,
 	id string,
 ) error {
@@ -711,6 +711,7 @@ func (s *Service) CloseAccount(
 			err,
 			"appaccount.CloseAccount",
 		)
+		return err
 	}
 
 	atx := postgres.NewAccountRepository(tx)

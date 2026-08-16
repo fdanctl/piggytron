@@ -159,7 +159,7 @@ func (h *BankHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.DeleteAccount(r.Context(), id)
+	err := h.service.Delete(r.Context(), id)
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return

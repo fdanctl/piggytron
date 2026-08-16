@@ -1,7 +1,100 @@
 package components
 
+import "fmt"
+
 templ NoData() {
 	<div class="nodata">
 		<p class="" style="">no data</p>
+	</div>
+}
+
+templ EmptyTransactions() {
+	<div class="empty">
+		<div class="empty__icon">
+			@ReceiptTextSvg(0, "", "")
+		</div>
+		<p class="empty__title">No transactions yet</p>
+		<p class="empty__sub">Transactions will appear here once you add money or make a payment.</p>
+	</div>
+}
+
+templ EmptyContributions(gid string) {
+	<div class="empty">
+		<div class="empty__icon">
+			@ReceiptTextSvg(0, "", "")
+		</div>
+		<p class="empty__title">No contributions yet</p>
+		<p class="empty__sub">Start to contribute to this goal.</p>
+		@ButtonWithIcon("Contribute", "", BtnOutline, BtnMedium, templ.Attributes{
+			"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", gid),
+			"hx-target": "#dialog-root",
+			"hx-swap":   "beforeend",
+		}, IconLeft, PlusSvg(0, "", ""))
+	</div>
+}
+
+templ EmptyTransactionsFilter() {
+	<div class="empty">
+		<div class="empty__icon">
+			@FunnelXSVG(0, "", "")
+		</div>
+		<p class="empty__title">No transactions match this filter</p>
+		<p class="empty__sub">Try a different category or date range.</p>
+		@ButtonWithIcon("Clear filters", "", BtnOutline, BtnMedium, templ.Attributes{
+			"type":        "button",
+			"data-action": "ui.filters.reset",
+		}, IconLeft, XSvg(0, "", ""))
+	</div>
+}
+
+templ EmptyAccounts() {
+	<div class="empty">
+		<div class="empty__icon">
+			@LandmarkSvg(0, "", "")
+		</div>
+		<p class="empty__title">No active accounts</p>
+		<p class="empty__sub">Add a bank account to start tracking your balance and transactions.</p>
+		@ButtonWithIcon("Add account", "", BtnOutline, BtnMedium, templ.Attributes{
+			"hx-get":    "/partials/bank",
+			"hx-target": "#dialog-root",
+			"hx-swap":   "beforeend",
+		}, IconLeft, PlusSvg(0, "", ""))
+	</div>
+}
+
+templ EmptyGoals() {
+	<div class="empty">
+		<div class="empty__icon">
+			@PiggyBankSvg(0, "", "")
+		</div>
+		<p class="empty__title">No active goals</p>
+		<p class="empty__sub">Set a savings goal — a holiday, an emergency fund, a new laptop — and track it month by month.</p>
+		@ButtonWithIcon("Add goal", "", BtnOutline, BtnMedium, templ.Attributes{
+			"hx-get":    "/partials/goal",
+			"hx-target": "#dialog-root",
+			"hx-swap":   "beforeend",
+		}, IconLeft, PlusSvg(0, "", ""))
+	</div>
+}
+
+templ EmptyCategory(ctype string) {
+	<div class="empty">
+		<div class="empty__icon">
+			@TagSvg(0, "", "")
+		</div>
+		<p class="empty__title">No categories yet</p>
+		if ctype == "income" {
+			@ButtonWithIcon("Add category", "", BtnOutline, BtnMedium, templ.Attributes{
+				"hx-get":    "/partials/income-category",
+				"hx-target": "#dialog-root",
+				"hx-swap":   "beforeend",
+			}, IconLeft, PlusSvg(0, "", ""))
+		} else {
+			@ButtonWithIcon("Add category", "", BtnOutline, BtnMedium, templ.Attributes{
+				"hx-get":    "/partials/expense-category",
+				"hx-target": "#dialog-root",
+				"hx-swap":   "beforeend",
+			}, IconLeft, PlusSvg(0, "", ""))
+		}
 	</div>
 }

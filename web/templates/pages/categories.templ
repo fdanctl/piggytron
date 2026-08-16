@@ -39,6 +39,7 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 					})
 				}
 			</ul>
+			@components.EmptyCategory("income")
 		</section>
 		<section id="expense-cat">
 			<div>
@@ -68,6 +69,7 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 					})
 				}
 			</ul>
+			@components.EmptyCategory("expense")
 		</section>
 	</div>
 }

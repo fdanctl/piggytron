@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
@@ -45,13 +44,12 @@ func (h *AccountChartHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 // (defaulting to the start of the year). Used in goals page, start and max
 // are used to render the chart.
 func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
-	logger := middleware.LoggerFromContext(r.Context())
 	id := r.PathValue("id")
+	theme := r.Header.Get("theme")
 
 	q := r.URL.Query()
 	d := q.Get("start")
 	m := q.Get("max")
-	logger.Debug(d)
 
 	qmax, err := strconv.Atoi(m)
 	if err != nil {
@@ -73,16 +71,24 @@ func (h *AccountChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	theme := r.Header.Get("theme")
-
+	qclosedAt := r.URL.Query().Get("closedAt")
 	now := time.Now()
+	end := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	if qclosedAt != "" {
+		end, err = time.Parse(time.DateOnly, qclosedAt)
+		if err != nil {
+			httperror.SendError(w, r, err)
+			return
+		}
+		theme += "-closed"
+	}
 	histMap, _, max := charts.GenerateAccountsHistLine(changeHist)
 	line := charts.LineTimeAccount(
 		histMap,
 		0,
 		math.Max(float64(qmax)/100, float64(max)),
 		startDate,
-		time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()),
+		end,
 		theme,
 	)
 	charts.ConvertChartToTemplComponent(line).Render(r.Context(), w)

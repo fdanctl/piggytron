@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
+	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -105,6 +108,19 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	bank, err := h.accountQuery.FindWithSum(r.Context(), aid)
 	if err != nil {
 		httperror.SendError(w, r, err)
+		return
+	}
+	if bank.Type == string(account.GoalType) {
+		httperror.SendError(
+			w,
+			r,
+			errs.NewAppError(
+				errs.KindNotFound,
+				"bank not found",
+				errors.New("not found"),
+				"BanksHandler.GetWithID",
+			),
+		)
 		return
 	}
 

@@ -65,6 +65,7 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		end, err = time.Parse(time.DateOnly, qclosedAt)
 		if err != nil {
 			httperror.SendError(w, r, err)
+			return
 		}
 		theme += "-closed"
 		period = "all"
@@ -91,8 +92,10 @@ func (h *BankChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 		startDate,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
-		return
+		if !errors.Is(err, query.ErrNoHistory) {
+			httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
+			return
+		}
 	}
 
 	histMap, _, max := charts.GenerateAccountsHistLine(changeHist.Data)

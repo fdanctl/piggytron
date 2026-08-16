@@ -109,13 +109,13 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 	{{
 		query := ""
 		if b.Status == "closed" {
-			query = fmt.Sprintf("closedAt=%s", views.FormatDateOnly(*b.ClosedAt))
+			query = fmt.Sprintf("?closedAt=%s", views.FormatDateOnly(*b.ClosedAt))
 		}
 	}}
 	<div
 		id="bank-chart-card"
 		class={ "card relative mt-xl", templ.KV("card--muted", b.Status == "closed") }
-		hx-get={ fmt.Sprintf("/partials/charts/bank-hist/%s?%s", b.ID, query) }
+		hx-get={ fmt.Sprintf("/partials/charts/bank-hist/%s%s", b.ID, query) }
 		hx-trigger="load"
 	>
 		<div
@@ -143,7 +143,11 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 				</a>
 			</div>
 		</div>
-		@partials.TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", b.ID), hasMore)
+		if len(tt) > 0 {
+			@partials.TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", b.ID), hasMore)
+		} else {
+			@components.EmptyTransactions()
+		}
 	</div>
 }
 

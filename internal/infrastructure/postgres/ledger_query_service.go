@@ -554,5 +554,11 @@ func (s *LedgerQueryService) GetFirstEntryDate(
 	)
 
 	err = row.Scan(&date)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return date, ledger.ErrNotFound
+		}
+		return date, err
+	}
 	return
 }

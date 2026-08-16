@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
@@ -56,8 +60,16 @@ func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request
 	// TODO cache it in redis
 	d, err := h.ledgerQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		httperror.SendError(w, r, errs.NewInternalAppError(err, "AccountsHistoryChartHandler.Get"))
-		return
+		if errors.Is(err, ledger.ErrNotFound) {
+			d = time.Now()
+		} else {
+			httperror.SendError(
+				w,
+				r,
+				errs.NewInternalAppError(err, "AccountsHistoryChartHandler.Get"),
+			)
+			return
+		}
 	}
 
 	startDate := getStartPeriodDate(period, d)
@@ -68,22 +80,28 @@ func (h *AccountsHistoryChartHandler) Get(w http.ResponseWriter, r *http.Request
 		startDate,
 	)
 	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
-		return
+		if !errors.Is(err, query.ErrNoHistory) {
+			httperror.SendError(w, r, fmt.Errorf("failed to find accounts history: %w", err))
+			return
+		}
 	}
 
-	histMap, sortedKeys, _, min, max := charts.GenerateAccountsHistLineAndPieItems(
-		changeHist,
-	)
-	line := charts.LineTime(
-		histMap,
-		&sortedKeys,
-		min,
-		max,
-		startDate,
-		theme,
-	)
+	chart := components.NoData()
 
-	partials.AccountHistCard(charts.ConvertChartToTemplComponent(line), period).
+	if len(changeHist) > 0 {
+		histMap, sortedKeys, _, min, max := charts.GenerateAccountsHistLineAndPieItems(
+			changeHist,
+		)
+		chart = charts.ConvertChartToTemplComponent(charts.LineTime(
+			histMap,
+			&sortedKeys,
+			min,
+			max,
+			startDate,
+			theme,
+		))
+	}
+
+	partials.AccountHistCard(chart, period).
 		Render(r.Context(), w)
 }

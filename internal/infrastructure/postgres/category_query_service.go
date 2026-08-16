@@ -173,8 +173,8 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		          month
 		      ) AS running_total
 		    FROM
-		      accounts a
-		      LEFT JOIN monthly_summary ms ON a.id = ms.account_id
+			  monthly_summary ms
+		      LEFT JOIN accounts a ON a.id = ms.account_id
 		      AND ms.month <= $2
 		    WHERE
 		      user_id = $1

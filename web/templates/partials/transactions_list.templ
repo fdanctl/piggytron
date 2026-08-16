@@ -15,15 +15,13 @@ templ TransactionsList(transactions []views.Transaction, queryStr string, hasMor
 	>
 		@TransactionsListItems(transactions, queryStr, hasMore)
 	</ul>
+	@components.EmptyTransactionsFilter()
 	<div id="infinite-indicator" class="indicator">
 		@components.Loader("", nil)
 	</div>
 }
 
 templ TransactionsListItems(transactions []views.Transaction, queryStr string, hasMore bool) {
-	if len(transactions) == 0 {
-		<p class="text-xs mt-sm">no transactions found</p>
-	}
 	for i, t := range transactions {
 		@TransactionItem(t, templ.Attributes{
 			"style": fmt.Sprintf("animation-delay: %dms", i*30),

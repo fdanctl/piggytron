@@ -74,10 +74,16 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 		components.IconLeft,
 		components.PlusSvg(0, "", ""),
 	)
+	{{
+		extraQuery := ""
+		if g.Status == "closed" {
+			extraQuery = fmt.Sprintf("&closedAt=%s", views.FormatDateOnly(*g.ClosedAt))
+		}
+	}}
 	<div
 		class="chart-container mt-xl"
 		style="margin-top: calc(-1 * var(--spacing-md));"
-		hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount) }
+		hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d%s", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount, extraQuery) }
 		hx-trigger="load"
 	>
 		@components.Loader("htmx-indicator", nil)
@@ -138,7 +144,11 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 					</a>
 				</div>
 			</div>
-			@contributionsList(tt, fmt.Sprintf("page=2&accounts=%s&name=%s", g.ID, g.Name), hasMore)
+			if len(tt) > 0 {
+				@contributionsList(tt, fmt.Sprintf("page=2&accounts=%s&name=%s", g.ID, g.Name), hasMore)
+			} else {
+				@components.EmptyContributions(g.ID)
+			}
 		</div>
 	</div>
 }

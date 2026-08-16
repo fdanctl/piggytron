@@ -7,6 +7,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
+	"math"
 )
 
 templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
@@ -33,7 +34,9 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value metric__value--xl">
 								{ views.FormatMoney(float64(view.NetWorth) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							@percentChange(view.NetWorthIncPct, "% this month")
+							<span class={ templ.KV("hidden", math.IsNaN(view.NetWorthIncPct)) }>
+								@percentChange(view.NetWorthIncPct, "% this month")
+							</span>
 						</div>
 					</div>
 					<div class="metric-container">
@@ -42,21 +45,27 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Savings) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							@percentChange(view.SavingsIncPct, "%")
+							<span class={ templ.KV("hidden", math.IsNaN(view.SavingsIncPct)) }>
+								@percentChange(view.SavingsIncPct, "%")
+							</span>
 						</div>
 						<div class="metric">
 							<div class="metric__title">Available</div>
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Available) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							@percentChange(view.AvailableIncPct, "%")
+							<span class={ templ.KV("hidden", math.IsNaN(view.AvailableIncPct)) }>
+								@percentChange(view.AvailableIncPct, "%")
+							</span>
 						</div>
 						<div class="metric">
 							<div class="metric__title">Goals</div>
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Goals) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							@percentChange(view.GoalsIncPct, "%")
+							<span class={ templ.KV("hidden", math.IsNaN(view.GoalsIncPct)) }>
+								@percentChange(view.GoalsIncPct, "%")
+							</span>
 						</div>
 					</div>
 				</div>
@@ -100,32 +109,40 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 						</button>
 					</h6>
 				</div>
-				<ul
-					id="accounts-list"
-					class="space-y-xs"
-					hx-target="#content"
-					hx-boost="true"
-					hx-swap="innerHTML transition:true"
-				>
-					for _, v := range view.Banks {
-						@partials.AccountItem(v)
-					}
-				</ul>
+				if len(view.Banks) > 0 {
+					<ul
+						id="accounts-list"
+						class="space-y-xs"
+						hx-target="#content"
+						hx-boost="true"
+						hx-swap="innerHTML transition:true"
+					>
+						for _, v := range view.Banks {
+							@partials.AccountItem(v)
+						}
+					</ul>
+				} else {
+					@components.EmptyAccounts()
+				}
 			</div>
 		</section>
 		<section id="recent-transactions">
 			<div class="card">
 				<h6 class="card__title">Recent transactions</h6>
-				<div>
-					<ul>
-						for i, t := range view.RecentTransactions {
-							@partials.TransactionItem(t, templ.Attributes{
-								"style": fmt.Sprintf("animation-delay: %dms", i*30),
-							})
-						}
-					</ul>
-					<a href="/ledger" class="text-center" style="display: block;">view all transactions</a>
-				</div>
+				if len(view.RecentTransactions) > 0 {
+					<div>
+						<ul>
+							for i, t := range view.RecentTransactions {
+								@partials.TransactionItem(t, templ.Attributes{
+									"style": fmt.Sprintf("animation-delay: %dms", i*30),
+								})
+							}
+						</ul>
+						<a href="/ledger" class="text-center" style="display: block;">view all transactions</a>
+					</div>
+				} else {
+					@components.EmptyTransactions()
+				}
 			</div>
 		</section>
 	</div>

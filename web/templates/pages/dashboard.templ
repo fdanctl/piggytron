@@ -179,38 +179,46 @@ templ Dashboard(
 		<section id="dashboard-rt">
 			<div class="card">
 				<h6 class="card__title">Recent transactions</h6>
-				<div>
-					<ul>
-						for i, t := range view.RecentTransactions {
-							@partials.TransactionItem(t, templ.Attributes{
-								"style": fmt.Sprintf("animation-delay: %dms", i*30),
-							})
-						}
-					</ul>
-					<a href="/ledger" class="text-center" style="display: block;">view all transactions</a>
-				</div>
+				if len(view.RecentTransactions) > 0 {
+					<div>
+						<ul>
+							for i, t := range view.RecentTransactions {
+								@partials.TransactionItem(t, templ.Attributes{
+									"style": fmt.Sprintf("animation-delay: %dms", i*30),
+								})
+							}
+						</ul>
+						<a href="/ledger" class="text-center" style="display: block;">view all transactions</a>
+					</div>
+				} else {
+					@components.EmptyTransactions()
+				}
 			</div>
 		</section>
 		<section id="dashboard-gp">
 			<div class="card">
 				<h6 class="card__title">Goals</h6>
-				<div
-					class="space-y-sm"
-					hx-target="#content"
-					hx-boost="true"
-					hx-swap="innerHTML transition:true"
-				>
-					for i, g := range view.Goals {
-						if i < 4 {
-							@GoalProgress(g)
+				if len(view.RecentTransactions) > 0 {
+					<div
+						class="space-y-sm"
+						hx-target="#content"
+						hx-boost="true"
+						hx-swap="innerHTML transition:true"
+					>
+						for i, g := range view.Goals {
+							if i < 4 {
+								@GoalProgress(g)
+							}
 						}
-					}
-					if len(view.Goals) - 4 > 0 {
-						<div class="flex justify-end">
-							<a class="text-xxs text-muted" href="/goals">{ len(view.Goals) - 4 } more</a>
-						</div>
-					}
-				</div>
+						if len(view.Goals) - 4 > 0 {
+							<div class="flex justify-end">
+								<a class="text-xxs text-muted" href="/goals">{ len(view.Goals) - 4 } more</a>
+							</div>
+						}
+					</div>
+				} else {
+					@components.EmptyGoals()
+				}
 			</div>
 		</section>
 	</div>
@@ -255,7 +263,7 @@ templ CategorySpentProgress(name string, ttype string, spent, budgeted int, days
 		if budgeted == 0 && spent == 0 {
 			pct = 0
 		} else if budgeted > 0 {
-			pct = float64(spent) / float64(budgeted)
+			pct = (float64(spent) / float64(budgeted)) * 100
 		}
 
 		avgleft := int(
@@ -267,7 +275,7 @@ templ CategorySpentProgress(name string, ttype string, spent, budgeted int, days
 			<span>{ name }</span>
 			<div class="flex gap-xs" style="align-items: baseline;">
 				<span class="text-sm font-mono">
-					{  views.FormatMoney(float64(budgeted)/100,currency.EUR, language.AmericanEnglish) }
+					{  views.FormatMoney(float64(spent)/100,currency.EUR, language.AmericanEnglish) }
 				</span>
 				<span class="text-xs text-muted font-mono">
 					/ { views.FormatMoney(float64(budgeted)/100,currency.EUR, language.AmericanEnglish) }

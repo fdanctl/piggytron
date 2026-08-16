@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/budget"
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
@@ -84,8 +86,12 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 	)
 	d, err := h.transactionQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
 	if err != nil {
-		httperror.SendError(w, r, errs.NewInternalAppError(err, "BudgetPageHandler.Get"))
-		return
+		if errors.Is(err, ledger.ErrNotFound) {
+			d = time.Now()
+		} else {
+			httperror.SendError(w, r, errs.NewInternalAppError(err, "BudgetPageHandler.Get"))
+			return
+		}
 	}
 
 	content := pages.Budget(

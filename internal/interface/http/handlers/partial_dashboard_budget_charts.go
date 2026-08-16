@@ -114,7 +114,7 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 			c := categoryBudgetSpent.Data[k]
 			if c.Type == "income" {
 				i++
-				end++
+				end = min(end+1, len(categoryBudgetSpent.Data))
 				continue
 			}
 			slide = append(

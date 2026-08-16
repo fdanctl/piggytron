@@ -8,3 +8,48 @@
   font-family: var(--font-mono);
   color: var(--color-text-secondary);
 }
+
+.empty {
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+}
+
+.empty__icon {
+  color: var(--color-text-secondary);
+}
+
+.empty__title {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.empty__sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  max-width: 240px;
+}
+
+#itransactions + .empty {
+  display: none;
+}
+
+#itransactions:empty + .empty {
+  display: flex;
+}
+
+.htmx-request #itransactions + .empty {
+  display: none;
+}
+
+#categories-container ul + .empty {
+  display: none;
+}
+
+#categories-container ul:empty + .empty {
+  display: flex;
+}
