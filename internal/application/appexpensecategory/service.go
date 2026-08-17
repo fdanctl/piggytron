@@ -187,7 +187,7 @@ func (s *Service) Delete(
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed updating goal: %w", err),
-			"appincomecategory.Delete",
+			"appexpensecategory.Delete",
 		)
 		return err
 	}
@@ -196,18 +196,32 @@ func (s *Service) Delete(
 	qtx := postgres.NewLedgerQueryService(tx)
 	filters := query.NewLedgerFilters(nil, nil, []string{id}, "", "", "", "")
 	count, err := qtx.CountFilteredResults(ctx, uid, filters)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appexpensecategory.Delete",
+		)
+		return err
+	}
 	if count > 0 {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
 			"Can't delete a category with historical data",
 			errors.New("can't delete a category with historical data"),
-			"appincomecategory.Delete",
+			"appexpensecategory.Delete",
 		)
 		return err
 	}
 
 	btx := postgres.NewBudgetRepository(tx)
 	budgets, err := btx.FindAllByCategory(ctx, budget.ID(id))
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appexpensecategory.Delete",
+		)
+		return err
+	}
 	for _, b := range budgets {
 		if b.Amount() > 0 {
 			err = errs.NewAppError(
@@ -228,7 +242,7 @@ func (s *Service) Delete(
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to delete '%s' account: %w", id, err),
-			"appincomecategory.Delete",
+			"appexpensecategory.Delete",
 		)
 		return err
 	}
@@ -236,7 +250,7 @@ func (s *Service) Delete(
 	if err = tx.Commit(); err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to commit': %w", err),
-			"appincomecategory.Delete",
+			"appexpensecategory.Delete",
 		)
 		return err
 	}

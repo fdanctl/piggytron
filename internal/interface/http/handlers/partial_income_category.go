@@ -205,6 +205,6 @@ func (h *IncomeCategoriesHandler) PostArchive(w http.ResponseWriter, r *http.Req
 	}
 	w.Header().Set(
 		"HX-Trigger",
-		fmt.Sprintf(`{"contentPush": { "url": "/categories" }}`),
+		`{"contentPush": { "url": "/categories" }}`,
 	)
 }

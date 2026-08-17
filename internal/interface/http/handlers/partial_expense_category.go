@@ -210,6 +210,6 @@ func (h *ExpenseCategoriesHandler) PostArchive(w http.ResponseWriter, r *http.Re
 	}
 	w.Header().Set(
 		"HX-Trigger",
-		fmt.Sprintf(`{"contentPush": { "url": "/categories" }}`),
+		`{"contentPush": { "url": "/categories" }}`,
 	)
 }

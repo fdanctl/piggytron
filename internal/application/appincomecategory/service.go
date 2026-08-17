@@ -171,6 +171,13 @@ func (s *Service) Delete(
 	qtx := postgres.NewLedgerQueryService(tx)
 	filters := query.NewLedgerFilters(nil, nil, []string{id}, "", "", "", "")
 	count, err := qtx.CountFilteredResults(ctx, uid, filters)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appincomecategory.Delete",
+		)
+		return err
+	}
 	if count > 0 {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
