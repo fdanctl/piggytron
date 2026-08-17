@@ -14,11 +14,11 @@ import (
 // LedgerQueryService implements the ledger read-model queries declared in
 // internal/query using raw SQL.
 type LedgerQueryService struct {
-	db *sql.DB
+	db DBTX
 }
 
 // NewLedgerQueryService builds the service over a *sql.DB.
-func NewLedgerQueryService(db *sql.DB) *LedgerQueryService {
+func NewLedgerQueryService(db DBTX) *LedgerQueryService {
 	return &LedgerQueryService{
 		db: db,
 	}

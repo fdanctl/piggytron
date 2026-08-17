@@ -5,10 +5,47 @@ import (
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
+	"time"
 )
 
 templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []views.Transaction, hasMore bool, ttCount int) {
-	@components.Breadcrumbs(bview)
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
+			<ul class="breadcrumbs-selection">
+				if cat.GetStatus() == "active" {
+					<li>
+						<button
+							class="reset-btn text-sm"
+							data-action="ui.popover.hide"
+							hx-get={ fmt.Sprintf("/partials/%s-category/%s", cat.GetType(), cat.GetID()) }
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
+						>Edit</button>
+					</li>
+					<li>
+						<button
+							hx-post={ fmt.Sprintf("/partials/%s-category/%s/archive", cat.GetType(), cat.GetID()) }
+							class="reset-btn text-sm"
+							data-action="ui.popover.hide"
+						>Archive</button>
+					</li>
+				}
+				<li>
+					<button
+						hx-trigger="confirmed"
+						hx-delete={ fmt.Sprintf("/partials/%s-category/%s", cat.GetType(), cat.GetID()) }
+						class="reset-btn text-sm"
+						data-action="ui.popover.hide category.delete.confirm"
+						data-transactions={ ttCount }
+					>Delete</button>
+				</li>
+			</ul>
+		}
+	</div>
+	if cat.GetStatus() == "archived" {
+		@archivedNotice("mt-md", *cat.GetArchivedAt())
+	}
 	<div
 		class="chart-container"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
@@ -32,6 +69,20 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 				</a>
 			</div>
 		</div>
-		@partials.TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
+		if ttCount > 0 {
+			@partials.TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
+		} else {
+			@components.EmptyTransactions()
+		}
 	</section>
+}
+
+templ archivedNotice(class string, archivedAt time.Time) {
+	<div class={ "closed-notice", templ.KV(class, class != "") }>
+		@components.CalendarX2(0, "", "closed-notice__icon")
+		<div class="closed-notice-text">
+			<strong class="text-sm">This category was archived on { views.FormatDate(archivedAt) }</strong>
+			<p class="text-sm text-muted">Transaction history is available for reference. No new transactions can be made.</p>
+		</div>
+	</div>
 }

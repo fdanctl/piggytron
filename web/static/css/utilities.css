@@ -380,6 +380,10 @@
   margin-top: var(--spacing-xl);
 }
 
+.space-x-xs > * + * {
+  margin-left: var(--spacing-xs);
+}
+
 /* ===== CURSOR ===== */
 .cursor-pointer {
   cursor: pointer;

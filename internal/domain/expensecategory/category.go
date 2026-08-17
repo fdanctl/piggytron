@@ -16,6 +16,14 @@ const (
 	Savings ExpenseType = "savings"
 )
 
+// CategoryStatus marks the status of the account (active or archived).
+type CategoryStatus string
+
+const (
+	ActiveStatus   CategoryStatus = "active"
+	ArchivedStatus CategoryStatus = "archived"
+)
+
 // NewExpenseType parses a string into an ExpenseType, returning
 // ErrInvalidType otherwise.
 func NewExpenseType(str string) (ExpenseType, error) {
@@ -40,6 +48,8 @@ type ExpenseCategory struct {
 	userID      ID
 	name        string
 	expenseType ExpenseType
+	status      CategoryStatus
+	archivedAt  *time.Time
 	createdAt   time.Time
 	updatedAt   time.Time
 }
@@ -57,6 +67,8 @@ func New(id ID, userID ID, name string, expenseType ExpenseType) (*ExpenseCatego
 		userID:      userID,
 		name:        name,
 		expenseType: expenseType,
+		status:      ActiveStatus,
+		archivedAt:  nil,
 		createdAt:   now,
 		updatedAt:   now,
 	}, nil
@@ -69,6 +81,8 @@ func Rehydrate(
 	userID ID,
 	name string,
 	expenseType ExpenseType,
+	status CategoryStatus,
+	archivedAt *time.Time,
 	createdAt, updatedAt time.Time,
 ) *ExpenseCategory {
 	return &ExpenseCategory{
@@ -76,6 +90,8 @@ func Rehydrate(
 		userID:      userID,
 		name:        name,
 		expenseType: expenseType,
+		status:      status,
+		archivedAt:  archivedAt,
 		createdAt:   createdAt,
 		updatedAt:   updatedAt,
 	}
@@ -99,6 +115,16 @@ func (ec *ExpenseCategory) Name() string {
 // ExpenseType returns the category type (needs, wants or savings).
 func (ec *ExpenseCategory) ExpenseType() ExpenseType {
 	return ec.expenseType
+}
+
+// Status returns the category status.
+func (ec *ExpenseCategory) Status() CategoryStatus {
+	return ec.status
+}
+
+// ArchivedAt returns the date the category was archived or nil it's active.
+func (ec *ExpenseCategory) ArchivedAt() *time.Time {
+	return ec.archivedAt
 }
 
 // CreatedAt returns when the category was created.

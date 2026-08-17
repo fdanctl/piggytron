@@ -11,11 +11,11 @@ import (
 
 // BudgetRepository persists monthly budgets via raw SQL.
 type BudgetRepository struct {
-	db *sql.DB
+	db DBTX
 }
 
 // NewBudgetRepository builds a budget repository over a *sql.DB.
-func NewBudgetRepository(db *sql.DB) *BudgetRepository {
+func NewBudgetRepository(db DBTX) *BudgetRepository {
 	return &BudgetRepository{
 		db: db,
 	}
@@ -93,6 +93,51 @@ func (r *BudgetRepository) FindByCategoryAndMonth(
 		c.UpdatedAt,
 	)
 	return category, err
+}
+
+func (r *BudgetRepository) FindAllByCategory(
+	ctx context.Context,
+	cid budget.ID,
+) ([]*budget.Budget, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT category_id, month, amount, created_at, updated_at
+		 FROM monthly_budgets
+		 WHERE category_id = $1`,
+		cid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var budgets []*budget.Budget
+
+	for rows.Next() {
+		var dto budgetDto
+		if err := rows.Scan(
+			&dto.CategoryID,
+			&dto.Month,
+			&dto.Amount,
+			&dto.CreatedAt,
+			&dto.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		b := budget.Rehydrate(
+			dto.CategoryID,
+			dto.Month,
+			dto.Amount,
+			dto.CreatedAt,
+			dto.UpdatedAt,
+		)
+		budgets = append(budgets, b)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return budgets, nil
 }
 
 // CopyLastMonthBudget copies last month's positive budgets into month for

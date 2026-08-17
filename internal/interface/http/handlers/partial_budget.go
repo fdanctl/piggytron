@@ -236,6 +236,21 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	var links []opts.SankeyLink
+	if unassign > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "Unassigned Carryover",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Unassigned Carryover",
+				Target: "Budget",
+				Value:  float32(unassign) / float32(100),
+			},
+		)
+	}
 
 	for _, v := range categoryBudget {
 		if v.Value > 0 {

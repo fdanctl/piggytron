@@ -28,7 +28,7 @@ templ Breadcrumbs(view views.BreadcrumbsView) {
 					<ul class="breadcrumbs-selection">
 						for _, o := range view.Options {
 							<li>
-								<a href={ o.Href }>
+								<a class="text-sm" href={ o.Href }>
 									{ o.Name }
 								</a>
 							</li>

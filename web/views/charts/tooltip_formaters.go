@@ -76,8 +76,14 @@ func sankeyTooltipFormatter(curr currency.Unit) string {
 	return fmt.Sprintf(`
 		function (params) {
 			const formater = echarts.format;
+			let left = '';
+			if (params.data.name) {
+				left = params.data.name
+			} else {
+				left = params.data.source + '--' + params.data.target + ' '
+			}
 			return '<div style="color: var(--grey-200);">' +
-				params.data.source + '--' + params.data.target + ' ' +
+				left +
 				'<strong class="ml-md">' + formater.addCommas(params.value) + '</strong>' + '<span style="font-size: 10px"> %s</span>' +
 				'</div>';
 		}`, curr)

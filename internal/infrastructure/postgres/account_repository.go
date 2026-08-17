@@ -103,6 +103,15 @@ func (r *AccountRepository) Update(ctx context.Context, a *account.Account) erro
 		a.UpdatedAt(),
 	)
 	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return account.ErrDuplicate
+			}
+		}
+
 		return err
 	}
 

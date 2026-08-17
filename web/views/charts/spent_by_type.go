@@ -22,7 +22,7 @@ func MakeBudgetSpentByTypePieItems(
 			wantsBudgeted += v.Budgeted
 		case "savings":
 			savingsSpent += v.Value
-			wantsBudgeted += v.Budgeted
+			savingsBudgeted += v.Budgeted
 		}
 	}
 

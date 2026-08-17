@@ -36,7 +36,7 @@ func (v *BankForm) ValidateName() (msgs []string) {
 	}
 
 	if errors.Is(v.CustomError, account.ErrDuplicate) {
-		msgs = append(msgs, "A bank with the same name already exists")
+		msgs = append(msgs, v.ErrorMsg)
 	}
 
 	if len(v.Name) > 50 {

@@ -140,8 +140,8 @@ func (s *Service) CreateBank(
 	if err != nil {
 		if errors.Is(err, account.ErrDuplicate) {
 			err = errs.NewAppError(
-				errs.KindValidation,
-				"A bank with the same name already exists",
+				errs.KindBusinessRule,
+				fmt.Sprintf("A %s account with the same name already exists", btype),
 				fmt.Errorf("failed saving account '%s': %w", acc.Name(), err),
 				"appaccount.CreateBank",
 			)
@@ -567,7 +567,7 @@ func (s *Service) Delete(
 
 	if hasData {
 		err = errs.NewAppError(
-			errs.KindValidation,
+			errs.KindBusinessRule,
 			"Can't delete an account with historical data",
 			errors.New("can't delete an account with historical data"),
 			"appaccount.Delete",
@@ -647,12 +647,22 @@ func (s *Service) UpdateBankName(
 		return err
 	}
 
+	// TODO make it just update name
 	err = s.repo.Update(ctx, acc)
 	if err != nil {
-		err = errs.NewInternalAppError(
-			fmt.Errorf("failed updating bank: %w", err),
-			"appaccount.UpdateBankName",
-		)
+		if errors.Is(err, account.ErrDuplicate) {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				fmt.Sprintf("A %s account with the same name already exists", btype),
+				fmt.Errorf("failed saving account '%s': %w", acc.Name(), err),
+				"appaccount.UpdateBankName",
+			)
+		} else {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed updating bank: %w", err),
+				"appaccount.UpdateBankName",
+			)
+		}
 		return err
 	}
 	return nil

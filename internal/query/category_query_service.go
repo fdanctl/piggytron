@@ -16,9 +16,11 @@ type CategoryNameDTO struct {
 // CategoryDTO is a category row with its type: "income" for income
 // categories, or one of "needs", "wants", "savings" for expense categories.
 type CategoryDTO struct {
-	ID   string
-	Name string
-	Type string // this is the "category type" — "income", "needs", "wants", "savings"
+	ID         string
+	Name       string
+	Type       string // this is the "category type" — "income", "needs", "wants", "savings"
+	Status     string // "active" or "archived"
+	ArchivedAt *time.Time
 }
 
 // CategoryBudgetValue is one row of a category budget report: how much was
@@ -30,6 +32,7 @@ type CategoryBudgetValue struct {
 	Name            string
 	Budgeted        int
 	Value           int // spent or income
+	ArchivedAt      *time.Time
 	PrevTotalBudget int
 	PrevTotalSpent  int
 }
@@ -37,9 +40,10 @@ type CategoryBudgetValue struct {
 // CategoryBudget aggregates the budget spent (or income earned) per category
 // over a date range.
 type CategoryBudget struct {
-	Name  string
-	Type  string
-	Value int // if it's income amount will be the money in
+	Name       string
+	Type       string
+	Value      int // if it's income amount will be the money in
+	ArchivedAt *time.Time
 }
 
 // CategoryMonthlyValue is the monthly value (spent or earned) of one category

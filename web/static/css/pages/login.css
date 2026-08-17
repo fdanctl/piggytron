@@ -1,0 +1,87 @@
+/* === login === */
+#login-main {
+  padding: var(--spacing-md);
+  padding-left: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+@scope (#login-main) {
+  header {
+    display: flex;
+    padding-left: var(--spacing-sm);
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  #content {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    width: 100%;
+  }
+
+  #content > div {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-lg);
+    justify-content: center;
+  }
+
+  #content form {
+    margin-top: -30px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 25rem;
+  }
+
+  #content > form > h2 {
+    text-align: center;
+  }
+
+  #content > form > .btn {
+    align-self: flex-end;
+  }
+
+  a {
+    color: var(--color-link);
+    cursor: pointer;
+  }
+
+  a:hover {
+    color: var(--color-link-hover);
+    text-decoration: underline;
+  }
+
+  .img-container {
+    object-fit: contain;
+    position: absolute;
+  }
+
+  .img-container svg {
+    filter: drop-shadow(3px 3px 2px rgb(0 0 0 / 70%));
+  }
+}
+
+#coin-matrix {
+  visibility: hidden;
+  background-color: var(--color-bg-secondary);
+  height: 100%;
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+}
+
+@media (width >= 768px) {
+  #login-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #coin-matrix {
+    display: block;
+    visibility: visible;
+  }
+}

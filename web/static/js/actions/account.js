@@ -38,8 +38,8 @@ function closeAccountConfirm({ ele, data }) {
 }
 
 /**
- * Checks if the account balance is 0, and asks the user for confirmation.
- * If the account balance is not 0 it sends a errors toast.
+ * Checks if exists transactions, and asks the user for confirmation.
+ * If there is transactions it sends a errors toast.
  *
  * @param {Object} param0 - Action payload.
  * @param {Element} param0.ele - The form element.

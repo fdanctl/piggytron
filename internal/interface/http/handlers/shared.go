@@ -163,6 +163,9 @@ func getCategorySelectOptions(
 		return
 	}
 	for _, v := range cats {
+		if v.Status == "archived" {
+			continue
+		}
 		if v.Type == "income" {
 			iCatOpts = append(
 				iCatOpts,

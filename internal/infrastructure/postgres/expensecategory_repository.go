@@ -12,11 +12,11 @@ import (
 
 // ExpenseCategoryRepository persists expense category aggregates via raw SQL.
 type ExpenseCategoryRepository struct {
-	db *sql.DB
+	db DBTX
 }
 
 // NewExpenseCategoryRepository builds the repository over a *sql.DB.
-func NewExpenseCategoryRepository(db *sql.DB) *ExpenseCategoryRepository {
+func NewExpenseCategoryRepository(db DBTX) *ExpenseCategoryRepository {
 	return &ExpenseCategoryRepository{
 		db: db,
 	}
@@ -29,6 +29,8 @@ type expenseCategoryDto struct {
 	UserID      expensecategory.ID
 	Name        string
 	ExpenseType expensecategory.ExpenseType
+	Status      expensecategory.CategoryStatus
+	ArchivedAt  *time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
@@ -41,12 +43,13 @@ func (r *ExpenseCategoryRepository) Create(
 ) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO expense_categories (id, user_id, name, type, created_at, updated_at)
+		`INSERT INTO expense_categories (id, user_id, name, type, archived_at, created_at, updated_at)
 		 VALUES($1,$2,$3,$4,$5,$6)`,
 		category.ID(),
 		category.UserID(),
 		category.Name(),
 		category.ExpenseType(),
+		category.ArchivedAt(),
 		category.CreatedAt(),
 		category.UpdatedAt(),
 	)
@@ -66,6 +69,79 @@ func (r *ExpenseCategoryRepository) Create(
 	return nil
 }
 
+// Update persists the mutable fields of an expense category.
+func (r *ExpenseCategoryRepository) Update(
+	ctx context.Context,
+	category *expensecategory.ExpenseCategory,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`
+		UPDATE expense_categories
+		SET
+			name = $2,
+			type = $3,
+			updated_at = $4
+		WHERE id = $1`,
+		category.ID(),
+		category.Name(),
+		category.ExpenseType(),
+		category.UpdatedAt(),
+	)
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return expensecategory.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (r *ExpenseCategoryRepository) Delete(
+	ctx context.Context,
+	id expensecategory.ID,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`DELETE FROM expense_categories WHERE id = $1`,
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ExpenseCategoryRepository) Archive(
+	ctx context.Context,
+	id expensecategory.ID,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`UPDATE expense_categories
+		SET
+			status = 'archived',
+			archived_at = $2,
+			updated_at = $2
+		WHERE id = $1`,
+		id,
+		time.Now(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FindByID loads one category, mapping missing rows to
 // expensecategory.ErrNotFound.
 func (r *ExpenseCategoryRepository) FindByID(
@@ -74,7 +150,7 @@ func (r *ExpenseCategoryRepository) FindByID(
 ) (*expensecategory.ExpenseCategory, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, name, type, created_at, updated_at
+		`SELECT id, user_id, name, type, status, archived_at, created_at, updated_at
 		 FROM expense_categories
 		 WHERE id = $1`,
 		id,
@@ -86,6 +162,8 @@ func (r *ExpenseCategoryRepository) FindByID(
 		&c.UserID,
 		&c.Name,
 		&c.ExpenseType,
+		&c.Status,
+		&c.ArchivedAt,
 		&c.CreatedAt,
 		&c.UpdatedAt,
 	)
@@ -100,45 +178,8 @@ func (r *ExpenseCategoryRepository) FindByID(
 		c.UserID,
 		c.Name,
 		c.ExpenseType,
-		c.CreatedAt,
-		c.UpdatedAt,
-	)
-	return category, err
-}
-
-// FindByNameAndUser looks up a category by its (user, name) uniqueness key.
-// TODO: remove, not used
-func (r *ExpenseCategoryRepository) FindByNameAndUser(
-	ctx context.Context,
-	userID expensecategory.ID,
-	name string,
-) (*expensecategory.ExpenseCategory, error) {
-	row := r.db.QueryRowContext(
-		ctx,
-		`SELECT id, user_id, name, type, created_at, updated_at
-		 FROM expense_categories
-		 WHERE user_id = $1 AND name = $2`,
-		userID,
-		name,
-	)
-
-	var c expenseCategoryDto
-	err := row.Scan(
-		&c.ID,
-		&c.UserID,
-		&c.Name,
-		&c.ExpenseType,
-		&c.CreatedAt,
-		&c.UpdatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-	category := expensecategory.Rehydrate(
-		c.ID,
-		c.UserID,
-		c.Name,
-		c.ExpenseType,
+		c.Status,
+		c.ArchivedAt,
 		c.CreatedAt,
 		c.UpdatedAt,
 	)
@@ -152,7 +193,7 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 ) ([]*expensecategory.ExpenseCategory, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, name, type, created_at, updated_at
+		`SELECT id, user_id, name, type, status, archived_at, created_at, updated_at
 		 FROM expense_categories
 		 WHERE user_id = $1`,
 		userID,
@@ -171,6 +212,8 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 			&c.UserID,
 			&c.Name,
 			&c.ExpenseType,
+			&c.Status,
+			&c.ArchivedAt,
 			&c.CreatedAt,
 			&c.UpdatedAt,
 		); err != nil {
@@ -182,6 +225,8 @@ func (r *ExpenseCategoryRepository) FindAllByUser(
 			c.UserID,
 			c.Name,
 			c.ExpenseType,
+			c.Status,
+			c.ArchivedAt,
 			c.CreatedAt,
 			c.UpdatedAt,
 		)

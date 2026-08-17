@@ -12,11 +12,11 @@ import (
 
 // IncomeCategoryRepository persists income category aggregates via raw SQL.
 type IncomeCategoryRepository struct {
-	db *sql.DB
+	db DBTX
 }
 
 // NewIncomeCategoryRepository builds the repository over a *sql.DB.
-func NewIncomeCategoryRepository(db *sql.DB) *IncomeCategoryRepository {
+func NewIncomeCategoryRepository(db DBTX) *IncomeCategoryRepository {
 	return &IncomeCategoryRepository{
 		db: db,
 	}
@@ -25,11 +25,13 @@ func NewIncomeCategoryRepository(db *sql.DB) *IncomeCategoryRepository {
 // incomeCategoryDto is the database row shape of the income_categories
 // table.
 type incomeCategoryDto struct {
-	ID        incomecategory.ID
-	UserID    incomecategory.ID
-	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID         incomecategory.ID
+	UserID     incomecategory.ID
+	Name       string
+	Status     incomecategory.CategoryStatus
+	ArchivedAt *time.Time
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 }
 
 // Create inserts the category, mapping unique-name violations to
@@ -40,11 +42,12 @@ func (r *IncomeCategoryRepository) Create(
 ) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO income_categories (id, user_id, name, created_at, updated_at)
+		`INSERT INTO income_categories (id, user_id, name, archived_at, created_at, updated_at)
 		 VALUES($1,$2,$3,$4,$5)`,
 		category.ID(),
 		category.UserID(),
 		category.Name(),
+		category.ArchivedAt(),
 		category.CreatedAt(),
 		category.UpdatedAt(),
 	)
@@ -64,6 +67,77 @@ func (r *IncomeCategoryRepository) Create(
 	return nil
 }
 
+// Update persists the mutable fields of an income category.
+func (r *IncomeCategoryRepository) Update(
+	ctx context.Context,
+	category *incomecategory.IncomeCategory,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`
+		UPDATE income_categories
+		SET
+			name = $2,
+			updated_at = $3
+		WHERE id = $1`,
+		category.ID(),
+		category.Name(),
+		category.UpdatedAt(),
+	)
+	if err != nil {
+		var pqErr *pq.Error
+
+		if errors.As(err, &pqErr) {
+			switch pqErr.Code {
+			case "23505":
+				return incomecategory.ErrDuplicate
+			}
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (r *IncomeCategoryRepository) Delete(
+	ctx context.Context,
+	id incomecategory.ID,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`DELETE FROM income_categories WHERE id = $1`,
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *IncomeCategoryRepository) Archive(
+	ctx context.Context,
+	id incomecategory.ID,
+) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`UPDATE income_categories
+		SET
+			status = 'archived',
+			archived_at = $2,
+			updated_at = $2
+		WHERE id = $1`,
+		id,
+		time.Now(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // FindByID loads one category, mapping missing rows to
 // incomecategory.ErrNotFound.
 func (r *IncomeCategoryRepository) FindByID(
@@ -72,7 +146,7 @@ func (r *IncomeCategoryRepository) FindByID(
 ) (*incomecategory.IncomeCategory, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, name, created_at, updated_at
+		`SELECT id, user_id, name, status, archived_at, created_at, updated_at
 		 FROM income_categories
 		 WHERE id = $1`,
 		id,
@@ -83,6 +157,8 @@ func (r *IncomeCategoryRepository) FindByID(
 		&c.ID,
 		&c.UserID,
 		&c.Name,
+		&c.Status,
+		&c.ArchivedAt,
 		&c.CreatedAt,
 		&c.UpdatedAt,
 	)
@@ -96,43 +172,8 @@ func (r *IncomeCategoryRepository) FindByID(
 		c.ID,
 		c.UserID,
 		c.Name,
-		c.CreatedAt,
-		c.UpdatedAt,
-	)
-	return category, err
-}
-
-// FindByNameAndUser looks up a category by its (user, name) uniqueness key.
-// TODO: remove, not used
-func (r *IncomeCategoryRepository) FindByNameAndUser(
-	ctx context.Context,
-	userID incomecategory.ID,
-	name string,
-) (*incomecategory.IncomeCategory, error) {
-	row := r.db.QueryRowContext(
-		ctx,
-		`SELECT id, user_id, name, created_at, updated_at
-		 FROM income_categories
-		 WHERE user_id = $1 AND name = $2`,
-		userID,
-		name,
-	)
-
-	var c incomeCategoryDto
-	err := row.Scan(
-		&c.ID,
-		&c.UserID,
-		&c.Name,
-		&c.CreatedAt,
-		&c.UpdatedAt,
-	)
-	if err != nil {
-		return nil, err
-	}
-	category := incomecategory.Rehydrate(
-		c.ID,
-		c.UserID,
-		c.Name,
+		c.Status,
+		c.ArchivedAt,
 		c.CreatedAt,
 		c.UpdatedAt,
 	)
@@ -146,7 +187,7 @@ func (r *IncomeCategoryRepository) FindAllByUser(
 ) ([]*incomecategory.IncomeCategory, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, name, created_at, updated_at
+		`SELECT id, user_id, name, status, archived_at, created_at, updated_at
 		 FROM income_categories
 		 WHERE user_id = $1`,
 		userID,
@@ -164,6 +205,8 @@ func (r *IncomeCategoryRepository) FindAllByUser(
 			&c.ID,
 			&c.UserID,
 			&c.Name,
+			&c.Status,
+			&c.ArchivedAt,
 			&c.CreatedAt,
 			&c.UpdatedAt,
 		); err != nil {
@@ -174,6 +217,8 @@ func (r *IncomeCategoryRepository) FindAllByUser(
 			c.ID,
 			c.UserID,
 			c.Name,
+			c.Status,
+			c.ArchivedAt,
 			c.CreatedAt,
 			c.UpdatedAt,
 		)

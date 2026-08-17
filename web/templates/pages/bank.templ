@@ -19,7 +19,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 			<ul class="breadcrumbs-selection">
 				<li>
 					<button
-						class="reset-btn"
+						class="reset-btn text-sm"
 						data-action="ui.popover.hide"
 						hx-get={ fmt.Sprintf("/partials/bank/%s/change-name", b.ID) }
 						hx-target="#dialog-root"
@@ -31,7 +31,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 						<button
 							hx-trigger="confirmed"
 							hx-post={ fmt.Sprintf("/partials/bank/%s/close", b.ID) }
-							class="reset-btn"
+							class="reset-btn text-sm"
 							data-action="ui.popover.hide account.close.confirm"
 							data-balance={ b.Sum }
 						>Close account</button>
@@ -41,7 +41,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 					<button
 						hx-trigger="confirmed"
 						hx-delete={ fmt.Sprintf("/partials/bank/%s", b.ID) }
-						class="reset-btn"
+						class="reset-btn text-sm"
 						data-action="ui.popover.hide account.delete.confirm"
 						data-transactions={ ttCount }
 					>Delete account</button>
@@ -143,7 +143,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 				</a>
 			</div>
 		</div>
-		if len(tt) > 0 {
+		if ttCount > 0 {
 			@partials.TransactionsList(tt, fmt.Sprintf("page=2&accounts=%s", b.ID), hasMore)
 		} else {
 			@components.EmptyTransactions()

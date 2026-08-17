@@ -110,8 +110,8 @@ func main() {
 	// services
 	accountService := appaccount.NewService(accountRepo, db)
 	ledgerService := appledger.NewService(ledgerRepo, db)
-	expenseCatService := appexpensecategory.NewService(expenseCatRepo)
-	incomeCatService := appincomecategory.NewService(incomeCatRepo)
+	expenseCatService := appexpensecategory.NewService(expenseCatRepo, db)
+	incomeCatService := appincomecategory.NewService(incomeCatRepo, db)
 	userService := appuser.NewService(userRepo, hasher, sessionManager)
 	budgetService := appbudget.NewService(budgetRepo)
 
@@ -211,9 +211,13 @@ func main() {
 
 	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
 	partialsMux.Handle("/partials/income-category", incomeCatHandler)
+	partialsMux.Handle("/partials/income-category/{id}", incomeCatHandler)
+	partialsMux.Handle("/partials/income-category/{id}/{action}", incomeCatHandler)
 
 	expenseCatHandler := handlers.NewExpenseCategoriesHandler(expenseCatService)
 	partialsMux.Handle("/partials/expense-category", expenseCatHandler)
+	partialsMux.Handle("/partials/expense-category/{id}", expenseCatHandler)
+	partialsMux.Handle("/partials/expense-category/{id}/{action}", expenseCatHandler)
 
 	filteredLedgerHandler := handlers.NewFilteredLedgerHandler(ledgerQueryService)
 	partialsMux.Handle("/partials/ledger", filteredLedgerHandler)

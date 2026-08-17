@@ -9,11 +9,37 @@ import (
 )
 
 templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
-	@components.Breadcrumbs(bview)
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
+			<ul class="breadcrumbs-selection">
+				<li>
+					<button
+						class="reset-btn text-sm"
+						data-action="ui.popover.hide category.archived.toggle"
+					>Toggle archived</button>
+				</li>
+			</ul>
+		}
+	</div>
+	{{
+		var archivedIncome []views.IncomeCategory
+		for _, c := range cv.IncomeCategories {
+			if c.Status == "archived" {
+				archivedIncome = append(archivedIncome, c)
+			}
+		}
+		var archivedExpenses []views.ExpenseCategory
+		for _, c := range cv.ExpenseCategories {
+			if c.Status == "archived" {
+				archivedExpenses = append(archivedExpenses, c)
+			}
+		}
+	}}
 	<div id="categories-container">
 		<section id="income-cat">
 			<div>
-				<h4>Income ({ len(cv.IncomeCategories) })</h4>
+				<h4>Income (<span class="count-wo-archived">{ len(cv.IncomeCategories) - len(archivedIncome) }</span><span class="count-wt-archived">{ len(cv.IncomeCategories) }</span>)</h4>
 				@components.ButtonWithIcon(
 					"Add",
 					"",
@@ -34,6 +60,13 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 				hx-swap="innerHTML transition:true"
 			>
 				for i, cat := range cv.IncomeCategories {
+					if cat.Status != "archived" {
+						@partials.CategoryItem(cat, templ.Attributes{
+							"style": fmt.Sprintf("animation-delay: %dms", i*30),
+						})
+					}
+				}
+				for i, cat := range archivedIncome {
 					@partials.CategoryItem(cat, templ.Attributes{
 						"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					})
@@ -43,7 +76,7 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 		</section>
 		<section id="expense-cat">
 			<div>
-				<h4>Expenses ({ len(cv.ExpenseCategories) })</h4>
+				<h4>Expenses (<span class="count-wo-archived">{ len(cv.ExpenseCategories) - len(archivedExpenses) }</span><span class="count-wt-archived">{ len(cv.ExpenseCategories) }</span>)</h4>
 				@components.ButtonWithIcon(
 					"Add",
 					"",
@@ -64,6 +97,13 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 				hx-swap="innerHTML transition:true"
 			>
 				for i, cat := range cv.ExpenseCategories {
+					if cat.Status != "archived" {
+						@partials.CategoryItem(cat, templ.Attributes{
+							"style": fmt.Sprintf("animation-delay: %dms", i*30),
+						})
+					}
+				}
+				for i, cat := range archivedExpenses {
 					@partials.CategoryItem(cat, templ.Attributes{
 						"style": fmt.Sprintf("animation-delay: %dms", i*30),
 					})

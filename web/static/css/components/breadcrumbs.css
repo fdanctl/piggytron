@@ -31,10 +31,14 @@
 
 @scope (.breadcrumbs-selection) {
   > li {
-    padding: 0 var(--spacing-sm);
     margin-top: var(--spacing-xs);
     cursor: pointer;
     border-radius: var(--radius-xs);
+  }
+
+  > li > *:first-child {
+    padding: 0 var(--spacing-sm);
+    width: 100%;
   }
 
   > li:first-child {

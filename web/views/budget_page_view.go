@@ -21,17 +21,17 @@ type BudgetPageView struct {
 	CategoriesCarryover int
 	UnassignCarryover   int
 
-	NeedsLeft   int
-	NeedsBudget int
-	NeedsPct    float64
+	NeedsAvailable int
+	NeedsBudget    int
+	NeedsPct       float64
 
-	WantsLeft   int
-	WantsBudget int
-	WantsPct    float64
+	WantsAvailable int
+	WantsBudget    int
+	WantsPct       float64
 
-	SavingsLeft   int
-	SavingsBudget int
-	SavingsPct    float64
+	SavingsAvailable int
+	SavingsBudget    int
+	SavingsPct       float64
 }
 
 // BudgetRowView is the view-model for one category's budget row: budgeted
@@ -67,9 +67,9 @@ func NewBudgetPageView(
 	var wantsBudget int
 	var savingsBudget int
 
-	var needsSpent int
-	var wantsSpent int
-	var savingsSpent int
+	var needsAvailable int
+	var wantsAvailable int
+	var savingsAvailable int
 
 	var needs, wants, savings []BudgetRowView
 
@@ -99,19 +99,21 @@ func NewBudgetPageView(
 			Available:  available,
 		}
 
-		switch v.Type {
-		case "needs":
-			needs = append(needs, row)
-			needsBudget += v.Budgeted
-			needsSpent += v.Value
-		case "wants":
-			wants = append(wants, row)
-			wantsBudget += v.Budgeted
-			wantsSpent += v.Value
-		case "savings":
-			savings = append(savings, row)
-			savingsBudget += v.Budgeted
-			savingsSpent += v.Value
+		if v.ArchivedAt == nil || month.Time().Compare(*v.ArchivedAt) <= 0 {
+			switch v.Type {
+			case "needs":
+				needs = append(needs, row)
+				needsBudget += v.Budgeted
+				needsAvailable += available
+			case "wants":
+				wants = append(wants, row)
+				wantsBudget += v.Budgeted
+				wantsAvailable += available
+			case "savings":
+				savings = append(savings, row)
+				savingsBudget += v.Budgeted
+				savingsAvailable += available
+			}
 		}
 	}
 
@@ -130,6 +132,7 @@ func NewBudgetPageView(
 		savingsPct = (float64(savingsBudget) / float64(totalBudgeted)) * 100
 	}
 
+	// last month budgeted but not spent
 	categoriesCarryover := totalBudgetedPrev - totalSpentPrev
 
 	return BudgetPageView{
@@ -145,16 +148,16 @@ func NewBudgetPageView(
 		CategoriesCarryover: categoriesCarryover,
 		UnassignCarryover:   max(balance-income-categoriesCarryover, 0),
 
-		NeedsBudget: needsBudget,
-		NeedsLeft:   needsBudget - needsSpent,
-		NeedsPct:    needsPct,
+		NeedsBudget:    needsBudget,
+		NeedsAvailable: needsAvailable,
+		NeedsPct:       needsPct,
 
-		WantsBudget: wantsBudget,
-		WantsLeft:   wantsBudget - wantsSpent,
-		WantsPct:    wantsPct,
+		WantsBudget:    wantsBudget,
+		WantsAvailable: wantsAvailable,
+		WantsPct:       wantsPct,
 
-		SavingsBudget: savingsBudget,
-		SavingsLeft:   savingsBudget - savingsSpent,
-		SavingsPct:    savingsPct,
+		SavingsBudget:    savingsBudget,
+		SavingsAvailable: savingsAvailable,
+		SavingsPct:       savingsPct,
 	}
 }

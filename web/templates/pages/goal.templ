@@ -144,7 +144,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 					</a>
 				</div>
 			</div>
-			if len(tt) > 0 {
+			if ttCount > 0 {
 				@contributionsList(tt, fmt.Sprintf("page=2&accounts=%s&name=%s", g.ID, g.Name), hasMore)
 			} else {
 				@components.EmptyContributions(g.ID)

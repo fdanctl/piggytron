@@ -32,11 +32,11 @@ func (s *CategoryQueryService) FindByID(
 ) (*query.CategoryDTO, error) {
 	row := s.db.QueryRowContext(
 		ctx,
-		`SELECT id, name, 'income' AS type
+		`SELECT id, name, 'income' AS type, status, archived_at
 		 FROM income_categories
 		 WHERE id = $1
 		 UNION
-		 SELECT id, name, type
+		 SELECT id, name, type, status, archived_at
 		 FROM expense_categories
 		 WHERE id = $1`,
 		id,
@@ -46,6 +46,8 @@ func (s *CategoryQueryService) FindByID(
 		&c.ID,
 		&c.Name,
 		&c.Type,
+		&c.Status,
+		&c.ArchivedAt,
 	)
 	if err != nil {
 		return nil, err
@@ -60,11 +62,11 @@ func (s *CategoryQueryService) FindAllCategories(
 ) ([]query.CategoryDTO, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
-		`SELECT id, name, 'income' AS type
+		`SELECT id, name, 'income' AS type, status, archived_at
 		 FROM income_categories
 		 WHERE user_id = $1
 		 UNION
-		 SELECT id, name, type
+		 SELECT id, name, type, status, archived_at
 		 FROM expense_categories
 		 WHERE user_id = $1`,
 		uid,
@@ -82,6 +84,8 @@ func (s *CategoryQueryService) FindAllCategories(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&c.Status,
+			&c.ArchivedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -165,23 +169,40 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		`
 		WITH
 		  month_net AS (
-		    SELECT
-		      COALESCE(ms.month, $2) as month,
-		      COALESCE(SUM(ms.money_in - ms.money_out), 0) AS net,
-		      SUM(SUM(ms.money_in - ms.money_out)) OVER (
-		        ORDER BY
-		          month
-		      ) AS running_total
-		    FROM
-			  monthly_summary ms
-		      LEFT JOIN accounts a ON a.id = ms.account_id
-		      AND ms.month <= $2
-		    WHERE
-		      user_id = $1
-		      AND type = 'checking'
-		    GROUP BY
-		      ms.month
-		  ),
+	  	    SELECT
+	  	      COALESCE(month, $2) as month,
+	  	      COALESCE(SUM(money_in - money_out), 0) AS net,
+	  	      SUM(SUM(money_in - money_out)) OVER (
+	  	        ORDER BY
+	  	          month
+	  	      ) AS running_total
+	  	    FROM
+	  	      (
+	  	        SELECT
+	  	          ms.month,
+	  	          ms.money_in,
+	  	          ms.money_out
+	  	        FROM
+	  	          monthly_summary ms
+	  	          LEFT JOIN accounts a ON a.id = ms.account_id
+	  	        WHERE
+	  	          user_id = 'b1486155-eb83-46c5-9f77-2d1e7673d36d'
+	  	          AND type = 'checking'
+	  	          AND ms.month <= $2
+	  	        GROUP BY
+	  	          ms.month,
+	  	          ms.money_in,
+	  	          ms.money_out
+	  	        UNION ALL
+	  	        -- Guarantee the month $2 row exists
+	  	        SELECT
+	  	          $2,
+	  	          0,
+	  	          0
+	  	      ) combined
+	  	    GROUP BY
+	  	      month
+	  	  ),
 		  categories as (
 		    SELECT
 		      c.id as cid,
@@ -190,6 +211,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		      c.name,
 		      COALESCE(b.amount, 0) as budgeted,
 		      COALESCE(SUM(t.amount), 0) as spent_income,
+			  c.archived_at,
 		      (
 		        SELECT
 		          COALESCE(SUM(mb.amount), 0)
@@ -230,6 +252,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		      c.name as name,
 		      0 as budgeted,
 		      COALESCE(SUM(t.amount), 0) as spent_income,
+			  c.archived_at,
 		      0 as total_budgeted_prev,
 		      0 as total_spent_prev
 		    FROM
@@ -272,6 +295,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 			&r.Name,
 			&r.Budgeted,
 			&r.Value,
+			&r.ArchivedAt,
 			&r.PrevTotalBudget,
 			&r.PrevTotalSpent,
 			&monthNet,
@@ -306,7 +330,8 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
         SELECT
           c.name AS name,
           c.type AS category_type,
-          COALESCE(b.amount, 0) AS value
+          COALESCE(b.amount, 0) AS value,
+		  c.archived_at
         FROM
           expense_categories c
           LEFT JOIN monthly_budgets b ON c.id = b.category_id
@@ -324,7 +349,8 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
 		SELECT
           c.name AS name,
     	  'income' AS category_type,
-    	  COALESCE(SUM(t.amount), 0) AS value
+    	  COALESCE(SUM(t.amount), 0) AS value,
+		  c.archived_at
 		FROM
     	  income_categories c
     	  LEFT JOIN ledger t 
@@ -352,6 +378,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
 			&dto.Name,
 			&dto.Type,
 			&dto.Value,
+			&dto.ArchivedAt,
 		); err != nil {
 			return nil, err
 		}

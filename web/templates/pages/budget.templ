@@ -27,9 +27,9 @@ templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.Bu
 		@components.Loader("htmx-indicator h-full", nil)
 	</div>
 	<div class="budget-table-container">
-		@budgetTable("needs", view.NeedsBudget, view.NeedsLeft, view.NeedsPct, view.NeedsRows)
-		@budgetTable("wants", view.WantsBudget, view.WantsLeft, view.WantsPct, view.WantsRows)
-		@budgetTable("savings", view.SavingsBudget, view.SavingsLeft, view.SavingsPct, view.SavingsRows)
+		@budgetTable("needs", view.NeedsBudget, view.NeedsAvailable, view.NeedsPct, view.NeedsRows)
+		@budgetTable("wants", view.WantsBudget, view.WantsAvailable, view.WantsPct, view.WantsRows)
+		@budgetTable("savings", view.SavingsBudget, view.SavingsAvailable, view.SavingsPct, view.SavingsRows)
 	</div>
 }
 

@@ -1,15 +1,20 @@
 package partials
 
 import (
+	"fmt"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ IncomeCategoryForm(v views.IncomeCategoryForm) {
+templ IncomeCategoryForm(id string, v views.IncomeCategoryForm) {
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
-		hx-post="/partials/income-category"
+		if id == "" {
+			hx-post="/partials/income-category"
+		} else {
+			hx-post={ fmt.Sprintf("/partials/income-category/%s", id) }
+		}
 		hx-swap="outerHTML"
 		novalidate
 	>

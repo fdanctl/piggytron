@@ -68,6 +68,7 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 
 	budgetItems, spentItems, categories := charts.MakeBudgetSpentBarItems(
 		categoryBudgetSpent.Data,
+		bm,
 	)
 	bar := charts.ConvertChartToTemplComponent(
 		charts.CreateCategoryBudgetSpentBarChart(budgetItems, spentItems, categories, theme),
@@ -112,7 +113,7 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 		var slide []templ.Component
 		for k := i; k < end; k++ {
 			c := categoryBudgetSpent.Data[k]
-			if c.Type == "income" {
+			if c.Type == "income" || (c.ArchivedAt != nil && bm.Time().After(*c.ArchivedAt)) {
 				i++
 				end = min(end+1, len(categoryBudgetSpent.Data))
 				continue

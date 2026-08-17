@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS income_categories (
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
   name VARCHAR(30) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
   --
+  archived_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   --
@@ -24,7 +26,9 @@ CREATE TABLE IF NOT EXISTS expense_categories (
   --
   name VARCHAR(30) NOT NULL,
   type VARCHAR(10) NOT NULL CHECK (type IN ('needs', 'wants', 'savings')),
+  status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'archived')),
   --
+  archived_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
   --
@@ -125,7 +129,7 @@ CREATE TABLE IF NOT EXISTS ledger (
 
 -- one per category and month
 CREATE TABLE IF NOT EXISTS monthly_budgets (
-  category_id UUID NOT NULL REFERENCES expense_categories (id),
+  category_id UUID NOT NULL REFERENCES expense_categories (id) ON DELETE CASCADE,
   month DATE NOT NULL, -- e.g. '2026-03-01'
   amount BIGINT NOT NULL CHECK (amount >= 0), -- in cents
   --
