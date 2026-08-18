@@ -1,11 +1,15 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/views/charts"
 )
 
@@ -41,7 +45,23 @@ func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	logger.Debug(id)
 
-	mvalues, err := h.categoryQuery.GetYearMonthlyValue(r.Context(), time.Now().Year(), id)
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = "6m" // default
+	}
+
+	var startDate time.Time
+	now := time.Now()
+	switch period {
+	case "1y":
+		startDate = time.Date(now.Year()-1, now.Month(), 1, 0, 0, 0, 0, now.Location())
+	case "ytd":
+		startDate = time.Date(now.Year(), time.January, 1, 0, 0, 0, 0, now.Location())
+	case "6m":
+		startDate = time.Date(now.Year(), now.Month()-6, 1, 0, 0, 0, 0, now.Location())
+	}
+
+	mvalues, err := h.categoryQuery.GetMonthlyValueSince(r.Context(), id, startDate)
 	if err != nil {
 		logger.Error("error finding values", "error", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -54,7 +74,23 @@ func (h *CategoryChartHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	theme := r.Header.Get("theme")
-	bItems := charts.MakeCatBarItems(mvalues)
-	chart := charts.CreateMonthlyBarChart(bItems, name, theme)
+	bItems, xAxis := charts.MakeCatBarItems(mvalues)
+	chart := charts.CreateMonthlyBarChart(bItems, name, xAxis, theme)
+	components.SelectPill(
+		"",
+		strings.ToUpper(period),
+		period,
+		components.SelectPillLeft,
+		[]components.SelectOption{
+			{Label: "6M", Value: "6m"},
+			{Label: "YTD", Value: "ytd"},
+			{Label: "1Y", Value: "1y"},
+		},
+		templ.Attributes{
+			"name":      "period",
+			"hx-get":    fmt.Sprint("/partials/charts/cat-hist/", id),
+			"hx-target": "closest .chart-container",
+		},
+	).Render(r.Context(), w)
 	charts.ConvertChartToTemplComponent(chart).Render(r.Context(), w)
 }

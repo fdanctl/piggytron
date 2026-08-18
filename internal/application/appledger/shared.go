@@ -118,6 +118,12 @@ func isIncomeCategoryValid(
 	}
 
 	cat, err := tx.FindByID(ctx, cid)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			err,
+			"appledger.isIncomeCategoryValid",
+		)
+	}
 	if cat.Status() != incomecategory.ActiveStatus && date.After(*cat.ArchivedAt()) {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
@@ -153,6 +159,12 @@ func isExpenseCategoryValid(
 	}
 
 	cat, err := tx.FindByID(ctx, cid)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			err,
+			"appledger.isIncomeCategoryValid",
+		)
+	}
 	if cat.Status() != expensecategory.ActiveStatus && date.After(*cat.ArchivedAt()) {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,

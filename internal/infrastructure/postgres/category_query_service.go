@@ -391,66 +391,79 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpent(
 	return results, nil
 }
 
-// GetYearMonthlyValue returns, for one category and year, the monthly
-// totals of its ledger movements.
-func (s *CategoryQueryService) GetYearMonthlyValue(
+// GetMonthlyValueSince returns, for one category, the monthly
+// totals of its ledger movements since a month
+// (since params is normalized to the start of the month in the SQL).
+func (s *CategoryQueryService) GetMonthlyValueSince(
 	ctx context.Context,
-	year int,
 	id string,
+	since time.Time,
 ) ([]query.CategoryMonthlyValue, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
-		`SELECT
-		  ic.id,
-		  ic.name,
-		  EXTRACT(
-			MONTH
-			FROM
-			  t.date
-		  ) as month,
-		  SUM(t.amount) AS value
-		FROM
-		  income_categories ic
-		  LEFT JOIN ledger t ON ic.id = t.income_category_id
-		WHERE
-		  ic.id = $1
-		  AND EXTRACT(
-			YEAR
-			FROM
-			  t.date
-		  ) = $2
-		GROUP BY
-		  month,
-		  ic.id
-
-		UNION ALL
-
+		`
+		WITH
+		  params AS (
+		    SELECT
+		      DATE_TRUNC('month', $2::TIMESTAMP)::date AS start_day
+		  ),
+		  months AS (
+		    SELECT
+		      generate_series(
+		        (
+		          SELECT
+		            start_day
+		          FROM
+		            params
+		        ),
+		        CURRENT_DATE,
+		        INTERVAL '1 month'
+		      )::date AS month
+		  ),
+		  cat AS (
+		    SELECT
+		      ic.id,
+		      ic.name
+		    FROM
+		      income_categories ic
+		    WHERE
+		      ic.id = $1
+		    UNION ALL
+		    SELECT
+		      ec.id,
+		      ec.name
+		    FROM
+		      expense_categories ec
+		    WHERE
+		      ec.id = $1
+		  ),
+		  cat_value AS (
+		    SELECT
+		      c.id,
+		      DATE_TRUNC('month', t.date)::date AS date,
+		      SUM(t.amount) AS value
+		    FROM
+		      cat c
+		      LEFT JOIN ledger t ON c.id = t.income_category_id
+		      OR c.id = t.expense_category_id
+		    WHERE
+		      c.id = $1
+		    GROUP BY
+		      date,
+		      c.id
+		  )
 		SELECT
-		  ec.id,
-		  ec.name,
-		  EXTRACT(
-			MONTH
-			FROM
-			  t.date
-		  ) as month,
-		  SUM(t.amount) AS value
+		  m.month,
+		  $1 AS id,
+		  c.name,
+		  COALESCE(v.value, 0) AS val
 		FROM
-		  expense_categories ec
-		  LEFT JOIN ledger t ON ec.id = t.expense_category_id
-		WHERE
-		  ec.id = $1
-		  AND EXTRACT(
-			YEAR
-			FROM
-			  t.date
-		  ) = $2
-		GROUP BY
-		  month,
-		  ec.id
-		ORDER BY
-		  month`,
+		  months m
+		  CROSS JOIN cat c
+		  LEFT JOIN cat_value v ON m.month = v.date
+		`,
 		id,
-		year,
+		since,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -465,9 +478,9 @@ func (s *CategoryQueryService) GetYearMonthlyValue(
 	for rows.Next() {
 		var r query.CategoryMonthlyValue
 		if err := rows.Scan(
+			&r.Month,
 			&r.ID,
 			&r.Name,
-			&r.Month,
 			&r.Value,
 		); err != nil {
 			return nil, err

@@ -125,3 +125,12 @@
     z-index: 10;
   }
 }
+
+@scope (.chart-container) {
+  .select.select-pill {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    z-index: 10;
+  }
+}

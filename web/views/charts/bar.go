@@ -42,7 +42,12 @@ func CreateCategoryBudgetSpentBarChart(
 
 // CreateMonthlyBarChart builds a bar chart of the 12 months of the year
 // from the given bar data.
-func CreateMonthlyBarChart(items []opts.BarData, name, theme string) *charts.Bar {
+func CreateMonthlyBarChart(
+	items []opts.BarData,
+	name string,
+	xAxis []string,
+	theme string,
+) *charts.Bar {
 	barColor := "#5eefef"
 	if theme == "light" {
 		barColor = "#4bc4c4"
@@ -61,12 +66,7 @@ func CreateMonthlyBarChart(items []opts.BarData, name, theme string) *charts.Bar
 		}),
 	)
 
-	abbv := []string{
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-	}
-
-	bar.SetXAxis(abbv).
+	bar.SetXAxis(xAxis).
 		AddSeries(name, items).
 		SetSeriesOptions(charts.WithMarkLineNameTypeItemOpts(
 			opts.MarkLineNameTypeItem{

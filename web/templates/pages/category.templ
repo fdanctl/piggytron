@@ -47,7 +47,7 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 		@archivedNotice("mt-md", *cat.GetArchivedAt())
 	}
 	<div
-		class="chart-container"
+		class="chart-container relative"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
 		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetID()) }
 		hx-trigger="load"

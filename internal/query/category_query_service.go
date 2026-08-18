@@ -49,9 +49,9 @@ type CategoryBudget struct {
 // CategoryMonthlyValue is the monthly value (spent or earned) of one category
 // across the months of a year.
 type CategoryMonthlyValue struct {
+	Month time.Time
 	ID    string
 	Name  string
-	Month int
 	Value int
 }
 
@@ -80,9 +80,9 @@ type CategoryQueryService interface {
 		minDate time.Time,
 		maxDate time.Time,
 	) ([]CategoryBudget, error)
-	GetYearMonthlyValue(
+	GetMonthlyValueSince(
 		ctx context.Context,
-		year int,
 		id string,
+		since time.Time,
 	) ([]CategoryMonthlyValue, error)
 }
