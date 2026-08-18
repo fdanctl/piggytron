@@ -157,13 +157,20 @@ func getCategorySelectOptions(
 	qs query.CategoryQueryService,
 	ctx context.Context,
 	userID string,
+	date string,
 ) (iCatOpts, eCatOpts []components.SelectOption, err error) {
 	cats, err := qs.FindAllCategories(ctx, userID)
 	if err != nil {
 		return
 	}
+
+	d := time.Now()
+	if date != "" {
+		d, err = time.Parse("02/01/2006", date)
+	}
+
 	for _, v := range cats {
-		if v.Status == "archived" {
+		if v.Status == "archived" && d.After(*v.ArchivedAt) {
 			continue
 		}
 		if v.Type == "income" {
@@ -186,14 +193,20 @@ func getAccSelectOptions(
 	as *appaccount.Service,
 	ctx context.Context,
 	userID string,
+	date string,
 ) (noSavingsBanksOpts, goalsSavingsOpts []components.SelectOption, err error) {
 	acc, err := as.FindAllByUser(ctx, userID)
 	if err != nil {
 		return
 	}
 
+	d := time.Now()
+	if date != "" {
+		d, err = time.Parse("02/01/2006", date)
+	}
+
 	for _, v := range acc {
-		if v.Status() == account.ClosedStatus {
+		if v.Status() == account.ClosedStatus && d.After(*v.ClosedAt()) {
 			continue
 		}
 		if v.Type() == account.CheckingType {

@@ -80,7 +80,7 @@ func sankeyTooltipFormatter(curr currency.Unit) string {
 			if (params.data.name) {
 				left = params.data.name
 			} else {
-				left = params.data.source + '--' + params.data.target + ' '
+				left = params.data.source + ' → ' + params.data.target + ' '
 			}
 			return '<div style="color: var(--grey-200);">' +
 				left +

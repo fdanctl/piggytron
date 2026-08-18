@@ -82,6 +82,12 @@ func (s *Service) CreateIncome(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
+	ictx := postgres.NewIncomeCategoryRepository(tx)
+
+	_, err = isIncomeCategoryValid(ctx, ictx, categoryID, date)
+	if err != nil {
+		return nil, err
+	}
 
 	acc, err := qtx.FindWithSum(ctx, dstAccID)
 	if err != nil {
@@ -265,6 +271,12 @@ func (s *Service) UpdateIncome(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
+	ictx := postgres.NewIncomeCategoryRepository(tx)
+
+	_, err = isIncomeCategoryValid(ctx, ictx, categoryID, date)
+	if err != nil {
+		return nil, err
+	}
 
 	t, err := rtx.FindByID(ctx, tid)
 	if err != nil {

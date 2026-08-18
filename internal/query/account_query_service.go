@@ -88,6 +88,7 @@ type AccountQueryService interface {
 	FindIDNamesIncludes(ctx context.Context, ids []string) ([]AccountIDName, error)
 	FindBanksIDNames(ctx context.Context, uid string) ([]AccountIDName, error)
 	FindGoalsIDNames(ctx context.Context, uid string) ([]AccountIDName, error)
+	FindGoalsByCategory(ctx context.Context, cid string) ([]AccountWithCategory, error)
 	FindWithSum(ctx context.Context, id string) (*AccountWithSum, error)
 	FindAllWithSum(ctx context.Context, uid string) ([]AccountWithSum, error)
 	FindAllWithSumAndMonthChange(

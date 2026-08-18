@@ -237,6 +237,26 @@ func (s *Service) Delete(
 		}
 	}
 
+	atx := postgres.NewAccountQueryService(tx)
+	goals, err := atx.FindGoalsByCategory(ctx, id)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appexpensecategory.Delete",
+		)
+		return err
+	}
+
+	if len(goals) > 0 {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Can't delete a category with referenced by a goal",
+			errors.New("can't delete a category with referenced by a goal"),
+			"appexpensecategory.Delete",
+		)
+		return err
+	}
+
 	etx := postgres.NewExpenseCategoryRepository(tx)
 	err = etx.Delete(ctx, cid)
 	if err != nil {
@@ -363,5 +383,56 @@ func (s *Service) Archive(
 		)
 		return err
 	}
-	return s.repo.Archive(ctx, cid)
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appexpensecategory.Archive",
+		)
+		return err
+	}
+	defer tx.Rollback()
+
+	atx := postgres.NewAccountQueryService(tx)
+	goals, err := atx.FindGoalsByCategory(ctx, id)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appexpensecategory.Archive",
+		)
+		return err
+	}
+
+	for _, g := range goals {
+		if g.Status == "active" {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Can't archive a category with an active goal",
+				errors.New("can't archive a category with an active goal"),
+				"appexpensecategory.Archive",
+			)
+			return err
+		}
+	}
+
+	etx := postgres.NewExpenseCategoryRepository(tx)
+	err = etx.Archive(ctx, cid)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to archive '%s' account: %w", id, err),
+			"appexpensecategory.Archive",
+		)
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appexpensecategory.Archive",
+		)
+		return err
+	}
+
+	return nil
 }

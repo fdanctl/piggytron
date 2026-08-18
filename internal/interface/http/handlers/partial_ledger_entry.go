@@ -75,6 +75,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		h.categoryQuery,
 		r.Context(),
 		sessionInfo.UserID,
+		"",
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
@@ -85,6 +86,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		h.accService,
 		r.Context(),
 		sessionInfo.UserID,
+		"",
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
@@ -169,6 +171,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		h.categoryQuery,
 		r.Context(),
 		sessionInfo.UserID,
+		date,
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
@@ -179,6 +182,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		h.accService,
 		r.Context(),
 		sessionInfo.UserID,
+		date,
 	)
 	if err != nil {
 		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))

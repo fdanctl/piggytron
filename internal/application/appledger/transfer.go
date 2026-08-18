@@ -100,6 +100,15 @@ func (s *Service) CreateTransfer(
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 
+	if categoryID != "" {
+		ectx := postgres.NewExpenseCategoryRepository(tx)
+
+		_, err = isExpenseCategoryValid(ctx, ectx, categoryID, date)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	fromAccount, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, nil, nil)
 	if err != nil {
 		return nil, errs.NewInternalAppError(
@@ -394,6 +403,15 @@ func (s *Service) UpdateTransfer(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
+
+	if categoryID != "" {
+		ectx := postgres.NewExpenseCategoryRepository(tx)
+
+		_, err = isExpenseCategoryValid(ctx, ectx, categoryID, date)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	t, err := rtx.FindByID(ctx, tid)
 	if err != nil {

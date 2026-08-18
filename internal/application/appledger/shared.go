@@ -4,10 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
+	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
+	"github.com/fdanctl/piggytron/internal/util"
 )
 
 func (s *Service) updateMonthlySummary(
@@ -94,4 +98,74 @@ func getCaseFromTable(cond1, cond2 int) (int, error) {
 		return 0, fmt.Errorf("%d is invalid: %w", cond2, errors.New("invalid conditional result"))
 	}
 	return (3 * cond1) + cond2 + 5, nil
+}
+
+func isIncomeCategoryValid(
+	ctx context.Context,
+	tx incomecategory.Repository,
+	categoryID string,
+	date time.Time,
+) (bool, error) {
+	cid, err := util.ParseID[incomecategory.ID](categoryID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", categoryID),
+			fmt.Errorf("failed parsing id '%s': %w", categoryID, err),
+			"appledger.isIncomeCategoryValid",
+		)
+		return false, err
+	}
+
+	cat, err := tx.FindByID(ctx, cid)
+	if cat.Status() != incomecategory.ActiveStatus && date.After(*cat.ArchivedAt()) {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			fmt.Sprintf(
+				"%s category was archived before %s",
+				cat.Name(),
+				date.Format(time.DateOnly),
+			),
+			errors.New("category was archived before entry data"),
+			"appledger.isIncomeCategoryValid",
+		)
+		return false, err
+	}
+
+	return true, nil
+}
+
+func isExpenseCategoryValid(
+	ctx context.Context,
+	tx expensecategory.Repository,
+	categoryID string,
+	date time.Time,
+) (bool, error) {
+	cid, err := util.ParseID[expensecategory.ID](categoryID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", categoryID),
+			fmt.Errorf("failed parsing id '%s': %w", categoryID, err),
+			"appledger.isExpenseCategoryValid",
+		)
+		return false, err
+	}
+
+	cat, err := tx.FindByID(ctx, cid)
+	if cat.Status() != expensecategory.ActiveStatus && date.After(*cat.ArchivedAt()) {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			fmt.Sprintf(
+				"%s category was archived before %s",
+				cat.Name(),
+				date.Format(time.DateOnly),
+			),
+			errors.New("category was archived before entry data"),
+			"appledger.isExpenseCategoryValid",
+		)
+		return false, err
+	}
+
+	return true, nil
 }

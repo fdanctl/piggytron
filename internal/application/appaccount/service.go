@@ -158,6 +158,7 @@ func (s *Service) CreateBank(
 
 // CreateGoal builds and persists a new goal account for the user, rejecting
 // duplicate names.
+// TODO check if the category is archived
 func (s *Service) CreateGoal(
 	ctx context.Context,
 	userID string,

@@ -61,26 +61,6 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, ecatOpts, err := getCategorySelectOptions(
-		h.categoryQuery,
-		r.Context(),
-		sessionInfo.UserID,
-	)
-	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
-		return
-	}
-
-	noSavingsBanksOpts, goalSavingsOpts, err := getAccSelectOptions(
-		h.accService,
-		r.Context(),
-		sessionInfo.UserID,
-	)
-	if err != nil {
-		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
-		return
-	}
-
 	view := views.NewTransferForm()
 	acc, err := h.accService.FindOneByID(r.Context(), r.PathValue("id"), sessionInfo.UserID)
 	if err != nil {
@@ -97,6 +77,29 @@ func (h *GoalContributeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(w, r, err)
 		return
 	}
+
+	_, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+		view.Date,
+	)
+	if err != nil {
+		httperror.SendError(w, r, fmt.Errorf("failed to get categories select options: %w", err))
+		return
+	}
+
+	noSavingsBanksOpts, goalSavingsOpts, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+		view.Date,
+	)
+	if err != nil {
+		httperror.SendError(w, r, fmt.Errorf("failed to get account select options: %w", err))
+		return
+	}
+
 	view.Description = fmt.Sprintf("%s contribution", acc.Name())
 	view.DestinationAcc = r.PathValue("id")
 	view.Category = string(*acc.CategoryID())
@@ -132,6 +135,7 @@ func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 		h.categoryQuery,
 		r.Context(),
 		sessionInfo.UserID,
+		date,
 	)
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -142,6 +146,7 @@ func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 		h.accService,
 		r.Context(),
 		sessionInfo.UserID,
+		date,
 	)
 	if err != nil {
 		httperror.SendError(w, r, err)

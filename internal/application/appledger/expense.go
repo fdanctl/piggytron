@@ -82,6 +82,12 @@ func (s *Service) CreateExpense(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
+	ectx := postgres.NewExpenseCategoryRepository(tx)
+
+	_, err = isExpenseCategoryValid(ctx, ectx, catID, date)
+	if err != nil {
+		return nil, err
+	}
 
 	acc, err := qtx.GetAccountWithMinRunningBalance(ctx, srcAccID, date, nil, nil)
 	if err != nil {
@@ -276,6 +282,12 @@ func (s *Service) UpdateExpense(
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
+	ectx := postgres.NewExpenseCategoryRepository(tx)
+
+	_, err = isExpenseCategoryValid(ctx, ectx, categoryID, date)
+	if err != nil {
+		return nil, err
+	}
 
 	t, err := rtx.FindByID(ctx, tid)
 	if err != nil {

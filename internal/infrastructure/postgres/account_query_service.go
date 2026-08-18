@@ -141,6 +141,86 @@ func (s *AccountQueryService) FindGoalsIDNames(
 	return results, nil
 }
 
+// FindGoalsByCategory returns a list of active goals by category_id
+func (s *AccountQueryService) FindGoalsByCategory(
+	ctx context.Context,
+	cid string,
+) ([]query.AccountWithCategory, error) {
+	rows, err := s.db.QueryContext(
+		ctx,
+		`
+		SELECT
+		  a.id,
+		  a.user_id,
+		  a.type,
+		  a.name,
+		  a.status,
+		  a.currency,
+		  a.target_amount,
+		  a.start_date,
+		  a.target_date,
+		  COALESCE(c.id, $1),
+		  COALESCE(c.name, ''),
+		  COALESCE(c.type, 'income'),
+		  a.closed_at,
+		  a.created_at,
+		  a.updated_at
+		FROM
+		  accounts a
+		  LEFT JOIN expense_categories c ON a.category_id = c.id
+		  LEFT JOIN monthly_summary ms ON a.id = ms.account_id
+		WHERE
+		  c.id = $2
+		`,
+		util.ZeroUUID,
+		cid,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var results []query.AccountWithCategory
+
+	for rows.Next() {
+		var g query.AccountWithCategory
+		var c query.CategoryDTO
+		if err := rows.Scan(
+			&g.ID,
+			&g.UserID,
+			&g.Type,
+			&g.Name,
+			&g.Status,
+			&g.Currency,
+			&g.TargetAmount,
+			&g.StartDate,
+			&g.TargetDate,
+			&c.ID,
+			&c.Name,
+			&c.Type,
+			&g.ClosedAt,
+			&g.CreatedAt,
+			&g.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		g.Category = &c
+		results = append(results, g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, account.ErrNotFound
+		}
+		return nil, err
+	}
+
+	return results, nil
+}
+
 // FindWithSum returns one account with its total balance, computed as the
 // sum of its monthly summaries.
 func (s *AccountQueryService) FindWithSum(

@@ -64,16 +64,6 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, ecatOpts, err := getCategorySelectOptions(
-		h.categoryQuery,
-		r.Context(),
-		sessionInfo.UserID,
-	)
-	if err != nil {
-		httperror.SendError(w, r, err)
-		return
-	}
-
 	view := views.NewGoalForm()
 	id := r.PathValue("id")
 	title := "New Goal"
@@ -104,6 +94,17 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		title = "Edit Goal"
 	}
 
+	_, ecatOpts, err := getCategorySelectOptions(
+		h.categoryQuery,
+		r.Context(),
+		sessionInfo.UserID,
+		view.StartDate,
+	)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
 	form := partials.GoalForm(*view, ecatOpts, id)
 	components.DialogWrapper("", components.DialogHeader("", title, nil), form, nil, nil).
 		Render(r.Context(), w)
@@ -125,6 +126,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		h.categoryQuery,
 		r.Context(),
 		sessionInfo.UserID,
+		formData.sdate,
 	)
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -222,6 +224,7 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		h.categoryQuery,
 		r.Context(),
 		sessionInfo.UserID,
+		formData.sdate,
 	)
 	if err != nil {
 		httperror.SendError(w, r, err)
