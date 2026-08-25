@@ -54,6 +54,18 @@ func (h *GoalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			default:
 				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			}
+
+		case "cancel":
+			switch r.Method {
+			case http.MethodGet:
+				h.GetCancel(w, r)
+
+			case http.MethodPost:
+				h.PostCancel(w, r)
+
+			default:
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
 		}
 		return
 	}
@@ -428,6 +440,113 @@ func (h *GoalHandler) PostComplete(w http.ResponseWriter, r *http.Request) {
 		components.SendToast(
 			components.Success,
 			fmt.Sprintf("%s goal completed", g.Name()),
+		),
+	).Render(r.Context(), w)
+}
+
+func (h *GoalHandler) GetCancel(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	id := r.PathValue("id")
+	g, err := h.accountQueryService.FindWithSum(r.Context(), id)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+	if account.AccountType(g.Type) != account.GoalType {
+		err := errs.NewAppError(
+			errs.KindNotFound,
+			fmt.Sprintf("%s is not a goal", g.ID),
+			fmt.Errorf("'%s' is not a goal: %w", g.ID, account.ErrAccountWrongType),
+			"GoalHandler.GetComplete",
+		)
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	noSavingsBanksOpts, _, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+		"",
+	)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	view := views.NewGoalCancelForm(g.Sum)
+	form := partials.GoalCancelForm(id, *view, noSavingsBanksOpts)
+	components.DialogWrapper("", components.DialogHeader("", "Cancel Goal", nil), form, nil, nil).
+		Render(r.Context(), w)
+}
+
+func (h *GoalHandler) PostCancel(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	view := views.GoalCancelForm{
+		Destination: r.FormValue("destination"),
+	}
+
+	id := r.PathValue("id")
+
+	noSavingsBanksOpts, _, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+		"",
+	)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	msgs := view.Validate()
+	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		partials.GoalCancelForm(id, view, noSavingsBanksOpts).
+			Render(r.Context(), w)
+		return
+	}
+
+	g, err := h.accService.CancelGoal(
+		r.Context(),
+		id,
+		sessionInfo.UserID,
+		view.Destination,
+	)
+	if err != nil {
+		view.SetError(err)
+		form := partials.GoalCancelForm(id, view, noSavingsBanksOpts)
+		httperror.SendFormError(w, r, err, form)
+		return
+	}
+
+	w.Header().Set(
+		"HX-Trigger",
+		fmt.Sprintf(`{
+		"closeAllModal": true,
+		"contentPush": {
+			"url": "/goals/%s"
+		}
+		}`, id),
+	)
+
+	templ.Join(
+		partials.GoalCancelForm(id, view, noSavingsBanksOpts),
+		components.SendToast(
+			components.Success,
+			fmt.Sprintf("%s goal canceled", g.Name()),
 		),
 	).Render(r.Context(), w)
 }

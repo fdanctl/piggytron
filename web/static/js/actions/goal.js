@@ -6,6 +6,7 @@ import { confirmModal } from "../confirmModal";
 export const goalActions = {
   "goal.edit.confirm": confirmGoal,
   "goal.complete.confirm": confirmGoalComplete,
+  "goal.cancel.confirm": confirmGoalCancel,
 };
 
 /**
@@ -61,6 +62,24 @@ function confirmGoal({ ele, evt, data }) {
  * @param {Element} param0.ele - The form element.
  */
 function confirmGoalComplete({ ele }) {
+  const config = {
+    title: "Warning",
+    message: "This action is irreversible. Do you want to procced?",
+    acceptText: "Yes",
+    refuseText: "Cancel",
+  };
+  confirmModal(config).then(function (result) {
+    if (result) {
+      htmx.trigger(ele, "confirmed");
+    }
+  });
+}
+
+/**
+ * @param {Object} param0 - Action payload.
+ * @param {Element} param0.ele - The form element.
+ */
+function confirmGoalCancel({ ele }) {
   const config = {
     title: "Warning",
     message: "This action is irreversible. Do you want to procced?",

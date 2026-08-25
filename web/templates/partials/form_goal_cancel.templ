@@ -1,0 +1,45 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ GoalCancelForm(id string, v views.GoalCancelForm, accounts []components.SelectOption) {
+	<form
+		class="space-y-sm goal-complete"
+		hx-trigger="confirmed"
+		hx-on:submit="event.preventDefault()"
+		hx-post={ fmt.Sprintf("/partials/goal/%s/cancel", id) }
+		hx-swap="outerHTML"
+		data-submit="goal.cancel.confirm"
+		novalidate
+	>
+		@components.SelectGroup(
+			"",
+			"Transfer funds to",
+			v.Destination,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateDestination()),
+			v.DestinationHasError(),
+			true,
+			templ.Attributes{
+				"id":   "destination",
+				"name": "destination",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

@@ -36,10 +36,11 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 					</li>
 					<li>
 						<button
-							hx-trigger="confirmed"
-							hx-post={ fmt.Sprintf("/partials/goal/%s/cancel", g.ID) }
+							hx-get={ fmt.Sprintf("/partials/goal/%s/cancel", g.ID) }
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
 							class="reset-btn text-sm"
-							data-action="ui.popover.hide goal.cancel.confirm"
+							data-action="ui.popover.hide"
 						>Cancel</button>
 					</li>
 				}

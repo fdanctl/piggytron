@@ -11,7 +11,6 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
-	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
@@ -338,7 +337,6 @@ func (s *Service) CompleteGoal(
 	date time.Time,
 	remainingAccID string,
 ) (*account.Account, error) {
-	logger := middleware.LoggerFromContext(ctx)
 	uid, err := util.ParseID[ledger.ID](userID)
 	if err != nil {
 		err = errs.NewAppError(
@@ -386,16 +384,6 @@ func (s *Service) CompleteGoal(
 	if goalAcc.UserID != userID {
 		return nil, account.ErrNotFound
 	}
-
-	logger.Debug(
-		"balance",
-		"balance",
-		goalAcc.Sum,
-		"amount",
-		amount,
-		"remaining",
-		goalAcc.Sum-amount,
-	)
 
 	if goalAcc.Sum-amount < 0 {
 		err = errs.NewAppError(
@@ -448,6 +436,10 @@ func (s *Service) CompleteGoal(
 				err = errs.NewInternalAppError(err, "appaccount.CompleteGoal")
 			}
 			return nil, err
+		}
+
+		if remainingTarget.UserID != userID {
+			return nil, account.ErrNotFound
 		}
 
 		if remainingTarget.Type != string(account.CheckingType) {
@@ -593,7 +585,7 @@ func (s *Service) CompleteGoal(
 	err = atx.UpdateStatus(ctx, acc)
 	if err != nil {
 		err = errs.NewInternalAppError(
-			fmt.Errorf("failed to close '%s' account: %w", aid, err),
+			fmt.Errorf("failed to complete '%s' account: %w", aid, err),
 			"appaccount.CompleteGoal",
 		)
 		return nil, err
@@ -617,7 +609,6 @@ func (s *Service) CompleteGoal(
 		amount,
 		date,
 	)
-	logger.Debug("fulfillment entry", "entry", fulfillmentEntry)
 	if err != nil {
 		err := errs.NewAppError(
 			errs.KindBusinessRule,
@@ -668,6 +659,283 @@ func (s *Service) CompleteGoal(
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed to commit': %w", err),
 			"appaccount.CompleteGoal",
+		)
+		return nil, err
+	}
+
+	return acc, nil
+}
+
+func (s *Service) CancelGoal(
+	ctx context.Context,
+	aid string,
+	userID string,
+	destinationAccID string,
+) (*account.Account, error) {
+	uid, err := util.ParseID[ledger.ID](userID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+
+	fromAccID, err := util.ParseID[ledger.ID](aid)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", aid),
+			fmt.Errorf("failed parsing id '%s': %w", aid, err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating goal: %w", err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	qtx := postgres.NewAccountQueryService(tx)
+	rtx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
+	goalAcc, err := qtx.FindWithSum(ctx, aid)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding ledger entries for '%s' account: %w", aid, err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+
+	if goalAcc.UserID != userID {
+		return nil, account.ErrNotFound
+	}
+
+	// transfer
+	if goalAcc.Sum > 0 {
+		if destinationAccID == "" {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Remaining destination account is necessary for the remaining",
+				fmt.Errorf(
+					"empty account id: %w",
+					account.ErrInvalidID,
+				),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+		destinationAcc, err := qtx.FindWithSum(ctx, destinationAccID)
+		if err != nil {
+			if errors.Is(err, account.ErrNotFound) {
+				err = errs.NewAppError(
+					errs.KindBusinessRule,
+					"Destination account not found",
+					fmt.Errorf(
+						"Destination account not found: %w",
+						err,
+					),
+					"appaccount.CancelGoal",
+				)
+			} else {
+				err = errs.NewInternalAppError(err, "appaccount.CancelGoal")
+			}
+			return nil, err
+		}
+
+		if destinationAcc.UserID != userID {
+			return nil, account.ErrNotFound
+		}
+
+		if destinationAcc.Type != string(account.CheckingType) {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Amount can only be transfer to a checking account",
+				fmt.Errorf(
+					"Amount can only be transfer to a checking account: %w",
+					account.ErrNegativeBalance,
+				),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+
+		if destinationAcc.Status == string(account.ClosedStatus) {
+			return nil, errs.NewAppError(
+				errs.KindBusinessRule,
+				"Remaining destination is closed",
+				account.ErrClosedAccount,
+				"appaccount.CancelGoal",
+			)
+		}
+
+		tid, err := util.NewID[ledger.ID]()
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed generating id: %w", err),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+
+		toAccID, err := util.ParseID[ledger.ID](destinationAcc.ID)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindValidation,
+				fmt.Sprintf("%s is not a valid id", destinationAcc.ID),
+				fmt.Errorf("failed parsing id '%s': %w", destinationAcc.ID, err),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+
+		t, err := ledger.NewTransfer(
+			tid,
+			uid,
+			fromAccID,
+			toAccID,
+			nil,
+			goalAcc.Sum,
+			fmt.Sprintf("%s goal cancelation", goalAcc.Name),
+			time.Now(),
+			goalAcc.Sum,
+			nil,
+			"",
+			destinationAcc.Type == string(account.SavingsType),
+		)
+		if err != nil {
+			msg := "Failed to create transfer"
+			if errors.Is(err, ledger.ErrNegativeBalance) {
+				msg = fmt.Sprintf(
+					"%s becomes negative on %s",
+					goalAcc.Name,
+					time.Now(),
+				)
+			}
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				msg,
+				fmt.Errorf("failed to create transfer: %w", err),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+
+		err = rtx.Create(ctx, t)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving transaction: %w", err),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+
+		// monthly summary
+		// toAcc
+		tms, err := monthlysummary.New(
+			monthlysummary.ID(destinationAcc.ID),
+			monthlysummary.NewMonth(time.Now()),
+			goalAcc.Sum,
+			0,
+		)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Failed to create summary",
+				fmt.Errorf("failed to create summary: %w", err),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+
+		err = mstx.Save(ctx, tms)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving summary: %w", err),
+				"appaccount.CancelGoal",
+			)
+			return nil, err
+		}
+	}
+
+	cid := &goalAcc.Category.ID
+	if *cid == util.ZeroUUID {
+		cid = nil
+	}
+
+	acc := account.Rehydrate(
+		account.ID(goalAcc.ID),
+		account.ID(goalAcc.UserID),
+		account.AccountType(goalAcc.Type),
+		goalAcc.Name,
+		account.AccountStatus(goalAcc.Status),
+		goalAcc.TargetAmount,
+		goalAcc.StartDate,
+		goalAcc.TargetDate,
+		(*account.ID)(cid),
+		goalAcc.CompletedAt,
+		goalAcc.CancelledAt,
+		goalAcc.Currency,
+		goalAcc.ClosedAt,
+		goalAcc.CreatedAt,
+		goalAcc.UpdatedAt,
+	)
+
+	err = acc.CancelGoal()
+	if err != nil {
+		return nil, err
+	}
+
+	atx := postgres.NewAccountRepository(tx)
+	err = atx.UpdateStatus(ctx, acc)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to cancel '%s' account: %w", aid, err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+
+	// monthly summary
+	// fromAcc
+	fms, err := monthlysummary.New(
+		monthlysummary.ID(aid),
+		monthlysummary.NewMonth(time.Now()),
+		0,
+		goalAcc.Sum,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create summary",
+			fmt.Errorf("failed to create summary: %w", err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+
+	err = mstx.Save(ctx, fms)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving summary: %w", err),
+			"appaccount.CancelGoal",
+		)
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appaccount.CancelGoal",
 		)
 		return nil, err
 	}

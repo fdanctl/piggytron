@@ -370,3 +370,12 @@ func (b *Account) CompleteGoal() error {
 	b.updatedAt = now
 	return nil
 }
+
+func (b *Account) CancelGoal() error {
+	now := time.Now()
+	b.status = ClosedStatus
+	b.cancelledAt = &now
+	b.closedAt = &now
+	b.updatedAt = now
+	return nil
+}
