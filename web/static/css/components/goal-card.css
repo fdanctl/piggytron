@@ -54,6 +54,22 @@
   > span:first-child {
     opacity: 0.35;
   }
+
+  > span:last-child {
+    width: var(--pct);
+  }
+}
+
+.progress-bar--animate {
+  > span:last-child {
+    animation: progress 1s ease-out;
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 0;
+  }
 }
 
 .progress-bar--xs {
@@ -92,6 +108,17 @@
   display: flex;
   justify-content: space-between;
   font-size: var(--font-size-xs);
+}
+
+.goal-card--funded {
+  background-color: oklch(from var(--color-primary) l c h / 10%);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    0 0 30px oklch(from var(--color-primary) l c h / 20%);
+}
+
+.goal-card--funded:hover {
+  background-color: oklch(from var(--color-primary) l c h / 15%);
 }
 
 .goal-card__subinfo > div {

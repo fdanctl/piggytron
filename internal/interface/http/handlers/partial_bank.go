@@ -164,9 +164,15 @@ func (h *BankHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		httperror.SendError(w, r, err)
 		return
 	}
+
+	path := "/banks"
+	if r.URL.Query().Get("type") == "goal" {
+		path = "/goals"
+	}
+
 	w.Header().Set(
 		"HX-Trigger",
-		`{"contentPush": { "url": "/banks","transition": "true" }}`,
+		fmt.Sprintf(`{"contentPush": { "url": "%s","transition": "true" }}`, path),
 	)
 }
 

@@ -1,0 +1,96 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+	"strconv"
+)
+
+templ GoalCompleteForm(id string, v views.GoalCompleteForm, accounts []components.SelectOption) {
+	<form
+		class="space-y-sm goal-complete"
+		hx-trigger="confirmed"
+		hx-on:submit="event.preventDefault()"
+		hx-post={ fmt.Sprintf("/partials/goal/%s/complete", id) }
+		hx-swap="outerHTML"
+		data-submit="goal.complete.confirm"
+		novalidate
+	>
+		<input type="hidden" id="balance" name="balance" value={ v.Balance }/>
+		<div>
+			{{
+				b, _ := strconv.Atoi(v.Balance)
+				r, _ := views.ConvertAmountStrToInt(v.AmountUsed)
+				remainder := b - r
+			}}
+			<span class="font-medium">Balance: </span><span>{ views.FormatMoney(float64(b)/100,currency.EUR, language.AmericanEnglish) }</span>
+			<br/>
+			<span class="font-medium">Remaining: </span><span id="goal-complete-remaining" data-value={ remainder }>{ views.FormatMoney(float64(remainder)/100,currency.EUR, language.AmericanEnglish) }</span>
+		</div>
+		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
+			@components.InputGroup(
+				"",
+				"Amount used",
+				views.StringArrToStr(v.ValidateAmountUsed()),
+				v.AmountUsedHasError(),
+				true,
+				templ.Attributes{
+					"id":          "amount-used",
+					"type":        "text",
+					"name":        "amount-used",
+					"placeholder": views.FormatAmount(float64(b) / 100),
+					"hx-get":      "/partials/goal-complete/recalculate-remaining",
+					"hx-trigger":  "input changed delay:500ms",
+					"hx-include":  "#balance",
+					"hx-target":   "#goal-complete-remaining",
+					"hx-swap":     "innerHTML",
+					"value":       v.AmountUsed,
+					"data-focus":  "ui.cash-input.focus",
+					"data-blur":   "ui.cash-input.blur",
+					"data-input":  "ui.cash-input.input",
+				},
+			)
+			@components.DateInputGroup(
+				"w-full",
+				"Date",
+				views.StringArrToStr(v.ValidateDate()),
+				v.DateHasError(),
+				true,
+				templ.Attributes{
+					"id":    "date",
+					"type":  "text",
+					"name":  "date",
+					"value": v.Date,
+				},
+			)
+		</div>
+		@components.SelectGroup(
+			"",
+			"Remaining destination",
+			v.RemainingDst,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateRemainingDst()),
+			v.RemainingDstHasError(),
+			true,
+			templ.Attributes{
+				"id":   "remaining-destination",
+				"name": "remaining-destination",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

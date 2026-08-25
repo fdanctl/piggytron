@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/text/currency"
 	"golang.org/x/text/language"
@@ -93,4 +94,40 @@ func CapitalizeFirst(s string) string {
 // MonthDiff returns the number of whole calendar months between a and b.
 func MonthDiff(a, b time.Time) int {
 	return (b.Year()-a.Year())*12 + int(b.Month()-a.Month())
+}
+
+// ConvertAmountStrToInt converts user input to amount in cents.
+func ConvertAmountStrToInt(str string) (int, error) {
+	str = strings.ReplaceAll(str, ",", "")
+	i := strings.Index(str, ".")
+	tAmount := 0
+
+	length := utf8.RuneCountInString(str)
+	if str == "" {
+		return 0, nil
+	}
+
+	if i == -1 {
+		parsed, err := strconv.Atoi(str)
+		if err != nil {
+			return 0, err
+		}
+		return parsed * 100, nil
+	}
+
+	if length-1-i > 2 {
+		return 0, nil
+	}
+
+	for length-i < 3 {
+		str += "0"
+		length++
+	}
+
+	tAmount, err := strconv.Atoi(strings.Replace(str, ".", "", 1))
+	if err != nil {
+		return 0, err
+	}
+
+	return tAmount, nil
 }

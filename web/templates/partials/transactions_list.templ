@@ -50,7 +50,7 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 		<div>
 			<div class="transaction__icon">
 				switch t.Type {
-					case "expense":
+					case "expense", "goal-fulfillment":
 						@components.ArrowLeftSvg(0, "", "")
 					case "income":
 						@components.ArrowRightSvg(0, "", "")

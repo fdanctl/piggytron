@@ -40,6 +40,24 @@ func NewGoalHandler(
 }
 
 func (h *GoalHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	action := r.PathValue("action")
+	if action != "" {
+		switch action {
+		case "complete":
+			switch r.Method {
+			case http.MethodGet:
+				h.GetComplete(w, r)
+
+			case http.MethodPost:
+				h.PostComplete(w, r)
+
+			default:
+				http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			}
+		}
+		return
+	}
+
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -283,6 +301,135 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 	)
 
 	partials.GoalFormContent(view, ecatOpts).Render(r.Context(), w)
+}
+
+// GetComplete returns the complete goal form
+func (h *GoalHandler) GetComplete(w http.ResponseWriter, r *http.Request) {
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	id := r.PathValue("id")
+	g, err := h.accountQueryService.FindWithSum(r.Context(), id)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+	if account.AccountType(g.Type) != account.GoalType {
+		err := errs.NewAppError(
+			errs.KindNotFound,
+			fmt.Sprintf("%s is not a goal", g.ID),
+			fmt.Errorf("'%s' is not a goal: %w", g.ID, account.ErrAccountWrongType),
+			"GoalHandler.GetComplete",
+		)
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	noSavingsBanksOpts, _, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+		"",
+	)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	view := views.NewGoalCompleteForm(g.Sum)
+	form := partials.GoalCompleteForm(id, *view, noSavingsBanksOpts)
+	components.DialogWrapper("", components.DialogHeader("", "Complete Goal", nil), form, nil, nil).
+		Render(r.Context(), w)
+}
+
+// PostComplete receives the amount used from that goal and
+// the account id to send the remainder amount.
+func (h *GoalHandler) PostComplete(w http.ResponseWriter, r *http.Request) {
+	logger := middleware.LoggerFromContext(r.Context())
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	view := views.GoalCompleteForm{
+		Balance:      r.FormValue("balance"),
+		AmountUsed:   r.FormValue("amount-used"),
+		Date:         r.FormValue("date"),
+		RemainingDst: r.FormValue("remaining-destination"),
+	}
+
+	id := r.PathValue("id")
+
+	noSavingsBanksOpts, _, err := getAccSelectOptions(
+		h.accService,
+		r.Context(),
+		sessionInfo.UserID,
+		"",
+	)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	msgs := view.Validate()
+	if len(msgs) > 0 {
+		logger.Info("invalid form", "error", msgs)
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		partials.GoalCompleteForm(id, view, noSavingsBanksOpts).
+			Render(r.Context(), w)
+		return
+	}
+
+	amount, err := convertAmountStrToInt(view.AmountUsed)
+	if err != nil {
+		err := errs.NewGenericBadRequestAppError(err, "GoalHandler.PostComplete")
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	date, err := time.Parse("02/01/2006", view.Date)
+	if err != nil {
+		err := errs.NewGenericBadRequestAppError(err, "GoalHandler.PostComplete")
+		httperror.SendError(w, r, err)
+		return
+	}
+
+	g, err := h.accService.CompleteGoal(
+		r.Context(),
+		id,
+		sessionInfo.UserID,
+		amount,
+		date,
+		view.RemainingDst,
+	)
+	if err != nil {
+		view.SetError(err)
+		form := partials.GoalCompleteForm(id, view, noSavingsBanksOpts)
+		httperror.SendFormError(w, r, err, form)
+		return
+	}
+
+	w.Header().Set(
+		"HX-Trigger",
+		fmt.Sprintf(`{
+		"closeAllModal": true,
+		"contentPush": {
+			"url": "/goals/%s"
+		}
+		}`, id),
+	)
+
+	templ.Join(
+		partials.GoalCompleteForm(id, view, noSavingsBanksOpts),
+		components.SendToast(
+			components.Success,
+			fmt.Sprintf("%s goal completed", g.Name()),
+		),
+	).Render(r.Context(), w)
 }
 
 type goalFormData struct {

@@ -35,6 +35,8 @@ type AccountWithCategory struct {
 	StartDate    *time.Time
 	TargetDate   *time.Time
 	Category     *CategoryDTO
+	CompletedAt  *time.Time
+	CancelledAt  *time.Time
 
 	ClosedAt  *time.Time
 	CreatedAt time.Time
@@ -131,4 +133,5 @@ type AccountQueryService interface {
 	) (*AccountWithMinRunningBalance, error)
 	// GetAccountFirstEntryDate returns the date of the account's oldest ledger entry.
 	GetAccountFirstEntryDate(ctx context.Context, id string) (time.Time, error)
+	GetAccountLastEntryDate(ctx context.Context, id string) (time.Time, error)
 }

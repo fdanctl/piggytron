@@ -302,6 +302,10 @@ func main() {
 	)
 	partialsMux.Handle("/partials/goal", goalHandler)
 	partialsMux.Handle("/partials/goal/{id}", goalHandler)
+	partialsMux.Handle("/partials/goal/{id}/{action}", goalHandler)
+
+	remainderRecalculateHandler := handlers.NewRemainderRecalculeHandler()
+	partialsMux.Handle("/partials/goal-complete/recalculate-remaining", remainderRecalculateHandler)
 
 	logger.Info("server starting", "addr", ":8080")
 

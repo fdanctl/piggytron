@@ -11,26 +11,85 @@ import (
 )
 
 templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, hasMore bool, ttCount int) {
-	@components.Breadcrumbs(bview)
+	<div class="flex justify-between">
+		@components.Breadcrumbs(bview)
+		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
+			<ul class="breadcrumbs-selection">
+				if g.ClosedAt == nil {
+					<li>
+						<button
+							hx-get={ fmt.Sprintf("/partials/goal-contribute/%s", g.ID) }
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
+							class="reset-btn text-sm"
+							data-action="ui.popover.hide"
+						>Contribute</button>
+					</li>
+					<li>
+						<button
+							hx-get={ fmt.Sprintf("/partials/goal/%s/complete", g.ID) }
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
+							class="reset-btn text-sm"
+							data-action="ui.popover.hide"
+						>Complete</button>
+					</li>
+					<li>
+						<button
+							hx-trigger="confirmed"
+							hx-post={ fmt.Sprintf("/partials/goal/%s/cancel", g.ID) }
+							class="reset-btn text-sm"
+							data-action="ui.popover.hide goal.cancel.confirm"
+						>Cancel</button>
+					</li>
+				}
+				<li>
+					<button
+						hx-trigger="confirmed"
+						hx-delete={ fmt.Sprintf("/partials/bank/%s?type=goal", g.ID) }
+						class="reset-btn text-sm"
+						data-action="ui.popover.hide account.delete.confirm"
+						data-transactions={ ttCount }
+					>Delete</button>
+				</li>
+			</ul>
+		}
+	</div>
 	<div class="flex justify-between">
 		<div class="goal-amount-target">
 			<h2>{ g.Amount }</h2>
 			<span class="text-base">/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</span>
 		</div>
 		<div class="goal-actions">
-			@components.ButtonWithIcon(
-				"Contribute",
-				"",
-				components.BtnSecondary,
-				components.BtnMedium,
-				templ.Attributes{
-					"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
-					"hx-target": "#dialog-root",
-					"hx-swap":   "beforeend",
-				},
-				components.IconLeft,
-				components.PlusSvg(0, "", ""),
-			)
+			if g.Status == views.ActiveStatus {
+				@components.ButtonWithIcon(
+					"Contribute",
+					"",
+					components.BtnSecondary,
+					components.BtnMedium,
+					templ.Attributes{
+						"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
+						"hx-target": "#dialog-root",
+						"hx-swap":   "beforeend",
+					},
+					components.IconLeft,
+					components.PlusSvg(0, "", ""),
+				)
+			} else if g.Status == views.FundedStatus {
+				@components.ButtonWithIcon(
+					"Complete",
+					"",
+					components.BtnPrimary,
+					components.BtnMedium,
+					templ.Attributes{
+						"hx-get":    fmt.Sprintf("/partials/goal/%s/complete", g.ID),
+						"hx-target": "#dialog-root",
+						"hx-swap":   "beforeend",
+					},
+					components.IconLeft,
+					components.CheckSvg(0, "", ""),
+				)
+			}
 			@components.ButtonWithIcon(
 				"Edit goal",
 				"",
@@ -46,7 +105,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 			)
 		</div>
 	</div>
-	@components.ProgressBar("mt-md", g.CompletePercentage)
+	@components.ProgressBar("progress-bar--animate mt-md", g.CompletePercentage)
 	<div class="flex justify-between text-subtitle text-xs mt-xs">
 		<span>
 			{ views.FormatMoney(0.00, currency.EUR, language.AmericanEnglish) }
@@ -61,22 +120,38 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 			{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
 		</span>
 	</div>
-	@components.ButtonWithIcon(
-		"Contribute",
-		"mobile-contribute-btn mt-xl",
-		components.BtnSecondary,
-		components.BtnMedium,
-		templ.Attributes{
-			"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
-			"hx-target": "#dialog-root",
-			"hx-swap":   "beforeend",
-		},
-		components.IconLeft,
-		components.PlusSvg(0, "", ""),
-	)
+	if g.Status == views.ActiveStatus {
+		@components.ButtonWithIcon(
+			"Contribute",
+			"mobile-contribute-btn mt-xl",
+			components.BtnSecondary,
+			components.BtnMedium,
+			templ.Attributes{
+				"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
+				"hx-target": "#dialog-root",
+				"hx-swap":   "beforeend",
+			},
+			components.IconLeft,
+			components.PlusSvg(0, "", ""),
+		)
+	} else if g.Status == views.FundedStatus {
+		@components.ButtonWithIcon(
+			"Complete",
+			"mobile-contribute-btn mt-xl",
+			components.BtnPrimary,
+			components.BtnMedium,
+			templ.Attributes{
+				"hx-get":    fmt.Sprintf("/partials/goal/%s/complete", g.ID),
+				"hx-target": "#dialog-root",
+				"hx-swap":   "beforeend",
+			},
+			components.IconLeft,
+			components.CheckSvg(0, "", ""),
+		)
+	}
 	{{
 		extraQuery := ""
-		if g.Status == "closed" {
+		if g.ClosedAt != nil {
 			extraQuery = fmt.Sprintf("&closedAt=%s", views.FormatDateOnly(*g.ClosedAt))
 		}
 	}}
@@ -86,7 +161,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 		hx-get={ fmt.Sprintf("/partials/charts/account-hist/%s?start=%s&max=%d%s", g.ID, g.StartDate.Format(time.DateOnly), g.TargetAmount, extraQuery) }
 		hx-trigger="load"
 	>
-		@components.Loader("htmx-indicator", nil)
+		@components.Loader("htmx-indicator h-full", nil)
 	</div>
 	<div class="goal-grid">
 		<div class="card" id="goal-details">
@@ -104,7 +179,11 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 			<ul class="goal-details__list">
 				<li class="goal-details__item">
 					<span class="goal-details__key">Status</span>
-					<span class="goal-details__value">status</span>
+					if g.ClosedAt != nil {
+						@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
+					} else {
+						@components.Badge("capitalize", string(g.Status), components.BadgeChecking)
+					}
 				</li>
 				<li class="goal-details__item">
 					<span class="goal-details__key">Category</span>
@@ -118,7 +197,12 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 				</li>
 				<li class="goal-details__item">
 					<span class="goal-details__key">Left</span>
-					<span class="goal-details__value">{ g.AmountLeft }</span>
+					<span class="goal-details__value">
+						{ g.AmountLeft }
+						if g.MonthlyNeeded != "-" {
+							<span class="text-xs">({ g.MonthlyNeeded }/mo)</span>
+						}
+					</span>
 				</li>
 				<li class="goal-details__item">
 					<span class="goal-details__key">Start date</span>

@@ -5,6 +5,7 @@ package ledger
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -15,9 +16,10 @@ type ID string
 type Type string
 
 const (
-	income   Type = "income"
-	expense  Type = "expense"
-	transfer Type = "transfer"
+	income          Type = "income"
+	expense         Type = "expense"
+	transfer        Type = "transfer"
+	goalFulfillment Type = "goal-fulfillment"
 )
 
 // NewType parses a string into a Type, returning ErrInvalidType otherwise.
@@ -186,6 +188,37 @@ func NewTransfer(
 		expenseCategoryID: expenseCategoryID,
 		amount:            amount,
 		description:       description,
+		date:              date,
+		createdAt:         now,
+	}, nil
+}
+
+// NewGoalFulfillment creates a goal fulfillment entry
+func NewGoalFulfillment(
+	id ID,
+	userID ID,
+	goalID ID,
+	goalName string,
+	expenseCategoryID ID,
+	amount int,
+	date time.Time,
+) (*Entry, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidAmount
+	}
+
+	now := time.Now()
+
+	return &Entry{
+		id:                id,
+		userID:            userID,
+		ttype:             goalFulfillment,
+		fromAccountID:     &goalID,
+		toAccountID:       nil,
+		incomeCategoryID:  nil,
+		expenseCategoryID: &expenseCategoryID,
+		amount:            amount,
+		description:       fmt.Sprintf("%s goal fulfillment", goalName),
 		date:              date,
 		createdAt:         now,
 	}, nil

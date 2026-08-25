@@ -9,12 +9,22 @@ import (
 	"golang.org/x/text/language"
 )
 
+// GoalStatus marks the status of the account (active or closed).
+type GoalStatus string
+
+const (
+	ActiveStatus    GoalStatus = "active"
+	FundedStatus    GoalStatus = "funded"
+	CompletedStatus GoalStatus = "completed"
+	CancelledStatus GoalStatus = "cancelled"
+)
+
 // Goal is the view-model for a savings goal: current amount, amount left,
 // monthly contribution needed and completion percentage.
 type Goal struct {
 	ID           string
 	Name         string
-	Status       string
+	Status       GoalStatus
 	Type         string
 	TargetAmount int
 	StartDate    time.Time
@@ -54,10 +64,21 @@ func NewGoal(
 		monthlyNeeded = FormatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
 	}
 
+	status := ActiveStatus
+	if g.TargetAmount != nil && g.Sum >= *g.TargetAmount {
+		status = FundedStatus
+	}
+	if g.CompletedAt != nil {
+		status = CompletedStatus
+	}
+	if g.CancelledAt != nil {
+		status = CancelledStatus
+	}
+
 	return Goal{
 		ID:           g.ID,
 		Name:         g.Name,
-		Status:       g.Status,
+		Status:       status,
 		Type:         g.Type,
 		TargetAmount: *g.TargetAmount,
 		StartDate:    *g.StartDate,

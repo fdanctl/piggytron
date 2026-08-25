@@ -4,8 +4,11 @@ import "fmt"
 import "math"
 
 templ ProgressBar(class string, pct float64) {
-	<div class={ "progress-bar",  templ.KV(class, class != "") }>
+	<div
+		class={ "progress-bar",  templ.KV(class, class != "") }
+		style={ fmt.Sprintf("--pct: %f%%", math.Min(pct, 100)) }
+	>
 		<span class="w-full"></span>
-		<span style={ fmt.Sprintf("width: %f%%;", math.Min(pct, 100)) }></span>
+		<span></span>
 	</div>
 }

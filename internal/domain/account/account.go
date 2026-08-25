@@ -59,6 +59,8 @@ type Account struct {
 	startDate    *time.Time
 	targetDate   *time.Time
 	categoryID   *ID
+	completedAt  *time.Time
+	cancelledAt  *time.Time
 
 	closedAt  *time.Time
 	createdAt time.Time
@@ -146,6 +148,8 @@ func Rehydrate(
 	startDate *time.Time,
 	targetDate *time.Time,
 	categoryID *ID,
+	completedAt *time.Time,
+	cancelledAt *time.Time,
 	currency string,
 	closedAt *time.Time,
 	createdAt, updatedAt time.Time,
@@ -160,6 +164,8 @@ func Rehydrate(
 		startDate:    startDate,
 		targetDate:   targetDate,
 		categoryID:   categoryID,
+		completedAt:  completedAt,
+		cancelledAt:  cancelledAt,
 		currency:     currency,
 		closedAt:     closedAt,
 		createdAt:    createdAt,
@@ -215,6 +221,16 @@ func (b *Account) TargetDate() *time.Time {
 // CategoryID returns the goal funding category, or nil for banks.
 func (b *Account) CategoryID() *ID {
 	return b.categoryID
+}
+
+// CompletedAt returns when the goal was completed, or nil if not or if not a goal.
+func (b *Account) CompletedAt() *time.Time {
+	return b.completedAt
+}
+
+// CancelledAt eturns when the goal was cancelled, or nil if not or if not a goal.
+func (b *Account) CancelledAt() *time.Time {
+	return b.cancelledAt
 }
 
 // ClosedAt returns when the account was closed, or nil if not closed.
@@ -341,6 +357,15 @@ func (b *Account) CloseAccount(accBalance int) error {
 	}
 	now := time.Now()
 	b.status = ClosedStatus
+	b.closedAt = &now
+	b.updatedAt = now
+	return nil
+}
+
+func (b *Account) CompleteGoal() error {
+	now := time.Now()
+	b.status = ClosedStatus
+	b.completedAt = &now
 	b.closedAt = &now
 	b.updatedAt = now
 	return nil

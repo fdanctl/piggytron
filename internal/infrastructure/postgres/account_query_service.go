@@ -162,6 +162,8 @@ func (s *AccountQueryService) FindGoalsByCategory(
 		  COALESCE(c.id, $1),
 		  COALESCE(c.name, ''),
 		  COALESCE(c.type, 'income'),
+		  a.completed_at,
+		  a.cancelled_at,
 		  a.closed_at,
 		  a.created_at,
 		  a.updated_at
@@ -198,6 +200,8 @@ func (s *AccountQueryService) FindGoalsByCategory(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&g.CompletedAt,
+			&g.CancelledAt,
 			&g.ClosedAt,
 			&g.CreatedAt,
 			&g.UpdatedAt,
@@ -242,6 +246,8 @@ func (s *AccountQueryService) FindWithSum(
 			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
+			a.completed_at,
+			a.cancelled_at,
 			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
@@ -273,11 +279,16 @@ func (s *AccountQueryService) FindWithSum(
 		&c.ID,
 		&c.Name,
 		&c.Type,
+		&g.CompletedAt,
+		&g.CancelledAt,
 		&g.ClosedAt,
 		&g.CreatedAt,
 		&g.UpdatedAt,
 		&g.Sum,
 	); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, account.ErrNotFound
+		}
 		return nil, err
 	}
 	g.Category = &c
@@ -304,6 +315,8 @@ func (s *AccountQueryService) FindAllWithSum(
 			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
+			a.completed_at,
+			a.cancelled_at,
 			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
@@ -343,6 +356,8 @@ func (s *AccountQueryService) FindAllWithSum(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&g.CompletedAt,
+			&g.CancelledAt,
 			&g.ClosedAt,
 			&g.CreatedAt,
 			&g.UpdatedAt,
@@ -378,6 +393,9 @@ func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 			COALESCE(c.id, $1),
 			COALESCE(c.name,''),
 			COALESCE(c.type,'income'),
+			a.completed_at,
+			a.cancelled_at,
+			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
 			COALESCE(SUM(ms.money_in - ms.money_out), 0) AS sum,
@@ -419,6 +437,9 @@ func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&g.CompletedAt,
+			&g.CancelledAt,
+			&g.ClosedAt,
 			&g.CreatedAt,
 			&g.UpdatedAt,
 			&g.Sum,
@@ -453,6 +474,8 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			c.id,
 			c.name,
 			COALESCE(c.type,'income'),
+			a.completed_at,
+			a.cancelled_at,
 			a.closed_at,
 			a.created_at, 
 			a.updated_at, 
@@ -491,6 +514,8 @@ func (s *AccountQueryService) FindAllGoalsWithSum(
 			&c.ID,
 			&c.Name,
 			&c.Type,
+			&g.CompletedAt,
+			&g.CancelledAt,
 			&g.ClosedAt,
 			&g.CreatedAt,
 			&g.UpdatedAt,
@@ -1096,7 +1121,7 @@ func (s *AccountQueryService) GetAccountWithMinRunningBalance(
 
 func (s *AccountQueryService) GetAccountFirstEntryDate(
 	ctx context.Context,
-	uid string,
+	id string,
 ) (date time.Time, err error) {
 	row := s.db.QueryRowContext(
 		ctx,
@@ -1105,7 +1130,31 @@ func (s *AccountQueryService) GetAccountFirstEntryDate(
 		ORDER BY date ASC
 		LIMIT 1
 		`,
-		uid,
+		id,
+	)
+
+	err = row.Scan(&date)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return date, account.ErrNotFound
+		}
+		return date, err
+	}
+	return
+}
+
+func (s *AccountQueryService) GetAccountLastEntryDate(
+	ctx context.Context,
+	id string,
+) (date time.Time, err error) {
+	row := s.db.QueryRowContext(
+		ctx,
+		`SELECT date FROM ledger
+		WHERE from_account_id = $1 OR to_account_id = $1
+		ORDER BY date DESC
+		LIMIT 1
+		`,
+		id,
 	)
 
 	err = row.Scan(&date)

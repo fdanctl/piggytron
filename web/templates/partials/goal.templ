@@ -8,16 +8,16 @@ import (
 )
 
 templ GoalItem(g views.Goal, attrs templ.Attributes) {
-	<li class="goal-card space-y-xs" { attrs... }>
+	<li class={ "goal-card", templ.KV("goal-card--funded", g.Status == views.FundedStatus), "space-y-xs" } { attrs... }>
 		<a href={ "/goals/" + g.ID }>
 			<div class="flex justify-between">
 				<h5>
 					{ g.Name }
 				</h5>
-				if g.TargetDate != nil {
-					<p class="goal-card__target-date">
-						Target: { views.FormatDateMY(*g.TargetDate) }
-					</p>
+				if g.ClosedAt != nil {
+					@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
+				} else {
+					@components.Badge("capitalize", string(g.Status), components.BadgeChecking)
 				}
 			</div>
 			<div class="mb-xs">

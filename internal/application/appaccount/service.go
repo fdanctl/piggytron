@@ -688,7 +688,7 @@ func (s *Service) CloseAccount(
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed finding ledger entries for '%s' account: %w", id, err),
-			"appaccount.Delete",
+			"appaccount.CloseAccount",
 		)
 		return err
 	}
@@ -708,6 +708,8 @@ func (s *Service) CloseAccount(
 		dto.StartDate,
 		dto.TargetDate,
 		(*account.ID)(cid),
+		dto.CompletedAt,
+		dto.CancelledAt,
 		dto.Currency,
 		dto.ClosedAt,
 		dto.CreatedAt,

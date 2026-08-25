@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS accounts (
   start_date TIMESTAMP,
   target_date TIMESTAMP,
   category_id UUID REFERENCES expense_categories (id),
+  completed_at TIMESTAMP,
+  cancelled_at TIMESTAMP,
   --
   closed_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL,
@@ -61,6 +63,8 @@ CREATE TABLE IF NOT EXISTS accounts (
       AND start_date IS NULL
       AND target_date IS NULL
       AND category_id IS NULL
+      AND completed_at IS NULL
+      AND cancelled_at IS NULL
     )
     OR (
       type = 'goal'
@@ -77,7 +81,14 @@ CREATE TABLE IF NOT EXISTS ledger (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   --
-  type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense', 'transfer')),
+  type VARCHAR(20) NOT NULL CHECK (
+    type IN (
+      'income',
+      'expense',
+      'transfer',
+      'goal-fulfillment'
+    )
+  ),
   --
   from_account_id UUID REFERENCES accounts (id),
   to_account_id UUID REFERENCES accounts (id),
@@ -123,6 +134,13 @@ CREATE TABLE IF NOT EXISTS ledger (
       AND to_account_id IS NOT NULL
       AND income_category_id IS NULL
       -- expense_category_id optional
+    )
+    OR (
+      type = 'goal-fulfillment'
+      AND from_account_id IS NOT NULL
+      AND to_account_id IS NULL
+      AND income_category_id IS NULL
+      AND expense_category_id IS NOT NULL
     )
   )
 );
