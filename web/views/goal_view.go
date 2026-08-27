@@ -30,9 +30,9 @@ type Goal struct {
 	StartDate    time.Time
 	TargetDate   *time.Time
 	Category     string
-	Amount       string
+	Amount       int
 
-	AmountLeft         string
+	AmountLeft         int
 	MonthlyNeeded      string
 	MonthsLeft         string
 	CompletePercentage float64
@@ -64,39 +64,34 @@ func NewGoal(
 		monthlyNeeded = FormatMoney(float64(mn)/100, currency.EUR, language.AmericanEnglish)
 	}
 
+	amount := g.Sum
 	status := ActiveStatus
 	if g.TargetAmount != nil && g.Sum >= *g.TargetAmount {
 		status = FundedStatus
 	}
 	if g.CompletedAt != nil {
 		status = CompletedStatus
+		amount = *g.FinalizedAmount
 	}
 	if g.CancelledAt != nil {
 		status = CancelledStatus
+		amount = *g.FinalizedAmount
 	}
 
 	return Goal{
-		ID:           g.ID,
-		Name:         g.Name,
-		Status:       status,
-		Type:         g.Type,
-		TargetAmount: *g.TargetAmount,
-		StartDate:    *g.StartDate,
-		TargetDate:   g.TargetDate,
-		Category:     g.Category.Name,
-		Amount: FormatMoney(
-			float64(g.Sum)/100,
-			currency.EUR,
-			language.AmericanEnglish,
-		),
-		AmountLeft: FormatMoney(
-			float64(*g.TargetAmount-g.Sum)/100,
-			currency.EUR,
-			language.AmericanEnglish,
-		),
+		ID:                 g.ID,
+		Name:               g.Name,
+		Status:             status,
+		Type:               g.Type,
+		TargetAmount:       *g.TargetAmount,
+		StartDate:          *g.StartDate,
+		TargetDate:         g.TargetDate,
+		Category:           g.Category.Name,
+		Amount:             amount,
+		AmountLeft:         *g.TargetAmount - amount,
 		MonthlyNeeded:      monthlyNeeded,
 		MonthsLeft:         monthsLeft,
-		CompletePercentage: float64(g.Sum) / float64(*g.TargetAmount) * 100,
+		CompletePercentage: float64(amount) / float64(*g.TargetAmount) * 100,
 		ClosedAt:           g.ClosedAt,
 	}
 }

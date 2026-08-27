@@ -14,16 +14,17 @@ templ GoalItem(g views.Goal, attrs templ.Attributes) {
 				<h5>
 					{ g.Name }
 				</h5>
-				if g.ClosedAt != nil {
-					@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
-				} else {
+				if g.Status == views.CompletedStatus {
 					@components.Badge("capitalize", string(g.Status), components.BadgeChecking)
+				}
+				if g.Status == views.CancelledStatus {
+					@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
 				}
 			</div>
 			<div class="mb-xs">
 				<div class="flex justify-between items-end">
 					<p class="goal-card__amount">
-						{ g.Amount } <sub>/{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</sub>
+						{ views.FormatMoney(float64(g.Amount)/100, currency.EUR, language.AmericanEnglish) } <sub>/{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</sub>
 					</p>
 					<p class="goal-card__percentage">
 						{ views.FormatFloat(g.CompletePercentage) }%

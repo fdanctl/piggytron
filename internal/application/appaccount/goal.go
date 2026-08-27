@@ -570,13 +570,14 @@ func (s *Service) CompleteGoal(
 		(*account.ID)(cid),
 		goalAcc.CompletedAt,
 		goalAcc.CancelledAt,
+		goalAcc.FinalizedAmount,
 		goalAcc.Currency,
 		goalAcc.ClosedAt,
 		goalAcc.CreatedAt,
 		goalAcc.UpdatedAt,
 	)
 
-	err = acc.CompleteGoal()
+	err = acc.CompleteGoal(goalAcc.Sum)
 	if err != nil {
 		return nil, err
 	}
@@ -884,13 +885,14 @@ func (s *Service) CancelGoal(
 		(*account.ID)(cid),
 		goalAcc.CompletedAt,
 		goalAcc.CancelledAt,
+		goalAcc.FinalizedAmount,
 		goalAcc.Currency,
 		goalAcc.ClosedAt,
 		goalAcc.CreatedAt,
 		goalAcc.UpdatedAt,
 	)
 
-	err = acc.CancelGoal()
+	err = acc.CancelGoal(goalAcc.Sum)
 	if err != nil {
 		return nil, err
 	}

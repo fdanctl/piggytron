@@ -55,12 +55,13 @@ type Account struct {
 	status   AccountStatus
 	currency string
 	// goal-specific
-	targetAmount *int
-	startDate    *time.Time
-	targetDate   *time.Time
-	categoryID   *ID
-	completedAt  *time.Time
-	cancelledAt  *time.Time
+	targetAmount    *int
+	startDate       *time.Time
+	targetDate      *time.Time
+	categoryID      *ID
+	completedAt     *time.Time
+	cancelledAt     *time.Time
+	finalizedAmount *int
 
 	closedAt  *time.Time
 	createdAt time.Time
@@ -150,26 +151,28 @@ func Rehydrate(
 	categoryID *ID,
 	completedAt *time.Time,
 	cancelledAt *time.Time,
+	finalizedAmount *int,
 	currency string,
 	closedAt *time.Time,
 	createdAt, updatedAt time.Time,
 ) *Account {
 	return &Account{
-		id:           id,
-		userID:       userID,
-		aType:        aType,
-		name:         name,
-		status:       status,
-		targetAmount: targetAmount,
-		startDate:    startDate,
-		targetDate:   targetDate,
-		categoryID:   categoryID,
-		completedAt:  completedAt,
-		cancelledAt:  cancelledAt,
-		currency:     currency,
-		closedAt:     closedAt,
-		createdAt:    createdAt,
-		updatedAt:    updatedAt,
+		id:              id,
+		userID:          userID,
+		aType:           aType,
+		name:            name,
+		status:          status,
+		targetAmount:    targetAmount,
+		startDate:       startDate,
+		targetDate:      targetDate,
+		categoryID:      categoryID,
+		completedAt:     completedAt,
+		cancelledAt:     cancelledAt,
+		finalizedAmount: finalizedAmount,
+		currency:        currency,
+		closedAt:        closedAt,
+		createdAt:       createdAt,
+		updatedAt:       updatedAt,
 	}
 }
 
@@ -228,9 +231,14 @@ func (b *Account) CompletedAt() *time.Time {
 	return b.completedAt
 }
 
-// CancelledAt eturns when the goal was cancelled, or nil if not or if not a goal.
+// CancelledAt returns when the goal was cancelled, or nil if not or if not a goal.
 func (b *Account) CancelledAt() *time.Time {
 	return b.cancelledAt
+}
+
+// FinalizedAmount returns when the goal reach amount before closed.
+func (b *Account) FinalizedAmount() *int {
+	return b.finalizedAmount
 }
 
 // ClosedAt returns when the account was closed, or nil if not closed.
@@ -362,20 +370,22 @@ func (b *Account) CloseAccount(accBalance int) error {
 	return nil
 }
 
-func (b *Account) CompleteGoal() error {
+func (b *Account) CompleteGoal(reachedAmount int) error {
 	now := time.Now()
 	b.status = ClosedStatus
 	b.completedAt = &now
 	b.closedAt = &now
+	b.finalizedAmount = &reachedAmount
 	b.updatedAt = now
 	return nil
 }
 
-func (b *Account) CancelGoal() error {
+func (b *Account) CancelGoal(reachedAmount int) error {
 	now := time.Now()
 	b.status = ClosedStatus
 	b.cancelledAt = &now
 	b.closedAt = &now
+	b.finalizedAmount = &reachedAmount
 	b.updatedAt = now
 	return nil
 }

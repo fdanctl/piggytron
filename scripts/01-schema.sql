@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   category_id UUID REFERENCES expense_categories (id),
   completed_at TIMESTAMP,
   cancelled_at TIMESTAMP,
+  finalized_amount BIGINT,
   --
   closed_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL,
@@ -65,6 +66,7 @@ CREATE TABLE IF NOT EXISTS accounts (
       AND category_id IS NULL
       AND completed_at IS NULL
       AND cancelled_at IS NULL
+      AND finalized_amount IS NULL
     )
     OR (
       type = 'goal'

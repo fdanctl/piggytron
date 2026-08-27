@@ -86,6 +86,12 @@
   }
 }
 
+.progress-bar--neutral {
+  > span {
+    background-color: var(--color-neutral-grey);
+  }
+}
+
 .progress-bar--needs {
   > span {
     background-color: var(--color-needs);

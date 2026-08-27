@@ -117,6 +117,7 @@ input[type="number"] {
   --color-neutral-primary: white;
   --color-on-neutral-primary: var(--color-neutral-600);
   --color-on-neutral-primary-strong: var(--color-neutral-900);
+  --color-neutral-grey: #525252;
 
   /* background */
   --color-bg: var(--color-bg-light); /* Main app/page background */
@@ -253,6 +254,7 @@ input[type="number"] {
   --color-neutral-primary: var(--color-neutral-950);
   --color-on-neutral-primary: var(--color-neutral-300);
   --color-on-neutral-primary-strong: white;
+  --color-neutral-grey: #d4d4d4;
 
   /* background */
   --color-bg: var(--color-bg-dark); /* Main app/page background */

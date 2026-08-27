@@ -222,6 +222,7 @@ func (s *Service) CloseAccount(
 		(*account.ID)(cid),
 		dto.CompletedAt,
 		dto.CancelledAt,
+		dto.FinalizedAmount,
 		dto.Currency,
 		dto.ClosedAt,
 		dto.CreatedAt,

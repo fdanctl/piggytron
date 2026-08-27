@@ -31,12 +31,13 @@ type AccountWithCategory struct {
 	Status   string
 	Currency string
 	// goal-specific
-	TargetAmount *int
-	StartDate    *time.Time
-	TargetDate   *time.Time
-	Category     *CategoryDTO
-	CompletedAt  *time.Time
-	CancelledAt  *time.Time
+	TargetAmount    *int
+	StartDate       *time.Time
+	TargetDate      *time.Time
+	Category        *CategoryDTO
+	CompletedAt     *time.Time
+	CancelledAt     *time.Time
+	FinalizedAmount *int
 
 	ClosedAt  *time.Time
 	CreatedAt time.Time

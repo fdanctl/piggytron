@@ -35,9 +35,11 @@
 }
 
 #goal-details {
-  height: fit-content;
-  position: sticky;
-  top: 0;
+  @container main (min-width: 675px) {
+    height: fit-content;
+    position: sticky;
+    top: 0;
+  }
 }
 
 .goal-details__pen-btn {

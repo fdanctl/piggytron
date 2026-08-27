@@ -58,8 +58,14 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 	</div>
 	<div class="flex justify-between">
 		<div class="goal-amount-target">
-			<h2>{ g.Amount }</h2>
+			<h2>{ views.FormatMoney(float64(g.Amount/100), currency.EUR, language.AmericanEnglish) }</h2>
 			<span class="text-base">/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</span>
+			if g.Status == views.CompletedStatus {
+				@components.Badge("capitalize", string(g.Status), components.BadgeChecking)
+			}
+			if g.Status == views.CancelledStatus {
+				@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
+			}
 		</div>
 		<div class="goal-actions">
 			if g.Status == views.ActiveStatus {
@@ -106,7 +112,11 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 			)
 		</div>
 	</div>
-	@components.ProgressBar("progress-bar--animate mt-md", g.CompletePercentage)
+	if g.ClosedAt != nil {
+		@components.ProgressBar("progress-bar--animate progress-bar--neutral mt-md", g.CompletePercentage)
+	} else {
+		@components.ProgressBar("progress-bar--animate mt-md", g.CompletePercentage)
+	}
 	<div class="flex justify-between text-subtitle text-xs mt-xs">
 		<span>
 			{ views.FormatMoney(0.00, currency.EUR, language.AmericanEnglish) }
@@ -165,57 +175,90 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 		@components.Loader("htmx-indicator h-full", nil)
 	</div>
 	<div class="goal-grid">
-		<div class="card" id="goal-details">
-			<div class="flex justify-between w-full">
-				<h4 class="card__title mb-md">Details</h4>
-				<button
-					class="reset-btn goal-details__pen-btn"
-					hx-get={ fmt.Sprintf("/partials/goal/%s", g.ID) }
-					hx-target="#dialog-root"
-					hx-swap="beforeend"
-				>
-					@components.PenSvg(14, "", "")
-				</button>
-			</div>
-			<ul class="goal-details__list">
-				<li class="goal-details__item">
-					<span class="goal-details__key">Status</span>
-					if g.ClosedAt != nil {
-						@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
-					} else {
-						@components.Badge("capitalize", string(g.Status), components.BadgeChecking)
-					}
-				</li>
-				<li class="goal-details__item">
-					<span class="goal-details__key">Category</span>
-					<span class="goal-details__value">{ g.Category }</span>
-				</li>
-				<li class="goal-details__item">
-					<span class="goal-details__key">Target amount</span>
-					<span class="goal-details__value">
-						{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
-					</span>
-				</li>
-				<li class="goal-details__item">
-					<span class="goal-details__key">Left</span>
-					<span class="goal-details__value">
-						{ g.AmountLeft }
-						if g.MonthlyNeeded != "-" {
-							<span class="text-xs">({ g.MonthlyNeeded }/mo)</span>
-						}
-					</span>
-				</li>
-				<li class="goal-details__item">
-					<span class="goal-details__key">Start date</span>
-					<span class="goal-details__value">{ views.FormatDate(g.StartDate) }</span>
-				</li>
-				if g.TargetDate != nil {
+		<div id="goal-details">
+			if g.ClosedAt != nil {
+				<div class="card mb-md">
+					<h4 class="card__title mb-md">Outcome</h4>
+					<ul class="goal-details__list">
+						<li class="goal-details__item">
+							<span class="goal-details__key">Total contributed</span>
+							<span class="goal-details__value">{ views.FormatMoney(float64(g.Amount)/100, currency.EUR, language.AmericanEnglish) }</span>
+						</li>
+						<li class="goal-details__item">
+							<span class="goal-details__key">Duration</span>
+							<span class="goal-details__value">{ views.DateDiffString(g.StartDate, *g.ClosedAt) }</span>
+						</li>
+						<li class="goal-details__item">
+							<span class="goal-details__key">Avg. per month</span>
+							<span class="goal-details__value">{ views.FormatMoney(float64((g.Amount/100) / views.MonthDiff(g.StartDate, *g.ClosedAt)), currency.EUR, language.AmericanEnglish) }</span>
+						</li>
+						<li class="goal-details__item">
+							<span class="goal-details__key">
+								if g.Status == views.CompletedStatus {
+									Completed
+								} else {
+									Cancelled
+								}
+							</span>
+							<span class="goal-details__value">{ views.FormatDate(*g.ClosedAt) }</span>
+						</li>
+					</ul>
+				</div>
+			}
+			<div class="card">
+				<div class="flex justify-between w-full">
+					<h4 class="card__title mb-md">Details</h4>
+					<button
+						class="reset-btn goal-details__pen-btn"
+						hx-get={ fmt.Sprintf("/partials/goal/%s", g.ID) }
+						hx-target="#dialog-root"
+						hx-swap="beforeend"
+					>
+						@components.PenSvg(14, "", "")
+					</button>
+				</div>
+				<ul class="goal-details__list">
 					<li class="goal-details__item">
-						<span class="goal-details__key">Target date</span>
-						<span class="goal-details__value">{ views.FormatDate(*g.TargetDate) }</span>
+						<span class="goal-details__key">Status</span>
+						if g.ClosedAt != nil {
+							@components.Badge("capitalize", string(g.Status), components.BadgeClosed)
+						} else {
+							@components.Badge("capitalize", string(g.Status), components.BadgeChecking)
+						}
 					</li>
-				}
-			</ul>
+					<li class="goal-details__item">
+						<span class="goal-details__key">Category</span>
+						<span class="goal-details__value">{ g.Category }</span>
+					</li>
+					<li class="goal-details__item">
+						<span class="goal-details__key">Target amount</span>
+						<span class="goal-details__value">
+							{ views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
+						</span>
+					</li>
+					if g.ClosedAt == nil {
+						<li class="goal-details__item">
+							<span class="goal-details__key">Left</span>
+							<span class="goal-details__value">
+								{ views.FormatMoney(float64(g.AmountLeft / 100), currency.EUR, language.AmericanEnglish) }
+								if g.MonthlyNeeded != "-" {
+									<span class="text-xs">({ g.MonthlyNeeded }/mo)</span>
+								}
+							</span>
+						</li>
+					}
+					<li class="goal-details__item">
+						<span class="goal-details__key">Start date</span>
+						<span class="goal-details__value">{ views.FormatDate(g.StartDate) }</span>
+					</li>
+					if g.TargetDate != nil {
+						<li class="goal-details__item">
+							<span class="goal-details__key">Target date</span>
+							<span class="goal-details__value">{ views.FormatDate(*g.TargetDate) }</span>
+						</li>
+					}
+				</ul>
+			</div>
 		</div>
 		<div id="history">
 			<div class="flex justify-between">

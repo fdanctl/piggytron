@@ -33,7 +33,27 @@ templ Goals(bview views.BreadcrumbsView, goals []views.Goal) {
 			hx-swap="innerHTML transition:true"
 		>
 			for _, g := range goals {
-				@partials.GoalItem(g, nil)
+				if g.ClosedAt == nil {
+					@partials.GoalItem(g, nil)
+				}
+			}
+		</ul>
+	</section>
+	<section class="mt-md" id="inactive-goals">
+		<div class="flex justify-between items-center">
+			<h4>Inactive</h4>
+		</div>
+		<ul
+			id="active-goals-list"
+			class="goal-list"
+			hx-target="#content"
+			hx-boost="true"
+			hx-swap="innerHTML transition:true"
+		>
+			for _, g := range goals {
+				if g.ClosedAt != nil {
+					@partials.GoalItem(g, nil)
+				}
 			}
 		</ul>
 	</section>
