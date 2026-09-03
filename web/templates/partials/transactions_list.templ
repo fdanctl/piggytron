@@ -38,44 +38,48 @@ templ TransactionsListItems(transactions []views.Transaction, queryStr string, h
 }
 
 templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
-	<li
-		id={ fmt.Sprintf("t__%s", t.ID) }
-		class="transaction"
-		hx-get={ fmt.Sprintf("/partials/ledger/entry/details/%s", t.ID) }
-		hx-target="#dialog-root"
-		hx-swap="beforeend"
-		onclick=""
-		{ attrs... }
-	>
-		<div>
-			<div class="transaction__icon">
-				switch t.Type {
-					case "expense", "goal-fulfillment":
-						@components.ArrowLeftSvg(0, "", "")
-					case "income":
-						@components.ArrowRightSvg(0, "", "")
-					case "transfer":
-						@components.ArrowRightLeftSvg(0, "", "")
-					case "interest":
-						@components.PercentSvg(0, "", "")
-				}
-			</div>
+	if t.Type != "initial-balance" {
+		<li
+			id={ fmt.Sprintf("t__%s", t.ID) }
+			class="transaction"
+			hx-get={ fmt.Sprintf("/partials/ledger/entry/details/%s", t.ID) }
+			hx-target="#dialog-root"
+			hx-swap="beforeend"
+			onclick=""
+			{ attrs... }
+		>
 			<div>
-				<p class="transaction__description">{ t.Description }</p>
-				<p class="transaction__sub">
-					<span>{ t.Category }</span> · <b>{ strings.Join(t.Accounts, " → ") }</b>
+				<div class="transaction__icon">
+					switch t.Type {
+						case "expense", "goal-fulfillment":
+							@components.ArrowLeftSvg(0, "", "")
+						case "income":
+							@components.ArrowRightSvg(0, "", "")
+						case "transfer":
+							@components.ArrowRightLeftSvg(0, "", "")
+						case "interest":
+							@components.PercentSvg(0, "", "")
+						case "initial-balance":
+							@components.LandmarkSvg(0, "", "")
+					}
+				</div>
+				<div>
+					<p class="transaction__description">{ t.Description }</p>
+					<p class="transaction__sub">
+						<span>{ t.Category }</span> · <b>{ strings.Join(t.Accounts, " → ") }</b>
+					</p>
+				</div>
+			</div>
+			<div class="text-right">
+				<p class="transaction__amount" style={ templ.KV("color: var(--color-positive)", t.Type == "income") }>
+					{ t.Amount }
+				</p>
+				<p class="transaction__date">
+					{ t.Date }
 				</p>
 			</div>
-		</div>
-		<div class="text-right">
-			<p class="transaction__amount" style={ templ.KV("color: var(--color-positive)", t.Type == "income") }>
-				{ t.Amount }
-			</p>
-			<p class="transaction__date">
-				{ t.Date }
-			</p>
-		</div>
-	</li>
+		</li>
+	}
 }
 
 templ ContributionItem(t views.Transaction, attrs templ.Attributes) {

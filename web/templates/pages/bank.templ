@@ -29,6 +29,15 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 				if b.Status == "active" {
 					<li>
 						<button
+							class="reset-btn text-sm"
+							data-action="ui.popover.hide"
+							hx-get={ fmt.Sprintf("/partials/bank/%s/initial-balance", b.ID) }
+							hx-target="#dialog-root"
+							hx-swap="beforeend"
+						>Change initial balance</button>
+					</li>
+					<li>
+						<button
 							hx-trigger="confirmed"
 							hx-post={ fmt.Sprintf("/partials/bank/%s/close", b.ID) }
 							class="reset-btn text-sm"

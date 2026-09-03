@@ -52,6 +52,23 @@ templ BankForm(v views.BankForm) {
 			{Label: "Checking", Id: "checking", Value: "checking", Checked: v.Type == "checking"},
 			{Label: "Savings", Id: "savings", Value: "savings", Checked: v.Type == "savings"},
 		}, nil)
+		@components.InputGroup(
+			"",
+			"Initial balance",
+			views.StringArrToStr(v.ValidateInitialBalance()),
+			v.InitialBalanceHasError(),
+			true,
+			templ.Attributes{
+				"id":          "initial-balance",
+				"type":        "text",
+				"name":        "initial-balance",
+				"placeholder": "420.69",
+				"value":       v.InitialBalance,
+				"data-focus":  "ui.cash-input.focus",
+				"data-blur":   "ui.cash-input.blur",
+				"data-input":  "ui.cash-input.input",
+			},
+		)
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Enter",

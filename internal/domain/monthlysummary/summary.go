@@ -3,7 +3,9 @@
 // ledger. Its month is always the first day of the month.
 package monthlysummary
 
-import "time"
+import (
+	"time"
+)
 
 // ID is a monthly summary identifier (account id + month).
 type ID string

@@ -80,11 +80,17 @@ func (s *Service) CreateIncome(
 	defer tx.Rollback()
 
 	qtx := postgres.NewAccountQueryService(tx)
+	ltx := postgres.NewLedgerQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 	ictx := postgres.NewIncomeCategoryRepository(tx)
 
 	_, err = isIncomeCategoryValid(ctx, ictx, categoryID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, dstAccID, date)
 	if err != nil {
 		return nil, err
 	}
@@ -273,6 +279,7 @@ func (s *Service) UpdateIncome(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	ltx := postgres.NewLedgerQueryService(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 	ictx := postgres.NewIncomeCategoryRepository(tx)
 
@@ -307,6 +314,19 @@ func (s *Service) UpdateIncome(
 	prevAmount := t.Amount()
 	prevDate := t.Date()
 	prevAccountID := string(*t.ToAccountID())
+
+	if accountChanged {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, dstAccID, date)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, prevAccountID, date)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err := t.UpdateIncome(toAccID, cid, amount, description, date); err != nil {
 		return nil, errs.NewAppError(
 			errs.KindBusinessRule,

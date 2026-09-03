@@ -8,9 +8,11 @@ import (
 
 	"github.com/fdanctl/piggytron/internal/domain/expensecategory"
 	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/internal/util"
 )
 
@@ -180,4 +182,104 @@ func isExpenseCategoryValid(
 	}
 
 	return true, nil
+}
+
+func (s *Service) checkAndUpdateInitialBalance(
+	ctx context.Context,
+	uid string,
+	rtx *postgres.LedgerRepository,
+	ltx *postgres.LedgerQueryService,
+	mstx *postgres.MonthlySummaryRepository,
+	accID string,
+	date time.Time,
+) error {
+	filters := query.NewLedgerFilters(
+		[]string{"initial-balance"},
+		[]string{accID},
+		nil,
+		"",
+		"",
+		"",
+		"",
+	)
+	data, err := ltx.FindFiltered(
+		ctx,
+		uid,
+		filters,
+		1,
+		0,
+	)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed getting initial balance: %w", err),
+			"appledger.checkAndUpdateInitialBalance",
+		)
+		return err
+	}
+
+	if len(data) == 0 {
+		return nil
+	}
+
+	if date.Before(data[0].Date) {
+		e := data[0]
+		entry, err := ledger.NewBankInitalBalance(
+			ledger.ID(e.ID),
+			ledger.ID(e.UserID),
+			ledger.ID(accID),
+			e.Amount,
+			e.Description,
+			date,
+		)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Failed to create initial balance",
+				fmt.Errorf("failed to failed to create initial balance: %w", err),
+				"appledger.checkAndUpdateInitialBalance",
+			)
+			return err
+		}
+
+		err = rtx.Update(ctx, entry)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed to update initial balance: %w", err),
+				"appledger.checkAndUpdateInitialBalance",
+			)
+			return err
+		}
+
+		prevMonth := monthlysummary.NewMonth(e.Date)
+		newMonth := monthlysummary.NewMonth(date)
+
+		if prevMonth.Time().Compare(newMonth.Time()) != 0 {
+			// update previous
+			if err := s.updateMonthlySummary(
+				ctx,
+				mstx,
+				-e.Amount,
+				0,
+				accID,
+				prevMonth,
+			); err != nil {
+				return err
+			}
+
+			// update next
+			if err := s.updateMonthlySummary(
+				ctx,
+				mstx,
+				e.Amount,
+				0,
+				accID,
+				newMonth,
+			); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
 }

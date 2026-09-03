@@ -6,6 +6,7 @@ import (
 
 // Repository persists ledger entries; implemented by the postgres package.
 type Repository interface {
+	Save(ctx context.Context, entry *Entry) error
 	Create(ctx context.Context, entry *Entry) error
 	Update(ctx context.Context, entry *Entry) error
 	UpdateMany(ctx context.Context, entries []*Entry) error

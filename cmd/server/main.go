@@ -292,7 +292,7 @@ func main() {
 	)
 	partialsMux.Handle("/partials/ledger-filters", ledgerFiltersHandler)
 
-	bankHandler := handlers.NewBankHandler(accountService)
+	bankHandler := handlers.NewBankHandler(accountService, ledgerQueryService)
 	partialsMux.Handle("/partials/bank", bankHandler)
 	partialsMux.Handle("/partials/bank/{id}", bankHandler)
 	partialsMux.Handle("/partials/bank/{id}/{action}", bankHandler)

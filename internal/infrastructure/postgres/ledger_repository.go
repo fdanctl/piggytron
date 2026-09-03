@@ -43,6 +43,53 @@ type ledgerEntryDto struct {
 	createdAt   time.Time
 }
 
+func (r *LedgerRepository) Save(ctx context.Context, t *ledger.Entry) error {
+	_, err := r.db.ExecContext(
+		ctx,
+		`INSERT INTO ledger (
+		    id,
+		    user_id,
+		    type,
+		    from_account_id,
+			to_account_id,
+		    income_category_id,
+		    expense_category_id,
+		    amount,
+		    description,
+		    date,
+		    created_at
+		 )
+	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+		 ON CONFLICT(id)
+		 DO UPDATE SET 
+			type = EXCLUDED.type,
+			from_account_id = EXCLUDED.from_account_id,
+			to_account_id = EXCLUDED.to_account_id,
+			income_category_id = EXCLUDED.income_category_id,
+			expense_category_id = EXCLUDED.expense_category_id,
+			amount = EXCLUDED.amount,
+			description = EXCLUDED.description,
+			date = EXCLUDED.date
+		`,
+		t.ID(),
+		t.UserID(),
+		t.Type(),
+		t.FromAccountID(),
+		t.ToAccountID(),
+		t.IncomeCategoryID(),
+		t.ExpenseCategoryID(),
+		t.Amount(),
+		t.Description(),
+		t.Date(),
+		t.CreatedAt(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Create inserts a ledger entry.
 func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 	_, err := r.db.ExecContext(

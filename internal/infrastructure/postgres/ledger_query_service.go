@@ -276,7 +276,7 @@ func (s *LedgerQueryService) FindFilteredWithCount(
 			t.description,
 			t.date,
 			t.created_at,
-			COUNT(*) OVER() AS total_count
+			COUNT(CASE WHEN t.type != 'initial-balance' THEN 1 END) OVER() as total_count
 		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
@@ -357,7 +357,7 @@ func (s *LedgerQueryService) CountFilteredResults(
 ) (int, error) {
 	row := s.db.QueryRowContext(
 		ctx,
-		`SELECT COUNT(*)
+		`SELECT COUNT(CASE WHEN type != 'initial-balance' THEN 1 END)
 		 FROM ledger
 		 WHERE user_id = $1
 	     AND ($2::TEXT[] IS NULL OR type = ANY($2))

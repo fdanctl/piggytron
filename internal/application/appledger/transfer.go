@@ -97,8 +97,19 @@ func (s *Service) CreateTransfer(
 	defer tx.Rollback()
 
 	qtx := postgres.NewAccountQueryService(tx)
+	ltx := postgres.NewLedgerQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
+
+	err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, srcAccID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, dstAccID, date)
+	if err != nil {
+		return nil, err
+	}
 
 	if categoryID != "" {
 		ectx := postgres.NewExpenseCategoryRepository(tx)
@@ -408,6 +419,7 @@ func (s *Service) UpdateTransfer(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	ltx := postgres.NewLedgerQueryService(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 
 	if categoryID != "" {
@@ -447,6 +459,30 @@ func (s *Service) UpdateTransfer(
 	prevDate := t.Date()
 	prevFromAccountID := string(*t.FromAccountID())
 	prevToAccountID := string(*t.ToAccountID())
+
+	if fromAccChanged {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, srcAccID, date)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, prevFromAccountID, date)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if toAccChanged {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, dstAccID, date)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, prevToAccountID, date)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	// Update
 	if err := t.UpdateTransfer(fromAccID, toAccID, amount, description, date); err != nil {

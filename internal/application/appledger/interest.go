@@ -245,7 +245,6 @@ func (s *Service) UpdateInterest(
 	}
 
 	if t.UserID() != uid || t.Type() != "interest" {
-		fmt.Println(t.Type())
 		return nil, ledger.ErrNotFound
 	}
 

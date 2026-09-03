@@ -45,7 +45,9 @@ func NewLedgerFilters(
 	var pmaxD *time.Time
 
 	for _, t := range ttype {
-		if t == "income" || t == "expense" || t == "transfer" {
+		if t == "income" || t == "expense" || t == "transfer" || t == "interest" ||
+			t == "goal-fulfillment" ||
+			t == "initial-balance" {
 			tt = append(tt, t)
 		}
 	}

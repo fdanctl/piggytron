@@ -150,10 +150,12 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	}
 	var transactionsViews []views.Transaction
 	for _, t := range transactions.Data {
-		transactionsViews = append(
-			transactionsViews,
-			views.NewAccountTransaction(t, bank.Name),
-		)
+		if t.Type != "initial-balance" {
+			transactionsViews = append(
+				transactionsViews,
+				views.NewAccountTransaction(t, bank.Name),
+			)
+		}
 	}
 
 	var optionsLinks []views.BreadcrumbsLink

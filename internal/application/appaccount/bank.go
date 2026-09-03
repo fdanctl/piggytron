@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/domain/ledger"
+	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	"github.com/fdanctl/piggytron/internal/util"
@@ -19,6 +22,7 @@ func (s *Service) CreateBank(
 	name string,
 	currency string,
 	btype string,
+	initialBalance int,
 ) (*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
@@ -50,6 +54,18 @@ func (s *Service) CreateBank(
 		)
 	}
 
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed creating account: %w", err),
+			"appaccount.CreateBank",
+		)
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	atx := postgres.NewAccountRepository(tx)
+
 	acc, err := account.NewBank(id, uid, name, currency, accType)
 	if err != nil {
 		err = errs.NewAppError(
@@ -61,7 +77,7 @@ func (s *Service) CreateBank(
 		return nil, err
 	}
 
-	err = s.repo.Create(ctx, acc)
+	err = atx.Create(ctx, acc)
 	if err != nil {
 		if errors.Is(err, account.ErrDuplicate) {
 			err = errs.NewAppError(
@@ -76,6 +92,81 @@ func (s *Service) CreateBank(
 				"appaccount.CreateBank",
 			)
 		}
+		return nil, err
+	}
+
+	if initialBalance > 0 {
+		ltx := postgres.NewLedgerRepository(tx)
+		mstx := postgres.NewMonthlySummaryRepository(tx)
+
+		entryID, err := util.NewID[ledger.ID]()
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed generating id: %w", err),
+				"appaccount.CreateBank",
+			)
+			return nil, err
+		}
+		entry, err := ledger.NewBankInitalBalance(
+			entryID,
+			ledger.ID(uid),
+			ledger.ID(id),
+			initialBalance,
+			"Initial Balance",
+			time.Now(),
+		)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Failed to create initial balance",
+				fmt.Errorf("failed to create interest: %w", err),
+				"appaccount.CreateBank",
+			)
+			return nil, err
+		}
+
+		err = ltx.Create(ctx, entry)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving transaction: %w", err),
+				"appaccount.CreateBank",
+			)
+			return nil, err
+		}
+
+		// monthly summary
+		// toAcc
+		tms, err := monthlysummary.New(
+			monthlysummary.ID(id),
+			monthlysummary.NewMonth(time.Now()),
+			initialBalance,
+			0,
+		)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Failed to create summary",
+				fmt.Errorf("failed to create summary: %w", err),
+				"appaccount.CreateBank",
+			)
+			return nil, err
+		}
+
+		err = mstx.Save(ctx, tms)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed saving summary: %w", err),
+				"appaccount.CreateBank",
+			)
+			return nil, err
+		}
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appaccount.CreateBank",
+		)
 		return nil, err
 	}
 	return acc, nil
@@ -132,8 +223,8 @@ func (s *Service) UpdateBankName(
 	if err != nil {
 		err = errs.NewAppError(
 			errs.KindValidation,
-			fmt.Sprintf("%s is not a valid id", userID),
-			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			fmt.Sprintf("%s is not a valid id", id),
+			fmt.Errorf("failed parsing id '%s': %w", id, err),
 			"appaccount.UpdateBankName",
 		)
 		return err
@@ -178,6 +269,167 @@ func (s *Service) UpdateBankName(
 		}
 		return err
 	}
+	return nil
+}
+
+func (s *Service) UpdateBankInitial(
+	ctx context.Context,
+	userID string,
+	id string,
+	tid string,
+	initialBalance int,
+) error {
+	_, err := util.ParseID[account.ID](userID)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", userID),
+			fmt.Errorf("failed parsing id '%s': %w", userID, err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
+	_, err = util.ParseID[account.ID](id)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			fmt.Sprintf("%s is not a valid id", id),
+			fmt.Errorf("failed parsing id '%s': %w", id, err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed creating account: %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+	defer tx.Rollback()
+
+	aqtx := postgres.NewAccountQueryService(tx)
+	ltx := postgres.NewLedgerRepository(tx)
+	mstx := postgres.NewMonthlySummaryRepository(tx)
+
+	var prev *ledger.Entry
+	var entryID ledger.ID
+	if tid != "" {
+		entryID, err = util.ParseID[ledger.ID](tid)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindValidation,
+				fmt.Sprintf("%s is not a valid id", tid),
+				fmt.Errorf("failed parsing id '%s': %w", tid, err),
+				"appaccount.UpdateBankInitial",
+			)
+			return err
+		}
+
+		prev, err = ltx.FindByID(ctx, entryID)
+		if err != nil {
+			if !errors.Is(err, ledger.ErrNotFound) {
+				err = errs.NewInternalAppError(
+					fmt.Errorf("failed to get first entry date': %w", err),
+					"appaccount.UpdateBankInitial",
+				)
+			}
+		}
+	} else {
+		entryID, err = util.NewID[ledger.ID]()
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed generating id: %w", err),
+				"appaccount.UpdateBankInitial",
+			)
+			return err
+		}
+	}
+
+	// always the initial-balance date, even if does not exists
+	d, err := aqtx.GetAccountFirstEntryDate(ctx, id)
+	if err != nil {
+		if !errors.Is(err, account.ErrNotFound) {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed to get first entry date': %w", err),
+				"appaccount.UpdateBankInitial",
+			)
+		}
+	}
+
+	if d.IsZero() {
+		d = time.Now()
+	}
+
+	entry, err := ledger.NewBankInitalBalance(
+		entryID,
+		ledger.ID(userID),
+		ledger.ID(id),
+		initialBalance,
+		"Initial Balance",
+		d,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create initial balance",
+			fmt.Errorf("failed to create interest: %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
+	err = ltx.Save(ctx, entry)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to update: %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
+	// monthly summary
+	// toAcc
+	delta := initialBalance
+	if prev != nil {
+		delta -= prev.Amount()
+	}
+	tms, err := monthlysummary.New(
+		monthlysummary.ID(id),
+		monthlysummary.NewMonth(d),
+		delta,
+		0,
+	)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindBusinessRule,
+			"Failed to create summary",
+			fmt.Errorf("failed to create summary: %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
+	err = mstx.Save(ctx, tms)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed saving summary: %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed to commit': %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+
 	return nil
 }
 

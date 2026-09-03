@@ -1,0 +1,47 @@
+package partials
+
+import (
+	"fmt"
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ BankInitialBalanceForm(id string, v views.BankInitialBalanceForm) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post={ fmt.Sprintf("/partials/bank/%s/initial-balance", id) }
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<input type="hidden" name="tid" value={ v.TransactionID }/>
+		@components.InputGroup(
+			"",
+			"Initial balance",
+			views.StringArrToStr(v.ValidateInitialBalance()),
+			v.InitialBalanceHasError(),
+			true,
+			templ.Attributes{
+				"id":          "initial-balance",
+				"type":        "text",
+				"name":        "initial-balance",
+				"placeholder": "420.69",
+				"value":       v.InitialBalance,
+				"data-focus":  "ui.cash-input.focus",
+				"data-blur":   "ui.cash-input.blur",
+				"data-input":  "ui.cash-input.input",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

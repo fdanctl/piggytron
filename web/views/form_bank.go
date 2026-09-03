@@ -2,6 +2,8 @@ package views
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"golang.org/x/text/currency"
@@ -11,9 +13,10 @@ import (
 type BankForm struct {
 	Form
 
-	Name     string
-	Currency string
-	Type     string
+	Name           string
+	Currency       string
+	Type           string
+	InitialBalance string
 }
 
 // NewBankForm returns a blank bank form pre-filled with the EUR currency.
@@ -83,6 +86,33 @@ func (v *BankForm) TypeHasError() bool {
 	return len(v.ValidateType()) > 0
 }
 
+func (v *BankForm) ValidateInitialBalance() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	if v.InitialBalance == "" {
+		msgs = append(msgs, "Balance is required")
+	}
+
+	str := strings.ReplaceAll(v.InitialBalance, ",", "")
+	str = strings.Replace(str, ".", "", 1)
+
+	n, err := strconv.Atoi(str)
+	if err != nil {
+		return append(msgs, "Not a valid number")
+	}
+
+	if n <= 0 {
+		msgs = append(msgs, "Balance must greater than 0")
+	}
+	return msgs
+}
+
+func (v *BankForm) InitialBalanceHasError() bool {
+	return len(v.ValidateInitialBalance()) > 0
+}
+
 func (v *BankForm) Validate() (msgs []string) {
 	if v.Initial {
 		return
@@ -90,5 +120,6 @@ func (v *BankForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateName()...)
 	msgs = append(msgs, v.ValidateCurrency()...)
 	msgs = append(msgs, v.ValidateType()...)
+	msgs = append(msgs, v.ValidateInitialBalance()...)
 	return msgs
 }

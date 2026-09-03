@@ -21,6 +21,7 @@ const (
 	transfer        Type = "transfer"
 	interest        Type = "interest"
 	goalFulfillment Type = "goal-fulfillment"
+	initialBalance  Type = "initial-balance"
 )
 
 // NewType parses a string into a Type, returning ErrInvalidType otherwise.
@@ -256,6 +257,35 @@ func NewGoalFulfillment(
 		expenseCategoryID: &expenseCategoryID,
 		amount:            amount,
 		description:       fmt.Sprintf("%s goal fulfillment", goalName),
+		date:              date,
+		createdAt:         now,
+	}, nil
+}
+
+func NewBankInitalBalance(
+	id ID,
+	userID ID,
+	accID ID,
+	amount int,
+	description string,
+	date time.Time,
+) (*Entry, error) {
+	if amount <= 0 {
+		return nil, ErrInvalidAmount
+	}
+
+	now := time.Now()
+
+	return &Entry{
+		id:                id,
+		userID:            userID,
+		ttype:             initialBalance,
+		fromAccountID:     nil,
+		toAccountID:       &accID,
+		incomeCategoryID:  nil,
+		expenseCategoryID: nil,
+		amount:            amount,
+		description:       description,
 		date:              date,
 		createdAt:         now,
 	}, nil

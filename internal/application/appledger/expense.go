@@ -81,10 +81,16 @@ func (s *Service) CreateExpense(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	ltx := postgres.NewLedgerQueryService(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 	ectx := postgres.NewExpenseCategoryRepository(tx)
 
 	_, err = isExpenseCategoryValid(ctx, ectx, catID, date)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, srcAccID, date)
 	if err != nil {
 		return nil, err
 	}
@@ -284,6 +290,7 @@ func (s *Service) UpdateExpense(
 
 	qtx := postgres.NewAccountQueryService(tx)
 	rtx := postgres.NewLedgerRepository(tx)
+	ltx := postgres.NewLedgerQueryService(tx)
 	mstx := postgres.NewMonthlySummaryRepository(tx)
 	ectx := postgres.NewExpenseCategoryRepository(tx)
 
@@ -318,6 +325,19 @@ func (s *Service) UpdateExpense(
 	prevAmount := t.Amount()
 	prevDate := t.Date()
 	prevAccountID := string(*t.FromAccountID())
+
+	if accountChanged {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, srcAccID, date)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = s.checkAndUpdateInitialBalance(ctx, userID, rtx, ltx, mstx, prevAccountID, date)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	if err := t.UpdateExpense(fromAccID, cid, amount, description, date); err != nil {
 		return nil, errs.NewAppError(
 			errs.KindBusinessRule,
