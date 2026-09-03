@@ -396,6 +396,13 @@ func (s *Service) CompleteGoal(
 	}
 
 	lastEntryDate, err := qtx.GetAccountLastEntryDate(ctx, aid)
+	if err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding ledger entries for '%s' account: %w", aid, err),
+			"appaccount.CompleteGoal",
+		)
+		return nil, err
+	}
 	if date.Before(lastEntryDate) {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
@@ -742,7 +749,7 @@ func (s *Service) CancelGoal(
 					errs.KindBusinessRule,
 					"Destination account not found",
 					fmt.Errorf(
-						"Destination account not found: %w",
+						"destination account not found: %w",
 						err,
 					),
 					"appaccount.CancelGoal",
@@ -762,7 +769,7 @@ func (s *Service) CancelGoal(
 				errs.KindBusinessRule,
 				"Amount can only be transfer to a checking account",
 				fmt.Errorf(
-					"Amount can only be transfer to a checking account: %w",
+					"amount can only be transfer to a checking account: %w",
 					account.ErrNegativeBalance,
 				),
 				"appaccount.CancelGoal",

@@ -88,6 +88,8 @@ CREATE TABLE IF NOT EXISTS ledger (
       'income',
       'expense',
       'transfer',
+      -- 'initial-balance',
+      'interest',
       'goal-fulfillment'
     )
   ),
@@ -143,6 +145,13 @@ CREATE TABLE IF NOT EXISTS ledger (
       AND to_account_id IS NULL
       AND income_category_id IS NULL
       AND expense_category_id IS NOT NULL
+    )
+    OR (
+      type = 'interest'
+      AND from_account_id IS NULL
+      AND to_account_id IS NOT NULL
+      AND income_category_id IS NOT NULL
+      AND expense_category_id IS NULL
     )
   )
 );

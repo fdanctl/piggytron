@@ -134,6 +134,21 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 			string(t.ID()),
 		)
 
+	case "interest":
+		v := views.NewInterestForm()
+		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
+		v.Description = t.Description()
+		v.Date = t.Date().Format("02/01/2006")
+		v.Category = string(*t.IncomeCategoryID())
+		v.DestinationAcc = string(*t.ToAccountID())
+		title = "Edit Interest"
+		content = partials.InterestForm(
+			*v,
+			icatOpts,
+			append(noSavingsBanksOpts, goalSavingsOpts...),
+			string(t.ID()),
+		)
+
 	default:
 		logger.Debug("DEFAULT")
 	}
@@ -240,6 +255,29 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		form = partials.TransferForm(
 			view,
 			ecatOpts,
+			append(noSavingsBanksOpts, goalSavingsOpts...),
+			id,
+		)
+		msgs := view.Validate()
+		if len(msgs) > 0 {
+			logger.Info("invalid form", "error", msgs)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			form.Render(r.Context(), w)
+			return
+		}
+
+	case "interest":
+		view := views.InterestForm{
+			Amount:         amount,
+			Description:    description,
+			Currency:       currency,
+			Date:           date,
+			Category:       category,
+			DestinationAcc: destination,
+		}
+		form = partials.InterestForm(
+			view,
+			icatOpts,
 			append(noSavingsBanksOpts, goalSavingsOpts...),
 			id,
 		)

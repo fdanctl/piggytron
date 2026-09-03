@@ -34,6 +34,14 @@ templ TransactionFormTabs() {
 			>
 				Transfer
 			</button>
+			<button
+				class="reset-btn tab-trigger"
+				data-tab="interest"
+				data-action="ui.tab.change"
+				data-tab-trigger="transaction"
+			>
+				Interest
+			</button>
 		</div>
 	}
 }
@@ -70,6 +78,7 @@ templ TransactionForm(
 	vi views.IncomeForm,
 	ve views.ExpenseForm,
 	vt views.TransferForm,
+	vin views.InterestForm,
 	incomeCategories,
 	expenseCategories,
 	accounts []components.SelectOption,
@@ -83,6 +92,9 @@ templ TransactionForm(
 	</div>
 	<div class="tab-content hidden" id="transfer-content" data-tab-content="transaction">
 		@TransferForm(vt, expenseCategories, accounts, "")
+	</div>
+	<div class="tab-content hidden" id="interest-content" data-tab-content="transaction">
+		@InterestForm(vin, incomeCategories, accounts, "")
 	</div>
 }
 
@@ -267,7 +279,7 @@ templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectO
 				"id":          "expense-description",
 				"type":        "text",
 				"name":        "description",
-				"placeholder": "Salary",
+				"placeholder": "Groceries",
 				"value":       v.Description,
 			},
 		)
@@ -387,7 +399,7 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 				"id":          "transfer-description",
 				"type":        "text",
 				"name":        "description",
-				"placeholder": "Salary",
+				"placeholder": "Deposit",
 				"value":       v.Description,
 			},
 		)
@@ -444,6 +456,126 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 			true,
 			templ.Attributes{
 				"id":   "transfer-destination",
+				"name": "destination",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Confirm",
+				"mt-md hidden",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}
+
+templ InterestForm(v views.InterestForm, categories, accounts []components.SelectOption, id string) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		if id != "" {
+			hx-put={ fmt.Sprintf("/partials/ledger/entry/%s", id) }
+		} else {
+			hx-post="/partials/ledger/entry"
+		}
+		hx-swap="outerHTML"
+		novalidate
+	>
+		<input type="hidden" name="type" value="interest"/>
+		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
+			@components.InputGroup(
+				"",
+				"Amount",
+				views.StringArrToStr(v.ValidateAmount()),
+				v.AmountHasError(),
+				true,
+				templ.Attributes{
+					"id":          "interest-amount",
+					"type":        "text",
+					"name":        "amount",
+					"placeholder": "420.69",
+					"value":       v.Amount,
+					"data-focus":  "ui.cash-input.focus",
+					"data-blur":   "ui.cash-input.blur",
+					"data-input":  "ui.cash-input.input",
+				},
+			)
+			@components.SelectGroup(
+				"",
+				"Currency",
+				v.Currency,
+				"-- Select currency --",
+				[]components.SelectOption{
+					{
+						Label: "EUR",
+						Value: "EUR",
+					},
+				},
+				views.StringArrToStr(v.ValidateCurrency()),
+				v.CurrencyHasError(),
+				true,
+				templ.Attributes{
+					"id":   "currency",
+					"name": "currency",
+				},
+			)
+		</div>
+		@components.InputGroup(
+			"",
+			"Description",
+			views.StringArrToStr(v.ValidateDescription()),
+			v.DescriptionHasError(),
+			true,
+			templ.Attributes{
+				"id":          "interest-description",
+				"type":        "text",
+				"name":        "description",
+				"placeholder": "Interest",
+				"value":       v.Description,
+			},
+		)
+		@components.DateInputGroup(
+			"w-full",
+			"Date",
+			views.StringArrToStr(v.ValidateDate()),
+			v.DateHasError(),
+			true,
+			templ.Attributes{
+				"id":    "interest-date",
+				"type":  "text",
+				"name":  "date",
+				"value": v.Date,
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"Category",
+			v.Category,
+			"-- Select category --",
+			categories,
+			views.StringArrToStr(v.ValidateCategory()),
+			v.CategoryHasError(),
+			true,
+			templ.Attributes{
+				"id":   "interest-category",
+				"name": "category",
+			},
+		)
+		@components.SelectGroup(
+			"",
+			"To",
+			v.DestinationAcc,
+			"-- Select account --",
+			accounts,
+			views.StringArrToStr(v.ValidateDestinationAcc()),
+			v.DestinationAccHasError(),
+			true,
+			templ.Attributes{
+				"id":   "interest-destination",
 				"name": "destination",
 			},
 		)

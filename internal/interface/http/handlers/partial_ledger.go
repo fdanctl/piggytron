@@ -121,6 +121,7 @@ func (h *LedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 			*views.NewIncomeForm(),
 			*views.NewExpenseForm(),
 			*views.NewTransferForm(),
+			*views.NewInterestForm(),
 			icatOpts,
 			ecatOpts,
 			append(noSavingsBanksOpts, goalSavingsOpts...),
@@ -243,6 +244,29 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+	case "interest":
+		view := views.InterestForm{
+			Amount:         amount,
+			Description:    description,
+			Currency:       currency,
+			Date:           date,
+			Category:       category,
+			DestinationAcc: destination,
+		}
+		form = partials.InterestForm(
+			view,
+			icatOpts,
+			append(noSavingsBanksOpts, goalSavingsOpts...),
+			"",
+		)
+		msgs := view.Validate()
+		if len(msgs) > 0 {
+			logger.Info("invalid form", "error", msgs)
+			w.WriteHeader(http.StatusUnprocessableEntity)
+			form.Render(r.Context(), w)
+			return
+		}
+
 	default:
 		logger.Debug("DEFAULT")
 	}
@@ -314,6 +338,22 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			d,
 			category,
 			source,
+			destination,
+		)
+		if err != nil {
+			httperror.SendFormError(w, r, err, form)
+			return
+		}
+
+	case "interest":
+		_, err := h.service.CreateInterest(
+			r.Context(),
+			sessionInfo.UserID,
+			cents,
+			currency,
+			description,
+			d,
+			category,
 			destination,
 		)
 		if err != nil {

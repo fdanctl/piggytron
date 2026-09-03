@@ -19,6 +19,7 @@ const (
 	income          Type = "income"
 	expense         Type = "expense"
 	transfer        Type = "transfer"
+	interest        Type = "interest"
 	goalFulfillment Type = "goal-fulfillment"
 )
 
@@ -33,6 +34,9 @@ func NewType(str string) (Type, error) {
 
 	case "transfer":
 		return transfer, nil
+
+	case "interest":
+		return interest, nil
 
 	default:
 		return "", ErrInvalidType
@@ -186,6 +190,39 @@ func NewTransfer(
 		toAccountID:       &toAccountID,
 		incomeCategoryID:  nil,
 		expenseCategoryID: expenseCategoryID,
+		amount:            amount,
+		description:       description,
+		date:              date,
+		createdAt:         now,
+	}, nil
+}
+
+func NewInterest(
+	id ID,
+	userID ID,
+	toAccountID ID,
+	incomeCategoryID ID,
+	amount int,
+	description string,
+	date time.Time,
+) (*Entry, error) {
+	if description == "" {
+		return nil, ErrInvalidDescription
+	}
+	if amount <= 0 {
+		return nil, ErrInvalidAmount
+	}
+
+	now := time.Now()
+
+	return &Entry{
+		id:                id,
+		userID:            userID,
+		ttype:             interest,
+		fromAccountID:     nil,
+		toAccountID:       &toAccountID,
+		incomeCategoryID:  &incomeCategoryID,
+		expenseCategoryID: nil,
 		amount:            amount,
 		description:       description,
 		date:              date,
@@ -450,6 +487,34 @@ func (t *Entry) UpdateTransferToAccountAndCategory(
 
 	t.toAccountID = &toAccountID
 	t.expenseCategoryID = expenseCategoryID
+
+	return nil
+}
+
+func (t *Entry) UpdateInterest(
+	toAccountID ID,
+	incomeCategoryID ID,
+	amount int,
+	description string,
+	date time.Time,
+) error {
+	if t.ttype != interest {
+		return errors.New("can't update interest, type not interest")
+	}
+
+	if amount <= 0 {
+		return ErrInvalidAmount
+	}
+
+	if description == "" {
+		return ErrInvalidDescription
+	}
+
+	t.toAccountID = &toAccountID
+	t.incomeCategoryID = &incomeCategoryID
+	t.amount = amount
+	t.description = description
+	t.date = date
 
 	return nil
 }

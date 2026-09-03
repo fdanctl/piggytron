@@ -56,6 +56,8 @@ templ TransactionItem(t views.Transaction, attrs templ.Attributes) {
 						@components.ArrowRightSvg(0, "", "")
 					case "transfer":
 						@components.ArrowRightLeftSvg(0, "", "")
+					case "interest":
+						@components.PercentSvg(0, "", "")
 				}
 			</div>
 			<div>

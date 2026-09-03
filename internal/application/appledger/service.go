@@ -86,6 +86,19 @@ func (s *Service) Update(
 			srcAccID,
 			dstAccID,
 		)
+
+	case "interest":
+		return s.UpdateInterest(
+			ctx,
+			id,
+			userID,
+			amount,
+			currency,
+			description,
+			date,
+			categoryID,
+			dstAccID,
+		)
 	}
 	return nil, errs.NewGenericBadRequestAppError(ledger.ErrInvalidType, "appledger.Update")
 }
