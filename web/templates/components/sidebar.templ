@@ -62,40 +62,10 @@ templ Sidebar() {
 			@ProfilePic(false)
 			<span>username</span>
 		</div>
-		<div
-			id="user-popover"
-			data-name="user"
-			class="popover"
-			popover="auto"
-			data-mouseout="ui.popover.hide"
-			style="position-anchor: --sidebar-user"
-		>
-			<ul class="user-menu">
-				<li>
-					<a
-						hx-target="#content"
-						hx-boost="true"
-						data-afterrequest="ui.nav.navigate"
-						href="/account"
-					>Account</a>
-				</li>
-				<li>
-					<a
-						hx-target="#content"
-						hx-boost="true"
-						data-afterrequest="ui.nav.navigate"
-						href="/preferences"
-					>Preferences</a>
-				</li>
-				<li>
-					@ButtonWithIcon("Logout", "reset-btn", BtnGhost, BtnSmall,
-						templ.Attributes{
-							"type":   "button",
-							"hx-get": "/partials/auth/logout",
-						}, IconRigth, LogOutSvg(16, "", ""))
-				</li>
-			</ul>
-		</div>
+		@userPopover("", "sidebar-user", templ.Attributes{
+			"id":        "user-popover",
+			"data-name": "user",
+		})
 	</aside>
 }
 

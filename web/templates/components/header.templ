@@ -66,7 +66,22 @@ templ Header() {
 				@BellSvg(0, "", "")
 				@Notification()
 			</div>
-			@ProfilePic(false)
+			<div
+				onclick=""
+				data-name="header-user"
+				data-action="ui.popover.show"
+				data-mouseover="ui.popover.show"
+				data-mouseout="ui.popover.hide"
+				data-focus="ui.popover.show"
+				data-blur="ui.popover.hide"
+				style="anchor-name: --header-user"
+			>
+				@ProfilePic(false)
+			</div>
+			@userPopover("", "header-user", templ.Attributes{
+				"id":        "header-user-popover",
+				"data-name": "header-user",
+			})
 			<button
 				class="reset-btn flex justify-center items-center cursor-pointer"
 				data-action="ui.nav-sheet.open"
@@ -75,4 +90,40 @@ templ Header() {
 			</button>
 		</div>
 	</header>
+}
+
+templ userPopover(class string, anchor string, attrs templ.Attributes) {
+	<div
+		class={ "popover", templ.KV(class, class != "") }
+		popover="auto"
+		data-mouseout="ui.popover.hide"
+		style={ fmt.Sprintf("position-anchor: --%s", anchor) }
+		{ attrs... }
+	>
+		<ul class="user-menu">
+			<li>
+				<a
+					hx-target="#content"
+					hx-boost="true"
+					data-afterrequest="ui.nav.navigate"
+					href="/account"
+				>Account</a>
+			</li>
+			<li>
+				<a
+					hx-target="#content"
+					hx-boost="true"
+					data-afterrequest="ui.nav.navigate"
+					href="/preferences"
+				>Preferences</a>
+			</li>
+			<li>
+				@ButtonWithIcon("Logout", "reset-btn", BtnGhost, BtnSmall,
+					templ.Attributes{
+						"type":   "button",
+						"hx-get": "/partials/auth/logout",
+					}, IconRigth, LogOutSvg(16, "", ""))
+			</li>
+		</ul>
+	</div>
 }
