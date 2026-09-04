@@ -120,6 +120,21 @@ templ GoalFormContent(v views.GoalForm, categories []components.SelectOption) {
 			"name": "category",
 		},
 	)
+	@components.TextAreaGroup(
+		"",
+		"Note",
+		views.StringArrToStr(v.ValidateNote()),
+		v.NoteHasError(),
+		false,
+		templ.Attributes{
+			"id":          "note",
+			"rows":        "4",
+			"maxlenght":   "200",
+			"name":        "note",
+			"placeholder": "Add a note",
+			"value":       v.Note,
+		},
+	)
 	<div class="w-full flex justify-end mt-md">
 		@components.Button(
 			"Confirm",

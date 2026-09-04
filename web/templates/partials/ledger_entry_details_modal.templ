@@ -16,7 +16,7 @@ templ TransactionDetails(t views.Transaction) {
 		<p class="tdetails__desc-label">Description</p>
 		<p class="tdetails__desc">{ t.Description }</p>
 	</div>
-	<ul class="space-y-xs">
+	<ul>
 		<li class="flex justify-between">
 			<span class="tdetails__key">Type</span>
 			<span class="tdetails__value">{ t.Type }</span>
@@ -42,9 +42,11 @@ templ TransactionDetails(t views.Transaction) {
 			</li>
 		}
 	</ul>
+	<p class="tdetails__key mt-sm">Note</p>
 	if t.Note != "" {
-		<p class="tdetails__key mt-sm">Note</p>
 		<p class="tdetails__value">{ t.Note }</p>
+	} else {
+		<p class="tdetails__value text-muted italic">No note</p>
 	}
 }
 

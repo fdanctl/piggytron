@@ -30,6 +30,7 @@ type Goal struct {
 	StartDate    time.Time
 	TargetDate   *time.Time
 	Category     string
+	Note         string
 	Amount       int
 
 	AmountLeft         int
@@ -78,6 +79,11 @@ func NewGoal(
 		amount = *g.FinalizedAmount
 	}
 
+	var note string
+	if g.Note != nil {
+		note = *g.Note
+	}
+
 	return Goal{
 		ID:                 g.ID,
 		Name:               g.Name,
@@ -87,6 +93,7 @@ func NewGoal(
 		StartDate:          *g.StartDate,
 		TargetDate:         g.TargetDate,
 		Category:           g.Category.Name,
+		Note:               note,
 		Amount:             amount,
 		AmountLeft:         *g.TargetAmount - amount,
 		MonthlyNeeded:      monthlyNeeded,

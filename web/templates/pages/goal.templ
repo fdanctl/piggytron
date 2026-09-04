@@ -257,6 +257,14 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 							<span class="goal-details__value">{ views.FormatDate(*g.TargetDate) }</span>
 						</li>
 					}
+					<li class="goal-details__item">
+						<span class="goal-details__key">Note</span>
+						if g.Note != "" {
+							<span class="goal-details__value truncate">{ g.Note }</span>
+						} else {
+							<span class="goal-details__value truncate text-muted italic">No note</span>
+						}
+					</li>
 				</ul>
 			</div>
 		</div>

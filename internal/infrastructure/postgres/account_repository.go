@@ -35,6 +35,7 @@ type accountDto struct {
 	StartDate       *time.Time
 	TargetDate      *time.Time
 	CategoryID      *account.ID
+	Note            *string
 	CompletedAt     *time.Time
 	CancelledAt     *time.Time
 	FinalizedAmount *int
@@ -50,8 +51,8 @@ type accountDto struct {
 func (r *AccountRepository) Create(ctx context.Context, a *account.Account) error {
 	_, err := r.db.ExecContext(
 		ctx,
-		`INSERT INTO accounts (id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, closed_at, created_at, updated_at)
-	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+		`INSERT INTO accounts (id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, note, closed_at, created_at, updated_at)
+	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
 		a.ID(),
 		a.UserID(),
 		a.Type(),
@@ -62,6 +63,7 @@ func (r *AccountRepository) Create(ctx context.Context, a *account.Account) erro
 		a.StartDate(),
 		a.TargetDate(),
 		a.CategoryID(),
+		a.Note(),
 		a.ClosedAt(),
 		a.CreatedAt(),
 		a.UpdatedAt(),
@@ -94,7 +96,8 @@ func (r *AccountRepository) Update(ctx context.Context, a *account.Account) erro
 			start_date = $5,
 			target_date = $6,
 			category_id = $7,
-			updated_at = $8
+			note = $8,
+			updated_at = $9
 		WHERE id = $1`,
 		a.ID(),
 		a.Name(),
@@ -103,6 +106,7 @@ func (r *AccountRepository) Update(ctx context.Context, a *account.Account) erro
 		a.StartDate(),
 		a.TargetDate(),
 		a.CategoryID(),
+		a.Note(),
 		a.UpdatedAt(),
 	)
 	if err != nil {
@@ -167,7 +171,7 @@ func (r *AccountRepository) Delete(ctx context.Context, id account.ID) error {
 func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*account.Account, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
+		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, note, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE id = $1`,
 		id,
@@ -185,6 +189,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 		&b.StartDate,
 		&b.TargetDate,
 		&b.CategoryID,
+		&b.Note,
 		&b.CompletedAt,
 		&b.CancelledAt,
 		&b.FinalizedAmount,
@@ -209,6 +214,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.ID) (*accou
 		b.StartDate,
 		b.TargetDate,
 		b.CategoryID,
+		b.Note,
 		b.CompletedAt,
 		b.CancelledAt,
 		b.FinalizedAmount,
@@ -227,7 +233,7 @@ func (r *AccountRepository) FindAllByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
+		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, note, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE user_id = $1`,
 		uid,
@@ -252,6 +258,7 @@ func (r *AccountRepository) FindAllByUser(
 			&dto.StartDate,
 			&dto.TargetDate,
 			&dto.CategoryID,
+			&dto.Note,
 			&dto.CompletedAt,
 			&dto.CancelledAt,
 			&dto.FinalizedAmount,
@@ -271,6 +278,7 @@ func (r *AccountRepository) FindAllByUser(
 			dto.StartDate,
 			dto.TargetDate,
 			dto.CategoryID,
+			dto.Note,
 			dto.CompletedAt,
 			dto.CancelledAt,
 			dto.FinalizedAmount,
@@ -295,7 +303,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
+		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, note, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE user_id = $1 AND type != 'goal'`,
 		uid,
@@ -320,6 +328,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 			&dto.StartDate,
 			&dto.TargetDate,
 			&dto.CategoryID,
+			&dto.Note,
 			&dto.CompletedAt,
 			&dto.CancelledAt,
 			&dto.FinalizedAmount,
@@ -339,6 +348,7 @@ func (r *AccountRepository) FindAllBanksByUser(
 			dto.StartDate,
 			dto.TargetDate,
 			dto.CategoryID,
+			dto.Note,
 			dto.CompletedAt,
 			dto.CancelledAt,
 			dto.FinalizedAmount,
@@ -363,7 +373,7 @@ func (r *AccountRepository) FindAllGoalsByUser(
 ) ([]*account.Account, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
+		`SELECT id, user_id, type, name, status, currency, target_amount, start_date, target_date, category_id, note, completed_at, cancelled_at, finalized_amount, closed_at, created_at, updated_at
 		 FROM accounts
 		 WHERE user_id = $1 AND type = 'goal'`,
 		uid,
@@ -388,6 +398,7 @@ func (r *AccountRepository) FindAllGoalsByUser(
 			&dto.StartDate,
 			&dto.TargetDate,
 			&dto.CategoryID,
+			&dto.Note,
 			&dto.CompletedAt,
 			&dto.CancelledAt,
 			&dto.FinalizedAmount,
@@ -407,6 +418,7 @@ func (r *AccountRepository) FindAllGoalsByUser(
 			dto.StartDate,
 			dto.TargetDate,
 			dto.CategoryID,
+			dto.Note,
 			dto.CompletedAt,
 			dto.CancelledAt,
 			dto.FinalizedAmount,

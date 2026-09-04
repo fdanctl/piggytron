@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS accounts (
   start_date TIMESTAMP,
   target_date TIMESTAMP,
   category_id UUID REFERENCES expense_categories (id),
+  note TEXT,
   completed_at TIMESTAMP,
   cancelled_at TIMESTAMP,
   finalized_amount BIGINT,
@@ -64,6 +65,7 @@ CREATE TABLE IF NOT EXISTS accounts (
       AND start_date IS NULL
       AND target_date IS NULL
       AND category_id IS NULL
+      AND note IS NULL
       AND completed_at IS NULL
       AND cancelled_at IS NULL
       AND finalized_amount IS NULL

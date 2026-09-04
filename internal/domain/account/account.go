@@ -59,6 +59,7 @@ type Account struct {
 	startDate       *time.Time
 	targetDate      *time.Time
 	categoryID      *ID
+	note            *string
 	completedAt     *time.Time
 	cancelledAt     *time.Time
 	finalizedAmount *int
@@ -106,6 +107,7 @@ func NewGoal(
 	startDate time.Time,
 	targetDate *time.Time,
 	categoryID ID,
+	note string,
 ) (*Account, error) {
 	if name == "" || len(name) > 50 {
 		return nil, ErrInvalidName
@@ -122,6 +124,11 @@ func NewGoal(
 
 	now := time.Now()
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	return &Account{
 		id:           id,
 		userID:       userID,
@@ -132,6 +139,7 @@ func NewGoal(
 		startDate:    &startDate,
 		targetDate:   targetDate,
 		categoryID:   &categoryID,
+		note:         pnote,
 		currency:     currency,
 		createdAt:    now,
 		updatedAt:    now,
@@ -149,6 +157,7 @@ func Rehydrate(
 	startDate *time.Time,
 	targetDate *time.Time,
 	categoryID *ID,
+	note *string,
 	completedAt *time.Time,
 	cancelledAt *time.Time,
 	finalizedAmount *int,
@@ -166,6 +175,7 @@ func Rehydrate(
 		startDate:       startDate,
 		targetDate:      targetDate,
 		categoryID:      categoryID,
+		note:            note,
 		completedAt:     completedAt,
 		cancelledAt:     cancelledAt,
 		finalizedAmount: finalizedAmount,
@@ -224,6 +234,11 @@ func (b *Account) TargetDate() *time.Time {
 // CategoryID returns the goal funding category, or nil for banks.
 func (b *Account) CategoryID() *ID {
 	return b.categoryID
+}
+
+// Note returns the goal note.
+func (b *Account) Note() *string {
+	return b.note
 }
 
 // CompletedAt returns when the goal was completed, or nil if not or if not a goal.
@@ -353,6 +368,22 @@ func (b *Account) ChangeCategory(cid ID) error {
 		return ErrAccountWrongType
 	}
 	b.categoryID = &cid
+	b.updatedAt = time.Now()
+	return nil
+}
+
+// ChangeNote reassigns the expense category used to fund the goal.
+func (b *Account) ChangeNote(note string) error {
+	if b.aType != GoalType {
+		return ErrAccountWrongType
+	}
+
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
+	b.note = pnote
 	b.updatedAt = time.Now()
 	return nil
 }

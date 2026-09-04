@@ -21,6 +21,7 @@ type GoalForm struct {
 	StartDate    string
 	TargetDate   string
 	Category     string
+	Note         string
 }
 
 // NewGoalForm returns a blank goal form pre-filled with today's start date
@@ -182,6 +183,18 @@ func (v *GoalForm) CategoryHasError() bool {
 	return len(v.ValidateCategory()) > 0
 }
 
+func (v *GoalForm) ValidateNote() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	return msgs
+}
+
+func (v *GoalForm) NoteHasError() bool {
+	return len(v.ValidateNote()) > 0
+}
+
 func (v *GoalForm) Validate() (msgs []string) {
 	if v.Initial {
 		return
@@ -192,5 +205,6 @@ func (v *GoalForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateStartDate()...)
 	msgs = append(msgs, v.ValidateTargetDate()...)
 	msgs = append(msgs, v.ValidateCategory()...)
+	msgs = append(msgs, v.ValidateNote()...)
 	return msgs
 }

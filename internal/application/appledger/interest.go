@@ -284,6 +284,7 @@ func (s *Service) UpdateInterest(
 		oldAcc.StartDate,
 		oldAcc.TargetDate,
 		oldAccCID,
+		oldAcc.Note,
 		oldAcc.CompletedAt,
 		oldAcc.CancelledAt,
 		oldAcc.FinalizedAmount,

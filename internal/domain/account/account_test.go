@@ -104,6 +104,7 @@ func TestNewGoal(t *testing.T) {
 		startDate    time.Time
 		targetDate   *time.Time
 		categoryID   ID
+		note         string
 		wantErr      error
 	}{
 		{
@@ -116,6 +117,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      nil,
 		},
 		{
@@ -127,6 +129,7 @@ func TestNewGoal(t *testing.T) {
 			targetAmount: 10000,
 			startDate:    now,
 			targetDate:   nil,
+			note:         "",
 			wantErr:      nil,
 		},
 		{
@@ -139,6 +142,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrInvalidName,
 		},
 		{
@@ -151,6 +155,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrInvalidName,
 		},
 		{
@@ -163,6 +168,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrInvalidCurrency,
 		},
 		{
@@ -175,6 +181,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrInvalidCurrency,
 		},
 		{
@@ -187,6 +194,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrNegativeNumber,
 		},
 		{
@@ -199,6 +207,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &now,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrNegativeNumber,
 		},
 		{
@@ -211,6 +220,7 @@ func TestNewGoal(t *testing.T) {
 			startDate:    now,
 			targetDate:   &yesterday,
 			categoryID:   ID("420"),
+			note:         "",
 			wantErr:      ErrStartDateAfterTarget,
 		},
 	}
@@ -226,6 +236,7 @@ func TestNewGoal(t *testing.T) {
 				tt.startDate,
 				tt.targetDate,
 				tt.categoryID,
+				tt.note,
 			)
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("NewGoal() error = %v, wantErr %v", err, tt.wantErr)
@@ -236,7 +247,7 @@ func TestNewGoal(t *testing.T) {
 
 func TestCanReceiveIncome(t *testing.T) {
 	// Goal type
-	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"))
+	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"), "")
 	if err := goal.CanReceiveIncome(); err == nil {
 		t.Error("goals should not receive income directly")
 	}
@@ -255,7 +266,7 @@ func TestCanReceiveIncome(t *testing.T) {
 }
 
 func TestChangeName(t *testing.T) {
-	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"))
+	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"), "")
 	upAt := goal.UpdatedAt()
 
 	// valid
@@ -300,7 +311,7 @@ func TestChangeTargetAmount(t *testing.T) {
 	}
 
 	// Goal type
-	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"))
+	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"), "")
 	upAt = goal.UpdatedAt()
 	if err := goal.ChangeTargetAmount(amount); err != nil {
 		t.Error("unexpected error for valid amount")
@@ -391,7 +402,17 @@ func TestChangeStartDate(t *testing.T) {
 	}
 
 	// normal change
-	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, yesterday, &nextMonth, ID("420"))
+	goal, _ := NewGoal(
+		ID("420"),
+		ID("420"),
+		"Goal",
+		"USD",
+		5000,
+		yesterday,
+		&nextMonth,
+		ID("420"),
+		"",
+	)
 	upAt = goal.UpdatedAt()
 	if err := goal.ChangeStartDate(today, nil); err != nil {
 		t.Error("unexpected error for normal start date change")
@@ -487,7 +508,7 @@ func TestChangeTargetDate(t *testing.T) {
 	}
 
 	// normal change
-	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, today, &nextMonth, ID("420"))
+	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, today, &nextMonth, ID("420"), "")
 	upAt = goal.UpdatedAt()
 	if err := goal.ChangeTargetDate(&nextTwoMonth); err != nil {
 		t.Error("unexpected error for normal start date change")
@@ -521,7 +542,7 @@ func TestChangeCategory(t *testing.T) {
 		t.Error("bank category should be 'nil'")
 	}
 
-	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"))
+	goal, _ := NewGoal(ID("420"), ID("420"), "Goal", "USD", 5000, time.Now(), nil, ID("420"), "")
 	upAt = goal.UpdatedAt()
 	if err := goal.ChangeCategory(id); err != nil {
 		t.Error("unexpected error for normal start date change")

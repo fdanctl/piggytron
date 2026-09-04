@@ -472,6 +472,7 @@ func (s *Service) CloseAccount(
 		dto.StartDate,
 		dto.TargetDate,
 		(*account.ID)(cid),
+		dto.Note,
 		dto.CompletedAt,
 		dto.CancelledAt,
 		dto.FinalizedAmount,

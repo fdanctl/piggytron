@@ -211,7 +211,7 @@ templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOpt
 			v.NoteHasError(),
 			false,
 			templ.Attributes{
-				"id":          "income-description",
+				"id":          "income-note",
 				"rows":        "4",
 				"maxlenght":   "200",
 				"name":        "note",
@@ -346,7 +346,7 @@ templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectO
 			v.NoteHasError(),
 			false,
 			templ.Attributes{
-				"id":          "income-description",
+				"id":          "expense-note",
 				"rows":        "4",
 				"maxlenght":   "200",
 				"name":        "note",
@@ -496,7 +496,7 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 			v.NoteHasError(),
 			false,
 			templ.Attributes{
-				"id":          "income-description",
+				"id":          "transfer-note",
 				"rows":        "4",
 				"maxlenght":   "200",
 				"name":        "note",
@@ -631,7 +631,7 @@ templ InterestForm(v views.InterestForm, categories, accounts []components.Selec
 			v.NoteHasError(),
 			false,
 			templ.Attributes{
-				"id":          "income-description",
+				"id":          "interest-note",
 				"rows":        "4",
 				"maxlenght":   "200",
 				"name":        "note",
@@ -780,7 +780,7 @@ templ GoalContributionForm(v views.TransferForm, categories, accounts []componen
 			v.NoteHasError(),
 			false,
 			templ.Attributes{
-				"id":          "income-description",
+				"id":          "transfert-note",
 				"rows":        "4",
 				"maxlenght":   "200",
 				"name":        "note",

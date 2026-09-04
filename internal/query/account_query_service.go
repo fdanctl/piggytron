@@ -35,6 +35,7 @@ type AccountWithCategory struct {
 	StartDate       *time.Time
 	TargetDate      *time.Time
 	Category        *CategoryDTO
+	Note            *string
 	CompletedAt     *time.Time
 	CancelledAt     *time.Time
 	FinalizedAmount *int

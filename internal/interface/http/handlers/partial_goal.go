@@ -121,6 +121,9 @@ func (h *GoalHandler) Get(w http.ResponseWriter, r *http.Request) {
 		if g.TargetDate() != nil {
 			view.TargetDate = g.TargetDate().Format("02/01/2006")
 		}
+		if g.Note() != nil {
+			view.Note = *g.Note()
+		}
 		title = "Edit Goal"
 	}
 
@@ -170,6 +173,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		StartDate:    formData.sdate,
 		TargetDate:   formData.tdate,
 		Category:     formData.cat,
+		Note:         formData.note,
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
@@ -194,6 +198,7 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 		startDate,
 		pDate,
 		formData.cat,
+		formData.note,
 	)
 	if err != nil {
 		view.SetError(err)
@@ -268,6 +273,7 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		StartDate:    formData.sdate,
 		TargetDate:   formData.tdate,
 		Category:     formData.cat,
+		Note:         formData.note,
 	}
 	msgs := view.Validate()
 	if len(msgs) > 0 {
@@ -294,6 +300,7 @@ func (h *GoalHandler) Put(w http.ResponseWriter, r *http.Request) {
 		startDate,
 		pDate,
 		formData.cat,
+		formData.note,
 	)
 	if err != nil {
 		view.SetError(err)
@@ -552,7 +559,7 @@ func (h *GoalHandler) PostCancel(w http.ResponseWriter, r *http.Request) {
 }
 
 type goalFormData struct {
-	name, currency, tamount, sdate, tdate, cat string
+	name, currency, tamount, sdate, tdate, cat, note string
 }
 
 func (h *GoalHandler) parseGoalForm(r *http.Request) goalFormData {
@@ -563,6 +570,7 @@ func (h *GoalHandler) parseGoalForm(r *http.Request) goalFormData {
 		sdate:    r.FormValue("start-date"),
 		tdate:    r.FormValue("target-date"),
 		cat:      r.FormValue("category"),
+		note:     r.FormValue("note"),
 	}
 }
 

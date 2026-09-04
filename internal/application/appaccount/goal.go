@@ -26,6 +26,7 @@ func (s *Service) CreateGoal(
 	startDate time.Time,
 	targetDate *time.Time,
 	categoryID string,
+	note string,
 ) (*account.Account, error) {
 	uid, err := util.ParseID[account.ID](userID)
 	if err != nil {
@@ -67,6 +68,7 @@ func (s *Service) CreateGoal(
 		startDate,
 		targetDate,
 		cid,
+		note,
 	)
 	if err != nil {
 		err = errs.NewAppError(
@@ -111,6 +113,7 @@ func (s *Service) UpdateGoal(
 	startDate time.Time,
 	targetDate *time.Time,
 	categoryID string,
+	note string,
 ) (*account.Account, error) {
 	aid, err := util.ParseID[account.ID](id)
 	if err != nil {
@@ -279,6 +282,22 @@ func (s *Service) UpdateGoal(
 			)
 			return nil, err
 		}
+	}
+
+	err = goal.ChangeNote(note)
+	if err != nil {
+		err = errs.NewAppError(
+			errs.KindValidation,
+			"Note is invalid",
+			fmt.Errorf(
+				"failed to changing note of goal '%s' to '%s': %w",
+				goal.ID(),
+				note,
+				err,
+			),
+			"appaccount.UpdateGoal",
+		)
+		return nil, err
 	}
 
 	err = atx.Update(ctx, goal)
@@ -576,6 +595,7 @@ func (s *Service) CompleteGoal(
 		goalAcc.StartDate,
 		goalAcc.TargetDate,
 		(*account.ID)(cid),
+		goalAcc.Note,
 		goalAcc.CompletedAt,
 		goalAcc.CancelledAt,
 		goalAcc.FinalizedAmount,
@@ -892,6 +912,7 @@ func (s *Service) CancelGoal(
 		goalAcc.StartDate,
 		goalAcc.TargetDate,
 		(*account.ID)(cid),
+		goalAcc.Note,
 		goalAcc.CompletedAt,
 		goalAcc.CancelledAt,
 		goalAcc.FinalizedAmount,
