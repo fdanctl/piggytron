@@ -40,7 +40,9 @@ type ledgerEntryDto struct {
 	amount      int
 	description string
 	date        time.Time
+	note        *string
 	createdAt   time.Time
+	updatedAt   time.Time
 }
 
 func (r *LedgerRepository) Save(ctx context.Context, t *ledger.Entry) error {
@@ -57,9 +59,11 @@ func (r *LedgerRepository) Save(ctx context.Context, t *ledger.Entry) error {
 		    amount,
 		    description,
 		    date,
-		    created_at
+			note,
+		    created_at,
+			updated_at,
 		 )
-	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 		 ON CONFLICT(id)
 		 DO UPDATE SET 
 			type = EXCLUDED.type,
@@ -69,7 +73,9 @@ func (r *LedgerRepository) Save(ctx context.Context, t *ledger.Entry) error {
 			expense_category_id = EXCLUDED.expense_category_id,
 			amount = EXCLUDED.amount,
 			description = EXCLUDED.description,
-			date = EXCLUDED.date
+			date = EXCLUDED.date,
+			note = EXCLUDED.note,
+			updated_at = EXCLUDED.updated_at
 		`,
 		t.ID(),
 		t.UserID(),
@@ -81,7 +87,9 @@ func (r *LedgerRepository) Save(ctx context.Context, t *ledger.Entry) error {
 		t.Amount(),
 		t.Description(),
 		t.Date(),
+		t.Note(),
 		t.CreatedAt(),
+		t.UpdatedAt(),
 	)
 	if err != nil {
 		return err
@@ -105,9 +113,11 @@ func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 		    amount,
 		    description,
 		    date,
-		    created_at
+			note,
+		    created_at,
+			updated_at
 		 )
-	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
 		t.ID(),
 		t.UserID(),
 		t.Type(),
@@ -118,7 +128,9 @@ func (r *LedgerRepository) Create(ctx context.Context, t *ledger.Entry) error {
 		t.Amount(),
 		t.Description(),
 		t.Date(),
+		t.Note(),
 		t.CreatedAt(),
+		t.UpdatedAt(),
 	)
 	if err != nil {
 		return err
@@ -139,7 +151,9 @@ func (r *LedgerRepository) Update(ctx context.Context, t *ledger.Entry) error {
 		    expense_category_id = $5,
 		    amount = $6,
 		    description = $7,
-		    date = $8
+		    date = $8,
+			note = $9,
+			updated_at = $10
 		WHERE id = $1`,
 		t.ID(),
 		t.FromAccountID(),
@@ -149,6 +163,8 @@ func (r *LedgerRepository) Update(ctx context.Context, t *ledger.Entry) error {
 		t.Amount(),
 		t.Description(),
 		t.Date(),
+		t.Note(),
+		t.UpdatedAt(),
 	)
 	if err != nil {
 		return err
@@ -170,7 +186,7 @@ func (r *LedgerRepository) UpdateMany(
 		valueStrings []string
 	)
 
-	const vn = 10 // number of field in VALUES
+	const vn = 12 // number of field in VALUES
 	for i, t := range tt {
 		n := i*vn + 1
 
@@ -187,6 +203,8 @@ func (r *LedgerRepository) UpdateMany(
 				$%d::bigint,
 				$%d,
 				$%d::timestamp,
+				$%d::text,
+				$%d::timestamp,
 				$%d::timestamp
 				)`,
 				n,
@@ -199,6 +217,8 @@ func (r *LedgerRepository) UpdateMany(
 				n+7,
 				n+8,
 				n+9,
+				n+10,
+				n+11,
 			),
 		)
 
@@ -213,7 +233,9 @@ func (r *LedgerRepository) UpdateMany(
 			t.Amount(),
 			t.Description(),
 			t.Date(),
+			t.Note(),
 			t.CreatedAt(),
+			t.UpdatedAt(),
 		)
 	}
 
@@ -228,7 +250,9 @@ func (r *LedgerRepository) UpdateMany(
 			amount = v.amount,
 			description = v.description,
 			date = v.date,
-			created_at = v.created_at
+			note = v.note,
+			created_at = v.created_at,
+			updated_at = v.updated_at
 		FROM (
 			VALUES %s
 		) AS v(
@@ -241,7 +265,9 @@ func (r *LedgerRepository) UpdateMany(
 		    amount,
 		    description,
 		    date,
-		    created_at
+			note,
+		    created_at,
+			updated_at
 		)
 		WHERE t.id = v.id
 	`, strings.Join(valueStrings, ","))
@@ -272,7 +298,7 @@ func (r *LedgerRepository) FindByID(
 ) (*ledger.Entry, error) {
 	row := r.db.QueryRowContext(
 		ctx,
-		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
+		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, note, created_at, updated_at
 		 FROM ledger
 		 WHERE id = $1`,
 		id,
@@ -290,7 +316,9 @@ func (r *LedgerRepository) FindByID(
 		&dto.amount,
 		&dto.description,
 		&dto.date,
+		&dto.note,
 		&dto.createdAt,
+		&dto.updatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -310,7 +338,9 @@ func (r *LedgerRepository) FindByID(
 		dto.amount,
 		dto.description,
 		dto.date,
+		dto.note,
 		dto.createdAt,
+		dto.updatedAt,
 	)
 	return transaction, nil
 }
@@ -322,7 +352,7 @@ func (r *LedgerRepository) FindAllByUser(
 ) ([]*ledger.Entry, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
+		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, note, created_at, updated_at
 		 FROM ledger
 		 WHERE user_id = $1
 		 ORDER BY date DESC, created_at DESC`,
@@ -348,7 +378,9 @@ func (r *LedgerRepository) FindAllByUser(
 			&dto.amount,
 			&dto.description,
 			&dto.date,
+			&dto.note,
 			&dto.createdAt,
+			&dto.updatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -364,7 +396,9 @@ func (r *LedgerRepository) FindAllByUser(
 			dto.amount,
 			dto.description,
 			dto.date,
+			dto.note,
 			dto.createdAt,
+			dto.updatedAt,
 		)
 		entries = append(entries, transaction)
 	}
@@ -382,7 +416,7 @@ func (r *LedgerRepository) FindAllByAccount(
 ) ([]*ledger.Entry, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
+		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, note, created_at, updated_at
 		 FROM ledger
 		 WHERE from_account_id = $1 OR to_account_id = $1
 		 ORDER BY date DESC, created_at DESC`,
@@ -408,7 +442,9 @@ func (r *LedgerRepository) FindAllByAccount(
 			&dto.amount,
 			&dto.description,
 			&dto.date,
+			&dto.note,
 			&dto.createdAt,
+			&dto.updatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -424,7 +460,9 @@ func (r *LedgerRepository) FindAllByAccount(
 			dto.amount,
 			dto.description,
 			dto.date,
+			dto.note,
 			dto.createdAt,
+			dto.updatedAt,
 		)
 		entries = append(entries, transaction)
 	}
@@ -442,7 +480,7 @@ func (r *LedgerRepository) FindAllByCategory(
 ) ([]*ledger.Entry, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
-		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, created_at
+		`SELECT id, user_id, type, from_account_id, to_account_id, income_category_id, expense_category_id, amount, description, date, note, created_at, updated_at
 		 FROM ledger
 		 WHERE income_category_id = $1 OR expense_category_id = $1
 		 ORDER BY date DESC, created_at DESC`,
@@ -468,7 +506,9 @@ func (r *LedgerRepository) FindAllByCategory(
 			&dto.amount,
 			&dto.description,
 			&dto.date,
+			&dto.note,
 			&dto.createdAt,
+			&dto.updatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -484,7 +524,9 @@ func (r *LedgerRepository) FindAllByCategory(
 			dto.amount,
 			dto.description,
 			dto.date,
+			dto.note,
 			dto.createdAt,
+			dto.updatedAt,
 		)
 		entries = append(entries, transaction)
 	}

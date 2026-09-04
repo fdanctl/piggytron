@@ -52,6 +52,60 @@ templ InputGroup(class, label, errMsg string, hasError, required bool, attrs tem
 	</div>
 }
 
+templ TextArea(class string, hasError bool, attrs templ.Attributes) {
+	<div class="relative">
+		{{
+			var value string
+			if v, ok := attrs["value"]; ok {
+				value = v.(string)
+				delete(attrs, "value")
+			}
+		}}
+		<textarea
+			class={ "input", templ.KV("input--error", hasError), templ.KV(class, class != "") }
+			style="resize: vertical;"
+			{ attrs... }
+		>{ value }</textarea>
+		<div>
+			<i class="input__feedback">
+				@CircleXSvg(16, "", "")
+			</i>
+			if t, ok := attrs["type"]; ok && t == "password" {
+				<button
+					type="button"
+					data-action="ui.password.toggle"
+					onclick=""
+					class="reset-btn input__pwd-toggle"
+				>
+					<i>
+						@EyeSvg(20, "", "")
+					</i>
+					<i class="hidden">
+						@EyeOffSvg(20, "", "")
+					</i>
+				</button>
+			}
+		</div>
+	</div>
+}
+
+templ TextAreaGroup(class, label, errMsg string, hasError, required bool, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV("input-group--error", hasError), templ.KV(class, class != "") }
+	>
+		if id, ok := attrs["id"]; ok && label != "" {
+			<label for={ id.(string) }>
+				{ label }
+				if (!required) {
+					<span>(optional)</span>
+				}
+			</label>
+		}
+		@TextArea("", hasError, attrs)
+		<span class="input-group__message">{ errMsg }</span>
+	</div>
+}
+
 templ SearchBar(class string, attrs templ.Attributes) {
 	{{
 		placeholder := "Search..."

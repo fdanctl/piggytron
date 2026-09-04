@@ -127,6 +127,7 @@ func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 	currency := r.FormValue("currency")
 	description := r.FormValue("description")
 	date := r.FormValue("date")
+	note := r.FormValue("note")
 	category := r.FormValue("category")
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
@@ -204,6 +205,7 @@ func (h *GoalContributeHandler) Post(w http.ResponseWriter, r *http.Request) {
 		currency,
 		description,
 		d,
+		note,
 		category,
 		source,
 		destination,

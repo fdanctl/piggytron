@@ -21,7 +21,9 @@ type LedgerEntryDTO struct {
 	Amount      int
 	Description string
 	Date        time.Time
+	Note        *string
 	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // EntriesWithTotalCount is a page of ledger entries with the total number of

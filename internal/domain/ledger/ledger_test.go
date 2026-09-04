@@ -16,6 +16,7 @@ func TestNewIncome(t *testing.T) {
 		amount      int
 		description string
 		date        time.Time
+		note        string
 		wantErr     error
 	}{
 		{
@@ -27,6 +28,7 @@ func TestNewIncome(t *testing.T) {
 			amount:      10000,
 			description: "a good description",
 			date:        time.Now(),
+			note:        "",
 			wantErr:     nil,
 		},
 		{
@@ -38,6 +40,7 @@ func TestNewIncome(t *testing.T) {
 			amount:      10000,
 			description: "",
 			date:        time.Now(),
+			note:        "",
 			wantErr:     ErrInvalidDescription,
 		},
 		{
@@ -49,6 +52,7 @@ func TestNewIncome(t *testing.T) {
 			amount:      0,
 			description: "a good description",
 			date:        time.Now(),
+			note:        "",
 			wantErr:     ErrInvalidAmount,
 		},
 		{
@@ -60,6 +64,7 @@ func TestNewIncome(t *testing.T) {
 			amount:      -10000,
 			description: "a good description",
 			date:        time.Now(),
+			note:        "",
 			wantErr:     ErrInvalidAmount,
 		},
 	}
@@ -74,6 +79,7 @@ func TestNewIncome(t *testing.T) {
 				tt.amount,
 				tt.description,
 				tt.date,
+				tt.note,
 			)
 			if !errors.Is(err, tt.wantErr) {
 				t.Errorf("NewIncome() error = %v, wantErr %v", err, tt.wantErr)
@@ -92,6 +98,7 @@ func TestNewExpense(t *testing.T) {
 		amount            int
 		description       string
 		date              time.Time
+		note              string
 		minRunningBalance int
 		wantErr           error
 	}{
@@ -104,6 +111,7 @@ func TestNewExpense(t *testing.T) {
 			amount:            10000,
 			description:       "a good description",
 			date:              time.Now(),
+			note:              "",
 			minRunningBalance: 20000,
 			wantErr:           nil,
 		},
@@ -116,6 +124,7 @@ func TestNewExpense(t *testing.T) {
 			amount:            10000,
 			description:       "",
 			date:              time.Now(),
+			note:              "",
 			minRunningBalance: 20000,
 			wantErr:           ErrInvalidDescription,
 		},
@@ -128,6 +137,7 @@ func TestNewExpense(t *testing.T) {
 			amount:            0,
 			description:       "a good description",
 			date:              time.Now(),
+			note:              "",
 			minRunningBalance: 20000,
 			wantErr:           ErrInvalidAmount,
 		},
@@ -140,6 +150,7 @@ func TestNewExpense(t *testing.T) {
 			amount:            -10000,
 			description:       "a good description",
 			date:              time.Now(),
+			note:              "",
 			minRunningBalance: 20000,
 			wantErr:           ErrInvalidAmount,
 		},
@@ -152,6 +163,7 @@ func TestNewExpense(t *testing.T) {
 			amount:            10000,
 			description:       "a good description",
 			date:              time.Now(),
+			note:              "",
 			minRunningBalance: 10000,
 			wantErr:           nil,
 		},
@@ -164,6 +176,7 @@ func TestNewExpense(t *testing.T) {
 			amount:            20000,
 			description:       "a good description",
 			date:              time.Now(),
+			note:              "",
 			minRunningBalance: 10000,
 			wantErr:           ErrNegativeBalance,
 		},
@@ -179,6 +192,7 @@ func TestNewExpense(t *testing.T) {
 				tt.amount,
 				tt.description,
 				tt.date,
+				tt.note,
 				tt.minRunningBalance,
 			)
 			if !errors.Is(err, tt.wantErr) {
@@ -202,6 +216,7 @@ func TestNewTransfer(t *testing.T) {
 		amount      int
 		description string
 		date        time.Time
+		note        string
 
 		sourceBalance    int
 		toAccCatID       *ID
@@ -219,6 +234,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -235,6 +251,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -251,6 +268,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -267,6 +285,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           0,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -283,6 +302,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           -10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -299,6 +319,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    10000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -315,6 +336,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           20000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    10000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -331,6 +353,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -347,6 +370,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       &toCatID,
 			toAccountCatType: "needs",
@@ -363,6 +387,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       &toCatID,
 			toAccountCatType: "needs",
@@ -379,6 +404,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       &toCatID,
 			toAccountCatType: "needs",
@@ -395,6 +421,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "",
@@ -411,6 +438,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "needs",
@@ -427,6 +455,7 @@ func TestNewTransfer(t *testing.T) {
 			amount:           10000,
 			description:      "a good description",
 			date:             time.Now(),
+			note:             "",
 			sourceBalance:    20000,
 			toAccCatID:       nil,
 			toAccountCatType: "savings",
@@ -446,6 +475,7 @@ func TestNewTransfer(t *testing.T) {
 				tt.amount,
 				tt.description,
 				tt.date,
+				tt.note,
 				tt.sourceBalance,
 				tt.toAccCatID,
 				tt.toAccountCatType,

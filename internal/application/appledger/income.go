@@ -24,6 +24,7 @@ func (s *Service) CreateIncome(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	dstAccID string,
 ) (*ledger.Entry, error) {
@@ -153,6 +154,7 @@ func (s *Service) CreateIncome(
 		amount,
 		description,
 		date,
+		note,
 	)
 	if err != nil {
 		err = errs.NewAppError(
@@ -220,6 +222,7 @@ func (s *Service) UpdateIncome(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	dstAccID string,
 ) (*ledger.Entry, error) {
@@ -327,7 +330,7 @@ func (s *Service) UpdateIncome(
 		}
 	}
 
-	if err := t.UpdateIncome(toAccID, cid, amount, description, date); err != nil {
+	if err := t.UpdateIncome(toAccID, cid, amount, description, date, note); err != nil {
 		return nil, errs.NewAppError(
 			errs.KindBusinessRule,
 			"Failed to update income",

@@ -103,8 +103,10 @@ CREATE TABLE IF NOT EXISTS ledger (
   amount BIGINT NOT NULL CHECK (amount > 0),
   description TEXT NOT NULL,
   date TIMESTAMP NOT NULL,
+  note TEXT,
   --
   created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL,
   -- rules
   CHECK (
     from_account_id IS NOT NULL

@@ -18,6 +18,7 @@ type IncomeForm struct {
 	Date           string
 	Category       string
 	DestinationAcc string
+	Note           string
 }
 
 // NewIncomeForm returns a blank income form pre-filled with today's date
@@ -153,6 +154,18 @@ func (v *IncomeForm) DestinationAccHasError() bool {
 	return len(v.ValidateDestinationAcc()) > 0
 }
 
+func (v *IncomeForm) ValidateNote() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	return msgs
+}
+
+func (v *IncomeForm) NoteHasError() bool {
+	return len(v.ValidateNote()) > 0
+}
+
 func (v *IncomeForm) Validate() (msgs []string) {
 	if v.Initial {
 		return
@@ -163,5 +176,6 @@ func (v *IncomeForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateDate()...)
 	msgs = append(msgs, v.ValidateCategory()...)
 	msgs = append(msgs, v.ValidateDestinationAcc()...)
+	msgs = append(msgs, v.ValidateNote()...)
 	return msgs
 }

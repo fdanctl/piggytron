@@ -95,6 +95,10 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	var title string
 	var content templ.Component
+	var note string
+	if t.Note() != nil {
+		note = *t.Note()
+	}
 	switch string(t.Type()) {
 	case "income":
 		v := views.NewIncomeForm()
@@ -103,6 +107,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())
 		v.DestinationAcc = string(*t.ToAccountID())
+		v.Note = note
 		title = "Edit Income"
 		content = partials.IncomeForm(*v, icatOpts, noSavingsBanksOpts, string(t.ID()))
 
@@ -113,6 +118,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.ExpenseCategoryID())
 		v.SourceAcc = string(*t.FromAccountID())
+		v.Note = note
 		title = "Edit Expense"
 		content = partials.ExpenseForm(*v, ecatOpts, noSavingsBanksOpts, string(t.ID()))
 
@@ -126,6 +132,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 		v.DestinationAcc = string(*t.ToAccountID())
 		v.SourceAcc = string(*t.FromAccountID())
+		v.Note = note
 		title = "Edit Transfer"
 		content = partials.TransferForm(
 			*v,
@@ -141,6 +148,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())
 		v.DestinationAcc = string(*t.ToAccountID())
+		v.Note = note
 		title = "Edit Interest"
 		content = partials.InterestForm(
 			*v,
@@ -178,6 +186,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 	currency := r.FormValue("currency")
 	description := r.FormValue("description")
 	date := r.FormValue("date")
+	note := r.FormValue("note")
 	category := r.FormValue("category")
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
@@ -214,6 +223,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Date:           date,
 			Category:       category,
 			DestinationAcc: destination,
+			Note:           note,
 		}
 		form = partials.IncomeForm(view, icatOpts, noSavingsBanksOpts, id)
 		msgs := view.Validate()
@@ -232,6 +242,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Date:        date,
 			Category:    category,
 			SourceAcc:   source,
+			Note:        note,
 		}
 		form = partials.ExpenseForm(view, ecatOpts, noSavingsBanksOpts, id)
 		msgs := view.Validate()
@@ -251,6 +262,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Category:       category,
 			SourceAcc:      source,
 			DestinationAcc: destination,
+			Note:           note,
 		}
 		form = partials.TransferForm(
 			view,
@@ -274,6 +286,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 			Date:           date,
 			Category:       category,
 			DestinationAcc: destination,
+			Note:           note,
 		}
 		form = partials.InterestForm(
 			view,
@@ -331,6 +344,7 @@ func (h *LedgerEntryHandler) Put(w http.ResponseWriter, r *http.Request) {
 		currency,
 		description,
 		d,
+		note,
 		category,
 		source,
 		destination,

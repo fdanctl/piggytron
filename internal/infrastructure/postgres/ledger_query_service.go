@@ -43,7 +43,9 @@ func (s *LedgerQueryService) FindByID(
 			t.amount,
 			t.description,
 			t.date,
-			t.created_at
+			t.note,
+			t.created_at,
+			t.updated_at
 		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
@@ -69,7 +71,9 @@ func (s *LedgerQueryService) FindByID(
 		&dto.Amount,
 		&dto.Description,
 		&dto.Date,
+		&dto.Note,
 		&dto.CreatedAt,
+		&dto.UpdatedAt,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -101,7 +105,9 @@ func (s *LedgerQueryService) FindFiltered(
 			t.amount,
 			t.description,
 			t.date,
-			t.created_at
+			t.note,
+			t.created_at,
+			t.updated_at
 		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
@@ -153,7 +159,9 @@ func (s *LedgerQueryService) FindFiltered(
 			&dto.Amount,
 			&dto.Description,
 			&dto.Date,
+			&dto.Note,
 			&dto.CreatedAt,
+			&dto.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -190,7 +198,9 @@ func (s *LedgerQueryService) FindAllWithExpenseCategoryWithCount(
 		  t.amount,
 		  t.description,
 		  t.date,
+		  t.note,
 		  t.created_at,
+		  t.updated_at,
 		  COUNT(*) OVER () AS total_count
 		FROM
 		  ledger t
@@ -235,7 +245,9 @@ func (s *LedgerQueryService) FindAllWithExpenseCategoryWithCount(
 			&dto.Amount,
 			&dto.Description,
 			&dto.Date,
+			&dto.Note,
 			&dto.CreatedAt,
+			&dto.UpdatedAt,
 			&count,
 		)
 		if err != nil {
@@ -275,7 +287,9 @@ func (s *LedgerQueryService) FindFilteredWithCount(
 			t.amount,
 			t.description,
 			t.date,
+			t.note,
 			t.created_at,
+			t.updated_at,
 			COUNT(CASE WHEN t.type != 'initial-balance' THEN 1 END) OVER() as total_count
 		 FROM ledger t
 		 LEFT JOIN accounts fa
@@ -330,7 +344,9 @@ func (s *LedgerQueryService) FindFilteredWithCount(
 			&dto.Amount,
 			&dto.Description,
 			&dto.Date,
+			&dto.Note,
 			&dto.CreatedAt,
+			&dto.UpdatedAt,
 			&count,
 		)
 		if err != nil {
@@ -460,7 +476,9 @@ func (s *LedgerQueryService) GetRecentEntries(
 			t.amount,
 			t.description,
 			t.date,
-			t.created_at
+			t.note,
+			t.created_at,
+			t.updated_at
 		 FROM ledger t
 		 LEFT JOIN accounts fa
 			ON t.from_account_id = fa.id
@@ -496,7 +514,9 @@ func (s *LedgerQueryService) GetRecentEntries(
 			&dto.Amount,
 			&dto.Description,
 			&dto.Date,
+			&dto.Note,
 			&dto.CreatedAt,
+			&dto.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err

@@ -19,6 +19,7 @@ type ExpenseForm struct {
 	Date        string
 	Category    string
 	SourceAcc   string
+	Note        string
 }
 
 // NewExpenseForm returns a blank expense form pre-filled with today's date
@@ -154,6 +155,18 @@ func (v *ExpenseForm) SourceAccHasError() bool {
 	return len(v.ValidateSourceAcc()) > 0
 }
 
+func (v *ExpenseForm) ValidateNote() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	return msgs
+}
+
+func (v *ExpenseForm) NoteHasError() bool {
+	return len(v.ValidateNote()) > 0
+}
+
 func (v *ExpenseForm) Validate() (msgs []string) {
 	if v.Initial {
 		return
@@ -164,5 +177,6 @@ func (v *ExpenseForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateDate()...)
 	msgs = append(msgs, v.ValidateCategory()...)
 	msgs = append(msgs, v.ValidateSourceAcc()...)
+	msgs = append(msgs, v.ValidateNote()...)
 	return msgs
 }

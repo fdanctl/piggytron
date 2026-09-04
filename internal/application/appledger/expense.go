@@ -24,6 +24,7 @@ func (s *Service) CreateExpense(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	catID string,
 	srcAccID string,
 ) (*ledger.Entry, error) {
@@ -150,6 +151,7 @@ func (s *Service) CreateExpense(
 		amount,
 		description,
 		date,
+		note,
 		acc.MinRunningBalance,
 	)
 	if err != nil {
@@ -231,6 +233,7 @@ func (s *Service) UpdateExpense(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	srcAccID string,
 ) (*ledger.Entry, error) {
@@ -338,7 +341,7 @@ func (s *Service) UpdateExpense(
 		}
 	}
 
-	if err := t.UpdateExpense(fromAccID, cid, amount, description, date); err != nil {
+	if err := t.UpdateExpense(fromAccID, cid, amount, description, date, note); err != nil {
 		return nil, errs.NewAppError(
 			errs.KindBusinessRule,
 			"Failed to update expense",

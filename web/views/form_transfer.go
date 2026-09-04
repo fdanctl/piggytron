@@ -20,6 +20,7 @@ type TransferForm struct {
 	Category       string
 	SourceAcc      string
 	DestinationAcc string
+	Note           string
 }
 
 // NewTransferForm returns a blank transfer form pre-filled with today's
@@ -183,6 +184,18 @@ func (v *TransferForm) DestinationAccHasError() bool {
 	return len(v.ValidateDestinationAcc()) > 0
 }
 
+func (v *TransferForm) ValidateNote() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	return msgs
+}
+
+func (v *TransferForm) NoteHasError() bool {
+	return len(v.ValidateNote()) > 0
+}
+
 func (v *TransferForm) Validate() (msgs []string) {
 	if v.Initial {
 		return
@@ -194,5 +207,6 @@ func (v *TransferForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateCategory()...)
 	msgs = append(msgs, v.ValidateSourceAcc()...)
 	msgs = append(msgs, v.ValidateDestinationAcc()...)
+	msgs = append(msgs, v.ValidateNote()...)
 	return msgs
 }

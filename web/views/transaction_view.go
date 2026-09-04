@@ -18,6 +18,7 @@ type Transaction struct {
 	ToAccount   string
 	Amount      string
 	Date        string
+	Note        string
 }
 
 // NewTransaction builds the view model from a ledger entry; expenses are
@@ -49,6 +50,11 @@ func NewTransaction(
 		dstAcc = *t.ToAccount
 	}
 
+	var note string
+	if t.Note != nil {
+		note = *t.Note
+	}
+
 	return Transaction{
 		ID:          t.ID,
 		Description: t.Description,
@@ -59,6 +65,7 @@ func NewTransaction(
 		ToAccount:   dstAcc,
 		Amount:      FormatMoney(f, currency.EUR, language.AmericanEnglish),
 		Date:        FormatDate(t.Date),
+		Note:        note,
 	}
 }
 

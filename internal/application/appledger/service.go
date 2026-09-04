@@ -42,6 +42,7 @@ func (s *Service) Update(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	srcAccID string,
 	dstAccID string,
@@ -56,6 +57,7 @@ func (s *Service) Update(
 			currency,
 			description,
 			date,
+			note,
 			categoryID,
 			dstAccID,
 		)
@@ -69,6 +71,7 @@ func (s *Service) Update(
 			currency,
 			description,
 			date,
+			note,
 			categoryID,
 			srcAccID,
 		)
@@ -82,6 +85,7 @@ func (s *Service) Update(
 			currency,
 			description,
 			date,
+			note,
 			categoryID,
 			srcAccID,
 			dstAccID,
@@ -96,6 +100,7 @@ func (s *Service) Update(
 			currency,
 			description,
 			date,
+			note,
 			categoryID,
 			dstAccID,
 		)

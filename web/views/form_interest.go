@@ -19,6 +19,7 @@ type InterestForm struct {
 	Date           string
 	Category       string
 	DestinationAcc string
+	Note           string
 }
 
 // NewInterestForm returns a blank transfer form pre-filled with today's
@@ -154,6 +155,18 @@ func (v *InterestForm) DestinationAccHasError() bool {
 	return len(v.ValidateDestinationAcc()) > 0
 }
 
+func (v *InterestForm) ValidateNote() (msgs []string) {
+	if v.Initial {
+		return
+	}
+
+	return msgs
+}
+
+func (v *InterestForm) NoteHasError() bool {
+	return len(v.ValidateNote()) > 0
+}
+
 func (v *InterestForm) Validate() (msgs []string) {
 	if v.Initial {
 		return
@@ -164,5 +177,6 @@ func (v *InterestForm) Validate() (msgs []string) {
 	msgs = append(msgs, v.ValidateDate()...)
 	msgs = append(msgs, v.ValidateCategory()...)
 	msgs = append(msgs, v.ValidateDestinationAcc()...)
+	msgs = append(msgs, v.ValidateNote()...)
 	return msgs
 }

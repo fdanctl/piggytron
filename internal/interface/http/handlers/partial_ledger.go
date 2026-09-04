@@ -156,6 +156,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 	currency := r.FormValue("currency")
 	description := r.FormValue("description")
 	date := r.FormValue("date")
+	note := r.FormValue("note")
 	category := r.FormValue("category")
 	source := r.FormValue("source")
 	destination := r.FormValue("destination")
@@ -192,6 +193,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			Date:           date,
 			Category:       category,
 			DestinationAcc: destination,
+			Note:           note,
 		}
 		form = partials.IncomeForm(view, icatOpts, noSavingsBanksOpts, "")
 		msgs := view.Validate()
@@ -210,6 +212,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			Date:        date,
 			Category:    category,
 			SourceAcc:   source,
+			Note:        note,
 		}
 		form = partials.ExpenseForm(view, ecatOpts, noSavingsBanksOpts, "")
 		msgs := view.Validate()
@@ -229,6 +232,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			Category:       category,
 			SourceAcc:      source,
 			DestinationAcc: destination,
+			Note:           note,
 		}
 		form = partials.TransferForm(
 			view,
@@ -252,6 +256,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			Date:           date,
 			Category:       category,
 			DestinationAcc: destination,
+			Note:           note,
 		}
 		form = partials.InterestForm(
 			view,
@@ -304,6 +309,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			currency,
 			description,
 			d,
+			note,
 			category,
 			destination,
 		)
@@ -320,6 +326,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			currency,
 			description,
 			d,
+			note,
 			category,
 			source,
 		)
@@ -336,6 +343,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			currency,
 			description,
 			d,
+			note,
 			category,
 			source,
 			destination,
@@ -353,6 +361,7 @@ func (h *LedgerHandler) Post(w http.ResponseWriter, r *http.Request) {
 			currency,
 			description,
 			d,
+			note,
 			category,
 			destination,
 		)

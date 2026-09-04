@@ -61,7 +61,9 @@ type Entry struct {
 	amount      int
 	description string
 	date        time.Time
+	note        *string
 	createdAt   time.Time
+	updatedAt   time.Time
 }
 
 // NewIncome builds a validated income entry credited to toAccountID.
@@ -73,12 +75,18 @@ func NewIncome(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 ) (*Entry, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
 	}
 	if amount <= 0 {
 		return nil, ErrInvalidAmount
+	}
+
+	pnote := &note
+	if note == "" {
+		pnote = nil
 	}
 
 	now := time.Now()
@@ -94,7 +102,9 @@ func NewIncome(
 		amount:            amount,
 		description:       description,
 		date:              date,
+		note:              pnote,
 		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -109,6 +119,7 @@ func NewExpense(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 	minRunningBalance int, // from that date onwards
 ) (*Entry, error) {
 	if description == "" {
@@ -123,6 +134,11 @@ func NewExpense(
 
 	now := time.Now()
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	return &Entry{
 		id:                id,
 		userID:            userID,
@@ -134,7 +150,9 @@ func NewExpense(
 		amount:            amount,
 		description:       description,
 		date:              date,
+		note:              pnote,
 		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -150,6 +168,7 @@ func NewTransfer(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 
 	minRunningBalance int,
 	toAccountCategoryID *ID,
@@ -183,6 +202,11 @@ func NewTransfer(
 
 	now := time.Now()
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	return &Entry{
 		id:                id,
 		userID:            userID,
@@ -194,7 +218,9 @@ func NewTransfer(
 		amount:            amount,
 		description:       description,
 		date:              date,
+		note:              pnote,
 		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -206,6 +232,7 @@ func NewInterest(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 ) (*Entry, error) {
 	if description == "" {
 		return nil, ErrInvalidDescription
@@ -215,6 +242,11 @@ func NewInterest(
 	}
 
 	now := time.Now()
+
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
 
 	return &Entry{
 		id:                id,
@@ -227,7 +259,9 @@ func NewInterest(
 		amount:            amount,
 		description:       description,
 		date:              date,
+		note:              pnote,
 		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -258,7 +292,9 @@ func NewGoalFulfillment(
 		amount:            amount,
 		description:       fmt.Sprintf("%s goal fulfillment", goalName),
 		date:              date,
+		note:              nil,
 		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -287,7 +323,9 @@ func NewBankInitalBalance(
 		amount:            amount,
 		description:       description,
 		date:              date,
+		note:              nil,
 		createdAt:         now,
+		updatedAt:         now,
 	}, nil
 }
 
@@ -304,7 +342,8 @@ func Rehydrate(
 	amount int,
 	description string,
 	date time.Time,
-	createdAt time.Time,
+	note *string,
+	createdAt, updatedAt time.Time,
 ) *Entry {
 	return &Entry{
 		id:                id,
@@ -317,7 +356,9 @@ func Rehydrate(
 		amount:            amount,
 		description:       description,
 		date:              date,
+		note:              note,
 		createdAt:         createdAt,
+		updatedAt:         updatedAt,
 	}
 }
 
@@ -373,9 +414,19 @@ func (t *Entry) Date() time.Time {
 	return t.date
 }
 
+// Note returns the date the entry note.
+func (t *Entry) Note() *string {
+	return t.note
+}
+
 // CreatedAt returns when the entry was created.
 func (t *Entry) CreatedAt() time.Time {
 	return t.createdAt
+}
+
+// UpdatedAt returns when the entry was last updated.
+func (t *Entry) UpdatedAt() time.Time {
+	return t.updatedAt
 }
 
 // CanBeDeleted reports whether the entry can be deleted: the destination
@@ -395,6 +446,7 @@ func (t *Entry) UpdateIncome(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 ) error {
 	if t.ttype != income {
 		return errors.New("can't update income, type not income")
@@ -408,11 +460,18 @@ func (t *Entry) UpdateIncome(
 		return ErrInvalidDescription
 	}
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	t.toAccountID = &toAccountID
 	t.incomeCategoryID = &incomeCategoryID
 	t.amount = amount
 	t.description = description
 	t.date = date
+	t.note = pnote
+	t.updatedAt = time.Now()
 
 	return nil
 }
@@ -434,6 +493,7 @@ func (t *Entry) UpdateExpense(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 ) error {
 	if t.ttype != expense {
 		return errors.New("can't update expense, type not expense")
@@ -445,11 +505,18 @@ func (t *Entry) UpdateExpense(
 		return ErrInvalidAmount
 	}
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	t.fromAccountID = &fromAccountID
 	t.expenseCategoryID = &expenseCategoryID
 	t.amount = amount
 	t.description = description
 	t.date = date
+	t.note = pnote
+	t.updatedAt = time.Now()
 
 	return nil
 }
@@ -463,6 +530,7 @@ func (t *Entry) UpdateTransfer(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 ) error {
 	if t.ttype != transfer {
 		return errors.New("can't update transfer, type not transfer")
@@ -477,11 +545,18 @@ func (t *Entry) UpdateTransfer(
 		return ErrSameAccountTransfer
 	}
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	t.toAccountID = &toAccountID
 	t.fromAccountID = &fromAccountID
 	t.amount = amount
 	t.description = description
 	t.date = date
+	t.note = pnote
+	t.updatedAt = time.Now()
 
 	return nil
 }
@@ -517,6 +592,7 @@ func (t *Entry) UpdateTransferToAccountAndCategory(
 
 	t.toAccountID = &toAccountID
 	t.expenseCategoryID = expenseCategoryID
+	t.updatedAt = time.Now()
 
 	return nil
 }
@@ -527,6 +603,7 @@ func (t *Entry) UpdateInterest(
 	amount int,
 	description string,
 	date time.Time,
+	note string,
 ) error {
 	if t.ttype != interest {
 		return errors.New("can't update interest, type not interest")
@@ -540,11 +617,18 @@ func (t *Entry) UpdateInterest(
 		return ErrInvalidDescription
 	}
 
+	pnote := &note
+	if note == "" {
+		pnote = nil
+	}
+
 	t.toAccountID = &toAccountID
 	t.incomeCategoryID = &incomeCategoryID
 	t.amount = amount
 	t.description = description
 	t.date = date
+	t.note = pnote
+	t.updatedAt = time.Now()
 
 	return nil
 }

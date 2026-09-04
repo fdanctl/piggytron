@@ -25,6 +25,7 @@ func (s *Service) CreateTransfer(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	srcAccID string,
 	dstAccID string,
@@ -227,6 +228,7 @@ func (s *Service) CreateTransfer(
 		amount,
 		description,
 		date,
+		note,
 		fromAccount.MinRunningBalance,
 		accCID,
 		toAccountCatType,
@@ -344,6 +346,7 @@ func (s *Service) UpdateTransfer(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	srcAccID string,
 	dstAccID string,
@@ -485,7 +488,7 @@ func (s *Service) UpdateTransfer(
 	}
 
 	// Update
-	if err := t.UpdateTransfer(fromAccID, toAccID, amount, description, date); err != nil {
+	if err := t.UpdateTransfer(fromAccID, toAccID, amount, description, date, note); err != nil {
 		err = errs.NewAppError(
 			errs.KindBusinessRule,
 			"Failed to update transfer",

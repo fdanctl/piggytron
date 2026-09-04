@@ -22,6 +22,7 @@ func (s *Service) CreateInterest(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	dstAccID string,
 ) (*ledger.Entry, error) {
@@ -94,6 +95,7 @@ func (s *Service) CreateInterest(
 		amount,
 		description,
 		date,
+		note,
 	)
 	if err != nil {
 		err = errs.NewAppError(
@@ -159,6 +161,7 @@ func (s *Service) UpdateInterest(
 	currency string,
 	description string,
 	date time.Time,
+	note string,
 	categoryID string,
 	dstAccID string,
 ) (*ledger.Entry, error) {
@@ -252,7 +255,7 @@ func (s *Service) UpdateInterest(
 	prevAmount := t.Amount()
 	prevDate := t.Date()
 	prevAccountID := string(*t.ToAccountID())
-	if err := t.UpdateInterest(toAccID, cid, amount, description, date); err != nil {
+	if err := t.UpdateInterest(toAccID, cid, amount, description, date, note); err != nil {
 		return nil, errs.NewAppError(
 			errs.KindBusinessRule,
 			"Failed to update interest",

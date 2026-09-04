@@ -204,6 +204,21 @@ templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOpt
 				"name": "destination",
 			},
 		)
+		@components.TextAreaGroup(
+			"",
+			"Note",
+			views.StringArrToStr(v.ValidateNote()),
+			v.NoteHasError(),
+			false,
+			templ.Attributes{
+				"id":          "income-description",
+				"rows":        "4",
+				"maxlenght":   "200",
+				"name":        "note",
+				"placeholder": "Add a note",
+				"value":       v.Note,
+			},
+		)
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Confirm",
@@ -322,6 +337,21 @@ templ ExpenseForm(v views.ExpenseForm, categories, accounts []components.SelectO
 			templ.Attributes{
 				"id":   "expense-source",
 				"name": "source",
+			},
+		)
+		@components.TextAreaGroup(
+			"",
+			"Note",
+			views.StringArrToStr(v.ValidateNote()),
+			v.NoteHasError(),
+			false,
+			templ.Attributes{
+				"id":          "income-description",
+				"rows":        "4",
+				"maxlenght":   "200",
+				"name":        "note",
+				"placeholder": "Add a note",
+				"value":       v.Note,
 			},
 		)
 		<div class="w-full flex justify-end mt-md">
@@ -459,6 +489,21 @@ templ TransferForm(v views.TransferForm, categories, accounts []components.Selec
 				"name": "destination",
 			},
 		)
+		@components.TextAreaGroup(
+			"",
+			"Note",
+			views.StringArrToStr(v.ValidateNote()),
+			v.NoteHasError(),
+			false,
+			templ.Attributes{
+				"id":          "income-description",
+				"rows":        "4",
+				"maxlenght":   "200",
+				"name":        "note",
+				"placeholder": "Add a note",
+				"value":       v.Note,
+			},
+		)
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Confirm",
@@ -577,6 +622,21 @@ templ InterestForm(v views.InterestForm, categories, accounts []components.Selec
 			templ.Attributes{
 				"id":   "interest-destination",
 				"name": "destination",
+			},
+		)
+		@components.TextAreaGroup(
+			"",
+			"Note",
+			views.StringArrToStr(v.ValidateNote()),
+			v.NoteHasError(),
+			false,
+			templ.Attributes{
+				"id":          "income-description",
+				"rows":        "4",
+				"maxlenght":   "200",
+				"name":        "note",
+				"placeholder": "Add a note",
+				"value":       v.Note,
 			},
 		)
 		<div class="w-full flex justify-end mt-md">
@@ -713,6 +773,21 @@ templ GoalContributionForm(v views.TransferForm, categories, accounts []componen
 			},
 		)
 		<input type="hidden" name="destination" value={ v.DestinationAcc }/>
+		@components.TextAreaGroup(
+			"",
+			"Note",
+			views.StringArrToStr(v.ValidateNote()),
+			v.NoteHasError(),
+			false,
+			templ.Attributes{
+				"id":          "income-description",
+				"rows":        "4",
+				"maxlenght":   "200",
+				"name":        "note",
+				"placeholder": "Add a note",
+				"value":       v.Note,
+			},
+		)
 		<div class="w-full flex justify-end mt-md">
 			@components.Button(
 				"Contribute",

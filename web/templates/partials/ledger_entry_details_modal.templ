@@ -42,6 +42,10 @@ templ TransactionDetails(t views.Transaction) {
 			</li>
 		}
 	</ul>
+	if t.Note != "" {
+		<p class="tdetails__key mt-sm">Note</p>
+		<p class="tdetails__value">{ t.Note }</p>
+	}
 }
 
 templ TransactionDetailsButtons(t views.Transaction) {
