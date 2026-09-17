@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
 	"log"
 	"log/slog"
@@ -27,6 +28,9 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
+
+//go:embed static/*
+var static embed.FS
 
 func main() {
 	cfg, err := config.LoadConfig()
@@ -119,13 +123,10 @@ func main() {
 	webMux := http.NewServeMux()
 	webMux.Handle(
 		"/static/",
-		http.StripPrefix(
-			"/static/",
-			http.FileServer(http.Dir("web/static")),
-		),
+		http.FileServerFS(static),
 	)
 	webMux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "web/static/assets/favicon.ico")
+		http.ServeFileFS(w, r, static, "static/favicon.ico")
 	})
 
 	dashboardHandler := handlers.NewDashboardHandler(

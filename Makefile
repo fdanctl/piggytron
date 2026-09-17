@@ -109,8 +109,8 @@ dev/clean:
 clean: confirm dev/clean
 	@echo "Cleaning up..."
 	@rm -f web/templates/**/*_templ.go
-	@rm -f web/static/assets/app.js
-	@rm -f web/static/assets/app.css
+	@rm -f cmd/server/static/app.js
+	@rm -f cmd/server/static/app.css
 
 # ==================================================================================== #
 # OPERATIONS
