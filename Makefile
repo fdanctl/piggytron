@@ -87,7 +87,7 @@ dev: dev/clean
 	 -v ./scripts:/docker-entrypoint-initdb.d \
 	 postgres:16-alpine && \
 	docker run -d --name redis -p ${REDIS_PORT}:6379 redis:latest && \
-	DEV="true" go tool air -c .air.toml
+	DEV="true" DB_HOST="localhost" REDIS_HOST="localhost" go tool air -c .air.toml
 
 ## docker/status: show running containers
 .PHONY: docker/status

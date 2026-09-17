@@ -1,6 +1,6 @@
 module github.com/fdanctl/piggytron
 
-go 1.25.0
+go 1.25.11
 
 tool (
 	github.com/a-h/templ/cmd/templ
@@ -10,6 +10,7 @@ tool (
 require (
 	github.com/a-h/templ v0.3.1020
 	github.com/go-echarts/go-echarts/v2 v2.7.2
+	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	github.com/redis/go-redis/v9 v9.21.0
@@ -42,9 +43,9 @@ require (
 	github.com/tdewolff/parse/v2 v2.8.3 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/mod v0.36.0 // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/tools v0.45.0 // indirect
-	google.golang.org/protobuf v1.36.8 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
 )

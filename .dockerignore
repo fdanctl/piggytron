@@ -1,0 +1,9 @@
+.env*
+
+tmp/*
+
+web/templates/**/*_templ.go
+cmd/server/static/app.js
+cmd/server/static/app.css
+
+node_modules/*

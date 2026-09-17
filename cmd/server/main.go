@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"embed"
 	"fmt"
 	"log"
@@ -49,13 +48,8 @@ func main() {
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	}
 
-	db, err := sql.Open("postgres", cfg.DBURL)
+	db, err := postgres.Connect(cfg.DBURL)
 	if err != nil {
-		logger.Error("failed to open db", "error", err.Error())
-		os.Exit(1)
-		return
-	}
-	if err := db.Ping(); err != nil {
 		logger.Error("failed to connect to db", "error", err.Error())
 		os.Exit(1)
 		return

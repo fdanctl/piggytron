@@ -9,6 +9,8 @@ import (
 	"os"
 )
 
+var SERVER_PORT = "8080"
+
 const (
 	time    uint32 = 1
 	memory  uint32 = 64 * 1024
@@ -27,7 +29,7 @@ type hashConfig struct {
 
 type config struct {
 	ServerPort string
-	// postgres://<DB_USER>:<DB_PASSWORD>@localhost:<DB_PORT>/<DB_NAME>
+	// postgres://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>
 	DBURL      string
 	RedisAddr  string
 	HashConfig hashConfig
@@ -37,38 +39,34 @@ type config struct {
 // LoadConfig reads the configuration from environment variables and returns
 // a populated config, or an error when a required variable is missing.
 func LoadConfig() (*config, error) {
-	serverPort := os.Getenv("SERVER_PORT")
-	if serverPort == "" {
-		fmt.Println("Environment Variable 'SERVER_PORT' not found, using default: 8080")
-		serverPort = "8080"
-	}
-
+	dev := os.Getenv("DEV")
 	dbUser := os.Getenv("DB_USER")
 	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 
-	if dbUser == "" || dbPassword == "" || dbPort == "" || dbName == "" {
-		return nil, errors.New("failed to get env")
+	if dbUser == "" || dbPassword == "" || dbHost == "" || dbPort == "" || dbName == "" {
+		return nil, errors.New("failed to get postgres environments")
 	}
 
+	redisHost := os.Getenv("REDIS_HOST")
 	redisPort := os.Getenv("REDIS_PORT")
-	if redisPort == "" {
-		return nil, errors.New("failed to get REDIS_PORT env")
+	if redisHost == "" || redisPort == "" {
+		return nil, errors.New("failed to get redis environments")
 	}
-
-	dev := os.Getenv("DEV")
 
 	return &config{
-		ServerPort: serverPort,
+		ServerPort: SERVER_PORT,
 		DBURL: fmt.Sprintf(
-			"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
+			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			dbUser,
 			dbPassword,
+			dbHost,
 			dbPort,
 			dbName,
 		),
-		RedisAddr: fmt.Sprint("localhost:", redisPort),
+		RedisAddr: fmt.Sprintf("%s:%s", redisHost, redisPort),
 		HashConfig: hashConfig{
 			Time:    time,
 			Memory:  memory,
