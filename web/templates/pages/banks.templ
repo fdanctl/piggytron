@@ -34,7 +34,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value metric__value--xl">
 								{ views.FormatMoney(float64(view.NetWorth) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<span class={ templ.KV("hidden", math.IsNaN(view.NetWorthIncPct)) }>
+							<span class={ templ.KV("hidden", math.IsNaN(view.NetWorthIncPct) || math.IsInf(view.NetWorthIncPct, 0)) }>
 								@percentChange(view.NetWorthIncPct, "% this month")
 							</span>
 						</div>
@@ -45,7 +45,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Savings) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<span class={ templ.KV("hidden", math.IsNaN(view.SavingsIncPct)) }>
+							<span class={ templ.KV("hidden", math.IsNaN(view.SavingsIncPct) || math.IsInf(view.SavingsIncPct, 0)) }>
 								@percentChange(view.SavingsIncPct, "%")
 							</span>
 						</div>
@@ -54,7 +54,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Available) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<span class={ templ.KV("hidden", math.IsNaN(view.AvailableIncPct)) }>
+							<span class={ templ.KV("hidden", math.IsNaN(view.AvailableIncPct) || math.IsInf(view.AvailableIncPct, 0)) }>
 								@percentChange(view.AvailableIncPct, "%")
 							</span>
 						</div>
@@ -63,7 +63,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							<div class="metric__value">
 								{ views.FormatMoney(float64(view.Goals) / 100, currency.EUR, language.AmericanEnglish) }
 							</div>
-							<span class={ templ.KV("hidden", math.IsNaN(view.GoalsIncPct)) }>
+							<span class={ templ.KV("hidden", math.IsNaN(view.GoalsIncPct) || math.IsInf(view.GoalsIncPct, 0)) }>
 								@percentChange(view.GoalsIncPct, "%")
 							</span>
 						</div>

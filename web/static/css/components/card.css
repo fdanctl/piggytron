@@ -50,15 +50,14 @@
 @container main (min-width: 600px) {
   .metric-container {
     flex-direction: row;
+    align-items: top;
+    align-self: center;
   }
 }
 
 .metric {
   text-box-trim: trim-both;
   text-align: right;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .metric__title {
