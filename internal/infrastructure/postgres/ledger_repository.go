@@ -61,7 +61,7 @@ func (r *LedgerRepository) Save(ctx context.Context, t *ledger.Entry) error {
 		    date,
 			note,
 		    created_at,
-			updated_at,
+			updated_at
 		 )
 	 	 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
 		 ON CONFLICT(id)

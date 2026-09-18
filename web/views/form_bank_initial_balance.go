@@ -25,6 +25,7 @@ func (v *BankInitialBalanceForm) ValidateInitialBalance() (msgs []string) {
 
 	if v.InitialBalance == "" {
 		msgs = append(msgs, "Balance is required")
+		v.InitialBalance = "0"
 	}
 
 	str := strings.ReplaceAll(v.InitialBalance, ",", "")
@@ -35,8 +36,8 @@ func (v *BankInitialBalanceForm) ValidateInitialBalance() (msgs []string) {
 		return append(msgs, "Not a valid number")
 	}
 
-	if n <= 0 {
-		msgs = append(msgs, "Balance must greater than 0")
+	if n < 0 {
+		msgs = append(msgs, "Balance can't be negative")
 	}
 	return msgs
 }

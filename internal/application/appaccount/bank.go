@@ -364,31 +364,37 @@ func (s *Service) UpdateBankInitial(
 		d = time.Now()
 	}
 
-	entry, err := ledger.NewBankInitalBalance(
-		entryID,
-		ledger.ID(userID),
-		ledger.ID(id),
-		initialBalance,
-		"Initial Balance",
-		d,
-	)
-	if err != nil {
-		err = errs.NewAppError(
-			errs.KindBusinessRule,
-			"Failed to create initial balance",
-			fmt.Errorf("failed to create interest: %w", err),
-			"appaccount.UpdateBankInitial",
+	if initialBalance > 0 {
+		entry, err := ledger.NewBankInitalBalance(
+			entryID,
+			ledger.ID(userID),
+			ledger.ID(id),
+			initialBalance,
+			"Initial Balance",
+			d,
 		)
-		return err
-	}
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindBusinessRule,
+				"Failed to create initial balance",
+				fmt.Errorf("failed to create interest: %w", err),
+				"appaccount.UpdateBankInitial",
+			)
+			return err
+		}
 
-	err = ltx.Save(ctx, entry)
-	if err != nil {
-		err = errs.NewInternalAppError(
-			fmt.Errorf("failed to update: %w", err),
-			"appaccount.UpdateBankInitial",
-		)
-		return err
+		err = ltx.Save(ctx, entry)
+		if err != nil {
+			err = errs.NewInternalAppError(
+				fmt.Errorf("failed to update: %w", err),
+				"appaccount.UpdateBankInitial",
+			)
+			return err
+		}
+	} else if prev != nil {
+		if err := ltx.Delete(ctx, entryID); err != nil {
+			return err
+		}
 	}
 
 	// monthly summary
@@ -397,24 +403,54 @@ func (s *Service) UpdateBankInitial(
 	if prev != nil {
 		delta -= prev.Amount()
 	}
-	tms, err := monthlysummary.New(
-		monthlysummary.ID(id),
+	tms, err := mstx.FindByAccountAndMonth(
+		ctx,
+		id,
 		monthlysummary.NewMonth(d),
-		delta,
-		0,
 	)
 	if err != nil {
-		err = errs.NewAppError(
-			errs.KindBusinessRule,
-			"Failed to create summary",
-			fmt.Errorf("failed to create summary: %w", err),
+		if errors.Is(err, monthlysummary.ErrNotFound) {
+			tms, err := monthlysummary.New(
+				monthlysummary.ID(id),
+				monthlysummary.NewMonth(d),
+				delta,
+				0,
+			)
+			if err != nil {
+				err = errs.NewAppError(
+					errs.KindInternal,
+					"Failed to create summary",
+					fmt.Errorf("failed to create summary: %w", err),
+					"appaccount.UpdateBankInitial",
+				)
+				return err
+			}
+
+			err = mstx.Save(ctx, tms)
+			if err != nil {
+				err = errs.NewInternalAppError(
+					fmt.Errorf("failed saving summary: %w", err),
+					"appaccount.UpdateBankInitial",
+				)
+				return err
+			}
+			return nil
+		}
+
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed finding summary: %w", err),
 			"appaccount.UpdateBankInitial",
 		)
 		return err
 	}
-
-	err = mstx.Save(ctx, tms)
-	if err != nil {
+	if err := tms.AddMoneyIn(delta); err != nil {
+		err = errs.NewInternalAppError(
+			fmt.Errorf("failed updating summary: %w", err),
+			"appaccount.UpdateBankInitial",
+		)
+		return err
+	}
+	if err := mstx.Update(ctx, tms); err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed saving summary: %w", err),
 			"appaccount.UpdateBankInitial",

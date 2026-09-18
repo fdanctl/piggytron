@@ -306,7 +306,7 @@ func NewBankInitalBalance(
 	description string,
 	date time.Time,
 ) (*Entry, error) {
-	if amount <= 0 {
+	if amount < 0 {
 		return nil, ErrInvalidAmount
 	}
 

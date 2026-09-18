@@ -104,6 +104,12 @@ dev/clean:
 	@docker stop redis 2>/dev/null || true
 	@docker rm redis 2>/dev/null || true
 
+## install: installs dependencies
+.PHONY: install
+install:
+	@npm install
+	@go mod download
+
 ## clean: clean up the build binaries
 .PHONY: clean
 clean: confirm dev/clean
@@ -111,6 +117,7 @@ clean: confirm dev/clean
 	@rm -f web/templates/**/*_templ.go
 	@rm -f cmd/server/static/app.js
 	@rm -f cmd/server/static/app.css
+	@rm -rf node_modules
 
 # ==================================================================================== #
 # OPERATIONS
