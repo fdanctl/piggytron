@@ -133,7 +133,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 			partials.ExpenseCategoryForm(id, view),
 			layouts.OOBWraper(
 				"",
-				"beforeend:#income-cat ul",
+				"beforeend:#expense-cat ul",
 				nil,
 				partials.CategoryItem(ecView, templ.Attributes{"style": "animation-delay: 0s;"}),
 			),

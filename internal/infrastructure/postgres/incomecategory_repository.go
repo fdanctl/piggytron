@@ -43,7 +43,7 @@ func (r *IncomeCategoryRepository) Create(
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO income_categories (id, user_id, name, archived_at, created_at, updated_at)
-		 VALUES($1,$2,$3,$4,$5)`,
+		 VALUES($1,$2,$3,$4,$5,$6)`,
 		category.ID(),
 		category.UserID(),
 		category.Name(),

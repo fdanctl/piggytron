@@ -44,7 +44,7 @@ func (r *ExpenseCategoryRepository) Create(
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO expense_categories (id, user_id, name, type, archived_at, created_at, updated_at)
-		 VALUES($1,$2,$3,$4,$5,$6)`,
+		 VALUES($1,$2,$3,$4,$5,$6,$7)`,
 		category.ID(),
 		category.UserID(),
 		category.Name(),
