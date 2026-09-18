@@ -6,7 +6,7 @@ import (
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ GoalForm(v views.GoalForm, categories []components.SelectOption, id string) {
+templ GoalForm(v views.GoalForm, categories []components.CategorySelectOption, id string) {
 	<form
 		class="space-y-sm"
 		hx-on:submit="event.preventDefault()"
@@ -24,7 +24,7 @@ templ GoalForm(v views.GoalForm, categories []components.SelectOption, id string
 	</form>
 }
 
-templ GoalFormContent(v views.GoalForm, categories []components.SelectOption) {
+templ GoalFormContent(v views.GoalForm, categories []components.CategorySelectOption) {
 	@components.InputGroup(
 		"",
 		"Name",
@@ -106,7 +106,7 @@ templ GoalFormContent(v views.GoalForm, categories []components.SelectOption) {
 			},
 		)
 	</div>
-	@components.SelectGroup(
+	@components.CategorySelectGroup(
 		"",
 		"Category",
 		v.Category,

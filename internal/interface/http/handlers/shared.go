@@ -138,7 +138,7 @@ func getCategorySelectOptions(
 	ctx context.Context,
 	userID string,
 	date string,
-) (iCatOpts, eCatOpts []components.SelectOption, err error) {
+) (iCatOpts []components.SelectOption, eCatOpts []components.CategorySelectOption, err error) {
 	cats, err := qs.FindAllCategories(ctx, userID)
 	if err != nil {
 		return
@@ -161,7 +161,7 @@ func getCategorySelectOptions(
 		} else {
 			eCatOpts = append(
 				eCatOpts,
-				components.SelectOption{Label: v.Name, Value: v.ID},
+				components.CategorySelectOption{Label: v.Name, Value: v.ID, Type: v.Type},
 			)
 		}
 	}

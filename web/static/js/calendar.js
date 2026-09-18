@@ -139,6 +139,7 @@ function makeYearOption(year) {
   li.dataset.value = year;
   const span = document.createElement("span");
   span.innerText = year;
+  span.classList.add("option__label");
   const svg = makeSVG("success", 16);
   li.innerHTML = svg;
   li.prepend(span);

@@ -175,7 +175,7 @@ templ Select(placeholder string, value string, options []SelectOption, hasError 
 					data-value={ o.Value }
 					{ o.Attrs... }
 				>
-					<span>{ o.Label }</span>
+					<span class="option__label">{ o.Label }</span>
 					@CheckSvg(16, "", "")
 				</li>
 			}
@@ -197,6 +197,76 @@ templ SelectGroup(class, label, value, placeholder string, options []SelectOptio
 			</label>
 		}
 		@Select(placeholder, value, options, hasError, attrs)
+		<span class="input-group__message">{ errMsg }</span>
+	</div>
+}
+
+type CategorySelectOption struct {
+	Label string
+	Value string
+	Type  string
+	Attrs templ.Attributes
+}
+
+templ CategorySelect(placeholder string, value string, options []CategorySelectOption, hasError bool, attrs templ.Attributes) {
+	{{
+		class := "input select"
+		if hasError {
+			class += " input--error"
+		}
+		if value != "" {
+			for _, o := range options {
+				if value == o.Value {
+					placeholder = o.Label
+				}
+			}
+		}
+	}}
+	@Dropdown(class, placeholder, true, templ.Attributes{
+		"data-action": "ui.select.center-selected",
+	},
+	) {
+		<ul class="options">
+			for _, o := range options {
+				<li
+					class={ templ.KV("options__item--selected", o.Label == placeholder) }
+					data-action="ui.select.option"
+					onclick=""
+					data-value={ o.Value }
+					{ o.Attrs... }
+				>
+					<div class="flex items-center gap-sm">
+						<span class="option__label">{ o.Label }</span>
+						switch o.Type {
+							case "needs":
+								@Badge("text-xxs badge--sm", "Needs", BadgeNeeds)
+							case "wants":
+								@Badge("text-xxs badge--sm", "Wants", BadgeWants)
+							case "savings":
+								@Badge("text-xxs badge--sm", "Savings", BadgeSavings)
+						}
+					</div>
+					@CheckSvg(16, "", "")
+				</li>
+			}
+		</ul>
+		<input class="hidden" type="text" value={ value } { attrs... }/>
+	}
+}
+
+templ CategorySelectGroup(class, label, value, placeholder string, options []CategorySelectOption, errMsg string, hasError, required bool, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV("input-group--error", hasError), templ.KV(class, class != "") }
+	>
+		if id, ok := attrs["id"]; ok && label != "" {
+			<label for={ id.(string) }>
+				{ label }
+				if (!required) {
+					<span>(optional)</span>
+				}
+			</label>
+		}
+		@CategorySelect(placeholder, value, options, hasError, attrs)
 		<span class="input-group__message">{ errMsg }</span>
 	</div>
 }

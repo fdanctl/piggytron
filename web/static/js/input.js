@@ -67,7 +67,8 @@ export function selectSelect({ ele, data }) {
   ele.closest(".popover").hidePopover();
   let drop = ele.closest(".dropdown");
   if (drop) {
-    drop.querySelector("button > span").innerText = ele.firstChild.innerText;
+    drop.querySelector("button > span").innerText =
+      ele.querySelector(".option__label").innerText;
     drop.querySelector("button").classList.remove("input--error");
     ele.closest(".input-group")?.classList.remove("input-group--error");
   }

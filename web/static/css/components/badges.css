@@ -34,3 +34,7 @@
   background-color: var(--color-surface);
   border: 0.5px solid var(--color-border-secondary);
 }
+
+.badge--sm {
+  padding: 0 var(--spacing-xs);
+}
