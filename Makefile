@@ -79,14 +79,14 @@ dev/build:
 .PHONY: dev
 dev: dev/clean
 	docker run -d \
-	 --name postgres \
+	 --name dev_postgres \
 	 -p $(DB_PORT):5432 \
 	 -e POSTGRES_USER=$(DB_USER) \
 	 -e POSTGRES_PASSWORD=$(DB_PASSWORD) \
 	 -e POSTGRES_DB=$(DB_NAME) \
 	 -v ./scripts:/docker-entrypoint-initdb.d \
-	 postgres:16-alpine && \
-	docker run -d --name redis -p ${REDIS_PORT}:6379 redis:latest && \
+	 postgres:16 && \
+	docker run -d --name dev_redis -p ${REDIS_PORT}:6379 redis:latest && \
 	DEV="true" DB_HOST="localhost" REDIS_HOST="localhost" go tool air -c .air.toml
 
 ## docker/status: show running containers
@@ -94,15 +94,15 @@ dev: dev/clean
 docker/status:
 	@docker ps --format "table {{.Names}}\\t{{.Status}}\\t{{.Ports}}"
 
-## dev/clean: stops and removes dev postgres container
+## dev/clean: stops and removes dev_postgres and dev_redis container
 .PHONY: dev/clean
 dev/clean:
-	@echo "Stop and removing dev postgres container..."
-	@docker stop postgres 2>/dev/null || true
-	@docker rm postgres 2>/dev/null || true
-	@echo "Stop and removing dev redis container..."
-	@docker stop redis 2>/dev/null || true
-	@docker rm redis 2>/dev/null || true
+	@echo "Stop and removing dev dev_postgres container..."
+	@docker stop dev_postgres 2>/dev/null || true
+	@docker rm dev_postgres 2>/dev/null || true
+	@echo "Stop and removing dev dev_redis container..."
+	@docker stop dev_redis 2>/dev/null || true
+	@docker rm dev_redis 2>/dev/null || true
 
 ## install: installs dependencies
 .PHONY: install
@@ -128,7 +128,12 @@ clean: confirm dev/clean
 push: confirm audit no-dirty
 	git push
 
+## db/dump-schema: makes schema (includes indexes)
+.PHONY: db/dump-schema
+db/dump-schema:
+	@docker exec dev_postgres pg_dump -U $(DB_USER) --schema-only $(DB_NAME) > scripts/01-schema.sql
+
 ## db/dump-seed: makes new seed data
 .PHONY: db/dump-seed
 db/dump-seed:
-	@docker exec postgres pg_dump -U $(DB_USER) --data-only --inserts $(DB_NAME) > scripts/02-seed.sql
+	@docker exec dev_postgres pg_dump -U $(DB_USER) --data-only --inserts $(DB_NAME) > scripts/02-seed.sql

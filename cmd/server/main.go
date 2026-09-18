@@ -48,6 +48,8 @@ func main() {
 		logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	}
 
+	logger.Debug("db url", "url", cfg.DBURL)
+
 	db, err := postgres.Connect(cfg.DBURL)
 	if err != nil {
 		logger.Error("failed to connect to db", "error", err.Error())
@@ -55,6 +57,8 @@ func main() {
 		return
 	}
 	defer db.Close()
+
+	logger.Debug("redis url", "url", cfg.RedisAddr)
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     cfg.RedisAddr,
