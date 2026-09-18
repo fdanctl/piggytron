@@ -10,6 +10,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -118,9 +119,12 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		icView := views.IncomeCategory{
-			ID:   category.ID(),
-			Name: category.Name(),
+		dto := query.CategoryDTO{
+			ID:         string(category.ID()),
+			Name:       category.Name(),
+			Type:       "income",
+			Status:     string(category.Status()),
+			ArchivedAt: category.ArchivedAt(),
 		}
 
 		w.Header().Set("HX-Trigger", "incomeCategoryAdded")
@@ -130,7 +134,7 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 				"",
 				"beforeend:#income-cat ul",
 				nil,
-				partials.CategoryItem(icView, templ.Attributes{"style": "animation-delay: 0s;"}),
+				partials.CategoryItem(dto, templ.Attributes{"style": "animation-delay: 0s;"}),
 			),
 			components.SendToast(
 				components.Success,

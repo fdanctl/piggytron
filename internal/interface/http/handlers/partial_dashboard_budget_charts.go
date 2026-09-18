@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -105,17 +106,22 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 	}
 	byTypeSlides = append(byTypeSlides, pages.CategorySpentContainer(byTypeSlide2))
 
+	sortedByBudgeted := append([]query.CategoryBudgetValue{}, categoryBudgetSpent.Data...)
+	sort.Slice(sortedByBudgeted, func(i, j int) bool {
+		return sortedByBudgeted[i].Budgeted > sortedByBudgeted[j].Budgeted
+	})
+
 	byCategorySlides := []templ.Component{pages.ChartContainer(bar)}
 	size := 4 // groups of 4
-	for i := 0; i < len(categoryBudgetSpent.Data); i += size {
-		end := min(i+size, len(categoryBudgetSpent.Data))
+	for i := 0; i < len(sortedByBudgeted); i += size {
+		end := min(i+size, len(sortedByBudgeted))
 
 		var slide []templ.Component
 		for k := i; k < end; k++ {
-			c := categoryBudgetSpent.Data[k]
+			c := sortedByBudgeted[k]
 			if c.Type == "income" || (c.ArchivedAt != nil && bm.Time().After(*c.ArchivedAt)) {
 				i++
-				end = min(end+1, len(categoryBudgetSpent.Data))
+				end = min(end+1, len(sortedByBudgeted))
 				continue
 			}
 			slide = append(
@@ -123,7 +129,9 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 				pages.CategorySpentProgress(c.Name, c.Type, c.Value, c.Budgeted, daysLeft),
 			)
 		}
-		byCategorySlides = append(byCategorySlides, pages.CategorySpentContainer(slide))
+		if len(slide) > 0 {
+			byCategorySlides = append(byCategorySlides, pages.CategorySpentContainer(slide))
+		}
 	}
 
 	templ.Join(

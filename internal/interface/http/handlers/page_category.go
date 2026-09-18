@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
-	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
-	"github.com/fdanctl/piggytron/internal/domain/incomecategory"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -19,19 +16,16 @@ import (
 // CategoriesHandler renders the categories overview and the per-category
 // detail page.
 type CategoriesHandler struct {
-	incomeCatService   *appincomecategory.Service
-	expenseCatService  *appexpensecategory.Service
+	categoryQuery      query.CategoryQueryService
 	ledgerQueryService query.LedgerQueryService
 }
 
 func NewCategoriesHandler(
-	es *appexpensecategory.Service,
-	is *appincomecategory.Service,
+	cq query.CategoryQueryService,
 	tq query.LedgerQueryService,
 ) *CategoriesHandler {
 	return &CategoriesHandler{
-		incomeCatService:   is,
-		expenseCatService:  es,
+		categoryQuery:      cq,
 		ledgerQueryService: tq,
 	}
 }
@@ -59,26 +53,10 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO make it one query intead of two
-	ec, err := h.expenseCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
+	categories, err := h.categoryQuery.FindAllCategories(r.Context(), sessionInfo.UserID)
 	if err != nil {
 		httperror.SendError(w, r, err)
 		return
-	}
-	var ecView []views.ExpenseCategory
-	for _, v := range ec {
-		ecView = append(ecView, views.NewExpenseCategory(v))
-	}
-
-	ic, err := h.incomeCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		httperror.SendError(w, r, err)
-		return
-	}
-
-	var icView []views.IncomeCategory
-	for _, v := range ic {
-		icView = append(icView, views.NewIncomeCategory(v))
 	}
 
 	content := pages.Categories(
@@ -88,10 +66,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 			},
 			Options: nil,
 		},
-		views.CategoriesView{
-			IncomeCategories:  icView,
-			ExpenseCategories: ecView,
-		},
+		categories,
 	)
 
 	renderWithMainLayout(w, r, "Categories", content)
@@ -107,51 +82,29 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.PathValue("id")
-	ecat, err := h.expenseCatService.FindCategory(r.Context(), id, sessionInfo.UserID)
-	var icat *incomecategory.IncomeCategory
+
+	category, err := h.categoryQuery.FindByID(r.Context(), id)
 	if err != nil {
-		icat, err = h.incomeCatService.FindCategory(r.Context(), id, sessionInfo.UserID)
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				http.NotFound(w, r)
-				return
-			}
-			httperror.SendError(w, r, err)
+		if errors.Is(err, sql.ErrNoRows) {
+			http.NotFound(w, r)
 			return
 		}
-	}
-
-	// TODO use category query to be one query instead of two
-	icats, err := h.incomeCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
-		httperror.SendError(w, r, err)
-		return
-	}
-	ecats, err := h.expenseCatService.FindAllUserCategories(r.Context(), sessionInfo.UserID)
-	if err != nil {
 		httperror.SendError(w, r, err)
 		return
 	}
 
-	var category views.Category
-	if ecat != nil {
-		category = views.NewExpenseCategory(ecat)
-	} else {
-		category = views.NewIncomeCategory(icat)
+	categories, err := h.categoryQuery.FindAllCategories(r.Context(), sessionInfo.UserID)
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
 	}
 
 	var optionsLinks []views.BreadcrumbsLink
 
-	for _, v := range icats {
+	for _, v := range categories {
 		optionsLinks = append(optionsLinks, views.BreadcrumbsLink{
-			Href: fmt.Sprintf("/categories/%s", v.ID()),
-			Name: v.Name(),
-		})
-	}
-	for _, v := range ecats {
-		optionsLinks = append(optionsLinks, views.BreadcrumbsLink{
-			Href: fmt.Sprintf("/categories/%s", v.ID()),
-			Name: v.Name(),
+			Href: fmt.Sprintf("/categories/%s", v.ID),
+			Name: v.Name,
 		})
 	}
 
@@ -190,13 +143,13 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 					Name: "Categories",
 				},
 				{
-					Href: "/categories/" + category.GetID(),
-					Name: category.GetName(),
+					Href: "/categories/" + category.ID,
+					Name: category.Name,
 				},
 			},
 			Options: optionsLinks,
 		}, category, transactionsView, hasMore, transactions.Total,
 	)
 
-	renderWithMainLayout(w, r, category.GetName(), content)
+	renderWithMainLayout(w, r, category.Name, content)
 }

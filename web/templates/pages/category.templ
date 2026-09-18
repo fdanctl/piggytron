@@ -2,30 +2,37 @@ package pages
 
 import (
 	"fmt"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 	"time"
 )
 
-templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []views.Transaction, hasMore bool, ttCount int) {
+templ Category(bview views.BreadcrumbsView, cat *query.CategoryDTO, transactions []views.Transaction, hasMore bool, ttCount int) {
 	<div class="flex justify-between">
 		@components.Breadcrumbs(bview)
 		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
+			{{
+				ctype := "income"
+				if cat.Type != "income" {
+					ctype = "expense"
+				}
+			}}
 			<ul class="breadcrumbs-selection">
-				if cat.GetStatus() == "active" {
+				if cat.Status == "active" {
 					<li>
 						<button
 							class="reset-btn text-sm"
 							data-action="ui.popover.hide"
-							hx-get={ fmt.Sprintf("/partials/%s-category/%s", cat.GetType(), cat.GetID()) }
+							hx-get={ fmt.Sprintf("/partials/%s-category/%s", ctype, cat.ID) }
 							hx-target="#dialog-root"
 							hx-swap="beforeend"
 						>Edit</button>
 					</li>
 					<li>
 						<button
-							hx-post={ fmt.Sprintf("/partials/%s-category/%s/archive", cat.GetType(), cat.GetID()) }
+							hx-post={ fmt.Sprintf("/partials/%s-category/%s/archive", ctype, cat.ID) }
 							class="reset-btn text-sm"
 							data-action="ui.popover.hide"
 						>Archive</button>
@@ -34,7 +41,7 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 				<li>
 					<button
 						hx-trigger="confirmed"
-						hx-delete={ fmt.Sprintf("/partials/%s-category/%s", cat.GetType(), cat.GetID()) }
+						hx-delete={ fmt.Sprintf("/partials/%s-category/%s", ctype, cat.ID) }
 						class="reset-btn text-sm"
 						data-action="ui.popover.hide category.delete.confirm"
 						data-transactions={ ttCount }
@@ -43,13 +50,13 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 			</ul>
 		}
 	</div>
-	if cat.GetStatus() == "archived" {
-		@archivedNotice("mt-md", *cat.GetArchivedAt())
+	if cat.Status == "archived" {
+		@archivedNotice("mt-md", *cat.ArchivedAt)
 	}
 	<div
 		class="chart-container relative"
 		style="margin-top: calc(-1 * var(--spacing-lg));"
-		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.GetID()) }
+		hx-get={ fmt.Sprintf("/partials/charts/cat-hist/%s", cat.ID) }
 		hx-trigger="load"
 	>
 		@components.Loader("htmx-indicator h-full", nil)
@@ -63,14 +70,14 @@ templ Category(bview views.BreadcrumbsView, cat views.Category, transactions []v
 				</span>
 				<a
 					class="text-xs"
-					href={ fmt.Sprintf("/ledger?categories=%s", cat.GetID()) }
+					href={ fmt.Sprintf("/ledger?categories=%s", cat.ID) }
 				>
 					view all
 				</a>
 			</div>
 		</div>
 		if ttCount > 0 {
-			@partials.TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.GetID()), hasMore)
+			@partials.TransactionsList(transactions, fmt.Sprintf("page=2&categories=%s", cat.ID), hasMore)
 		} else {
 			@components.EmptyTransactions()
 		}

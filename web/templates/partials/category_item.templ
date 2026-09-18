@@ -1,21 +1,21 @@
 package partials
 
 import (
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
-	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ CategoryItem(cat views.Category, attrs templ.Attributes) {
-	<li { attrs... } class={ "category-item", templ.KV("category-item--archived", cat.GetStatus() == "archived") }>
-		<a class="flex justify-between items-center" href={ "/categories/" + cat.GetID() }>
+templ CategoryItem(cat query.CategoryDTO, attrs templ.Attributes) {
+	<li { attrs... } class={ "category-item", templ.KV("category-item--archived", cat.Status == "archived") }>
+		<a class="flex justify-between items-center" href={ "/categories/" + cat.ID }>
 			<div>
-				{ cat.GetName() }
+				{ cat.Name }
 			</div>
 			<div class="space-x-xs">
-				if cat.GetStatus() == "archived" {
+				if cat.Status == "archived" {
 					@components.Badge("", "Archived", components.BadgeClosed)
 				}
-				switch cat.GetExpenseType() {
+				switch cat.Type {
 					case "needs":
 						@components.Badge("", "Needs", components.BadgeNeeds)
 					case "wants":

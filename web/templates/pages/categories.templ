@@ -3,12 +3,13 @@ package pages
 import (
 	"fmt"
 
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
-templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
+templ Categories(bview views.BreadcrumbsView, cc []query.CategoryDTO) {
 	<div class="flex justify-between">
 		@components.Breadcrumbs(bview)
 		@components.IconDropdown("", components.EllipsisSvg(0, "", ""), true, nil) {
@@ -23,23 +24,29 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 		}
 	</div>
 	{{
-		var archivedIncome []views.IncomeCategory
-		for _, c := range cv.IncomeCategories {
-			if c.Status == "archived" {
-				archivedIncome = append(archivedIncome, c)
+		var incomeCount int
+		var expenseCount int
+		var archivedIncome []query.CategoryDTO
+		var archivedExpenses []query.CategoryDTO
+		for _, c := range cc {
+			if c.Type == "income" {
+				incomeCount++
+			} else {
+				expenseCount++
 			}
-		}
-		var archivedExpenses []views.ExpenseCategory
-		for _, c := range cv.ExpenseCategories {
 			if c.Status == "archived" {
-				archivedExpenses = append(archivedExpenses, c)
+				if c.Type == "income" {
+					archivedIncome = append(archivedIncome, c)
+				} else {
+					archivedExpenses = append(archivedExpenses, c)
+				}
 			}
 		}
 	}}
 	<div id="categories-container">
 		<section id="income-cat">
 			<div>
-				<h4>Income (<span class="count-wo-archived">{ len(cv.IncomeCategories) - len(archivedIncome) }</span><span class="count-wt-archived">{ len(cv.IncomeCategories) }</span>)</h4>
+				<h4>Income (<span class="count-wo-archived">{ incomeCount - len(archivedIncome) }</span><span class="count-wt-archived">{ incomeCount }</span>)</h4>
 				@components.ButtonWithIcon(
 					"Add",
 					"",
@@ -59,9 +66,9 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 				hx-boost="true"
 				hx-swap="innerHTML transition:true"
 			>
-				for i, cat := range cv.IncomeCategories {
-					if cat.Status != "archived" {
-						@partials.CategoryItem(cat, templ.Attributes{
+				for i := 0; i < incomeCount; i++ {
+					if cc[i].Status != "archived" {
+						@partials.CategoryItem(cc[i], templ.Attributes{
 							"style": fmt.Sprintf("animation-delay: %dms", i*30),
 						})
 					}
@@ -76,7 +83,7 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 		</section>
 		<section id="expense-cat">
 			<div>
-				<h4>Expenses (<span class="count-wo-archived">{ len(cv.ExpenseCategories) - len(archivedExpenses) }</span><span class="count-wt-archived">{ len(cv.ExpenseCategories) }</span>)</h4>
+				<h4>Expenses (<span class="count-wo-archived">{ expenseCount - len(archivedExpenses) }</span><span class="count-wt-archived">{ expenseCount }</span>)</h4>
 				@components.ButtonWithIcon(
 					"Add",
 					"",
@@ -96,10 +103,10 @@ templ Categories(bview views.BreadcrumbsView, cv views.CategoriesView) {
 				hx-boost="true"
 				hx-swap="innerHTML transition:true"
 			>
-				for i, cat := range cv.ExpenseCategories {
-					if cat.Status != "archived" {
-						@partials.CategoryItem(cat, templ.Attributes{
-							"style": fmt.Sprintf("animation-delay: %dms", i*30),
+				for i := incomeCount; i < len(cc); i++ {
+					if cc[i].Status != "archived" {
+						@partials.CategoryItem(cc[i], templ.Attributes{
+							"style": fmt.Sprintf("animation-delay: %dms", (i-incomeCount)*30),
 						})
 					}
 				}

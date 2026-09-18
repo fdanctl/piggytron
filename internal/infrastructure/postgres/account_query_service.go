@@ -423,7 +423,16 @@ func (s *AccountQueryService) FindAllWithSumAndMonthChange(
 		 WHERE
 			a.user_id = $2
 		 GROUP BY
-			a.id, c.id`,
+			a.id, c.id
+		 ORDER BY
+			CASE a.type
+			  WHEN 'checking' THEN 1
+			  WHEN 'savings' THEN 2
+			  WHEN 'goal' THEN 3
+			  ELSE 4
+			END,
+		    sum DESC;
+		`,
 		util.ZeroUUID,
 		uid,
 		month.Time(),

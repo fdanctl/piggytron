@@ -231,7 +231,7 @@ templ GoalProgress(g views.Goal) {
 				<span>{ g.Name }</span>
 				<div class="flex gap-xs" style="align-items: baseline;">
 					<span class="text-sm font-mono">
-						{ g.Amount }
+						{ views.FormatMoney(float64(g.Amount)/100,currency.EUR, language.AmericanEnglish) }
 					</span>
 					<span class="text-xs text-muted font-mono">
 						/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }
@@ -244,7 +244,7 @@ templ GoalProgress(g views.Goal) {
 					{  views.FormatFloat(g.CompletePercentage) }% funded
 				</span>
 				<span class="text-xs text-muted">
-					{ g.AmountLeft } to go
+					{ views.FormatMoney(float64(g.AmountLeft)/100,currency.EUR, language.AmericanEnglish) } to go
 				</span>
 			</div>
 		</a>

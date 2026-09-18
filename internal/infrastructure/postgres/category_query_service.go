@@ -62,13 +62,25 @@ func (s *CategoryQueryService) FindAllCategories(
 ) ([]query.CategoryDTO, error) {
 	rows, err := s.db.QueryContext(
 		ctx,
-		`SELECT id, name, 'income' AS type, status, archived_at
-		 FROM income_categories
-		 WHERE user_id = $1
-		 UNION
-		 SELECT id, name, type, status, archived_at
-		 FROM expense_categories
-		 WHERE user_id = $1`,
+		`SELECT * FROM (
+			SELECT id, name, 'income' AS type, status, archived_at
+			FROM income_categories
+			WHERE user_id = $1
+			UNION
+			SELECT id, name, type, status, archived_at
+			FROM expense_categories
+			WHERE user_id = $1
+		 ) c
+		 ORDER BY
+			CASE type
+			  WHEN 'income' THEN 1
+			  WHEN 'needs' THEN 2
+			  WHEN 'wants' THEN 3
+			  WHEN 'savings' THEN 4
+			  ELSE 5
+			END,
+		    name ASC;
+		`,
 		uid,
 	)
 	if err != nil {
@@ -274,7 +286,15 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		FROM
 		  categories c
 		  LEFT JOIN month_net n ON n.month = $2
-		ORDER BY c.type
+		ORDER BY
+		   CASE c.type
+		     WHEN 'income' THEN 1
+		     WHEN 'needs' THEN 2
+		     WHEN 'wants' THEN 3
+		     WHEN 'savings' THEN 4
+		     ELSE 5
+		   END,
+		   c.name ASC;
 		`,
 		uid,
 		month.Time(),

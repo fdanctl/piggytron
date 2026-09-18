@@ -94,26 +94,6 @@ func convertAmountStrToInt(str string) (int, error) {
 	return tAmount, nil
 }
 
-// parseMonth receive a string of type 042026,
-// and return the correspondent year and month
-// TODO remove
-func parseMonth(str string) (int, time.Month, error) {
-	if len(str) != 6 {
-		return 0, time.January, errors.New("wrong month")
-	}
-
-	m, err := strconv.Atoi(str[:2])
-	if err != nil {
-		return 0, time.January, errors.New("wrong month")
-	}
-
-	y, err := strconv.Atoi(str[2:])
-	if err != nil {
-		return 0, time.January, errors.New("wrong month")
-	}
-	return y, time.Month(m), nil
-}
-
 func queryStrFromFiltersWithCount(
 	page int,
 	types, accounts, cats []string,

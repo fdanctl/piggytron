@@ -165,8 +165,7 @@ func main() {
 	webMux.Handle("/reports/income", middleware.AuthProtectedRoute(ih))
 
 	categoriesHandler := handlers.NewCategoriesHandler(
-		expenseCatService,
-		incomeCatService,
+		catQueryService,
 		ledgerQueryService,
 	)
 

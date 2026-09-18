@@ -10,6 +10,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/errs"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
+	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
@@ -122,10 +123,12 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		ecView := views.ExpenseCategory{
-			ID:          category.ID(),
-			Name:        category.Name(),
-			ExpenseType: category.ExpenseType(),
+		dto := query.CategoryDTO{
+			ID:         string(category.ID()),
+			Name:       category.Name(),
+			Type:       string(category.ExpenseType()),
+			Status:     string(category.Status()),
+			ArchivedAt: category.ArchivedAt(),
 		}
 
 		w.Header().Set("HX-Trigger", "expenseCategoryAdded")
@@ -135,7 +138,7 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 				"",
 				"beforeend:#expense-cat ul",
 				nil,
-				partials.CategoryItem(ecView, templ.Attributes{"style": "animation-delay: 0s;"}),
+				partials.CategoryItem(dto, templ.Attributes{"style": "animation-delay: 0s;"}),
 			),
 			components.SendToast(
 				components.Success,
