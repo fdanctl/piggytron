@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var SERVER_PORT = "8080"
+var serverPort = "8080"
 
 const (
 	time    uint32 = 1
@@ -57,7 +57,7 @@ func LoadConfig() (*config, error) {
 	}
 
 	return &config{
-		ServerPort: SERVER_PORT,
+		ServerPort: serverPort,
 		DBURL: fmt.Sprintf(
 			"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 			dbUser,
