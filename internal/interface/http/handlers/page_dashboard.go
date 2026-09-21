@@ -83,7 +83,12 @@ func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pageView := views.NewDashboardPage(accounts, transactions, categoryBudgetSpent.Data)
+	pageView := views.NewDashboardPage(
+		accounts,
+		transactions,
+		categoryBudgetSpent.Data,
+		categoryBudgetSpent.Hold,
+	)
 	content := pages.Dashboard(
 		views.BreadcrumbsView{
 			Items: []views.BreadcrumbsLink{

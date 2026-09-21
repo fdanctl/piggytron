@@ -26,9 +26,9 @@ templ GoalCompleteForm(id string, v views.GoalCompleteForm, accounts []component
 				r, _ := views.ConvertAmountStrToInt(v.AmountUsed)
 				remainder := b - r
 			}}
-			<span class="font-medium">Balance: </span><span>{ views.FormatMoney(float64(b)/100,currency.EUR, language.AmericanEnglish) }</span>
+			<span class="font-medium">Available to spend: </span><span>{ views.FormatMoney(float64(b)/100,currency.EUR, language.AmericanEnglish) }</span>
 			<br/>
-			<span class="font-medium">Remaining: </span><span id="goal-complete-remaining" data-value={ remainder }>{ views.FormatMoney(float64(remainder)/100,currency.EUR, language.AmericanEnglish) }</span>
+			<span class="font-medium">Remaining balance: </span><span id="goal-complete-remaining" data-value={ remainder }>{ views.FormatMoney(float64(remainder)/100,currency.EUR, language.AmericanEnglish) }</span>
 		</div>
 		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">
 			@components.InputGroup(

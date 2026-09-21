@@ -26,7 +26,6 @@ services:
       - "POSTGRES_USER=${DB_USER}"
       - "POSTGRES_PASSWORD=${DB_PASSWORD}"
       - "POSTGRES_DB=${DB_NAME}"
-
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped

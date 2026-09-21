@@ -359,6 +359,7 @@ func (h *GoalHandler) GetComplete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view := views.NewGoalCompleteForm(g.Sum)
+	view.AmountUsed = views.FormatAmount(float64(g.Sum) / 100)
 	form := partials.GoalCompleteForm(id, *view, noSavingsBanksOpts)
 	components.DialogWrapper("", components.DialogHeader("", "Complete Goal", nil), form, nil, nil).
 		Render(r.Context(), w)

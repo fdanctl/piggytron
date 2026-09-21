@@ -162,6 +162,8 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	month := params.Get("month")
 	punassign := params.Get("unassign")
 
+	logger.Debug("form values", "amount", amount, "to", to, "from", from, "month", month)
+
 	unassign, err := strconv.Atoi(punassign)
 	if err != nil {
 		httperror.SendError(w, r, err)
@@ -220,8 +222,6 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			Available: rta,
 		},
 	}, selectOpts...)
-
-	logger.Debug("form values", "amount", amount, "to", to, "from", from, "month", month)
 
 	view := views.TransferBudgetForm{
 		Amount: amount,
@@ -298,11 +298,14 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
+	budgett := unassign
+	var budgeted int
 	var changedCategoriesRows []templ.Component
 	for i, v := range categoriesBudgetSpent.Data {
 		var value int
 		if v.Type == "income" {
 			value = v.Value
+			budgett += value
 		} else {
 			if v.CategoryID == to {
 				categoriesBudgetSpent.Data[i].Budgeted += cents
@@ -347,6 +350,7 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 				)
 			}
 			value = categoriesBudgetSpent.Data[i].Budgeted
+			budgeted += value
 		}
 		if value > 0 {
 			node, link := charts.MakeBudgetSankeyNodeLink(v.Name, v.Type, value)
@@ -363,7 +367,8 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		categoriesBudgetSpent.Data,
 	)
 
-	if pageView.ReadyToAssign > 0 {
+	ltb := budgett - budgeted - pageView.OnHold
+	if ltb > 0 {
 		nodes = append(nodes, opts.SankeyNode{
 			Name: "Unassigned",
 			ItemStyle: &opts.ItemStyle{
@@ -374,7 +379,7 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			opts.SankeyLink{
 				Source: "Budget",
 				Target: "Unassigned",
-				Value:  float32(pageView.AvailableToSpend) / float32(100),
+				Value:  float32(ltb) / float32(100),
 			},
 		)
 	}

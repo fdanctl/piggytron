@@ -1,4 +1,4 @@
-import { sanitizeNumberText } from "../input";
+import { formatAmount, sanitizeNumberText } from "../input";
 
 export const transferBudgetActions = {
   "transfer-budget.overspent.max-value": maxAmount,
@@ -13,11 +13,13 @@ function maxAmount({ ele }) {
   }
 
   const amountInput = form.querySelector('input[name="amount"]');
-  const currAmount = sanitizeNumberText(amountInput.value);
+  const currAmount = Number(sanitizeNumberText(amountInput.value));
 
-  const selectedAmount = sanitizeNumberText(
-    ele.closest("li").querySelector(".available").innerText,
+  const selectedAmount = Number(
+    sanitizeNumberText(ele.closest("li").querySelector(".available").innerText),
   );
 
-  amountInput.value = Math.min(currAmount, Math.max(selectedAmount, 0));
+  amountInput.value = formatAmount(
+    String(Math.min(currAmount, Math.max(selectedAmount, 0))),
+  );
 }

@@ -27,6 +27,9 @@ templ BudgetHoldForm(v *views.BudgetHoldForm) {
 				"name":        "amount",
 				"placeholder": "420.69",
 				"value":       v.Amount,
+				"data-focus":  "ui.cash-input.focus",
+				"data-blur":   "ui.cash-input.blur",
+				"data-input":  "ui.cash-input.input",
 			},
 		)
 		<div class="w-full flex justify-end mt-md">

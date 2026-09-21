@@ -35,6 +35,7 @@ func NewDashboardPage(
 	a []query.AccountWithSum,
 	t []query.LedgerEntryDTO,
 	b []query.CategoryBudgetValue,
+	onHold int,
 ) DashboardPage {
 	var savings int
 	var balance int
@@ -97,7 +98,7 @@ func NewDashboardPage(
 	}
 
 	return DashboardPage{
-		BudgetReadyToAssign: balance - totalAvailable,
+		BudgetReadyToAssign: balance - totalAvailable - onHold,
 		Budget:              budget,
 		Income:              income,
 		Spent:               spent,

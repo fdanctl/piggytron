@@ -58,7 +58,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 	</div>
 	<div class="flex justify-between">
 		<div class="goal-amount-target">
-			<h2>{ views.FormatMoney(float64(g.Amount/100), currency.EUR, language.AmericanEnglish) }</h2>
+			<h2>{ views.FormatMoney(float64(g.Amount)/100, currency.EUR, language.AmericanEnglish) }</h2>
 			<span class="text-base">/ { views.FormatMoney(float64(g.TargetAmount)/100,currency.EUR, language.AmericanEnglish) }</span>
 			if g.Status == views.CompletedStatus {
 				@components.Badge("capitalize", string(g.Status), components.BadgeChecking)

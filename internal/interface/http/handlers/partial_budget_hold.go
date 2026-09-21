@@ -114,7 +114,7 @@ func (h *BudgetHoldHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view.Month = bm.String()
-	view.Amount = views.FormatAmount(float64(leftToBudget / 100))
+	view.Amount = views.FormatAmount(float64(leftToBudget) / 100)
 	if hold != nil && hold.Amount() != 0 {
 		view.Amount = views.FormatAmount(float64(hold.Amount()) / 100)
 	}

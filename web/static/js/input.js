@@ -141,8 +141,8 @@ export function sanitizeCashInput({ ele }) {
  * Strips non-numeric characters from a cash input while typing and clamps
  * the value to two decimal places.
  *
- * @param {string} str - Action payload.
- * @returns {number} number
+ * @param {string} str
+ * @returns {string}
  */
 export function sanitizeNumberText(str) {
   let value = str.replace(/[^0-9.]/g, "");
@@ -153,7 +153,7 @@ export function sanitizeNumberText(str) {
     value = parts[0] + "." + parts[1].slice(0, 2);
   }
 
-  return Number(value);
+  return value;
 }
 
 /**
@@ -164,7 +164,18 @@ export function sanitizeNumberText(str) {
  * @param {HTMLInputElement} param0.ele - The cash input.
  */
 export function cashInputBlur({ ele }) {
-  let value = ele.value.replace(/[^0-9.]/g, "");
+  ele.value = formatAmount(ele.value);
+}
+
+/**
+ * Pads the decimals to two digits and adds
+ * thousands separators to the integer part.
+ *
+ * @param {string} str
+ * @returns {string}
+ */
+export function formatAmount(str) {
+  let value = str.replace(/[^0-9.]/g, "");
 
   let parts = value.split(".");
   let intPart = parts[0] || "0";
@@ -180,7 +191,7 @@ export function cashInputBlur({ ele }) {
   // TODO: locale config
   intPart = parseInt(intPart || "0", 10).toLocaleString("en-US");
 
-  ele.value = `${intPart}${decimalPart != "" ? "." + decimalPart : ""}`;
+  return `${intPart}${decimalPart != "" ? "." + decimalPart : ""}`;
 }
 
 /**
