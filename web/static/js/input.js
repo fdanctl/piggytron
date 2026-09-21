@@ -112,14 +112,17 @@ export function selectPillSelect({ ele, data }) {
 export function centerSelected({ ele, data }) {
   const popover = getTarget(ele, data.target);
 
-  requestAnimationFrame(() => {
-    if (popover.matches(":popover-open")) {
-      const selected = popover.querySelector(".options__item--selected");
+  // wait for the transition to end because the scale messes with scrollIntoView
+  popover.addEventListener("transitionend", () => {
+    requestAnimationFrame(() => {
+      if (popover.matches(":popover-open")) {
+        const selected = popover.querySelector(".options__item--selected");
 
-      selected?.scrollIntoView({
-        block: "center",
-      });
-    }
+        selected?.scrollIntoView({
+          block: "center",
+        });
+      }
+    });
   });
 }
 
@@ -131,7 +134,18 @@ export function centerSelected({ ele, data }) {
  * @param {HTMLInputElement} param0.ele - The cash input.
  */
 export function sanitizeCashInput({ ele }) {
-  let value = ele.value.replace(/[^0-9.]/g, "");
+  ele.value = String(sanitizeNumberText(ele.value));
+}
+
+/**
+ * Strips non-numeric characters from a cash input while typing and clamps
+ * the value to two decimal places.
+ *
+ * @param {string} str - Action payload.
+ * @returns {number} number
+ */
+export function sanitizeNumberText(str) {
+  let value = str.replace(/[^0-9.]/g, "");
   const parts = value.split(".");
   if (parts.length > 2) {
     value = parts[0] + "." + parts.slice(1).join("");
@@ -139,7 +153,7 @@ export function sanitizeCashInput({ ele }) {
     value = parts[0] + "." + parts[1].slice(0, 2);
   }
 
-  ele.value = value;
+  return Number(value);
 }
 
 /**

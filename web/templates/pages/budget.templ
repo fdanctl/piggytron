@@ -17,7 +17,7 @@ templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.Bu
 	if view.TotalBudgeted == 0 {
 		@lastMonthImport(view.Month)
 	}
-	@BudgetStats(view.TotalBudgeted, view.ReadyToAssign, view.Income, view.UnassignCarryover, view.AvailableToSpend, view.Overspent, nil)
+	@BudgetStats(view.TotalBudgeted, view.ReadyToAssign, view.Income, view.UnassignCarryover, view.AvailableToSpend, view.Overspent, view.Month, nil)
 	<div
 		id="budget-sankey"
 		class="chart-container mt-xl mb-xl"
@@ -27,9 +27,9 @@ templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.Bu
 		@components.Loader("htmx-indicator h-full", nil)
 	</div>
 	<div class="budget-table-container">
-		@budgetTable("needs", view.NeedsBudget, view.NeedsAvailable, view.NeedsPct, view.NeedsRows)
-		@budgetTable("wants", view.WantsBudget, view.WantsAvailable, view.WantsPct, view.WantsRows)
-		@budgetTable("savings", view.SavingsBudget, view.SavingsAvailable, view.SavingsPct, view.SavingsRows)
+		@budgetTable("needs", view.NeedsBudget, view.NeedsAvailable, view.NeedsPct, view.NeedsRows, view.Month)
+		@budgetTable("wants", view.WantsBudget, view.WantsAvailable, view.WantsPct, view.WantsRows, view.Month)
+		@budgetTable("savings", view.SavingsBudget, view.SavingsAvailable, view.SavingsPct, view.SavingsRows, view.Month)
 	</div>
 }
 
@@ -44,12 +44,12 @@ templ lastMonthImport(month budget.Month) {
 		</div>
 		<div class="last-month-import__btns">
 			@components.Button("Dismiss", "last-month-import__dismiss", components.BtnSecondary, components.BtnMedium, templ.Attributes{"data-action": "ui.element.remove", "data-target": "closest .last-month-import"})
-			@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"hx-post": fmt.Sprintf("/partials/budget/import?month=%s", month.String()), "hx-target": "closest .last-month-import", "hx-swap": "delete"}, components.IconLeft, components.DownloadSvg(0, "", ""))
+			@components.ButtonWithIcon("Import", "", components.BtnSecondary, components.BtnMedium, templ.Attributes{"hx-post": fmt.Sprintf("/partials/import-budget?month=%s", month.String()), "hx-target": "closest .last-month-import", "hx-swap": "delete"}, components.IconLeft, components.DownloadSvg(0, "", ""))
 		</div>
 	</div>
 }
 
-templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftToSpend, overspent int, attrs templ.Attributes) {
+templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftToSpend, overspent int, currMonth budget.Month, attrs templ.Attributes) {
 	<div id="budget-stats" class="budget-stats" { attrs... }>
 		<div class="card">
 			<h6 class="card__title mb-sm">Ready to assign</h6>
@@ -90,7 +90,7 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftTo
 	</div>
 }
 
-templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView) {
+templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView, month budget.Month) {
 	<div
 		class={ "budget-table", fmt.Sprintf("budget-table--%s", string(eType)) }
 		hx-include="inherit, find [name='total-row-left'], find [name='ctype']"
@@ -102,44 +102,50 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 			<span>Available</span>
 		</div>
 		for _, c := range rows {
-			<div class="budget-table__row" hx-include="inherit, find [name='cat-left']">
-				<div class="flex gap-xs items-center">
-					<span>{ c.Name }</span>
-					if c.Carryover != 0 {
-						@Carryover(c.CategoryID, eType, c.Carryover)
-					}
-				</div>
-				<div class="flex items-center gap-xs">
-					€
-					@components.Input(
-						"",
-						false,
-						templ.Attributes{
-							"type":               "text",
-							"name":               "amount",
-							"value":              views.FormatAmount(float64(c.Budgeted) / 100),
-							"data-keydown":       "ui.budget-input.keydown",
-							"data-focus":         "ui.cash-input.focus",
-							"data-blur":          "ui.cash-input.blur",
-							"data-input":         "ui.cash-input.input",
-							"data-beforerequest": "ui.budget-input.animate",
-							"hx-target":          "next .budget-info",
-							"hx-swap":            "outerHTML",
-							"hx-post":            "/partials/budget",
-							"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
-							"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
-						})
-					@BudgetInfoInputs(c.Budgeted, c.Month.String(), c.CategoryID)
-				</div>
-				@CatRowLeftCell(c.CategoryID, c.Available, nil)
-			</div>
+			@CategoryRow(eType, c, month)
 		}
 		@TotalRow(eType, totalBudget, totalLeft, nil)
 	</div>
 }
 
-templ Carryover(id string, etype string, value int) {
+templ CategoryRow(eType string, c views.BudgetRowView, month budget.Month) {
+	<div id={ fmt.Sprintf("row-%s", c.CategoryID) } class="budget-table__row" hx-include="inherit, find [name='cat-left']">
+		<div class="flex gap-xs items-center">
+			<span>{ c.Name }</span>
+			if c.Carryover != 0 {
+				@Carryover(c.CategoryID, eType, c.Carryover)
+			}
+		</div>
+		<div class="flex items-center gap-xs">
+			€
+			@components.Input(
+				"",
+				false,
+				templ.Attributes{
+					"type":               "text",
+					"name":               "amount",
+					"value":              views.FormatAmount(float64(c.Budgeted) / 100),
+					"data-keydown":       "ui.budget-input.keydown",
+					"data-focus":         "ui.cash-input.focus",
+					"data-blur":          "ui.cash-input.blur",
+					"data-input":         "ui.cash-input.input",
+					"data-beforerequest": "ui.budget-input.animate",
+					"hx-target":          "next .budget-info",
+					"hx-swap":            "outerHTML",
+					"hx-post":            "/partials/budget",
+					"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
+					"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
+				})
+			@BudgetInfoInputs(c.Budgeted, c.Month.String(), c.CategoryID)
+		</div>
+		@CatRowAvailableCell(c.CategoryID, c.Available, month, nil)
+	</div>
+}
+
+templ Carryover(catID string, etype string, value int) {
 	{{
+		id := fmt.Sprint("co-", catID)
+
 		vstring := views.FormatMoney(float64(value)/100, currency.EUR, language.AmericanEnglish)
 		var tooltipMsg string
 		posneg := "positive"
@@ -155,7 +161,6 @@ templ Carryover(id string, etype string, value int) {
 		class={ "budget-carryover", fmt.Sprint("budget-carryover--", etype), fmt.Sprint("budget-carryover--", posneg) }
 		style={ fmt.Sprintf("anchor-name: --%s;", id) }
 		data-name={ id }
-		data-delay="500"
 		data-mouseover="ui.popover.show"
 		data-mouseout="ui.popover.hide"
 	>
@@ -167,11 +172,55 @@ templ Carryover(id string, etype string, value int) {
 	</span>
 }
 
-templ CatRowLeftCell(catID string, left int, attrs templ.Attributes) {
-	<span id={ catID } class={ templ.KV("text-negative", left < 0) } { attrs... }>
+templ CatRowAvailableCell(catID string, left int, month budget.Month, attrs templ.Attributes) {
+	{{ id := fmt.Sprint("ac-", catID) }}
+	<span
+		id={ id }
+		class={ "hover-dash-underline unselectable cursor-pointer", templ.KV("text-negative", left < 0) }
+		style={ fmt.Sprintf("anchor-name: --%s-dropdown;", id) }
+		data-mouseup="ui.popover.show"
+		data-contextmenu="ux.prevent-default"
+		data-name={ fmt.Sprintf("%s-dropdown", id) }
+		{ attrs... }
+	>
 		{ views.FormatMoney(float64(left) / 100, currency.EUR, language.AmericanEnglish) }
 		<input type="hidden" name="cat-left" value={ left }/>
 	</span>
+	<div
+		id={ fmt.Sprintf("%s-dropdown-popover", id) }
+		data-name={ fmt.Sprintf("%s-dropdown", id) }
+		class="popover dropdown__menu"
+		style={ fmt.Sprintf("position-anchor: --%s-dropdown;", id) }
+		popover
+	>
+		<ul class="text-sm font-sans options">
+			<li>
+				if left > 0 {
+					<button
+						hx-get={ fmt.Sprintf("/partials/transfer-budget?type=underspend&month=%s&id=%s", month.String(), catID) }
+						hx-target="#dialog-root"
+						hx-swap="beforeend"
+						class="reset-btn text-sm"
+						data-action="ui.popover.hide"
+					>
+						Transfer to another category
+					</button>
+				} else if left < 0 {
+					<button
+						hx-get={ fmt.Sprintf("/partials/transfer-budget?type=overspend&month=%s&id=%s", month.String(), catID) }
+						hx-target="#dialog-root"
+						hx-swap="beforeend"
+						class="reset-btn"
+						data-action="ui.popover.hide"
+					>
+						Cover overspending
+					</button>
+				} else {
+					<span class="text-muted">No actions available</span>
+				}
+			</li>
+		</ul>
+	</div>
 }
 
 templ TotalRow(eType string, totalBudget, totalLeft int, attrs templ.Attributes) {

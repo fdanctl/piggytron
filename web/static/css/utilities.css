@@ -170,6 +170,10 @@
   font-family: var(--font-mono);
 }
 
+.font-sans {
+  font-family: var(--font-sans);
+}
+
 .font-light {
   font-weight: 300;
 }
@@ -479,4 +483,9 @@
 .unselectable {
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+.hover-dash-underline:hover {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
 }

@@ -18,7 +18,7 @@ const (
 templ Tooltip(class string, info string, anchor string, position position, attrs templ.Attributes) {
 	<div
 		id={ fmt.Sprintf("%s-popover", anchor) }
-		class={ "tooltip", fmt.Sprint("tooltip--", position), templ.KV(class, class != "") }
+		class={ "tooltip", fmt.Sprint("anchor--", position), templ.KV(class, class != "") }
 		style={ fmt.Sprintf("position-anchor: --%s;", anchor) }
 		popover="hint"
 		{ attrs... }

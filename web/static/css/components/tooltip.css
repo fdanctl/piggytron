@@ -5,7 +5,6 @@
   position-try: flip-block;
   position-try-fallbacks: flip-block, flip-inline;
   border: none;
-  white-space: nowrap;
 
   background: oklch(0.221 0.016 285.1);
   color: oklch(0.92 0.004 286.3);
@@ -14,6 +13,8 @@
   border: 0.5px solid var(--color-border-secondary);
   font-size: var(--font-size-xs);
   box-shadow: var(--shadow-md);
+  max-width: 50vw;
+  font-size: var(--font-size-xxs);
 
   transition:
     opacity 0.2s,
@@ -21,54 +22,56 @@
   transition-behavior: allow-discrete;
 }
 
-.tooltip--top-left {
+.anchor--top-left {
   bottom: anchor(top);
   left: anchor(left);
   margin-bottom: 2px;
 }
 
-.tooltip--top {
+.anchor--top {
   bottom: anchor(top);
   left: anchor(center);
   transform: translateX(-50%);
   margin-bottom: 2px;
 }
 
-.tooltip--top-right {
+.anchor--top-right {
   bottom: anchor(top);
   left: anchor(right);
   margin-bottom: 2px;
 }
 
-.tooltip--left {
+.anchor--left {
   top: anchor(center);
   right: anchor(left);
   transform: translateY(-50%);
   margin-left: 2px;
 }
 
-.tooltip--right {
+.anchor--right {
   top: anchor(center);
   left: anchor(right);
   transform: translateY(-50%);
   margin-right: 2px;
 }
 
-.tooltip--bottom-left {
-  top: anchor(top);
+.anchor--bottom-left {
+  top: anchor(bottom);
   left: anchor(left);
+  right: unset;
   margin-top: 2px;
 }
 
-.tooltip--bottom {
-  top: anchor(top);
+.anchor--bottom {
+  top: anchor(bottom);
   left: anchor(center);
+  right: unset;
   transform: translateX(-50%);
   margin-top: 2px;
 }
 
-.tooltip--bottom-right {
-  top: anchor(top);
+.anchor--bottom-right {
+  top: anchor(bottom);
   left: anchor(right);
   margin-top: 2px;
 }

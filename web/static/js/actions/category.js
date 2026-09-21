@@ -44,7 +44,6 @@ function deleteCategoryConfirm({ ele, data }) {
  * @param {Element} param0.ele - The form element.
  */
 function toggleArchived({ ele }) {
-  console.log(ele);
   document
     .getElementById("categories-container")
     .classList.toggle("show-archived");

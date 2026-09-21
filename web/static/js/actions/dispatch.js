@@ -3,6 +3,7 @@ import { showToast } from "../toast";
 import { accountActions } from "./account";
 import { categoryActions } from "./category";
 import { goalActions } from "./goal";
+import { transferBudgetActions } from "./transfer_budget";
 import { uiActions } from "./ui";
 
 /** Observes data-intersect elements and dispatches their action on entry. */
@@ -41,13 +42,19 @@ function log({ ele, evt, data }) {
   console.log(data);
 }
 
+function preventDefault({ evt }) {
+  evt.preventDefault();
+}
+
 /** Registry of every known action. ([k]: v, [action-name]: function) */
 const actions = {
   "dev.log.this": log,
+  "ux.prevent-default": preventDefault,
   ...uiActions,
   ...goalActions,
   ...accountActions,
   ...categoryActions,
+  ...transferBudgetActions,
 };
 
 /**
@@ -70,6 +77,8 @@ const eventAttributes = {
   intersect: "intersect",
   mouseover: "mouseover",
   mouseout: "mouseout",
+  mouseup: "mouseup",
+  contextmenu: "contextmenu",
 };
 
 // Checks and marks inputs invalid on blur.

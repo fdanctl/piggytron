@@ -269,7 +269,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	obb := templ.Join(
 		pages.BudgetInfoInputs(cents, month, cid),
-		pages.CatRowLeftCell(cid, catLeft, templ.Attributes{
+		pages.CatRowAvailableCell(cid, catLeft, bm, templ.Attributes{
 			"hx-swap-oob": "outerHTML",
 		}),
 		pages.BudgetStats(
@@ -279,6 +279,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			unassign,
 			leftToSpent,
 			overspent,
+			bm,
 			templ.Attributes{
 				"hx-swap-oob": "outerHTML",
 			},

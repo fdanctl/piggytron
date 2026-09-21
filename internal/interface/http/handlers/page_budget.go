@@ -68,7 +68,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	categoryBudgetSpent, err := h.categoryQuery.GetCategoriesBudgetSpentValue(
+	categoriesBudgetSpent, err := h.categoryQuery.GetCategoriesBudgetSpentValue(
 		r.Context(),
 		sessionInfo.UserID,
 		bm,
@@ -80,9 +80,9 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	pageView := views.NewBudgetPageView(
 		bm,
-		categoryBudgetSpent.MonthNet,
-		categoryBudgetSpent.Balance,
-		categoryBudgetSpent.Data,
+		categoriesBudgetSpent.MonthNet,
+		categoriesBudgetSpent.Balance,
+		categoriesBudgetSpent.Data,
 	)
 	d, err := h.transactionQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)
 	if err != nil {

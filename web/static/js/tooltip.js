@@ -8,16 +8,28 @@ let tid = null;
  * @param {DOMStringMap} param0.data - Dataset of the trigger; `data.name`
  *   identifies the popover and `data.delay` the delay in ms.
  */
-export function showPopover({ data }) {
+export function showPopover({ evt, data }) {
   if (tid) return;
 
   const delay = !Number.isNaN(Number(data.delay)) ? Number(data.delay) : 0;
   const popover = document.getElementById(data.name + "-popover");
   if (popover.matches(":popover-open")) return;
 
+  if (data.mouseanchor == "true") {
+    popover.style.left = evt.pageX + 5 + "px";
+    popover.style.top = evt.pageY + 5 + "px";
+  }
+
   tid = setTimeout(() => {
     popover.showPopover();
   }, delay);
+
+  popover.addEventListener("toggle", (evt) => {
+    if (evt.newState == "closed") {
+      clearTimeout(tid);
+      tid = null;
+    }
+  });
 }
 
 /**

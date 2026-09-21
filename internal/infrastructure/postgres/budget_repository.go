@@ -6,6 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/lib/pq"
+
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 )
 
@@ -51,6 +53,62 @@ func (r *BudgetRepository) Save(
 		b.UpdatedAt(),
 	)
 	return err
+}
+
+// ApplyDelta adds and subtracts the amount
+func (r *BudgetRepository) ApplyDelta(
+	ctx context.Context,
+	id budget.ID,
+	month budget.Month,
+	delta int,
+) (*budget.Budget, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`
+		UPDATE monthly_budgets
+		SET
+			amount = amount + $3,
+			updated_at = $4
+		WHERE category_id = $1 AND month = $2
+		RETURNING category_id, month, amount, created_at, updated_at`,
+		id,
+		month.Time(),
+		delta,
+		time.Now(),
+	)
+
+	var c budgetDto
+	err := row.Scan(
+		&c.CategoryID,
+		&c.Month,
+		&c.Amount,
+		&c.CreatedAt,
+		&c.UpdatedAt,
+	)
+	if err != nil {
+	}
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, budget.ErrNotFound
+		}
+
+		var pgErr *pq.Error
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23514" && // check violation
+				pgErr.Constraint == "monthly_budgets_amount_check" {
+				return nil, budget.ErrInvalidAmount
+			}
+		}
+		return nil, err
+	}
+	category := budget.Rehydrate(
+		c.CategoryID,
+		c.Month,
+		c.Amount,
+		c.CreatedAt,
+		c.UpdatedAt,
+	)
+	return category, err
 }
 
 // FindByCategoryAndMonth loads a budget, mapping missing rows to

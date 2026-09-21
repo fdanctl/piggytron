@@ -37,7 +37,7 @@ func (s *Service) SaveBudget(
 			errs.KindValidation,
 			fmt.Sprintf("%s is not a valid id", cid),
 			fmt.Errorf("failed parsing id '%s': %w", cid, err),
-			"appbudget.CreateBudget",
+			"appbudget.SaveBudget",
 		)
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (s *Service) SaveBudget(
 			errs.KindBusinessRule,
 			"Failed to create budget",
 			fmt.Errorf("failed to create budget: %w", err),
-			"appbudget.CreateBudget",
+			"appbudget.SaveBudget",
 		)
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (s *Service) SaveBudget(
 	if err != nil {
 		return nil, errs.NewInternalAppError(
 			fmt.Errorf("failed saving budget: %w", err),
-			"appbudget.CreateBudget",
+			"appbudget.SaveBudget",
 		)
 	}
 	return b, nil
@@ -138,4 +138,84 @@ func (s *Service) CopyFromLastMonth(
 		return 0, errs.NewInternalAppError(err, "appbudget.CopyFromLastMonth")
 	}
 	return count, nil
+}
+
+// TransferBudget changes the amount from a category to another for a given month
+func (s *Service) TransferBudget(
+	ctx context.Context,
+	userID string,
+	fromCategoryID string,
+	toCategoryID string,
+	month budget.Month,
+	amount int,
+) error {
+	// uid, err := util.ParseID[budget.ID](userID)
+	// if err != nil {
+	// 	err = errs.NewAppError(
+	// 		errs.KindValidation,
+	// 		fmt.Sprintf("%s is not a valid id", userID),
+	// 		fmt.Errorf("failed parsing id '%s': %w", userID, err),
+	// 		"appbudget.TransferBudget",
+	// 	)
+	// 	return err
+	// }
+
+	if fromCategoryID != "rta" {
+		fromID, err := util.ParseID[budget.ID](fromCategoryID)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindValidation,
+				fmt.Sprintf("%s is not a valid id", fromCategoryID),
+				fmt.Errorf("failed parsing id '%s': %w", fromCategoryID, err),
+				"appbudget.TransferBudget",
+			)
+			return err
+		}
+		_, err = s.repo.ApplyDelta(ctx, fromID, month, amount*-1)
+		if err != nil {
+			if errors.Is(err, budget.ErrNotFound) || errors.Is(err, budget.ErrInvalidAmount) {
+				return errs.NewAppError(
+					errs.KindBusinessRule,
+					"Assigned budget of from category would become negative",
+					budget.ErrInvalidAmount,
+					"appbudget.TransferBudget",
+				)
+			}
+			return errs.NewInternalAppError(
+				fmt.Errorf("failed update budget amount: %w", err),
+				"appbudget.TransferBudget",
+			)
+		}
+	}
+
+	if toCategoryID != "rta" {
+		toID, err := util.ParseID[budget.ID](toCategoryID)
+		if err != nil {
+			err = errs.NewAppError(
+				errs.KindValidation,
+				fmt.Sprintf("%s is not a valid id", toCategoryID),
+				fmt.Errorf("failed parsing id '%s': %w", toCategoryID, err),
+				"appbudget.TransferBudget",
+			)
+			return err
+		}
+		_, err = s.repo.ApplyDelta(ctx, toID, month, amount)
+		if err != nil {
+			if errors.Is(err, budget.ErrNotFound) {
+				_, err = s.SaveBudget(ctx, toCategoryID, month, amount)
+				if err != nil {
+					return errs.NewInternalAppError(
+						fmt.Errorf("failed sabe budget: %w", err),
+						"appbudget.TransferBudget",
+					)
+				}
+			} else {
+				return errs.NewInternalAppError(
+					fmt.Errorf("failed update budget amount: %w", err),
+					"appbudget.TransferBudget",
+				)
+			}
+		}
+	}
+	return nil
 }

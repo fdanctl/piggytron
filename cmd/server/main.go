@@ -205,7 +205,13 @@ func main() {
 	partialsMux.Handle("/partials/budget", budgetHandler)
 
 	importBudgetHandler := handlers.NewImportBudgetHandler(budgetService)
-	partialsMux.Handle("/partials/budget/import", importBudgetHandler)
+	partialsMux.Handle("/partials/import-budget", importBudgetHandler)
+
+	transferBudgetHandler := handlers.NewTransferBudgetHandler(
+		budgetService,
+		catQueryService,
+	)
+	partialsMux.Handle("/partials/transfer-budget", transferBudgetHandler)
 
 	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
 	partialsMux.Handle("/partials/income-category", incomeCatHandler)

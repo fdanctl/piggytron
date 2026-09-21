@@ -1,0 +1,205 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+	"golang.org/x/text/currency"
+	"golang.org/x/text/language"
+)
+
+templ TransferUnderspend(v *views.TransferBudgetForm, categories []BudgetSelectOption) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/transfer-budget"
+		hx-swap="outerHTML"
+		hx-include="#unassign-input"
+		novalidate
+	>
+		<input type="hidden" name="type" value="underspend"/>
+		<input type="hidden" name="month" value={ v.Month }/>
+		@components.InputGroup(
+			"",
+			"Amount",
+			views.StringArrToStr(v.ValidateAmount()),
+			v.AmountHasError(),
+			true,
+			templ.Attributes{
+				"id":          "income-amount",
+				"type":        "text",
+				"name":        "amount",
+				"placeholder": "420.69",
+				"value":       v.Amount,
+				"data-focus":  "ui.cash-input.focus",
+				"data-blur":   "ui.cash-input.blur",
+				"data-input":  "ui.cash-input.input",
+			},
+		)
+		<input type="hidden" name="from" value={ v.FromID }/>
+		@CategoryBudgetSelectGroup(
+			"",
+			"To",
+			v.ToID,
+			"-- Select category --",
+			categories,
+			views.StringArrToStr(v.ValidateToID()),
+			v.ToIDHasError(),
+			true,
+			templ.Attributes{
+				"id":   "to",
+				"name": "to",
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}
+
+templ CoverOverspend(v *views.TransferBudgetForm, categories []BudgetSelectOption) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-post="/partials/transfer-budget"
+		hx-swap="outerHTML"
+		hx-include="#unassign-input"
+		novalidate
+	>
+		<input type="hidden" name="type" value="overspend"/>
+		<input type="hidden" name="month" value={ v.Month }/>
+		@components.InputGroup(
+			"",
+			"Amount",
+			views.StringArrToStr(v.ValidateAmount()),
+			v.AmountHasError(),
+			true,
+			templ.Attributes{
+				"id":          "income-amount",
+				"type":        "text",
+				"name":        "amount",
+				"placeholder": "420.69",
+				"value":       v.Amount,
+				"data-focus":  "ui.cash-input.focus",
+				"data-blur":   "ui.cash-input.blur",
+				"data-input":  "ui.cash-input.input",
+			},
+		)
+		@CategoryBudgetSelectGroup(
+			"",
+			"From",
+			v.FromID,
+			"-- Select category --",
+			categories,
+			views.StringArrToStr(v.ValidateFromID()),
+			v.FromIDHasError(),
+			true,
+			templ.Attributes{
+				"id":   "from",
+				"name": "from",
+			},
+		)
+		<input type="hidden" name="to" value={ v.ToID }/>
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}
+
+type BudgetSelectOption struct {
+	Label     string
+	Value     string
+	Available int
+	Type      string
+	Attrs     templ.Attributes
+}
+
+templ CategoryBudgetSelect(placeholder string, value string, options []BudgetSelectOption, hasError bool, attrs templ.Attributes) {
+	{{
+		class := "input select"
+		if hasError {
+			class += " input--error"
+		}
+		if value != "" {
+			for _, o := range options {
+				if value == o.Value {
+					placeholder = o.Label
+				}
+			}
+		}
+	}}
+	@components.Dropdown(class, placeholder, true, templ.Attributes{
+		"data-action": "ui.select.center-selected",
+	},
+	) {
+		<ul class="options">
+			for _, o := range options {
+				<li
+					class={ templ.KV("options__item--selected", o.Label == placeholder) }
+					data-action="ui.select.option transfer-budget.overspent.max-value"
+					onclick=""
+					data-value={ o.Value }
+					{ o.Attrs... }
+				>
+					<div class="flex items-center justify-between gap-sm w-full">
+						<div class="flex items-center gap-sm">
+							<span class="option__label">{ o.Label }</span>
+							switch o.Type {
+								case "needs":
+									@components.Badge("text-xxs badge--sm", "Needs", components.BadgeNeeds)
+								case "wants":
+									@components.Badge("text-xxs badge--sm", "Wants", components.BadgeWants)
+								case "savings":
+									@components.Badge("text-xxs badge--sm", "Savings", components.BadgeSavings)
+							}
+						</div>
+						<span
+							class="available hidden"
+						>
+							{ views.FormatAmount(float64(o.Available)/100) }
+						</span>
+						<span
+							class={ templ.KV("text-negative", o.Available < 0) }
+						>
+							{ views.FormatMoney(float64(o.Available)/100, currency.EUR, language.AmericanEnglish) }
+						</span>
+					</div>
+					@components.CheckSvg(16, "", "")
+				</li>
+			}
+		</ul>
+		<input class="hidden" type="text" value={ value } { attrs... }/>
+	}
+}
+
+templ CategoryBudgetSelectGroup(class, label, value, placeholder string, options []BudgetSelectOption, errMsg string, hasError, required bool, attrs templ.Attributes) {
+	<div
+		class={ "input-group", templ.KV("input-group--error", hasError), templ.KV(class, class != "") }
+	>
+		if id, ok := attrs["id"]; ok && label != "" {
+			<label for={ id.(string) }>
+				{ label }
+				if (!required) {
+					<span>(optional)</span>
+				}
+			</label>
+		}
+		@CategoryBudgetSelect(placeholder, value, options, hasError, attrs)
+		<span class="input-group__message">{ errMsg }</span>
+	</div>
+}
