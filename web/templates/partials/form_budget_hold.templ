@@ -1,0 +1,44 @@
+package partials
+
+import (
+	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/views"
+)
+
+templ BudgetHoldForm(v *views.BudgetHoldForm) {
+	<form
+		class="space-y-sm"
+		hx-on:submit="event.preventDefault()"
+		hx-swap="outerHTML"
+		hx-post="/partials/hold-budget"
+		hx-include="#ltb-input, #total-budgeted, #income-input, #unassign-input, #lts-input, #overspent, #on-hold-input"
+		novalidate
+	>
+		<input type="hidden" name="month" value={ v.Month }/>
+		@components.InputGroup(
+			"",
+			"Amount",
+			views.StringArrToStr(v.ValidateAmount()),
+			v.AmountHasError(),
+			true,
+			templ.Attributes{
+				"id":          "amount",
+				"type":        "text",
+				"name":        "amount",
+				"placeholder": "420.69",
+				"value":       v.Amount,
+			},
+		)
+		<div class="w-full flex justify-end mt-md">
+			@components.Button(
+				"Enter",
+				"mt-md",
+				components.BtnPrimary,
+				components.BtnMedium,
+				templ.Attributes{
+					"type": "submit",
+				},
+			)
+		</div>
+	</form>
+}

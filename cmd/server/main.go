@@ -14,6 +14,7 @@ import (
 	"github.com/fdanctl/piggytron/config"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/application/appbudget"
+	"github.com/fdanctl/piggytron/internal/application/appbudgethold"
 	"github.com/fdanctl/piggytron/internal/application/appexpensecategory"
 	"github.com/fdanctl/piggytron/internal/application/appincomecategory"
 	"github.com/fdanctl/piggytron/internal/application/appledger"
@@ -103,6 +104,7 @@ func main() {
 	incomeCatRepo := postgres.NewIncomeCategoryRepository(db)
 	userRepo := postgres.NewUserRepository(db)
 	budgetRepo := postgres.NewBudgetRepository(db)
+	budgetHoldRepo := postgres.NewBudgetHoldRepository(db)
 
 	// query services
 	catQueryService := postgres.NewCategoryQueryService(db)
@@ -116,6 +118,7 @@ func main() {
 	incomeCatService := appincomecategory.NewService(incomeCatRepo, db)
 	userService := appuser.NewService(userRepo, hasher, sessionManager)
 	budgetService := appbudget.NewService(budgetRepo)
+	budgetHoldService := appbudgethold.NewService(budgetHoldRepo)
 
 	// web mux - returns full HTML page (or, in most cases, just the main element if Hx-Request)
 	webMux := http.NewServeMux()
@@ -212,6 +215,9 @@ func main() {
 		catQueryService,
 	)
 	partialsMux.Handle("/partials/transfer-budget", transferBudgetHandler)
+
+	holdBudgetHandler := handlers.NewBudgetHoldHandler(budgetHoldService, catQueryService)
+	partialsMux.Handle("/partials/hold-budget", holdBudgetHandler)
 
 	incomeCatHandler := handlers.NewIncomeCategoriesHandler(incomeCatService)
 	partialsMux.Handle("/partials/income-category", incomeCatHandler)

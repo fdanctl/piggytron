@@ -282,10 +282,12 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		SELECT
 		  c.*,
 		  COALESCE(n.net, 0) as net,
-		  COALESCE(n.running_total, 0) as balance
+		  COALESCE(n.running_total, 0) as balance,
+		  COALESCE(h.amount, 0) as hold
 		FROM
 		  categories c
 		  LEFT JOIN month_net n ON n.month = $2
+		  LEFT JOIN budget_holds h ON h.user_id = $1 AND h.month = $2
 		ORDER BY
 		   CASE c.type
 		     WHEN 'income' THEN 1
@@ -307,6 +309,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 	var data []query.CategoryBudgetValue
 	var monthNet int
 	var balance int
+	var hold int
 
 	for rows.Next() {
 		var r query.CategoryBudgetValue
@@ -322,6 +325,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 			&r.PrevTotalSpent,
 			&monthNet,
 			&balance,
+			&hold,
 		)
 		if err != nil {
 			return nil, err
@@ -336,6 +340,7 @@ func (s *CategoryQueryService) GetCategoriesBudgetSpentValue(
 		Data:     data,
 		MonthNet: monthNet,
 		Balance:  balance,
+		Hold:     hold,
 	}, nil
 }
 

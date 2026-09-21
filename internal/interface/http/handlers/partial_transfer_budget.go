@@ -110,7 +110,7 @@ func (h *TransferBudgetHandler) Get(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	rta := categoriesBudgetSpent.Balance - totalAvailable
+	rta := categoriesBudgetSpent.Balance - totalAvailable - categoriesBudgetSpent.Hold
 	opts = append([]partials.BudgetSelectOption{
 		{
 			Label:     "Ready to assign",
@@ -212,7 +212,7 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	rta := categoriesBudgetSpent.Balance - totalAvailable
+	rta := categoriesBudgetSpent.Balance - totalAvailable - categoriesBudgetSpent.Hold
 	selectOpts = append([]partials.BudgetSelectOption{
 		{
 			Label:     "Ready to assign",
@@ -318,11 +318,10 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 				}
 				changedCategoriesRows = append(
 					changedCategoriesRows,
-					layouts.OOBWraper(
-						fmt.Sprintf("row-%s", v.CategoryID),
-						"outerHTML",
-						nil,
-						pages.CategoryRow(v.Type, rowView, bm),
+					pages.CategoryRow(v.Type, rowView, bm,
+						templ.Attributes{
+							"hx-swap-oob": "outerHTML",
+						},
 					),
 				)
 			}
@@ -340,15 +339,14 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 				}
 				changedCategoriesRows = append(
 					changedCategoriesRows,
-					layouts.OOBWraper(
-						fmt.Sprintf("row-%s", v.CategoryID),
-						"outerHTML",
-						nil,
-						pages.CategoryRow(v.Type, rowView, bm),
+					pages.CategoryRow(v.Type, rowView, bm,
+						templ.Attributes{
+							"hx-swap-oob": "outerHTML",
+						},
 					),
 				)
 			}
-			value = v.Budgeted
+			value = categoriesBudgetSpent.Data[i].Budgeted
 		}
 		if value > 0 {
 			node, link := charts.MakeBudgetSankeyNodeLink(v.Name, v.Type, value)
@@ -357,19 +355,52 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	pageView := views.NewBudgetPageView(
+		bm,
+		categoriesBudgetSpent.MonthNet,
+		categoriesBudgetSpent.Balance,
+		categoriesBudgetSpent.Hold,
+		categoriesBudgetSpent.Data,
+	)
+
+	if pageView.ReadyToAssign > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "Unassigned",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Budget",
+				Target: "Unassigned",
+				Value:  float32(pageView.AvailableToSpend) / float32(100),
+			},
+		)
+	}
+
+	if pageView.OnHold > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "On hold",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Budget",
+				Target: "On hold",
+				Value:  float32(pageView.OnHold) / float32(100),
+			},
+		)
+	}
+
 	theme := r.Header.Get("theme")
 	component := components.NoData()
 	if len(links) > 0 {
 		sankey := charts.MakeSankey(nodes, links, true, theme)
 		component = charts.ConvertChartToTemplComponent(sankey)
 	}
-
-	pageView := views.NewBudgetPageView(
-		bm,
-		categoriesBudgetSpent.MonthNet,
-		categoriesBudgetSpent.Balance,
-		categoriesBudgetSpent.Data,
-	)
 
 	logger.Debug("overspent stat", "value", pageView.Overspent)
 
@@ -386,6 +417,7 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			pageView.ReadyToAssign,
 			pageView.Income,
 			pageView.UnassignCarryover,
+			pageView.OnHold,
 			pageView.AvailableToSpend,
 			pageView.Overspent,
 			pageView.Month,

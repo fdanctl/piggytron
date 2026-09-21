@@ -61,6 +61,7 @@ type MonthExpenseCategoryBudgetSpentWithBalance struct {
 	Data     []CategoryBudgetValue
 	MonthNet int
 	Balance  int
+	Hold     int
 }
 
 // CategoryQueryService is the read-model contract for category and budget

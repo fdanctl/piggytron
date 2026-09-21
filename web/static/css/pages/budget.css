@@ -83,6 +83,14 @@
       display: block;
     }
   }
+
+  .dialog__x {
+    visibility: visible;
+  }
+
+  .dialog__x:hover {
+    color: var(--color-text-secondary);
+  }
 }
 
 .budget-table-container {

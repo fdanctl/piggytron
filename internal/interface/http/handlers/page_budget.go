@@ -82,6 +82,7 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		bm,
 		categoriesBudgetSpent.MonthNet,
 		categoriesBudgetSpent.Balance,
+		categoriesBudgetSpent.Hold,
 		categoriesBudgetSpent.Data,
 	)
 	d, err := h.transactionQuery.GetFirstEntryDate(r.Context(), sessionInfo.UserID)

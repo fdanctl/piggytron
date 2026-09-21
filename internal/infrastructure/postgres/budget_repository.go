@@ -86,8 +86,6 @@ func (r *BudgetRepository) ApplyDelta(
 		&c.UpdatedAt,
 	)
 	if err != nil {
-	}
-	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, budget.ErrNotFound
 		}

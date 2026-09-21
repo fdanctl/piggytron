@@ -17,11 +17,11 @@ templ Budget(bview views.BreadcrumbsView, datePillSince time.Time, view views.Bu
 	if view.TotalBudgeted == 0 {
 		@lastMonthImport(view.Month)
 	}
-	@BudgetStats(view.TotalBudgeted, view.ReadyToAssign, view.Income, view.UnassignCarryover, view.AvailableToSpend, view.Overspent, view.Month, nil)
+	@BudgetStats(view.TotalBudgeted, view.ReadyToAssign, view.Income, view.UnassignCarryover, view.OnHold, view.AvailableToSpend, view.Overspent, view.Month, nil)
 	<div
 		id="budget-sankey"
 		class="chart-container mt-xl mb-xl"
-		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s?unassign=%d", view.Month, view.UnassignCarryover) }
+		hx-get={ fmt.Sprintf("/partials/charts/budget-chart/%s?unassign=%d&on-hold=%d", view.Month, view.UnassignCarryover, view.OnHold) }
 		hx-trigger="load"
 	>
 		@components.Loader("htmx-indicator h-full", nil)
@@ -49,15 +49,59 @@ templ lastMonthImport(month budget.Month) {
 	</div>
 }
 
-templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftToSpend, overspent int, currMonth budget.Month, attrs templ.Attributes) {
+templ BudgetStats(
+	totalBudgeted,
+	leftToBudget,
+	income,
+	unassignCarryover,
+	holdBudget,
+	leftToSpend,
+	overspent int,
+	currMonth budget.Month,
+	attrs templ.Attributes,
+) {
 	<div id="budget-stats" class="budget-stats" { attrs... }>
-		<div class="card">
+		<div class="card relative">
 			<h6 class="card__title mb-sm">Ready to assign</h6>
-			<p class={ "metric__value metric__value--xl", templ.KV("text-negative", leftToBudget < 0) }>
+			@budgetHoldIcon(holdBudget, currMonth, nil)
+			<p
+				class={ "metric__value metric__value--xl w-fit hover-dash-underline unselectable cursor-pointer", templ.KV("text-negative", leftToBudget < 0) }
+				style="anchor-name: --rta-dropdown;"
+				data-mouseup="ui.popover.show"
+				data-contextmenu="ux.prevent-default"
+				data-name="rta-dropdown"
+				onclick=""
+			>
 				{ views.FormatMoney(float64(leftToBudget) / 100, currency.EUR, language.AmericanEnglish) }
 				<input id="ltb-input" type="hidden" name="ltb" value={ leftToBudget }/>
 				<input id="total-budgeted" type="hidden" name="total-budgeted" value={ totalBudgeted }/>
 			</p>
+			<div
+				id="rta-dropdown-popover"
+				class="popover dropdown__menu anchor--bottom-left"
+				style="position-anchor: --rta-dropdown;"
+				data-name="rta-dropdown"
+				popover
+			>
+				<ul class="text-sm font-sans options">
+					<li>
+						if leftToBudget > 0 {
+							<button
+								hx-get={ fmt.Sprintf("/partials/hold-budget?month=%s", currMonth.String()) }
+								hx-target="#dialog-root"
+								hx-swap="beforeend"
+								hx-include="#ltb-input"
+								class="reset-btn"
+								data-action="ui.popover.hide"
+							>
+								Hold for next month
+							</button>
+						} else {
+							<span class="text-muted">No actions available</span>
+						}
+					</li>
+				</ul>
+			</div>
 			<p class="metric__sub mt-xs">
 				of { views.FormatMoney(float64(income) / 100, currency.EUR, language.AmericanEnglish) } income 
 				if unassignCarryover > 0 {
@@ -90,6 +134,35 @@ templ BudgetStats(totalBudgeted, leftToBudget, income, unassignCarryover, leftTo
 	</div>
 }
 
+templ budgetHoldIcon(onHold int, month budget.Month, attrs templ.Attributes) {
+	<input id="on-hold-input" type="hidden" name="on-hold" value={ onHold }/>
+	<div
+		id="budget-hold-icon"
+		hx-get={ fmt.Sprintf("/partials/hold-budget?month=%s", month.String()) }
+		hx-target="#dialog-root"
+		hx-swap="beforeend"
+		hx-include="#ltb-input"
+		class={ "dialog__x", templ.KV("hidden", onHold == 0) }
+		style={ fmt.Sprintf("anchor-name: --%s;", "on-hold") }
+		data-name="on-hold"
+		data-mouseover="ui.popover.show"
+		data-mouseout="ui.popover.hide"
+		{ attrs... }
+	>
+		@components.CalendarChevronsRight(0, "", "")
+	</div>
+	@components.Tooltip(
+		"",
+		fmt.Sprintf("Holding %s for next month",
+			views.FormatMoney(float64(onHold)/100,
+				currency.EUR,
+				language.AmericanEnglish)),
+		"on-hold",
+		components.TopLeft,
+		nil,
+	)
+}
+
 templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView, month budget.Month) {
 	<div
 		class={ "budget-table", fmt.Sprintf("budget-table--%s", string(eType)) }
@@ -102,14 +175,19 @@ templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []
 			<span>Available</span>
 		</div>
 		for _, c := range rows {
-			@CategoryRow(eType, c, month)
+			@CategoryRow(eType, c, month, nil)
 		}
 		@TotalRow(eType, totalBudget, totalLeft, nil)
 	</div>
 }
 
-templ CategoryRow(eType string, c views.BudgetRowView, month budget.Month) {
-	<div id={ fmt.Sprintf("row-%s", c.CategoryID) } class="budget-table__row" hx-include="inherit, find [name='cat-left']">
+templ CategoryRow(eType string, c views.BudgetRowView, month budget.Month, attrs templ.Attributes) {
+	<div
+		id={ fmt.Sprintf("row-%s", c.CategoryID) }
+		class="budget-table__row"
+		hx-include="inherit, find [name='cat-left']"
+		{ attrs ... }
+	>
 		<div class="flex gap-xs items-center">
 			<span>{ c.Name }</span>
 			if c.Carryover != 0 {
@@ -134,7 +212,7 @@ templ CategoryRow(eType string, c views.BudgetRowView, month budget.Month) {
 					"hx-swap":            "outerHTML",
 					"hx-post":            "/partials/budget",
 					"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
-					"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
+					"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #on-hold-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
 				})
 			@BudgetInfoInputs(c.Budgeted, c.Month.String(), c.CategoryID)
 		</div>

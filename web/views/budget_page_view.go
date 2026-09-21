@@ -14,6 +14,7 @@ type BudgetPageView struct {
 	ReadyToAssign       int
 	Income              int
 	AvailableToSpend    int
+	OnHold              int
 	Overspent           int
 	NeedsRows           []BudgetRowView
 	WantsRows           []BudgetRowView
@@ -52,6 +53,7 @@ func NewBudgetPageView(
 	month budget.Month,
 	net int,
 	balance int,
+	onHold int,
 	catBudgetSpent []query.CategoryBudgetValue,
 ) BudgetPageView {
 	var income int
@@ -138,9 +140,10 @@ func NewBudgetPageView(
 	return BudgetPageView{
 		Month:               month,
 		TotalBudgeted:       totalBudgeted,
-		ReadyToAssign:       balance - totalAvailable,
+		ReadyToAssign:       balance - totalAvailable - onHold,
 		Income:              income,
 		AvailableToSpend:    totalAvailable,
+		OnHold:              onHold,
 		Overspent:           overspent * -1,
 		NeedsRows:           needs,
 		WantsRows:           wants,

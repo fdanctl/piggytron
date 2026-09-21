@@ -13,11 +13,9 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
-	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views/charts"
-	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
 // BudgetHandler handles budget amount edits on the budget page: it persists
@@ -73,6 +71,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	pleftToBudget := params.Get("ltb")
 	pleftToSpent := params.Get("lts")
 	pincome := params.Get("income")
+	ponHold := params.Get("on-hold")
 	punassign := params.Get("unassign")
 	poverspent := params.Get("overspent")
 
@@ -139,6 +138,12 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	leftToBudget -= addedAmount
 
 	income, err := strconv.Atoi(pincome)
+	if err != nil {
+		httperror.SendFormError(w, r, err, budgetInfoInputs)
+		return
+	}
+
+	onHold, err := strconv.Atoi(ponHold)
 	if err != nil {
 		httperror.SendFormError(w, r, err, budgetInfoInputs)
 		return
@@ -227,45 +232,8 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nodes := []opts.SankeyNode{
-		{
-			Name: "Budget",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#194e4e",
-			},
-		},
-	}
-	var links []opts.SankeyLink
-	if unassign > 0 {
-		nodes = append(nodes, opts.SankeyNode{
-			Name: "Unassigned Carryover",
-			ItemStyle: &opts.ItemStyle{
-				Color: "#D8DDF0",
-			},
-		})
-		links = append(links,
-			opts.SankeyLink{
-				Source: "Unassigned Carryover",
-				Target: "Budget",
-				Value:  float32(unassign) / float32(100),
-			},
-		)
-	}
-
-	for _, v := range categoryBudget {
-		if v.Value > 0 {
-			node, link := charts.MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
-			nodes = append(nodes, node)
-			links = append(links, link)
-		}
-	}
-
 	theme := r.Header.Get("theme")
-	component := components.NoData()
-	if len(links) > 0 {
-		sankey := charts.MakeSankey(nodes, links, true, theme)
-		component = charts.ConvertChartToTemplComponent(sankey)
-	}
+	component := charts.BudgetChart(unassign, onHold, theme, categoryBudget)
 
 	obb := templ.Join(
 		pages.BudgetInfoInputs(cents, month, cid),
@@ -277,6 +245,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 			leftToBudget,
 			income,
 			unassign,
+			onHold,
 			leftToSpent,
 			overspent,
 			bm,

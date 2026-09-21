@@ -1,6 +1,9 @@
 package charts
 
 import (
+	"github.com/a-h/templ"
+	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/go-echarts/go-echarts/v2/opts"
 )
 
@@ -43,4 +46,90 @@ func MakeBudgetSankeyNodeLink(
 			Target: dst,
 			Value:  float32(value) / float32(100),
 		}
+}
+
+func BudgetChart(
+	unassignCarry, onHold int,
+	theme string,
+	categoriesBudget []query.CategoryBudget,
+) templ.Component {
+	nodes := []opts.SankeyNode{
+		{
+			Name: "Budget",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#194e4e",
+			},
+		},
+	}
+	var links []opts.SankeyLink
+	if unassignCarry > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "Unassigned Carryover",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Unassigned Carryover",
+				Target: "Budget",
+				Value:  float32(unassignCarry) / float32(100),
+			},
+		)
+	}
+	budget := unassignCarry
+	var budgeted int
+	for _, v := range categoriesBudget {
+		if v.Type == "income" {
+			budget += v.Value
+		} else {
+			budgeted += v.Value
+		}
+		if v.Value > 0 {
+			node, link := MakeBudgetSankeyNodeLink(v.Name, v.Type, v.Value)
+			nodes = append(nodes, node)
+			links = append(links, link)
+		}
+	}
+
+	ltb := budget - budgeted - onHold
+	if ltb > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "Unassigned",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Budget",
+				Target: "Unassigned",
+				Value:  float32(ltb) / float32(100),
+			},
+		)
+	}
+
+	if onHold > 0 {
+		nodes = append(nodes, opts.SankeyNode{
+			Name: "On hold",
+			ItemStyle: &opts.ItemStyle{
+				Color: "#D8DDF0",
+			},
+		})
+		links = append(links,
+			opts.SankeyLink{
+				Source: "Budget",
+				Target: "On hold",
+				Value:  float32(onHold) / float32(100),
+			},
+		)
+	}
+
+	component := components.NoData()
+	if len(links) > 0 {
+		sankey := MakeSankey(nodes, links, true, theme)
+		component = ConvertChartToTemplComponent(sankey)
+	}
+
+	return component
 }
