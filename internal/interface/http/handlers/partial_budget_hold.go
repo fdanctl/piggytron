@@ -257,18 +257,20 @@ func (h *BudgetHoldHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	templ.Join(
 		partials.BudgetHoldForm(&view),
-		pages.BudgetStats(
-			totalBudgeted,
-			leftToBudget,
-			income,
-			unassign,
-			hold.Amount(),
-			leftToSpent,
-			overspent,
-			budget.NewMonth(bm.Time()),
-			templ.Attributes{
-				"hx-swap-oob": "outerHTML",
-			},
+		layouts.HxPartial(
+			"#budget-stats",
+			"outerHTML",
+			pages.BudgetStats(
+				totalBudgeted,
+				leftToBudget,
+				income,
+				unassign,
+				hold.Amount(),
+				leftToSpent,
+				overspent,
+				budget.NewMonth(bm.Time()),
+				nil,
+			),
 		),
 		components.SendToast(
 			components.Success,
@@ -281,6 +283,6 @@ func (h *BudgetHoldHandler) Post(w http.ResponseWriter, r *http.Request) {
 				),
 			),
 		),
-		layouts.OOBWraper("budget-sankey", "innerHTML", nil, component),
+		layouts.HxPartial("#budget-sankey", "innerHTML", component),
 	).Render(r.Context(), w)
 }

@@ -321,10 +321,10 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 				}
 				changedCategoriesRows = append(
 					changedCategoriesRows,
-					pages.CategoryRow(v.Type, rowView, bm,
-						templ.Attributes{
-							"hx-swap-oob": "outerHTML",
-						},
+					layouts.HxPartial(
+						fmt.Sprintf("#row-%s", rowView.CategoryID),
+						"outerHTML",
+						pages.CategoryRow(v.Type, rowView, bm, nil),
 					),
 				)
 			}
@@ -342,10 +342,10 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 				}
 				changedCategoriesRows = append(
 					changedCategoriesRows,
-					pages.CategoryRow(v.Type, rowView, bm,
-						templ.Attributes{
-							"hx-swap-oob": "outerHTML",
-						},
+					layouts.HxPartial(
+						fmt.Sprintf("#row-%s", rowView.CategoryID),
+						"outerHTML",
+						pages.CategoryRow(v.Type, rowView, bm, nil),
 					),
 				)
 			}
@@ -417,41 +417,40 @@ func (h *TransferBudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	obb := templ.Join(
 		form,
 		joindedRows,
-		pages.BudgetStats(
-			pageView.TotalBudgeted,
-			pageView.ReadyToAssign,
-			pageView.Income,
-			pageView.UnassignCarryover,
-			pageView.OnHold,
-			pageView.AvailableToSpend,
-			pageView.Overspent,
-			pageView.Month,
-			templ.Attributes{
-				"hx-swap-oob": "outerHTML",
-			},
+		layouts.HxPartial(
+			"#budget-stats",
+			"outerHTML",
+			pages.BudgetStats(
+				pageView.TotalBudgeted,
+				pageView.ReadyToAssign,
+				pageView.Income,
+				pageView.UnassignCarryover,
+				pageView.OnHold,
+				pageView.AvailableToSpend,
+				pageView.Overspent,
+				pageView.Month,
+				nil,
+			),
 		),
-		pages.TotalRow("needs", pageView.NeedsBudget, pageView.NeedsAvailable,
-			templ.Attributes{
-				"hx-swap-oob": "outerHTML",
-			},
+		layouts.HxPartial(
+			"#needs-total-row",
+			"outerHTML",
+			pages.TotalRow("needs", pageView.NeedsBudget, pageView.NeedsAvailable, nil),
 		),
-		pages.TotalRow("wants", pageView.WantsBudget, pageView.WantsAvailable,
-			templ.Attributes{
-				"hx-swap-oob": "outerHTML",
-			},
+		layouts.HxPartial(
+			"#wants-total-row",
+			"outerHTML",
+			pages.TotalRow("wants", pageView.WantsBudget, pageView.WantsAvailable, nil),
 		),
-		pages.TotalRow(
-			"savings",
-			pageView.SavingsBudget,
-			pageView.SavingsAvailable,
-			templ.Attributes{
-				"hx-swap-oob": "outerHTML",
-			},
+		layouts.HxPartial(
+			"#savings-total-row",
+			"outerHTML",
+			pages.TotalRow("savings", pageView.SavingsBudget, pageView.SavingsAvailable, nil),
 		),
 		pages.PctSpan("needs", pageView.NeedsBudget, pageView.TotalBudgeted),
 		pages.PctSpan("wants", pageView.WantsBudget, pageView.TotalBudgeted),
 		pages.PctSpan("savings", pageView.SavingsBudget, pageView.TotalBudgeted),
-		layouts.OOBWraper("budget-sankey", "innerHTML", nil, component),
+		layouts.HxPartial("#budget-sankey", "innerHTML", component),
 	)
 
 	obb.Render(r.Context(), w)

@@ -55,7 +55,7 @@ templ Categories(bview views.BreadcrumbsView, cc []query.CategoryDTO) {
 					templ.Attributes{
 						"hx-get":    "/partials/income-category",
 						"hx-target": "#dialog-root",
-						"hx-swap":   "beforeend",
+						"hx-swap":   "append",
 					},
 					components.IconLeft,
 					components.PlusSvg(0, "", ""),
@@ -92,7 +92,7 @@ templ Categories(bview views.BreadcrumbsView, cc []query.CategoryDTO) {
 					templ.Attributes{
 						"hx-get":    "/partials/expense-category",
 						"hx-target": "#dialog-root",
-						"hx-swap":   "beforeend",
+						"hx-swap":   "append",
 					},
 					components.IconLeft,
 					components.PlusSvg(0, "", ""),

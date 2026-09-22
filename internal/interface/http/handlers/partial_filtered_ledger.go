@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -12,6 +10,8 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
+	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -116,23 +116,16 @@ func (h *FilteredLedgerHandler) Get(w http.ResponseWriter, r *http.Request) {
 		tviews = append(tviews, views.NewTransaction(v))
 	}
 
-	content := partials.TransactionsListItems(
-		tviews,
-		strings.Join(queries, "&"),
-		hasMore,
-	)
-
-	obb := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		_, err := io.WriteString(w, "<p id=\"filter-result-count\" hx-swap-oob=\"innerHTML\">")
-		if err != nil {
-			return err
-		}
-		_, err = fmt.Fprintf(w, "%d results", transactions.Total)
-		if err != nil {
-			return err
-		}
-		_, err = io.WriteString(w, "</p>")
-		return err
-	})
-	templ.Join(content, obb).Render(r.Context(), w)
+	templ.Join(
+		partials.TransactionsListItems(
+			tviews,
+			strings.Join(queries, "&"),
+			hasMore,
+		),
+		layouts.HxPartial(
+			"#filter-result-count",
+			"outerHTML",
+			pages.FilterResultCount(transactions.Total),
+		),
+	).Render(r.Context(), w)
 }

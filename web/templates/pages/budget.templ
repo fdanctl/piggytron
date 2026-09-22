@@ -89,7 +89,7 @@ templ BudgetStats(
 							<button
 								hx-get={ fmt.Sprintf("/partials/hold-budget?month=%s", currMonth.String()) }
 								hx-target="#dialog-root"
-								hx-swap="beforeend"
+								hx-swap="append"
 								hx-include="#ltb-input"
 								class="reset-btn"
 								data-action="ui.popover.hide"
@@ -140,7 +140,7 @@ templ budgetHoldIcon(onHold int, month budget.Month, attrs templ.Attributes) {
 		id="budget-hold-icon"
 		hx-get={ fmt.Sprintf("/partials/hold-budget?month=%s", month.String()) }
 		hx-target="#dialog-root"
-		hx-swap="beforeend"
+		hx-swap="append"
 		hx-include="#ltb-input"
 		class={ "dialog__x", templ.KV("hidden", onHold == 0) }
 		style={ fmt.Sprintf("anchor-name: --%s;", "on-hold") }
@@ -276,7 +276,7 @@ templ CatRowAvailableCell(catID string, left int, month budget.Month, attrs temp
 					<button
 						hx-get={ fmt.Sprintf("/partials/transfer-budget?type=underspend&month=%s&id=%s", month.String(), catID) }
 						hx-target="#dialog-root"
-						hx-swap="beforeend"
+						hx-swap="append"
 						class="reset-btn text-sm"
 						data-action="ui.popover.hide"
 					>
@@ -286,7 +286,7 @@ templ CatRowAvailableCell(catID string, left int, month budget.Month, attrs temp
 					<button
 						hx-get={ fmt.Sprintf("/partials/transfer-budget?type=overspend&month=%s&id=%s", month.String(), catID) }
 						hx-target="#dialog-root"
-						hx-swap="beforeend"
+						hx-swap="append"
 						class="reset-btn"
 						data-action="ui.popover.hide"
 					>
@@ -323,7 +323,7 @@ templ BudgetInfoInputs(amount int, month string, cid string) {
 }
 
 templ PctSpan(catType string, totalRowBudget, totalBudgeted int) {
-	<span id={ fmt.Sprintf("%s-pct", catType) } hx-swap-oob="outerHTML" class="font-mono text-xs font-normal">
+	<hx-partial id={ fmt.Sprintf("%s-pct", catType) } hx-swap="innerHTML" class="font-mono text-xs font-normal">
 		{{
 			pct := (float64(totalRowBudget) / float64(totalBudgeted)) * 100
 			if math.IsNaN(pct) {
@@ -331,5 +331,5 @@ templ PctSpan(catType string, totalRowBudget, totalBudgeted int) {
 			}
 		}}
 		({ views.FormatFloat(pct) }%)
-	</span>
+	</hx-partial>
 }

@@ -12,7 +12,7 @@ const (
 )
 
 templ SendToast(level toastLevel, msg string) {
-	<div hx-swap-oob="beforeend:#toast-root">
+	<hx-partial hx-target="#toast-root" hx-swap="append">
 		<div class={ "toast cursor-pointer", fmt.Sprint("toast--", level) } data-animationend="ui.element.remove" data-action="ui.element.remove">
 			switch level {
 				case Success:
@@ -28,5 +28,5 @@ templ SendToast(level toastLevel, msg string) {
 				<p>{ msg }</p>
 			</div>
 		</div>
-	</div>
+	</hx-partial>
 }

@@ -68,7 +68,7 @@ templ TransactionDetailsButtons(t views.Transaction) {
 			templ.Attributes{
 				"hx-get":    fmt.Sprintf("/partials/ledger/entry/%s", t.ID),
 				"hx-target": "#dialog-root",
-				"hx-swap":   "beforeend",
+				"hx-swap":   "append",
 			},
 			components.IconLeft, components.SquarePenSvg(0, "", ""),
 		)

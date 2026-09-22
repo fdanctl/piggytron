@@ -19,7 +19,7 @@ templ Goals(bview views.BreadcrumbsView, goals []views.Goal) {
 				templ.Attributes{
 					"hx-get":    "/partials/goal",
 					"hx-target": "#dialog-root",
-					"hx-swap":   "beforeend",
+					"hx-swap":   "append",
 				},
 				components.IconLeft,
 				components.PlusSvg(0, "", ""),
@@ -44,7 +44,7 @@ templ Goals(bview views.BreadcrumbsView, goals []views.Goal) {
 			<h4>Inactive</h4>
 		</div>
 		<ul
-			id="active-goals-list"
+			id="inactive-goals-list"
 			class="goal-list"
 			hx-target:inherited="#content"
 			hx-boost:inherited="true"

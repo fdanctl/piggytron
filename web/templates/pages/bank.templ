@@ -23,7 +23,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 						data-action="ui.popover.hide"
 						hx-get={ fmt.Sprintf("/partials/bank/%s/change-name", b.ID) }
 						hx-target="#dialog-root"
-						hx-swap="beforeend"
+						hx-swap="append"
 					>Change name</button>
 				</li>
 				if b.Status == "active" {
@@ -33,7 +33,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 							data-action="ui.popover.hide"
 							hx-get={ fmt.Sprintf("/partials/bank/%s/initial-balance", b.ID) }
 							hx-target="#dialog-root"
-							hx-swap="beforeend"
+							hx-swap="append"
 						>Change initial balance</button>
 					</li>
 					<li>
@@ -93,7 +93,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 					templ.Attributes{
 						"hx-get":    fmt.Sprintf("/partials/ledger/entry?preset=transfer&destination=%s", b.ID),
 						"hx-target": "#dialog-root",
-						"hx-swap":   "beforeend",
+						"hx-swap":   "append",
 						"disabled":  b.Status == "closed",
 					},
 				)
@@ -105,7 +105,7 @@ templ Bank(bview views.BreadcrumbsView, b query.AccountWithSum, tt []views.Trans
 					templ.Attributes{
 						"hx-get":    fmt.Sprintf("/partials/ledger/entry?preset=transfer&source=%s", b.ID),
 						"hx-target": "#dialog-root",
-						"hx-swap":   "beforeend",
+						"hx-swap":   "append",
 						"disabled":  b.Status == "closed",
 					},
 				)

@@ -130,10 +130,9 @@ func (h *IncomeCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("HX-Trigger", "incomeCategoryAdded")
 		templ.Join(
 			partials.IncomeCategoryForm(id, view),
-			layouts.OOBWraper(
-				"",
-				"beforeend:#income-cat ul",
-				nil,
+			layouts.HxPartial(
+				"#income-cat ul",
+				"append",
 				partials.CategoryItem(dto, templ.Attributes{"style": "animation-delay: 0s;"}),
 			),
 			components.SendToast(

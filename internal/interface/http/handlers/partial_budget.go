@@ -237,29 +237,35 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	obb := templ.Join(
 		pages.BudgetInfoInputs(cents, month, cid),
-		pages.CatRowAvailableCell(cid, catLeft, bm, templ.Attributes{
-			"hx-swap-oob": "outerHTML",
-		}),
-		pages.BudgetStats(
-			totalBudgeted,
-			leftToBudget,
-			income,
-			unassign,
-			onHold,
-			leftToSpent,
-			overspent,
-			bm,
-			templ.Attributes{
-				"hx-swap-oob": "outerHTML",
-			},
+		layouts.HxPartial(
+			fmt.Sprint("ac-", cid),
+			"outerHTML",
+			pages.CatRowAvailableCell(cid, catLeft, bm, nil),
 		),
-		pages.TotalRow(catType, totalRowBudget, totalRowLeft, templ.Attributes{
-			"hx-swap-oob": "outerHTML",
-		}),
+		layouts.HxPartial(
+			"#budget-stats",
+			"outerHTML",
+			pages.BudgetStats(
+				totalBudgeted,
+				leftToBudget,
+				income,
+				unassign,
+				onHold,
+				leftToSpent,
+				overspent,
+				bm,
+				nil,
+			),
+		),
+		layouts.HxPartial(
+			fmt.Sprintf("#%s-total-row", catType),
+			"outerHTML",
+			pages.TotalRow(catType, totalRowBudget, totalRowLeft, nil),
+		),
 		pages.PctSpan("needs", needsBudget, totalBudgeted),
 		pages.PctSpan("wants", wantsBudget, totalBudgeted),
 		pages.PctSpan("savings", savingsBudget, totalBudgeted),
-		layouts.OOBWraper("budget-sankey", "innerHTML", nil, component),
+		layouts.HxPartial("#budget-sankey", "innerHTML", component),
 	)
 
 	obb.Render(r.Context(), w)

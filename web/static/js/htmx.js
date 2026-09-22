@@ -33,9 +33,6 @@ htmx.on("htmx:confirm", (evt) => {
 
 // Re-marks the nav link matching the restored page title.
 htmx.on("htmx:before:history:restore", (evt) => {
-  // evt.detail.ctx.target.style.viewTransitionName =
-  //   evt.target.dataset.transition ?? DEFAULT_TRANSITION;
-
   // nav active link
   let pathname = evt.detail.path;
   if (pathname === "/") {

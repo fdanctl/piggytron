@@ -103,7 +103,7 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 							class="reset-btn w-fit h-fit flex cursor-pointer"
 							hx-get="/partials/bank"
 							hx-target="#dialog-root"
-							hx-swap="beforeend"
+							hx-swap="append"
 						>
 							@components.PlusSvg(16, "", "")
 						</button>

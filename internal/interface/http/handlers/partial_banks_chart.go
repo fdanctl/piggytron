@@ -103,10 +103,9 @@ func (h *BanksChartsHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	templ.Join(
 		pie,
-		layouts.OOBWraper(
-			"account-history-chart",
+		layouts.HxPartial(
+			"#account-history-chart",
 			"outerHTML",
-			nil,
 			partials.AccountHistCard(line, defaultPeriod),
 		),
 	).Render(r.Context(), w)

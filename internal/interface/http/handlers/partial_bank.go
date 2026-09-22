@@ -165,10 +165,9 @@ func (h *BankHandler) Post(w http.ResponseWriter, r *http.Request) {
 	)
 	templ.Join(
 		partials.BankForm(view),
-		layouts.OOBWraper(
-			"accounts-list",
-			"beforeend",
-			nil,
+		layouts.HxPartial(
+			"#accounts-list",
+			"append",
 			partials.AccountItem(bview),
 		),
 	).Render(r.Context(), w)

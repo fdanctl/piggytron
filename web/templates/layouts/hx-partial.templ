@@ -1,0 +1,7 @@
+package layouts
+
+templ HxPartial(target string, swap string, component templ.Component) {
+	<hx-partial hx-target={ target } hx-swap={ swap }>
+		@component
+	</hx-partial>
+}

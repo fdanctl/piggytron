@@ -228,10 +228,9 @@ func (h *GoalHandler) Post(w http.ResponseWriter, r *http.Request) {
 
 	templ.Join(
 		partials.GoalFormContent(view, ecatOpts),
-		layouts.OOBWraper(
-			"active-goals-list",
-			"beforeend",
-			nil,
+		layouts.HxPartial(
+			"#active-goals-list",
+			"append",
 			partials.GoalItem(views.NewGoal(*g), nil),
 		),
 	).Render(r.Context(), w)

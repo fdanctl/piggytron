@@ -20,7 +20,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 						<button
 							hx-get={ fmt.Sprintf("/partials/goal-contribute/%s", g.ID) }
 							hx-target="#dialog-root"
-							hx-swap="beforeend"
+							hx-swap="append"
 							class="reset-btn text-sm"
 							data-action="ui.popover.hide"
 						>Contribute</button>
@@ -29,7 +29,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 						<button
 							hx-get={ fmt.Sprintf("/partials/goal/%s/complete", g.ID) }
 							hx-target="#dialog-root"
-							hx-swap="beforeend"
+							hx-swap="append"
 							class="reset-btn text-sm"
 							data-action="ui.popover.hide"
 						>Complete</button>
@@ -38,7 +38,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 						<button
 							hx-get={ fmt.Sprintf("/partials/goal/%s/cancel", g.ID) }
 							hx-target="#dialog-root"
-							hx-swap="beforeend"
+							hx-swap="append"
 							class="reset-btn text-sm"
 							data-action="ui.popover.hide"
 						>Cancel</button>
@@ -77,7 +77,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 					templ.Attributes{
 						"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
 						"hx-target": "#dialog-root",
-						"hx-swap":   "beforeend",
+						"hx-swap":   "append",
 					},
 					components.IconLeft,
 					components.PlusSvg(0, "", ""),
@@ -91,7 +91,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 					templ.Attributes{
 						"hx-get":    fmt.Sprintf("/partials/goal/%s/complete", g.ID),
 						"hx-target": "#dialog-root",
-						"hx-swap":   "beforeend",
+						"hx-swap":   "append",
 					},
 					components.IconLeft,
 					components.CheckSvg(0, "", ""),
@@ -105,7 +105,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 				templ.Attributes{
 					"hx-get":    fmt.Sprintf("/partials/goal/%s", g.ID),
 					"hx-target": "#dialog-root",
-					"hx-swap":   "beforeend",
+					"hx-swap":   "append",
 				},
 				components.IconLeft,
 				components.SquarePenSvg(0, "", ""),
@@ -140,7 +140,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 			templ.Attributes{
 				"hx-get":    fmt.Sprintf("/partials/goal-contribute/%s", g.ID),
 				"hx-target": "#dialog-root",
-				"hx-swap":   "beforeend",
+				"hx-swap":   "append",
 			},
 			components.IconLeft,
 			components.PlusSvg(0, "", ""),
@@ -154,7 +154,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 			templ.Attributes{
 				"hx-get":    fmt.Sprintf("/partials/goal/%s/complete", g.ID),
 				"hx-target": "#dialog-root",
-				"hx-swap":   "beforeend",
+				"hx-swap":   "append",
 			},
 			components.IconLeft,
 			components.CheckSvg(0, "", ""),
@@ -212,7 +212,7 @@ templ Goal(bview views.BreadcrumbsView, g views.Goal, tt []views.Transaction, ha
 						class="reset-btn goal-details__pen-btn"
 						hx-get={ fmt.Sprintf("/partials/goal/%s", g.ID) }
 						hx-target="#dialog-root"
-						hx-swap="beforeend"
+						hx-swap="append"
 					>
 						@components.PenSvg(14, "", "")
 					</button>

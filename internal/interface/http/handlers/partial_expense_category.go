@@ -134,10 +134,9 @@ func (h *ExpenseCategoriesHandler) Post(w http.ResponseWriter, r *http.Request) 
 		w.Header().Set("HX-Trigger", "expenseCategoryAdded")
 		templ.Join(
 			partials.ExpenseCategoryForm(id, view),
-			layouts.OOBWraper(
-				"",
-				"beforeend:#expense-cat ul",
-				nil,
+			layouts.HxPartial(
+				"#expense-cat ul",
+				"append",
 				partials.CategoryItem(dto, templ.Attributes{"style": "animation-delay: 0s;"}),
 			),
 			components.SendToast(

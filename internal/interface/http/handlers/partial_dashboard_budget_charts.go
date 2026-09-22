@@ -144,10 +144,9 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 			true,
 			nil,
 		),
-		layouts.OOBWraper(
+		layouts.HxPartial(
 			"dashboard-st",
 			"innerHTML",
-			nil,
 			components.CarouselCard(
 				"",
 				"Budget-spent by type",

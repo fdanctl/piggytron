@@ -27,7 +27,7 @@ templ Category(bview views.BreadcrumbsView, cat *query.CategoryDTO, transactions
 							data-action="ui.popover.hide"
 							hx-get={ fmt.Sprintf("/partials/%s-category/%s", ctype, cat.ID) }
 							hx-target="#dialog-root"
-							hx-swap="beforeend"
+							hx-swap="append"
 						>Edit</button>
 					</li>
 					<li>

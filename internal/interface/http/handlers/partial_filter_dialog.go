@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"context"
 	"fmt"
-	"io"
 	"math"
 	"net/http"
 	"strings"
@@ -14,6 +12,8 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/layouts"
+	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 )
 
@@ -230,46 +230,21 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Push-Url", "?"+strings.Join(queries[1:], "&"))
 	w.Header().Set("HX-Trigger", "refetch-transactions")
 
-	if filterCount > 0 {
-		components.Button(
-			"Reset",
-			"w-full",
-			components.BtnOutline,
-			components.BtnMedium,
-			templ.Attributes{
-				"type":        "button",
-				"data-action": "ui.filters.reset",
-			},
-		).Render(r.Context(), w)
-	}
-	components.Button(
-		fmt.Sprintf("Show %d results", resCount),
-		"w-full",
-		components.BtnPrimary,
-		components.BtnMedium,
-		templ.Attributes{
-			"type":        "button",
-			"data-action": "ui.dialog.close-last",
-		},
+	templ.Join(
+		partials.LedgerFiltersBtns(resCount),
+		layouts.HxPartial(
+			"#filter-result-count",
+			"outerHTML",
+			pages.FilterResultCount(resCount),
+		),
+		layouts.HxPartial(
+			"#filter-btn",
+			"outerHTML",
+			components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
+				"style":     "height: 24px;",
+				"hx-get":    "/partials/ledger-filters?" + strings.Join(queries[1:], "&"),
+				"hx-target": "#dialog-root",
+			}),
+		),
 	).Render(r.Context(), w)
-
-	templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
-		_, err := io.WriteString(w, "<p id=\"filter-result-count\" hx-swap-oob=\"innerHTML\">")
-		if err != nil {
-			return err
-		}
-		_, err = fmt.Fprintf(w, "%d results", resCount)
-		if err != nil {
-			return err
-		}
-		_, err = io.WriteString(w, "</p>")
-		return err
-	}).Render(r.Context(), w)
-	components.FilterBtn(uint8(filterCount), 0, "", "", templ.Attributes{
-		"style":       "height: 24px;",
-		"hx-swap-oob": "outerHTML",
-		"id":          "filter-btn",
-		"hx-get":      "/partials/ledger-filters?" + strings.Join(queries[1:], "&"),
-		"hx-target":   "#dialog-root",
-	}).Render(r.Context(), w)
 }

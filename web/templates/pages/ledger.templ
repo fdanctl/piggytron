@@ -17,23 +17,27 @@ templ Ledger(
 	<div class="flex justify-between">
 		@components.Breadcrumbs(bview)
 		<div class="flex gap-sm" style="height: fit-content; align-items: center;">
-			<p id="filter-result-count" class="text-muted text-xs">{ filterResults } results</p>
+			@FilterResultCount(filterResults)
 			@components.FilterBtn(filterCount, 0, "", "", templ.Attributes{
 				"style":     "height: 24px",
 				"id":        "filter-btn",
 				"hx-get":    "/partials/ledger-filters?" + filterQuery,
 				"hx-target": "#dialog-root",
-				"hx-swap":   "beforeend",
+				"hx-swap":   "append",
 			})
 			<button
 				class="reset-btn w-fit h-fit flex cursor-pointer"
 				hx-get="/partials/ledger/entry"
 				hx-target="#dialog-root"
-				hx-swap="beforeend"
+				hx-swap="append"
 			>
 				@components.PlusSvg(16, "", "")
 			</button>
 		</div>
 	</div>
 	@partials.TransactionsList(transactions, queryStr, hasMore)
+}
+
+templ FilterResultCount(filterResults int) {
+	<p id="filter-result-count" class="text-muted text-xs">{ filterResults } results</p>
 }
