@@ -73,8 +73,7 @@ function waitForCharts() {
 
 htmx.on("htmx:before:swap", async (evt) => {
   if (
-    (evt.detail.ctx.request.action === undefined &&
-      !evt.detail.ctx.request.action.includes("/partials/charts")) ||
+    !evt.detail.ctx.request.action.includes("/partials/charts") ||
     window.chartsLoaded
   ) {
     return;

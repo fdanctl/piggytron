@@ -238,7 +238,7 @@ func (h *BudgetHandler) Post(w http.ResponseWriter, r *http.Request) {
 	obb := templ.Join(
 		pages.BudgetInfoInputs(cents, month, cid),
 		layouts.HxPartial(
-			fmt.Sprint("ac-", cid),
+			fmt.Sprint("#ac-", cid),
 			"outerHTML",
 			pages.CatRowAvailableCell(cid, catLeft, bm, nil),
 		),

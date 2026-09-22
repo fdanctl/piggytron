@@ -145,7 +145,7 @@ func (h *DashboardBudgetCharts) Get(w http.ResponseWriter, r *http.Request) {
 			nil,
 		),
 		layouts.HxPartial(
-			"dashboard-st",
+			"#dashboard-st",
 			"innerHTML",
 			components.CarouselCard(
 				"",
