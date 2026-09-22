@@ -5,8 +5,8 @@ import { showToast } from "./toast";
 
 // Replaces the built-in window.confirm with the custom dialog. The question
 // may be a JSON string configuring the dialog; otherwise it is used verbatim.
-document.body.addEventListener("htmx:confirm", (evt) => {
-  if (!evt.detail.question) return;
+htmx.on("htmx:confirm", (evt) => {
+  if (!evt.detail.ctx.confirm) return;
 
   // This will prevent the request from being issued to later manually issue it
   evt.preventDefault();
@@ -14,11 +14,11 @@ document.body.addEventListener("htmx:confirm", (evt) => {
   let config;
 
   try {
-    config = JSON.parse(evt.detail.question);
+    config = JSON.parse(evt.detail.ctx.confirm);
   } catch {
     config = {
       title: "Confirm",
-      message: evt.detail.question,
+      message: evt.detail.ctx.confirm,
       acceptText: "Yes",
       refuseText: "No",
     };
@@ -32,45 +32,92 @@ document.body.addEventListener("htmx:confirm", (evt) => {
 });
 
 // Re-marks the nav link matching the restored page title.
-// NOTE: probably will not be needed in HTMX 4, because it handles
-// history diferently
-document.body.addEventListener("htmx:historyRestore", () => {
+htmx.on("htmx:before:history:restore", (evt) => {
+  // evt.detail.ctx.target.style.viewTransitionName =
+  //   evt.target.dataset.transition ?? DEFAULT_TRANSITION;
+
   // nav active link
-  let title = document.title;
+  let pathname = evt.detail.path;
+  if (pathname === "/") {
+    pathname = "dashboard";
+  }
   const a = document.querySelectorAll("nav a");
   a.forEach((e) => e.classList.remove("active"));
   for (let i = 0; i < a.length; i++) {
     const text = a[i].text.trim().toLowerCase();
-    a[i].classList.toggle("active", text === title.toLowerCase());
+    a[i].classList.toggle("active", pathname.includes(text));
   }
 });
 
 // Toast a generic error unless the server already sent its own trigger.
-document.body.addEventListener("htmx:responseError", function (evt) {
-  if (!evt.detail.xhr.getResponseHeader("HX-Trigger")) {
+htmx.on("htmx:response:error", (evt) => {
+  if (
+    !evt.detail.ctx.response.headers.get("HX-Trigger") &&
+    evt.detail.ctx.response.status !== 422
+  ) {
     showToast("error", "Something went wrong");
   }
 });
 
-document.body.addEventListener("htmx:sendError", function () {
+htmx.on("htmx:error", () => {
   showToast("error", "Network error");
 });
 
-document.body.addEventListener("htmx:timeout", function () {
-  showToast("error", "Request timed out");
+function waitForCharts() {
+  return new Promise((resolve) => {
+    const interval = setInterval(() => {
+      if (window.chartsLoaded === true) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 100);
+  });
+}
+
+htmx.on("htmx:before:swap", async (evt) => {
+  if (
+    (evt.detail.ctx.request.action === undefined &&
+      !evt.detail.ctx.request.action.includes("/partials/charts")) ||
+    window.chartsLoaded
+  ) {
+    return;
+  }
+
+  evt.preventDefault();
+
+  await waitForCharts();
+  htmx.swap(evt.detail.ctx);
+});
+
+// scroll to the top when changing page
+htmx.on("htmx:after:swap", (evt) => {
+  if (evt.detail.ctx.target.id !== "content") return;
+
+  document.querySelector("main").scrollTo({
+    top: 0,
+    behavior: "instant",
+  });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "instant",
+  });
 });
 
 // Names the view transition on the swapped target before navigation.
 const DEFAULT_TRANSITION = "navigate-forward";
-document.body.addEventListener("htmx:beforeTransition", (evt) => {
-  evt.detail.target.style.viewTransitionName =
+htmx.on("htmx:before:viewTransition", (evt) => {
+  evt.detail.ctx.target.style.viewTransitionName =
     evt.target.dataset.transition ?? DEFAULT_TRANSITION;
-  // TODO: htmx 4 has a after transtion event. after transition set it to "none"
+});
+
+htmx.on("htmx:after:viewTransition", (evt) => {
+  evt.detail.ctx.target.style.viewTransitionName = "none";
 });
 
 // Sends the effective theme with every request so charts can render dark.
-document.body.addEventListener("htmx:configRequest", function (evt) {
-  evt.detail.headers["theme"] = getPreferredTheme();
+htmx.on("htmx:config:request", (evt) => {
+  evt.detail.ctx.request.headers["theme"] = getPreferredTheme();
 });
 
 // HTMX custom events - set by the server with HX-Trigger header
@@ -82,12 +129,12 @@ document.body.addEventListener("htmx:configRequest", function (evt) {
 //     "message": string
 //   }}
 // ).
-document.body.addEventListener("show-toast", function (evt) {
+document.body.addEventListener("show-toast", (evt) => {
   showToast(evt.detail.level, evt.detail.message);
 });
 
 // Bumps the income category counter after one is added.
-document.body.addEventListener("incomeCategoryAdded", function () {
+document.body.addEventListener("incomeCategoryAdded", () => {
   closeLastDialog();
   const li = document.querySelectorAll("#income-cat li");
   document.querySelector("#income-cat h4").innerText =
@@ -95,7 +142,7 @@ document.body.addEventListener("incomeCategoryAdded", function () {
 });
 
 // Bumps the expense category counter after one is added.
-document.body.addEventListener("expenseCategoryAdded", function () {
+document.body.addEventListener("expenseCategoryAdded", () => {
   closeLastDialog();
   const li = document.querySelectorAll("#expense-cat li");
   document.querySelector("#expense-cat h4").innerText =
@@ -103,18 +150,18 @@ document.body.addEventListener("expenseCategoryAdded", function () {
 });
 
 // Closes the top-most dialog.
-document.body.addEventListener("closeModal", function () {
+document.body.addEventListener("closeModal", () => {
   closeLastDialog();
 });
 
-document.body.addEventListener("closeAllModal", function () {
+document.body.addEventListener("closeAllModal", () => {
   closeAllDialog();
 });
 
 // Navigates making an hx-get to swap #contetn with an optional transition.
 // (HX-Trigger: {"contentPush": { "url": string, "transition": bool}})
 // TODO: choose the transtion
-document.body.addEventListener("contentPush", function (evt) {
+document.body.addEventListener("contentPush", (evt) => {
   htmx.ajax("GET", evt.detail.url, {
     target: "#content",
     swap: `innerHTML transition:${evt.detail.transition ?? "false"}`,
@@ -123,7 +170,7 @@ document.body.addEventListener("contentPush", function (evt) {
 });
 
 // Refeshes the current page (or just the ledger list on the ledger page).
-document.body.addEventListener("refetch-transactions", function () {
+document.body.addEventListener("refetch-transactions", () => {
   const isLedgerPage = window.location.pathname.includes("ledger");
   if (!isLedgerPage) {
     htmx.ajax("GET", window.location.pathname, {
@@ -142,7 +189,7 @@ document.body.addEventListener("refetch-transactions", function () {
 
 // After a deletion: close dialogs and, refresh on non-ledger pages,
 // or decrements the result count.
-document.body.addEventListener("transaction-deleted", function () {
+document.body.addEventListener("transaction-deleted", () => {
   closeAllDialog();
   const isLedgerPage = window.location.pathname.includes("ledger");
   if (!isLedgerPage) {

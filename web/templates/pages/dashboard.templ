@@ -201,9 +201,9 @@ templ Dashboard(
 				if len(view.RecentTransactions) > 0 {
 					<div
 						class="space-y-sm"
-						hx-target="#content"
-						hx-boost="true"
-						hx-swap="innerHTML transition:true"
+						hx-target:inherited="#content"
+						hx-boost:inherited="true"
+						hx-swap:inherited="innerHTML transition:true"
 					>
 						for i, g := range view.Goals {
 							if i < 4 {

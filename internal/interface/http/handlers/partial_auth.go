@@ -115,7 +115,7 @@ func (h *AuthHandler) LoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u, err := url.Parse(redirect)
-	if err != nil || u.IsAbs() || u.Host != "" {
+	if err != nil || u.IsAbs() || u.Host != "" || redirect == "" {
 		redirect = "/"
 	}
 
@@ -188,7 +188,7 @@ func (h *AuthHandler) LogoutGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, h.cookieMaker.RevokeCookie())
-	w.Header().Set("HX-Redirect", "")
+	w.Header().Set("HX-Redirect", "/login")
 	w.WriteHeader(http.StatusNoContent)
 }
 

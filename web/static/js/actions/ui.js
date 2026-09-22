@@ -14,7 +14,6 @@ import {
   resetTransactionFiltersForm,
   toggleFilterPill,
 } from "../filters-sheet";
-import { disableBtns } from "../form";
 import { sliderClick, startSliderDrag } from "../slider";
 import {
   cashInputBlur,
@@ -219,8 +218,6 @@ export const uiActions = {
   "ui.dialog.start-drag": startDialogDrag,
 
   "ui.nav.navigate": navigate,
-
-  "ui.form.disable-btns": disableBtns,
 
   "ui.tab.change": changeTab,
 

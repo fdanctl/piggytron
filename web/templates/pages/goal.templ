@@ -294,7 +294,6 @@ templ contributionsList(transactions []views.Transaction, queryStr string, hasMo
 		id="icontributions"
 		class="space-y-sm"
 		hx-indicator="#infinite-indicator"
-		hx-disinherit="hx-indicator"
 	>
 		@partials.ContributionsListItems(transactions, queryStr, hasMore)
 	</ul>

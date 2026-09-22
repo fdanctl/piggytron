@@ -37,7 +37,7 @@ templ MonthPill(class string, placeholder string, sinceDate time.Time) {
 			@ChevronLeftSvg(0, "", "")
 		</button>
 		@Dropdown("input", placeholder, true, nil) {
-			<ul class="options" hx-target="#content" hx-boost="true">
+			<ul class="options" hx-target:inherited="#content" hx-boost:inherited="true">
 				{{ options, isAll := MonthOptionsFromDate(sinceDate, 12) }}
 				for _, o := range options {
 					<li>

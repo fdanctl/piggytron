@@ -62,9 +62,9 @@ templ Categories(bview views.BreadcrumbsView, cc []query.CategoryDTO) {
 				)
 			</div>
 			<ul
-				hx-target="#content"
-				hx-boost="true"
-				hx-swap="innerHTML transition:true"
+				hx-target:inherited="#content"
+				hx-boost:inherited="true"
+				hx-swap:inherited="innerHTML transition:true"
 			>
 				for i := 0; i < incomeCount; i++ {
 					if cc[i].Status != "archived" {
@@ -99,9 +99,9 @@ templ Categories(bview views.BreadcrumbsView, cc []query.CategoryDTO) {
 				)
 			</div>
 			<ul
-				hx-target="#content"
-				hx-boost="true"
-				hx-swap="innerHTML transition:true"
+				hx-target:inherited="#content"
+				hx-boost:inherited="true"
+				hx-swap:inherited="innerHTML transition:true"
 			>
 				for i := incomeCount; i < len(cc); i++ {
 					if cc[i].Status != "archived" {

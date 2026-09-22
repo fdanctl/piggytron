@@ -17,6 +17,7 @@ templ GoalCompleteForm(id string, v views.GoalCompleteForm, accounts []component
 		hx-post={ fmt.Sprintf("/partials/goal/%s/complete", id) }
 		hx-swap="outerHTML"
 		data-submit="goal.complete.confirm"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<input type="hidden" id="balance" name="balance" value={ v.Balance }/>

@@ -22,7 +22,7 @@ const observer = new IntersectionObserver((entries) => {
 
 // Re-observes data-intersect elements after each htmx response, since the
 // DOM may have been swapped.
-document.body.addEventListener("htmx:afterOnLoad", function () {
+document.body.addEventListener("htmx:after:init", function () {
   observer.disconnect();
   const elements = document.querySelectorAll(
     `[data-${eventAttributes.intersect}]`,
@@ -69,9 +69,10 @@ const eventAttributes = {
   focusout: "blur",
   keydown: "keydown",
   pointerdown: "pointerdown",
-  "htmx:beforeRequest": "beforerequest",
-  "htmx:afterRequest": "afterrequest",
-  "htmx:afterOnLoad": "afteronload",
+  "htmx:before:request": "beforerequest",
+  "htmx:after:request": "afterrequest",
+  "htmx:after:init": "afterinit",
+  "htmx:after:swap": "afterswap",
   animationend: "animationend",
   submit: "submit",
   intersect: "intersect",

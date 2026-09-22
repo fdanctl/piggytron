@@ -10,6 +10,7 @@ templ ProfileForm(v views.ProfileForm) {
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/user/change-name"
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		@components.InputGroup(

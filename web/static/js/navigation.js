@@ -255,7 +255,7 @@ for (let i = 0; i < a.length; i++) {
  *
  * @param {Element} [ele] - Optional element to force active.
  */
-const handleActiveLink = (ele) => {
+export const handleActiveLink = (ele) => {
   a.forEach((e) => e.classList.remove("active"));
   let pathname = window.location.pathname;
   if (pathname === "/") {

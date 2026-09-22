@@ -10,7 +10,7 @@ templ LoginForm(lv views.LoginView) {
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/auth/login"
 		hx-swap="outerHTML"
-		data-afterrequest="ui.form.disable-btns"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		if lv.Redirect != "" {

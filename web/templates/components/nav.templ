@@ -31,9 +31,9 @@ var NavLinks = [3][]navLink{
 templ Nav(attrs templ.Attributes) {
 	<nav
 		class="nav"
-		hx-target="#content"
-		hx-boost="true"
-		data-afterrequest="ui.nav.navigate"
+		hx-target:inherited="#content"
+		hx-boost:inherited="true"
+		data-afterswap="ui.nav.navigate"
 		{ attrs... }
 	>
 		<ul class="unselectable">

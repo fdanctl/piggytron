@@ -12,6 +12,7 @@ templ BudgetHoldForm(v *views.BudgetHoldForm) {
 		hx-swap="outerHTML"
 		hx-post="/partials/hold-budget"
 		hx-include="#ltb-input, #total-budgeted, #income-input, #unassign-input, #lts-input, #overspent, #on-hold-input"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<input type="hidden" name="month" value={ v.Month }/>

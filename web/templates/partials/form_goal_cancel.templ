@@ -13,6 +13,7 @@ templ GoalCancelForm(id string, v views.GoalCancelForm, accounts []components.Se
 		hx-on:submit="event.preventDefault()"
 		hx-post={ fmt.Sprintf("/partials/goal/%s/cancel", id) }
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		data-submit="goal.cancel.confirm"
 		novalidate
 	>

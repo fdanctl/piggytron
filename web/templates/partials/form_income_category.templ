@@ -16,6 +16,7 @@ templ IncomeCategoryForm(id string, v views.IncomeCategoryForm) {
 			hx-post={ fmt.Sprintf("/partials/income-category/%s", id) }
 		}
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		@components.InputGroup(

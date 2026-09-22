@@ -14,6 +14,7 @@ templ TransferUnderspend(v *views.TransferBudgetForm, categories []BudgetSelectO
 		hx-post="/partials/transfer-budget"
 		hx-swap="outerHTML"
 		hx-include="#unassign-input"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<input type="hidden" name="type" value="underspend"/>
@@ -71,6 +72,7 @@ templ CoverOverspend(v *views.TransferBudgetForm, categories []BudgetSelectOptio
 		hx-post="/partials/transfer-budget"
 		hx-swap="outerHTML"
 		hx-include="#unassign-input"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<input type="hidden" name="type" value="overspend"/>

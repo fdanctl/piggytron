@@ -11,6 +11,7 @@ templ BankForm(v views.BankForm) {
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/bank"
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<div class="grid gap-xs" style="grid-template-columns: 1.5fr 1fr;">

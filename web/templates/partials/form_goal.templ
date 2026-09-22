@@ -18,6 +18,7 @@ templ GoalForm(v views.GoalForm, categories []components.CategorySelectOption, i
 		} else {
 			hx-post="/partials/goal"
 		}
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		@GoalFormContent(v, categories)

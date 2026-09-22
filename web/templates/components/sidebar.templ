@@ -27,9 +27,9 @@ templ Sidebar() {
 						if len(link.sub) > 0 {
 							<hr class="hr"/>
 							<ul
-								hx-target="#content"
-								hx-boost="true"
-								data-afterrequest="ui.nav.navigate"
+								hx-target:inherited="#content"
+								hx-boost:inherited="true"
+								data-afterswap="ui.nav.navigate"
 							>
 								for _, sublink := range link.sub {
 									<li>

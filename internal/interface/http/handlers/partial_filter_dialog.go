@@ -228,7 +228,7 @@ func (h *FilterDialogHandler) Post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("HX-Push-Url", "?"+strings.Join(queries[1:], "&"))
-	w.Header().Set("HX-Trigger-After-Settle", "refetch-transactions")
+	w.Header().Set("HX-Trigger", "refetch-transactions")
 
 	if filterCount > 0 {
 		components.Button(

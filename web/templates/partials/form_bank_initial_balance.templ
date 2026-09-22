@@ -12,6 +12,7 @@ templ BankInitialBalanceForm(id string, v views.BankInitialBalanceForm) {
 		hx-on:submit="event.preventDefault()"
 		hx-post={ fmt.Sprintf("/partials/bank/%s/initial-balance", id) }
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<input type="hidden" name="tid" value={ v.TransactionID }/>

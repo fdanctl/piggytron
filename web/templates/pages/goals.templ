@@ -28,9 +28,9 @@ templ Goals(bview views.BreadcrumbsView, goals []views.Goal) {
 		<ul
 			id="active-goals-list"
 			class="goal-list"
-			hx-target="#content"
-			hx-boost="true"
-			hx-swap="innerHTML transition:true"
+			hx-target:inherited="#content"
+			hx-boost:inherited="true"
+			hx-swap:inherited="innerHTML transition:true"
 		>
 			for _, g := range goals {
 				if g.ClosedAt == nil {
@@ -46,9 +46,9 @@ templ Goals(bview views.BreadcrumbsView, goals []views.Goal) {
 		<ul
 			id="active-goals-list"
 			class="goal-list"
-			hx-target="#content"
-			hx-boost="true"
-			hx-swap="innerHTML transition:true"
+			hx-target:inherited="#content"
+			hx-boost:inherited="true"
+			hx-swap:inherited="innerHTML transition:true"
 		>
 			for _, g := range goals {
 				if g.ClosedAt != nil {

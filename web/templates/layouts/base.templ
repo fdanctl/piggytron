@@ -6,22 +6,30 @@ templ Base(title string) {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			// prevent swap from every error except the 422
+			// when error occurs show a toast instead of replacing
 			<meta
 				name="htmx-config"
-				content='{
-                "responseHandling":[
-                    {"code":"204", "swap": false},
-                    {"code":"[23]..", "swap": true},
-                    {"code":"422", "swap": true},
-                    {"code":"[45]..", "swap": false, "error":true},
-                    {"code":"...", "swap": true}
-                ]
-            }'
+				content='{"noSwap":[204,304,400,401,403,404,405,406,408,409,410,411,412,413,414,415,416,417,418,421,423,424,425,426,428,429,431,451,"5xx"]}'
 			/>
 			<title>{ title }</title>
 			<link href="/static/app.css" rel="stylesheet"/>
-			<script defer src="/static/htmx-2.0.8.min.js"></script>
-			<script defer src="/static/echarts-6.0.0.min.js"></script>
+			<script defer src="/static/htmx-4.0.0.min.js"></script>
+			<script>
+				const script = document.createElement("script");
+
+				script.src = "/static/echarts-6.0.0.min.js";
+
+				script.onload = () => {
+					window.chartsLoaded = true;
+				};
+
+				script.onerror = () => {
+					console.log("Chart script failed to load");
+				};
+
+				document.head.appendChild(script);
+			</script>
 			<script defer src="/static/app.js"></script>
 			<script>
 				// sets the sidebar state

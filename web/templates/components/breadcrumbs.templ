@@ -5,9 +5,9 @@ import "github.com/fdanctl/piggytron/web/views"
 templ Breadcrumbs(view views.BreadcrumbsView) {
 	<div
 		class="breadcrumbs"
-		hx-target="#content"
-		hx-boost="true"
-		hx-swap="innerHTML transition:true"
+		hx-target:inherited="#content"
+		hx-boost:inherited="true"
+		hx-swap:inherited="innerHTML transition:true"
 	>
 		for i, v := range view.Items {
 			if i < len(view.Items) - 1 {
@@ -28,7 +28,11 @@ templ Breadcrumbs(view views.BreadcrumbsView) {
 					<ul class="breadcrumbs-selection">
 						for _, o := range view.Options {
 							<li>
-								<a class="text-sm" href={ o.Href }>
+								<a
+									class="text-sm"
+									href={ o.Href }
+									data-transition="none"
+								>
 									{ o.Name }
 								</a>
 							</li>

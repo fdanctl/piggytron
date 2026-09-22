@@ -54,6 +54,7 @@ templ TransactionFormActionBtnsTab() {
 			components.BtnPrimary,
 			components.BtnMedium,
 			templ.Attributes{
+				"id":      "proxy-submit-btn",
 				"onclick": "this.closest('.dialog').querySelector('.tab-content:not(.hidden) .btn[type=submit]').click()",
 			},
 		)
@@ -68,6 +69,7 @@ templ FormActionBtns(text string) {
 			components.BtnPrimary,
 			components.BtnMedium,
 			templ.Attributes{
+				"id":      "proxy-submit-btn",
 				"onclick": "this.closest('.dialog').querySelector('form .btn[type=submit]').click()",
 			},
 		)
@@ -108,6 +110,7 @@ templ IncomeForm(v views.IncomeForm, categories, accounts []components.SelectOpt
 			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit'], #proxy-submit-btn"
 		novalidate
 	>
 		<input type="hidden" name="type" value="income"/>
@@ -243,6 +246,7 @@ templ ExpenseForm(v views.ExpenseForm, categories []components.CategorySelectOpt
 			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit'], #proxy-submit-btn"
 		novalidate
 	>
 		<input type="hidden" name="type" value="expense"/>
@@ -378,6 +382,7 @@ templ TransferForm(v views.TransferForm, categories []components.CategorySelectO
 			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit'], #proxy-submit-btn"
 		novalidate
 	>
 		<input type="hidden" name="type" value="transfer"/>
@@ -528,6 +533,7 @@ templ InterestForm(v views.InterestForm, categories, accounts []components.Selec
 			hx-post="/partials/ledger/entry"
 		}
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit'], #proxy-submit-btn"
 		novalidate
 	>
 		<input type="hidden" name="type" value="interest"/>
@@ -659,6 +665,7 @@ templ GoalContributionForm(v views.TransferForm, categories []components.Categor
 		hx-on:submit="event.preventDefault()"
 		hx-post={ fmt.Sprintf("/partials/goal-contribute/%s", v.DestinationAcc) }
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit'], #proxy-submit-btn"
 		novalidate
 	>
 		<input type="hidden" name="type" value="transfer"/>

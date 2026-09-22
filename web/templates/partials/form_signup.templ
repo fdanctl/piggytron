@@ -9,7 +9,8 @@ templ SignupForm(lv views.SignupView) {
 	<form
 		hx-on:submit="event.preventDefault()"
 		hx-post="/partials/auth/signup"
-		hx-swap="outerHTML"
+		hx-swap:inherited="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		<h2 class="mb-lg text-center">Signup</h2>

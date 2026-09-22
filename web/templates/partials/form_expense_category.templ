@@ -16,6 +16,7 @@ templ ExpenseCategoryForm(id string, v views.ExpenseCategoryForm) {
 			hx-post={ fmt.Sprintf("/partials/expense-category/%s", id) }
 		}
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		@components.InputGroup(

@@ -12,6 +12,7 @@ templ BankNameForm(id string, v views.BankForm) {
 		hx-on:submit="event.preventDefault()"
 		hx-post={ fmt.Sprintf("/partials/bank/%s/change-name", id) }
 		hx-swap="outerHTML"
+		hx-disable="find button[type='submit']"
 		novalidate
 	>
 		@components.InputGroup(

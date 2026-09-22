@@ -113,9 +113,9 @@ templ Banks(bview views.BreadcrumbsView, view views.BankPage) {
 					<ul
 						id="accounts-list"
 						class="space-y-xs"
-						hx-target="#content"
-						hx-boost="true"
-						hx-swap="innerHTML transition:true"
+						hx-target:inherited="#content"
+						hx-boost:inherited="true"
+						hx-swap:inherited="innerHTML transition:true"
 					>
 						for _, v := range view.Banks {
 							@partials.AccountItem(v)

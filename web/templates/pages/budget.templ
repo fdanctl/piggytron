@@ -167,9 +167,8 @@ templ budgetHoldIcon(onHold int, month budget.Month, attrs templ.Attributes) {
 templ budgetTable(eType string, totalBudget, totalLeft int, pct float64, rows []views.BudgetRowView, month budget.Month) {
 	<div
 		class={ "budget-table", fmt.Sprintf("budget-table--%s", string(eType)) }
-		hx-include="inherit, find [name='total-row-left'], find [name='ctype']"
 	>
-		<input type="hidden" name="ctype" value={ eType }/>
+		<input id={ fmt.Sprintf("%s-ctype", eType) } type="hidden" name="ctype" value={ eType }/>
 		<div class="budget-table__head">
 			<span class="capitalize">{ string(eType) } <span id={ fmt.Sprintf("%s-pct", eType) } class="font-mono text-xs font-normal">({ views.FormatFloat(pct) }%)</span></span>
 			<span>Budget</span>
@@ -186,7 +185,6 @@ templ CategoryRow(eType string, c views.BudgetRowView, month budget.Month, attrs
 	<div
 		id={ fmt.Sprintf("row-%s", c.CategoryID) }
 		class="budget-table__row"
-		hx-include="inherit, find [name='cat-left']"
 		{ attrs ... }
 	>
 		<div class="flex gap-xs items-center">
@@ -213,7 +211,7 @@ templ CategoryRow(eType string, c views.BudgetRowView, month budget.Month, attrs
 					"hx-swap":            "outerHTML",
 					"hx-post":            "/partials/budget",
 					"hx-trigger":         "input changed delay:500ms, keyup[key=='Enter']",
-					"hx-include":         "inherit, #needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #on-hold-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid']",
+					"hx-include":         fmt.Sprintf("#needs-total-row-budget, #wants-total-row-budget, #savings-total-row-budget, #total-budgeted, #ltb-input, #income-input, #unassign-input, #on-hold-input, #lts-input, #overspent, next [name='prev-amount'], next [name='month'], next [name='cid'], #%s-total-row-left, #%s-ctype, #cat-left-%s", eType, eType, c.CategoryID),
 				})
 			@BudgetInfoInputs(c.Budgeted, c.Month.String(), c.CategoryID)
 		</div>
@@ -263,7 +261,7 @@ templ CatRowAvailableCell(catID string, left int, month budget.Month, attrs temp
 		{ attrs... }
 	>
 		{ views.FormatMoney(float64(left) / 100, currency.EUR, language.AmericanEnglish) }
-		<input type="hidden" name="cat-left" value={ left }/>
+		<input id={ fmt.Sprintf("cat-left-%s", catID) } type="hidden" name="cat-left" value={ left }/>
 	</span>
 	<div
 		id={ fmt.Sprintf("%s-dropdown-popover", id) }
@@ -310,7 +308,7 @@ templ TotalRow(eType string, totalBudget, totalLeft int, attrs templ.Attributes)
 			{ views.FormatMoney(float64(totalBudget) / 100, currency.EUR, language.AmericanEnglish) }
 		</span>
 		<span class={ templ.KV("text-negative", totalLeft < 0) }>
-			<input type="hidden" name="total-row-left" value={ totalLeft }/>
+			<input id={ fmt.Sprint(eType, "-total-row-left") } type="hidden" name="total-row-left" value={ totalLeft }/>
 			{ views.FormatMoney(float64(totalLeft) / 100, currency.EUR, language.AmericanEnglish) }
 		</span>
 	</div>
