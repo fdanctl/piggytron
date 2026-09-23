@@ -113,13 +113,13 @@ func (s *Service) CreateUser(ctx context.Context, name, password string) (string
 		return "", err
 	}
 
-	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()))
+	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()), u.Name())
 
 	return sid, err
 }
 
 // ChangeName updates the display name, rejecting duplicates.
-func (s *Service) ChangeName(ctx context.Context, id, name string) error {
+func (s *Service) ChangeName(ctx context.Context, id, sessionID, name string) error {
 	uid, err := util.ParseID[user.ID](id)
 	if err != nil {
 		err = errs.NewAppError(
@@ -159,7 +159,7 @@ func (s *Service) ChangeName(ctx context.Context, id, name string) error {
 		return err
 	}
 
-	return nil
+	return s.sessionManager.UpdateName(ctx, sessionID, name)
 }
 
 // ChangePassword verifies the current password, stores the new hash, revokes
@@ -226,7 +226,8 @@ func (s *Service) ChangePassword(
 		)
 		return "", err
 	}
-	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()))
+
+	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()), u.Name())
 
 	return sid, err
 }
@@ -269,7 +270,7 @@ func (s *Service) LoginUser(ctx context.Context, name, password string) (string,
 		return "", err
 	}
 
-	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()))
+	sid, err := s.sessionManager.CreateSession(ctx, string(u.ID()), u.Name())
 	if err != nil {
 		err = errs.NewInternalAppError(
 			fmt.Errorf("failed creating session: %w", err),

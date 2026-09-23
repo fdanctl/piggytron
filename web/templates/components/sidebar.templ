@@ -2,7 +2,7 @@ package components
 
 import "fmt"
 
-templ Sidebar() {
+templ Sidebar(username string) {
 	<aside id="sidebar">
 		@Logo()
 		<div>
@@ -60,7 +60,7 @@ templ Sidebar() {
 			style="anchor-name: --sidebar-user"
 		>
 			@ProfilePic(false)
-			<span>username</span>
+			<span id="sidebar-username">{ username }</span>
 		</div>
 		@userPopover("", "sidebar-user", templ.Attributes{
 			"id":        "user-popover",

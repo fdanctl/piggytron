@@ -118,7 +118,7 @@ templ userPopover(class string, anchor string, attrs templ.Attributes) {
 				>Preferences</a>
 			</li>
 			<li>
-				@ButtonWithIcon("Logout", "reset-btn", BtnGhost, BtnSmall,
+				@ButtonWithIcon("Logout", "reset-btn cursor-pointer", BtnGhost, BtnSmall,
 					templ.Attributes{
 						"type":       "button",
 						"hx-get":     "/partials/auth/logout",

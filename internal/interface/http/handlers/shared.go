@@ -18,6 +18,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
@@ -41,6 +42,10 @@ func renderWithMainLayout(
 	title string,
 	content templ.Component,
 ) error {
+	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
+	if err != nil {
+		return err
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 
 	if r.Header.Get("Hx-Request") == "true" {
@@ -51,7 +56,7 @@ func renderWithMainLayout(
 
 	main := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
 		ctx = templ.WithChildren(ctx, content)
-		err := layouts.Main().Render(ctx, w)
+		err := layouts.Main(sessionInfo.Name).Render(ctx, w)
 		return err
 	})
 

@@ -32,6 +32,7 @@ func NewSessionStore(client *redis.Client) *SessionStore {
 // sessionInfoDTO is the redis hash shape of a session.
 type sessionInfoDTO struct {
 	UserID  string `redis:"user_id"`
+	Name    string `redis:"name"`
 	Version int    `redis:"session_version"`
 }
 
@@ -43,6 +44,7 @@ func (s *SessionStore) Set(
 ) (string, error) {
 	dto := sessionInfoDTO{
 		UserID:  value.UserID,
+		Name:    value.Name,
 		Version: value.Version,
 	}
 	key := fmt.Sprint(sessionPrefix, sessionID)
@@ -72,8 +74,14 @@ func (s *SessionStore) Get(ctx context.Context, sessionID string) (*auth.Session
 	}
 	return &auth.SessionInfo{
 		UserID:  res.UserID,
+		Name:    res.Name,
 		Version: res.Version,
 	}, nil
+}
+
+func (s *SessionStore) UpdateName(ctx context.Context, sessionID, name string) error {
+	key := fmt.Sprint(sessionPrefix, sessionID)
+	return s.client.HSet(ctx, key, "name", name).Err()
 }
 
 // Delete removes a session (logout).

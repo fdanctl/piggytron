@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/a-h/templ"
@@ -8,6 +11,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/components"
+	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -42,6 +46,12 @@ func (h *UserHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		httperror.SendError(w, r, err)
+		return
+	}
+
 	view := views.ProfileForm{
 		Name: r.FormValue("name"),
 	}
@@ -54,15 +64,21 @@ func (h *UserHandler) Post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.service.ChangeName(r.Context(), sessionInfo.UserID, view.Name)
+	err = h.service.ChangeName(r.Context(), sessionInfo.UserID, cookie.Value, view.Name)
 	if err != nil {
 		view.SetError(err)
 		httperror.SendFormError(w, r, err, partials.ProfileForm(view))
 		return
 	}
 
+	username := templ.ComponentFunc(func(ctx context.Context, w io.Writer) error {
+		_, err = fmt.Fprint(w, view.Name)
+		return err
+	})
+
 	templ.Join(
 		partials.ProfileForm(view),
+		layouts.HxPartial("#sidebar-username", "innerHTML", username),
 		components.SendToast(
 			components.Success,
 			"User name updated",

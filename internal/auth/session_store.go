@@ -8,6 +8,7 @@ import (
 // SessionInfo is the payload stored with each session id.
 type SessionInfo struct {
 	UserID  string
+	Name    string
 	Version int // per-user session version at issue time
 }
 
@@ -23,5 +24,6 @@ type SessionStore interface {
 		value *SessionInfo,
 	) (string, error)
 	Get(ctx context.Context, sessionID string) (*SessionInfo, error)
+	UpdateName(ctx context.Context, sessionID, name string) error
 	Delete(ctx context.Context, sessionID string) error
 }

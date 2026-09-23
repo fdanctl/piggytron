@@ -30,6 +30,7 @@ func NewSessionManager(ss SessionStore, svs SessionVersionStore) *SessionManager
 func (m *SessionManager) CreateSession(
 	ctx context.Context,
 	userID string,
+	name string,
 ) (string, error) {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
@@ -53,10 +54,19 @@ func (m *SessionManager) CreateSession(
 
 	value := SessionInfo{
 		UserID:  userID,
+		Name:    name,
 		Version: version,
 	}
 
 	return m.sessionStore.Set(ctx, sessionID, &value)
+}
+
+func (m *SessionManager) UpdateName(
+	ctx context.Context,
+	sessionID string,
+	name string,
+) error {
+	return m.sessionStore.UpdateName(ctx, sessionID, name)
 }
 
 // GetSession looks up a session by its id.

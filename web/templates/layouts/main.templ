@@ -2,8 +2,8 @@ package layouts
 
 import "github.com/fdanctl/piggytron/web/templates/components"
 
-templ Main() {
-	@components.Sidebar()
+templ Main(username string) {
+	@components.Sidebar(username)
 	@components.Header()
 	<main
 		class="main"
