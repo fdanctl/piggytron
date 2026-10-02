@@ -130,6 +130,9 @@ function dispatch(actionName, payload) {
  */
 function createListener(eventName, dataAttr) {
   document.addEventListener(eventName, (evt) => {
+    if (evt.target == document) {
+      return;
+    }
     const ele = evt.target.closest(`[data-${dataAttr}]`);
 
     if (!ele) return;

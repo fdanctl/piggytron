@@ -66,7 +66,7 @@ func NewDashboardPage(
 		if v.Type == string(account.SavingsType) {
 			savings += v.Sum
 		}
-		if v.Type == string(account.GoalType) {
+		if v.Type == string(account.GoalType) && v.Status == "active" {
 			goals = append(goals, NewGoal(v))
 		}
 	}

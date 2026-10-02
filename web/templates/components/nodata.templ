@@ -4,7 +4,7 @@ import "fmt"
 
 templ NoData() {
 	<div class="nodata">
-		<p class="" style="">no data</p>
+		<p class="" style="">-- no data --</p>
 	</div>
 }
 
@@ -69,7 +69,7 @@ templ EmptyGoals() {
 		</div>
 		<p class="empty__title">No active goals</p>
 		<p class="empty__sub">Set a savings goal — a holiday, an emergency fund, a new laptop — and track it month by month.</p>
-		@ButtonWithIcon("Add goal", "", BtnOutline, BtnMedium, templ.Attributes{
+		@ButtonWithIcon("Start goal", "", BtnOutline, BtnMedium, templ.Attributes{
 			"hx-get":    "/partials/goal",
 			"hx-target": "#dialog-root",
 			"hx-swap":   "append",

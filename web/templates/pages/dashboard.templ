@@ -198,7 +198,7 @@ templ Dashboard(
 		<section id="dashboard-gp">
 			<div class="card">
 				<h6 class="card__title">Goals</h6>
-				if len(view.RecentTransactions) > 0 {
+				if len(view.Goals) > 0 {
 					<div
 						class="space-y-sm"
 						hx-target:inherited="#content"
@@ -217,7 +217,9 @@ templ Dashboard(
 						}
 					</div>
 				} else {
-					@components.EmptyGoals()
+					<div class="mt-xl">
+						@components.EmptyGoals()
+					</div>
 				}
 			</div>
 		</section>
