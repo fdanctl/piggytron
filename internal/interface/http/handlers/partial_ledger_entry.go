@@ -102,7 +102,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	switch string(t.Type()) {
 	case "income":
 		v := views.NewIncomeForm()
-		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
+		v.Amount = views.FormatAmount(float64(t.Amount()) / 100)
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())
@@ -113,7 +113,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "expense":
 		v := views.NewExpenseForm()
-		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
+		v.Amount = views.FormatAmount(float64(t.Amount()) / 100)
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.ExpenseCategoryID())
@@ -124,7 +124,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "transfer":
 		v := views.NewTransferForm()
-		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
+		v.Amount = views.FormatAmount(float64(t.Amount()) / 100)
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		if t.ExpenseCategoryID() != nil {
@@ -143,7 +143,7 @@ func (h *LedgerEntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	case "interest":
 		v := views.NewInterestForm()
-		v.Amount = views.FormatAmount(float64(t.Amount() / 100))
+		v.Amount = views.FormatAmount(float64(t.Amount()) / 100)
 		v.Description = t.Description()
 		v.Date = t.Date().Format("02/01/2006")
 		v.Category = string(*t.IncomeCategoryID())

@@ -330,7 +330,7 @@ func (h *BankHandler) GetChangeInitial(w http.ResponseWriter, r *http.Request) {
 	}
 
 	view := views.NewInitialBalanceBankForm()
-	view.InitialBalance = views.FormatAmount(float64(balance / 100))
+	view.InitialBalance = views.FormatAmount(float64(balance) / 100)
 	view.TransactionID = tid
 
 	form := partials.BankInitialBalanceForm(id, *view)
