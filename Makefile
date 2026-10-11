@@ -85,8 +85,8 @@ dev: dev/clean
 	 -e POSTGRES_PASSWORD=$(DB_PASSWORD) \
 	 -e POSTGRES_DB=$(DB_NAME) \
 	 -v ./scripts:/docker-entrypoint-initdb.d \
-	 postgres:16 && \
-	docker run -d --name dev_redis -p ${REDIS_PORT}:6379 redis:latest && \
+	 postgres:16
+	docker run -d --name dev_redis -p ${REDIS_PORT}:6379 redis:latest
 	DEV="true" DB_HOST="localhost" REDIS_HOST="localhost" go tool air -c .air.toml
 
 ## docker/status: show running containers
