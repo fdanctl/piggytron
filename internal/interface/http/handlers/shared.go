@@ -18,6 +18,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
 	"github.com/fdanctl/piggytron/internal/domain/account"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
 	"github.com/fdanctl/piggytron/web/templates/components"
@@ -40,6 +41,7 @@ func renderWithMainLayout(
 	w http.ResponseWriter,
 	r *http.Request,
 	title string,
+	assets assets.URLs,
 	content templ.Component,
 ) error {
 	sessionInfo, err := middleware.SessionInfoFromCtx(r.Context())
@@ -61,7 +63,7 @@ func renderWithMainLayout(
 	})
 
 	ctx := templ.WithChildren(r.Context(), main)
-	return layouts.Base(title).Render(ctx, w)
+	return layouts.Base(title, assets).Render(ctx, w)
 }
 
 func convertAmountStrToInt(str string) (int, error) {

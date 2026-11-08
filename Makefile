@@ -73,7 +73,7 @@ tidy:
 dev/build:
 	go tool templ generate
 	npm run dev:build
-	go build -o ./tmp/main ./cmd/server/main.go
+	go build -o ./tmp/main $(MAIN_PACKAGE_PATH)
 
 ## dev: native Go + Docker Postgres
 .PHONY: dev
@@ -115,8 +115,7 @@ install:
 clean: confirm dev/clean
 	@echo "Cleaning up..."
 	@rm -f web/templates/**/*_templ.go
-	@rm -f cmd/server/static/app.js
-	@rm -f cmd/server/static/app.css
+	@rm -f internal/interface/http/assets/static/app.*
 	@rm -rf node_modules
 
 # ==================================================================================== #

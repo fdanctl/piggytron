@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/fdanctl/piggytron/internal/domain/budget"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -19,17 +20,20 @@ type DashboardHandler struct {
 	ledgerQuery   query.LedgerQueryService
 	accountQuery  query.AccountQueryService
 	categoryQuery query.CategoryQueryService
+	assetsURLs    assets.URLs
 }
 
 func NewDashboardHandler(
 	lq query.LedgerQueryService,
 	aq query.AccountQueryService,
 	cq query.CategoryQueryService,
+	assetsURLs assets.URLs,
 ) *DashboardHandler {
 	return &DashboardHandler{
 		ledgerQuery:   lq,
 		accountQuery:  aq,
 		categoryQuery: cq,
+		assetsURLs:    assetsURLs,
 	}
 }
 
@@ -99,5 +103,5 @@ func (h *DashboardHandler) Get(w http.ResponseWriter, r *http.Request) {
 		pageView,
 	)
 
-	renderWithMainLayout(w, r, "Dashboard", content)
+	renderWithMainLayout(w, r, "Dashboard", h.assetsURLs, content)
 }

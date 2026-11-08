@@ -6,13 +6,22 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
 )
 
 // SignupHandler serves the signup page (and the HTMX signup form fragment).
-type SignupHandler struct{}
+type SignupHandler struct {
+	assetsURLs assets.URLs
+}
+
+func NewSignupHandler(assetsURLs assets.URLs) *SignupHandler {
+	return &SignupHandler{
+		assetsURLs: assetsURLs,
+	}
+}
 
 func (h *SignupHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -39,5 +48,5 @@ func (h *SignupHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), layout)
-	layouts.Base("Signup").Render(ctx, w)
+	layouts.Base("Signup", h.assetsURLs).Render(ctx, w)
 }

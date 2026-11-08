@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -15,14 +16,17 @@ import (
 // LedgerPageHandler renders the ledger page with the filter form and the
 // paginated, filterable entry list.
 type LedgerPageHandler struct {
-	query query.LedgerQueryService
+	query      query.LedgerQueryService
+	assetsURLs assets.URLs
 }
 
 func NewLedgerPageHandler(
 	q query.LedgerQueryService,
+	assetsURLs assets.URLs,
 ) *LedgerPageHandler {
 	return &LedgerPageHandler{
-		query: q,
+		query:      q,
+		assetsURLs: assetsURLs,
 	}
 }
 
@@ -114,5 +118,5 @@ func (h *LedgerPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		transactionsView, strings.Join(queries, "&"), hasMore,
 	)
 
-	renderWithMainLayout(w, r, "Ledger", content)
+	renderWithMainLayout(w, r, "Ledger", h.assetsURLs, content)
 }

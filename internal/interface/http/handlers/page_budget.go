@@ -9,6 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -21,15 +22,18 @@ import (
 type BudgetPageHandler struct {
 	categoryQuery    query.CategoryQueryService
 	transactionQuery query.LedgerQueryService
+	assetsURLs       assets.URLs
 }
 
 func NewBudgetPageHandler(
 	cq query.CategoryQueryService,
 	tq query.LedgerQueryService,
+	assetsURLs assets.URLs,
 ) *BudgetPageHandler {
 	return &BudgetPageHandler{
 		transactionQuery: tq,
 		categoryQuery:    cq,
+		assetsURLs:       assetsURLs,
 	}
 }
 
@@ -106,5 +110,5 @@ func (h *BudgetPageHandler) Get(w http.ResponseWriter, r *http.Request) {
 		pageView,
 	)
 
-	renderWithMainLayout(w, r, "Budget", content)
+	renderWithMainLayout(w, r, "Budget", h.assetsURLs, content)
 }

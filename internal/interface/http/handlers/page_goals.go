@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appaccount"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -19,17 +20,20 @@ type GoalsHandler struct {
 	accountService      *appaccount.Service
 	ledgerQueryService  query.LedgerQueryService
 	accountQueryService query.AccountQueryService
+	assetsURLs          assets.URLs
 }
 
 func NewGoalsHandler(
 	ac *appaccount.Service,
 	tq query.LedgerQueryService,
 	aq query.AccountQueryService,
+	assetsURLs assets.URLs,
 ) *GoalsHandler {
 	return &GoalsHandler{
 		accountService:      ac,
 		ledgerQueryService:  tq,
 		accountQueryService: aq,
+		assetsURLs:          assetsURLs,
 	}
 }
 
@@ -79,7 +83,7 @@ func (h *GoalsHandler) Get(w http.ResponseWriter, r *http.Request) {
 		gView,
 	)
 
-	renderWithMainLayout(w, r, "Goals", content)
+	renderWithMainLayout(w, r, "Goals", h.assetsURLs, content)
 }
 
 // GetWithID renders one goal: progress, paginated contributions, and
@@ -159,5 +163,5 @@ func (h *GoalsHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		views.NewGoal(*goal), transactionsViews, hasMore, transactions.Total,
 	)
 
-	renderWithMainLayout(w, r, goal.Name, content)
+	renderWithMainLayout(w, r, goal.Name, h.assetsURLs, content)
 }

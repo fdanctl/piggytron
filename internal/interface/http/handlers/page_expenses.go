@@ -9,6 +9,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -19,13 +20,16 @@ import (
 // ExpensesHandler renders the expenses report for a given month.
 type ExpensesHandler struct {
 	ledgerQuery query.LedgerQueryService
+	assetsURLs  assets.URLs
 }
 
 func NewExpensesHandler(
 	lq query.LedgerQueryService,
+	assetsURLs assets.URLs,
 ) *ExpensesHandler {
 	return &ExpensesHandler{
 		ledgerQuery: lq,
+		assetsURLs:  assetsURLs,
 	}
 }
 
@@ -127,5 +131,5 @@ func (h *ExpensesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		totalSpent,
 	)
 
-	renderWithMainLayout(w, r, "Expenses", content)
+	renderWithMainLayout(w, r, "Expenses", h.assetsURLs, content)
 }

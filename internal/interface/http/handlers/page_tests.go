@@ -3,11 +3,20 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/web/templates/pages"
 )
 
 // TestHandler renders the test page (development-only template sandbox).
-type TestHandler struct{}
+type TestHandler struct {
+	assetsURLs assets.URLs
+}
+
+func NewTestHandler(assetURLs assets.URLs) *TestHandler {
+	return &TestHandler{
+		assetsURLs: assetURLs,
+	}
+}
 
 func (h *TestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
@@ -21,5 +30,5 @@ func (h *TestHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Get renders the test page.
 func (h *TestHandler) Get(w http.ResponseWriter, r *http.Request) {
 	content := pages.Test()
-	renderWithMainLayout(w, r, "Test", content)
+	renderWithMainLayout(w, r, "Test", h.assetsURLs, content)
 }

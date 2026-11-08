@@ -10,6 +10,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/account"
 	"github.com/fdanctl/piggytron/internal/domain/monthlysummary"
 	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -22,17 +23,20 @@ type BanksHandler struct {
 	service          *appaccount.Service
 	transactionQuery query.LedgerQueryService
 	accountQuery     query.AccountQueryService
+	assetsURLs       assets.URLs
 }
 
 func NewBanksHandler(
 	s *appaccount.Service,
 	tq query.LedgerQueryService,
 	aq query.AccountQueryService,
+	assetsURLs assets.URLs,
 ) *BanksHandler {
 	return &BanksHandler{
 		service:          s,
 		transactionQuery: tq,
 		accountQuery:     aq,
+		assetsURLs:       assetsURLs,
 	}
 }
 
@@ -92,7 +96,7 @@ func (h *BanksHandler) Get(w http.ResponseWriter, r *http.Request) {
 		pageView,
 	)
 
-	renderWithMainLayout(w, r, "Banks", content)
+	renderWithMainLayout(w, r, "Banks", h.assetsURLs, content)
 }
 
 // GetWithID renders one bank: its balance, paginated entries filtered by
@@ -176,5 +180,5 @@ func (h *BanksHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		}, *bank, transactionsViews, hasMore, transactions.Total,
 	)
 
-	renderWithMainLayout(w, r, bank.Name, content)
+	renderWithMainLayout(w, r, bank.Name, h.assetsURLs, content)
 }

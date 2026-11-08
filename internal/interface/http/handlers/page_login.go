@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/a-h/templ"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/web/templates/layouts"
 	"github.com/fdanctl/piggytron/web/templates/partials"
 	"github.com/fdanctl/piggytron/web/views"
@@ -13,14 +14,16 @@ import (
 
 // LoginHandler serves the login page (and the HTMX login form fragment).
 type LoginHandler struct {
-	isDev bool
+	isDev      bool
+	assetsURLs assets.URLs
 }
 
 // NewLoginHandler builds the handler; in dev mode the form is pre-filled
 // with demo credentials.
-func NewLoginHandler(isDev bool) *LoginHandler {
+func NewLoginHandler(assetsURLs assets.URLs, isDev bool) *LoginHandler {
 	return &LoginHandler{
-		isDev: isDev,
+		isDev:      isDev,
+		assetsURLs: assetsURLs,
 	}
 }
 
@@ -56,5 +59,5 @@ func (h *LoginHandler) Get(w http.ResponseWriter, r *http.Request) {
 	})
 
 	ctx := templ.WithChildren(r.Context(), layout)
-	layouts.Base("Login").Render(ctx, w)
+	layouts.Base("Login", h.assetsURLs).Render(ctx, w)
 }

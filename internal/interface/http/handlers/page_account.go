@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appuser"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/web/templates/pages"
@@ -14,11 +15,13 @@ import (
 // forms).
 type AccountHandler struct {
 	userService *appuser.Service
+	assetsURLs  assets.URLs
 }
 
-func NewAccountHandler(us *appuser.Service) *AccountHandler {
+func NewAccountHandler(us *appuser.Service, assetsURLs assets.URLs) *AccountHandler {
 	return &AccountHandler{
 		userService: us,
+		assetsURLs:  assetsURLs,
 	}
 }
 
@@ -57,5 +60,5 @@ func (h *AccountHandler) Get(w http.ResponseWriter, r *http.Request) {
 		*pf,
 		*cpf,
 	)
-	renderWithMainLayout(w, r, "Account", content)
+	renderWithMainLayout(w, r, "Account", h.assetsURLs, content)
 }

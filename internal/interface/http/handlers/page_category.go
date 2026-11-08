@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -18,15 +19,18 @@ import (
 type CategoriesHandler struct {
 	categoryQuery      query.CategoryQueryService
 	ledgerQueryService query.LedgerQueryService
+	assetsURLs         assets.URLs
 }
 
 func NewCategoriesHandler(
 	cq query.CategoryQueryService,
 	tq query.LedgerQueryService,
+	assetsURLs assets.URLs,
 ) *CategoriesHandler {
 	return &CategoriesHandler{
 		categoryQuery:      cq,
 		ledgerQueryService: tq,
+		assetsURLs:         assetsURLs,
 	}
 }
 
@@ -69,7 +73,7 @@ func (h *CategoriesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		categories,
 	)
 
-	renderWithMainLayout(w, r, "Categories", content)
+	renderWithMainLayout(w, r, "Categories", h.assetsURLs, content)
 }
 
 // GetWithID renders one category (income or expense) with its paginated
@@ -151,5 +155,5 @@ func (h *CategoriesHandler) GetWithID(w http.ResponseWriter, r *http.Request) {
 		}, category, transactionsView, hasMore, transactions.Total,
 	)
 
-	renderWithMainLayout(w, r, category.Name, content)
+	renderWithMainLayout(w, r, category.Name, h.assetsURLs, content)
 }

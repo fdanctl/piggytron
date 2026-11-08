@@ -1,10 +1,10 @@
 {
   "scripts": {
-    "dev:js": "esbuild web/static/main.js --bundle --outfile=cmd/server/static/app.js",
-    "dev:css": "esbuild web/static/main.css --bundle --outfile=cmd/server/static/app.css",
+    "dev:js": "esbuild web/static/main.js --bundle --outfile=internal/interface/http/assets/static/app.js",
+    "dev:css": "esbuild web/static/main.css --bundle --outfile=internal/interface/http/assets/static/app.css",
     "dev:build": "npm run dev:js && npm run dev:css",
-    "build:js": "esbuild web/static/main.js --bundle --minify --outfile=cmd/server/static/app.js",
-    "build:css": "esbuild web/static/main.css --bundle --minify --outfile=cmd/server/static/app.css",
+    "build:js": "esbuild web/static/main.js --bundle --minify --outfile=internal/interface/http/assets/static/app.js",
+    "build:css": "esbuild web/static/main.css --bundle --minify --outfile=internal/interface/http/assets/static/app.css",
     "build": "npm run build:js && npm run build:css"
   },
   "devDependencies": {

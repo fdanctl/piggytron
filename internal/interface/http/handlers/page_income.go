@@ -10,6 +10,7 @@ import (
 	"github.com/fdanctl/piggytron/internal/domain/budget"
 	"github.com/fdanctl/piggytron/internal/domain/ledger"
 	"github.com/fdanctl/piggytron/internal/errs"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/httperror"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/query"
@@ -20,13 +21,16 @@ import (
 // IncomeHandler renders the income report for a given month.
 type IncomeHandler struct {
 	ledgerQuery query.LedgerQueryService
+	assetsURLs  assets.URLs
 }
 
 func NewIncomeHandler(
 	lq query.LedgerQueryService,
+	assetsURLs assets.URLs,
 ) *IncomeHandler {
 	return &IncomeHandler{
 		ledgerQuery: lq,
+		assetsURLs:  assetsURLs,
 	}
 }
 
@@ -152,5 +156,5 @@ func (h *IncomeHandler) Get(w http.ResponseWriter, r *http.Request) {
 		len(sources),
 	)
 
-	renderWithMainLayout(w, r, "Income", content)
+	renderWithMainLayout(w, r, "Income", h.assetsURLs, content)
 }

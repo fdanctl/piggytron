@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/fdanctl/piggytron/internal/application/appuser"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/web/templates/pages"
 	"github.com/fdanctl/piggytron/web/views"
 )
@@ -12,11 +13,13 @@ import (
 // settings).
 type PreferencesHandler struct {
 	userService *appuser.Service
+	assetsURLs  assets.URLs
 }
 
-func NewPreferencesHandler(us *appuser.Service) *PreferencesHandler {
+func NewPreferencesHandler(us *appuser.Service, assetsURLs assets.URLs) *PreferencesHandler {
 	return &PreferencesHandler{
 		userService: us,
+		assetsURLs:  assetsURLs,
 	}
 }
 
@@ -41,5 +44,5 @@ func (h *PreferencesHandler) Get(w http.ResponseWriter, r *http.Request) {
 		},
 		*rf,
 	)
-	renderWithMainLayout(w, r, "Preferences", content)
+	renderWithMainLayout(w, r, "Preferences", h.assetsURLs, content)
 }

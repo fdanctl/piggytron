@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"embed"
 	"fmt"
 	"log"
 	"log/slog"
@@ -22,15 +21,13 @@ import (
 	"github.com/fdanctl/piggytron/internal/auth"
 	"github.com/fdanctl/piggytron/internal/infrastructure/postgres"
 	rdb "github.com/fdanctl/piggytron/internal/infrastructure/redis"
+	"github.com/fdanctl/piggytron/internal/interface/http/assets"
 	"github.com/fdanctl/piggytron/internal/interface/http/handlers"
 	"github.com/fdanctl/piggytron/internal/interface/http/middleware"
 	"github.com/fdanctl/piggytron/internal/interface/http/shared"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 )
-
-//go:embed static/*
-var static embed.FS
 
 func main() {
 	cfg, err := config.LoadConfig()
@@ -120,30 +117,31 @@ func main() {
 	budgetService := appbudget.NewService(budgetRepo)
 	budgetHoldService := appbudgethold.NewService(budgetHoldRepo)
 
+	assetsURLs := assets.New(assets.FS)
+
 	// web mux - returns full HTML page (or, in most cases, just the main element if Hx-Request)
 	webMux := http.NewServeMux()
-	webMux.Handle(
-		"/static/",
-		http.FileServerFS(static),
-	)
+	webMux.Handle("/static/", handlers.NewStaticHandler(assets.FS, cfg.IsDev))
 	webMux.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFileFS(w, r, static, "static/favicon.ico")
+		http.ServeFileFS(w, r, assets.FS, "static/favicon.ico")
 	})
 
 	dashboardHandler := handlers.NewDashboardHandler(
 		ledgerQueryService,
 		accountQueryService,
 		catQueryService,
+		assetsURLs,
 	)
 	webMux.Handle("/", middleware.AuthProtectedRoute(dashboardHandler))
 
-	bh := handlers.NewBudgetPageHandler(catQueryService, ledgerQueryService)
+	bh := handlers.NewBudgetPageHandler(catQueryService, ledgerQueryService, assetsURLs)
 	webMux.Handle("/budget", middleware.AuthProtectedRoute(bh))
 
 	goalsHandler := handlers.NewGoalsHandler(
 		accountService,
 		ledgerQueryService,
 		accountQueryService,
+		assetsURLs,
 	)
 	webMux.Handle("/goals", middleware.AuthProtectedRoute(goalsHandler))
 	webMux.Handle("/goals/{id}", middleware.AuthProtectedRoute(goalsHandler))
@@ -152,39 +150,42 @@ func main() {
 		accountService,
 		ledgerQueryService,
 		accountQueryService,
+		assetsURLs,
 	)
 	webMux.Handle("/banks", middleware.AuthProtectedRoute(banksHandler))
 	webMux.Handle("/banks/{id}", middleware.AuthProtectedRoute(banksHandler))
 
 	ledgerPageHandler := handlers.NewLedgerPageHandler(
 		ledgerQueryService,
+		assetsURLs,
 	)
 	webMux.Handle("/ledger", middleware.AuthProtectedRoute(ledgerPageHandler))
 
-	eh := handlers.NewExpensesHandler(ledgerQueryService)
+	eh := handlers.NewExpensesHandler(ledgerQueryService, assetsURLs)
 	webMux.Handle("/reports/expenses", middleware.AuthProtectedRoute(eh))
 
-	ih := handlers.NewIncomeHandler(ledgerQueryService)
+	ih := handlers.NewIncomeHandler(ledgerQueryService, assetsURLs)
 	webMux.Handle("/reports/income", middleware.AuthProtectedRoute(ih))
 
 	categoriesHandler := handlers.NewCategoriesHandler(
 		catQueryService,
 		ledgerQueryService,
+		assetsURLs,
 	)
 
 	webMux.Handle("/categories", middleware.AuthProtectedRoute(categoriesHandler))
 	webMux.Handle("/categories/{id}", middleware.AuthProtectedRoute(categoriesHandler))
 
-	lh := handlers.NewLoginHandler(cfg.IsDev)
+	lh := handlers.NewLoginHandler(assetsURLs, cfg.IsDev)
 	webMux.Handle("/login", middleware.AuthenticatedRedirect(lh))
 
 	sh := handlers.SignupHandler{}
 	webMux.Handle("/signup", middleware.AuthenticatedRedirect(&sh))
 
-	ah := handlers.NewAccountHandler(userService)
+	ah := handlers.NewAccountHandler(userService, assetsURLs)
 	webMux.Handle("/account", middleware.AuthProtectedRoute(ah))
 
-	ph := handlers.NewPreferencesHandler(userService)
+	ph := handlers.NewPreferencesHandler(userService, assetsURLs)
 	webMux.Handle("/preferences", middleware.AuthProtectedRoute(ph))
 
 	if cfg.IsDev {
