@@ -64,6 +64,7 @@ templ navLi(v navLink) {
 				data-action="ui.nav.collapse-all-sublinks"
 				href={ v.href }
 			} else {
+				hx-boost="false"
 				data-action="ui.nav.toggle-sublinks"
 			}
 		>

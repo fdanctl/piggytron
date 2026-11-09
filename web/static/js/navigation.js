@@ -239,16 +239,6 @@ function cancelDialogDrag() {
 }
 
 // === nav === //
-const path = window.location.pathname;
-const a = document.querySelectorAll("nav a");
-for (let i = 0; i < a.length; i++) {
-  const text = a[i].text.trim().toLowerCase();
-  a[i].classList.toggle(
-    "active",
-    path.includes(text) || path === a[i].pathname,
-  );
-}
-
 /**
  * Marks the nav link matching the current pathname as active, defaulting
  * to the dashboard link on the root path.
@@ -256,17 +246,22 @@ for (let i = 0; i < a.length; i++) {
  * @param {Element} [ele] - Optional element to force active.
  */
 export const handleActiveLink = (ele) => {
+  const a = document.querySelectorAll("nav a");
   a.forEach((e) => e.classList.remove("active"));
-  let pathname = window.location.pathname;
-  if (pathname === "/") {
-    pathname = "dashboard";
-  }
+  const pathname = window.location.pathname;
+
   for (let i = 0; i < a.length; i++) {
-    const text = a[i].text.trim().toLowerCase();
-    a[i].classList.toggle("active", pathname.includes(text));
+    if (pathname == a[i].pathname) {
+      a[i].classList.add("active");
+      const sublinksDiv = a[i].closest(".sublinks");
+      if (sublinksDiv) {
+        sublinksDiv.previousElementSibling.classList.add("active");
+      }
+    }
   }
   ele?.classList.add("active");
 };
+handleActiveLink();
 
 /**
  * Collapses every open sublink group in the nav.
